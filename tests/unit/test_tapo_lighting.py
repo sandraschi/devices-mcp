@@ -6,7 +6,7 @@ import asyncio
 
 import pytest
 
-from tapo_camera_mcp.tools.lighting.tapo_lighting_tools import (
+from devices_mcp.tools.lighting.tapo_lighting_tools import (
     TapoLight,
     TapoLightingManager,
 )

@@ -8,47 +8,47 @@ export interface SimpleOptions {
    * Can be RTSP, RTMP, HLS, WebRTC, or MJPEG
    */
   streamUrl: string;
-  
+
   /**
    * Type of video stream
    */
   streamType: 'hls' | 'rtsp' | 'rtmp' | 'webrtc' | 'mjpeg';
-  
+
   /**
    * Whether to use authentication for the stream
    */
   useAuth: boolean;
-  
+
   /**
    * Username for authentication
    */
   username: string;
-  
+
   /**
    * Password for authentication
    */
   password: string;
-  
+
   /**
    * Whether to show playback controls
    */
   showControls: boolean;
-  
+
   /**
    * Whether to automatically start playing the stream
    */
   autoPlay: boolean;
-  
+
   /**
    * Whether to show PTZ controls
    */
   showPtzControls: boolean;
-  
+
   /**
    * Whether to mute the audio
    */
   muted: boolean;
-  
+
   /**
    * Maximum width of the video player (0 for auto)
    */

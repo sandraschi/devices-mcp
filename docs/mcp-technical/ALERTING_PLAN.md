@@ -26,5 +26,3 @@
 3. Update Prometheus `prometheus.yaml` to reference Alertmanager endpoint.
 4. Develop alert runbooks (`runbooks` task) detailing remediation steps.
 5. Add synthetic alert tests (e.g., `promtool test rules`) and integrate into CI.
-
-

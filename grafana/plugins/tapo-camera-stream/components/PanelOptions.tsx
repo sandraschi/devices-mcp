@@ -22,7 +22,7 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
     <div className="editor-row">
       <div className="section gf-form-group">
         <h5>Stream Configuration</h5>
-        
+
         <Field label="Stream URL" description="URL for the camera stream (RTSP, RTMP, HLS, etc.)">
           <Input
             value={options.streamUrl || ''}
@@ -31,7 +31,7 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
             width={60}
           />
         </Field>
-        
+
         <Field label="Stream Type" description="Type of video stream">
           <Select
             value={streamTypeOptions.find((o) => o.value === (options.streamType || 'hls'))}
@@ -40,7 +40,7 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
             width={30}
           />
         </Field>
-        
+
         <Field label="Quality" description="Stream quality (if multiple qualities are available)">
           <Select
             value={qualityOptions.find((o) => o.value === (options.quality || 'auto'))}
@@ -50,10 +50,10 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
           />
         </Field>
       </div>
-      
+
       <div className="section gf-form-group">
         <h5>Authentication</h5>
-        
+
         <Field label="Username" description="Username for stream authentication">
           <Input
             value={options.username || ''}
@@ -62,7 +62,7 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
             width={30}
           />
         </Field>
-        
+
         <Field label="Password" description="Password for stream authentication">
           <Input
             type="password"
@@ -72,7 +72,7 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
             width={30}
           />
         </Field>
-        
+
         <Field label="Use Authentication" description="Enable authentication for the stream">
           <InlineSwitch
             value={options.useAuth || false}
@@ -80,31 +80,31 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
           />
         </Field>
       </div>
-      
+
       <div className="section gf-form-group">
         <h5>Player Settings</h5>
-        
+
         <Field label="Show Controls" description="Show playback controls">
           <InlineSwitch
             value={options.showControls !== false}
             onChange={(e) => onOptionsChange({ ...options, showControls: e.currentTarget.checked })}
           />
         </Field>
-        
+
         <Field label="Auto Play" description="Automatically start playing the stream">
           <InlineSwitch
             value={options.autoPlay !== false}
             onChange={(e) => onOptionsChange({ ...options, autoPlay: e.currentTarget.checked })}
           />
         </Field>
-        
+
         <Field label="Muted" description="Mute audio by default">
           <InlineSwitch
             value={options.muted || true}
             onChange={(e) => onOptionsChange({ ...options, muted: e.currentTarget.checked })}
           />
         </Field>
-        
+
         <Field label="Max Width (px)" description="Maximum width of the video player (0 for auto)">
           <Input
             type="number"
@@ -115,19 +115,19 @@ export const PanelOptions = ({ options, onOptionsChange }: any) => {
           />
         </Field>
       </div>
-      
+
       <div className="section gf-form-group">
         <h5>Advanced</h5>
-        
+
         <Field label="Debug Mode" description="Show debug information">
           <InlineSwitch
             value={options.debug || false}
             onChange={(e) => onOptionsChange({ ...options, debug: e.currentTarget.checked })}
           />
         </Field>
-        
-        <Field 
-          label="Custom CSS" 
+
+        <Field
+          label="Custom CSS"
           description="Custom CSS to style the video player"
           disabled={!options.debug}
         >

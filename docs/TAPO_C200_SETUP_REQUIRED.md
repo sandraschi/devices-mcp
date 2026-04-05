@@ -66,4 +66,3 @@ Once camera is set up in app and you've created the Camera Account:
 3. Test connection: `python scripts/test_tapo_connection.py`
 
 The camera will be accessible via API once these steps are complete.
-

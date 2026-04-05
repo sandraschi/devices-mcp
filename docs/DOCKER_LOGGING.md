@@ -1,12 +1,12 @@
 # Docker Logging Integration - Grafana, Prometheus, Loki, Promtail
 
-**Date:** 2025-12-10  
-**Status:** ✅ Fully Operational  
+**Date:** 2025-12-10
+**Status:** ✅ Fully Operational
 **Last Updated:** 2025-12-10
 
 ## Overview
 
-The Tapo Camera MCP dashboard now properly integrates with the full Docker monitoring stack:
+The Devices MCP dashboard now properly integrates with the full Docker monitoring stack:
 - **Grafana**: Visualization dashboards
 - **Prometheus**: Metrics scraping
 - **Loki**: Log aggregation
@@ -50,9 +50,9 @@ services:
   promtail:
     volumes:
       # Mount Docker volume from myhomecontrol stack
-      - myhomecontrol_app_logs:/var/log/tapo-camera-mcp:ro
+      - myhomecontrol_app_logs:/var/log/devices-mcp:ro
       # Also mount host directory for native logs
-      - D:\Dev\repos\tapo-camera-mcp:/var/log/tapo-camera-mcp-host:ro
+      - D:\Dev\repos\devices-mcp:/var/log/devices-mcp-host:ro
     networks:
       - monitoring
       - myhomecontrol  # Access app_logs volume
@@ -61,8 +61,8 @@ services:
 ## Promtail Configuration
 
 ### promtail-config.yaml
-- **Docker logs**: Reads from `/var/log/tapo-camera-mcp/*.log` (Docker volume)
-- **Native logs**: Reads from `/var/log/tapo-camera-mcp-host/tapo_mcp.log` (host mount)
+- **Docker logs**: Reads from `/var/log/devices-mcp/*.log` (Docker volume)
+- **Native logs**: Reads from `/var/log/devices-mcp-host/tapo_mcp.log` (host mount)
 - **JSON parsing**: Automatically parses structured JSON logs
 - **Labels**: Adds `deployment`, `location`, `app`, `job` labels for filtering
 
@@ -72,7 +72,7 @@ services:
 {
   "timestamp": "2025-12-10T12:00:00Z",
   "level": "INFO",
-  "logger": "tapo_camera_mcp.web.server",
+  "logger": "devices_mcp.web.server",
   "message": "Starting web server on http://0.0.0.0:7777",
   "module": "server",
   "function": "run",
@@ -92,19 +92,19 @@ services:
 ### LogQL (Loki)
 ```logql
 # All logs from Docker deployment
-{job="tapo-camera-mcp", deployment="docker"}
+{job="devices-mcp", deployment="docker"}
 
 # Errors only
-{job="tapo-camera-mcp"} | json | level="ERROR"
+{job="devices-mcp"} | json | level="ERROR"
 
 # Server startup events
-{job="tapo-camera-mcp"} | json | message=~".*Starting.*"
+{job="devices-mcp"} | json | message=~".*Starting.*"
 
 # Device connection issues
-{job="tapo-camera-mcp"} | json | category="device_connection" | severity!="info"
+{job="devices-mcp"} | json | category="device_connection" | severity!="info"
 
 # Specific device
-{job="tapo-camera-mcp"} | json | source="camera_kitchen_cam"
+{job="devices-mcp"} | json | source="camera_kitchen_cam"
 ```
 
 ### PromQL (Prometheus)
@@ -124,10 +124,10 @@ rate(http_requests_total{status=~"5.."}[5m])
 Server now logs comprehensive startup information:
 ```
 ================================================================================
-Tapo Camera MCP Web Server - Starting
+Devices MCP Web Server - Starting
 Python: 3.11.x
 Platform: linux (Docker) or win32 (Native)
-Working directory: /app (Docker) or D:\Dev\repos\tapo-camera-mcp (Native)
+Working directory: /app (Docker) or D:\Dev\repos\devices-mcp (Native)
 Log file: /app/logs/tapo_mcp.log (Docker) or tapo_mcp.log (Native)
 ================================================================================
 ```
@@ -162,21 +162,21 @@ curl http://localhost:3100/ready
 
 # Query logs
 curl -G -s "http://localhost:3100/loki/api/v1/query_range" \
-  --data-urlencode 'query={job="tapo-camera-mcp"}' \
+  --data-urlencode 'query={job="devices-mcp"}' \
   --data-urlencode 'limit=10'
 ```
 
 ### Check Grafana
 1. Open http://localhost:3000
 2. Go to Explore → Loki
-3. Query: `{job="tapo-camera-mcp"}`
+3. Query: `{job="devices-mcp"}`
 4. Should see structured JSON logs
 
 ## Troubleshooting
 
 ### Logs Not Appearing in Loki
 1. **Check Promtail is running**: `docker ps | findstr promtail`
-2. **Check volume mount**: `docker exec monitoring-promtail ls -la /var/log/tapo-camera-mcp/`
+2. **Check volume mount**: `docker exec monitoring-promtail ls -la /var/log/devices-mcp/`
 3. **Check Promtail config**: `docker exec monitoring-promtail cat /etc/promtail/config.yml`
 4. **Check Promtail logs**: `docker logs monitoring-promtail`
 
@@ -281,16 +281,15 @@ curl http://localhost:3001/api/health
 
 ## Summary
 
-✅ **Docker detection**: Automatic via `CONTAINER=yes` or `/.dockerenv`  
-✅ **JSON logging**: Structured logs for Loki/Promtail  
-✅ **Dual output**: stdout (Docker driver) + file (Promtail scraping)  
-✅ **Volume sharing**: `app_logs` volume accessible to Promtail  
-✅ **Network integration**: Promtail connected to `myhomecontrol` network  
-✅ **Startup logging**: Comprehensive server startup information  
-✅ **Native support**: Still works in native Windows mode  
-✅ **Port conflicts**: Resolved (Grafana: 3001, Prometheus: 9095, Loki: 3101)  
-✅ **Config fixes**: All deprecated configs updated for latest versions  
-✅ **Alert rules**: Fixed invalid time ranges in Grafana alerts  
+✅ **Docker detection**: Automatic via `CONTAINER=yes` or `/.dockerenv`
+✅ **JSON logging**: Structured logs for Loki/Promtail
+✅ **Dual output**: stdout (Docker driver) + file (Promtail scraping)
+✅ **Volume sharing**: `app_logs` volume accessible to Promtail
+✅ **Network integration**: Promtail connected to `myhomecontrol` network
+✅ **Startup logging**: Comprehensive server startup information
+✅ **Native support**: Still works in native Windows mode
+✅ **Port conflicts**: Resolved (Grafana: 3001, Prometheus: 9095, Loki: 3101)
+✅ **Config fixes**: All deprecated configs updated for latest versions
+✅ **Alert rules**: Fixed invalid time ranges in Grafana alerts
 
 The monitoring stack is now fully operational! 🎉
-

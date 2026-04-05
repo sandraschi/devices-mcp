@@ -27,8 +27,8 @@ def get_tool(tool_name: str):
 def test_camera_tools_execution():
     """Test actual execution of camera tools with mocked dependencies."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import (
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import (
             AddCameraTool,
             ConnectCameraTool,
             GetCameraStatusTool,
@@ -39,7 +39,7 @@ def test_camera_tools_execution():
         list_tool = ListCamerasTool()
 
         with mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"
+            "devices_mcp.tools.camera.camera_tools.TapoCameraServer"
         ) as mock_server_class:
             mock_server = mock.AsyncMock()
             mock_camera_manager = mock.AsyncMock()
@@ -63,13 +63,13 @@ def test_camera_tools_execution():
         )
 
         with mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"
+            "devices_mcp.tools.camera.camera_tools.TapoCameraServer"
         ) as mock_server_class, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_camera_name"
+            "devices_mcp.tools.camera.camera_tools.validate_camera_name"
         ) as mock_validate_name, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_ip_address"
+            "devices_mcp.tools.camera.camera_tools.validate_ip_address"
         ) as mock_validate_ip, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_credentials"
+            "devices_mcp.tools.camera.camera_tools.validate_credentials"
         ) as mock_validate_creds:
             mock_validate_name.return_value = "test_camera"
             mock_validate_ip.return_value = "192.168.1.100"
@@ -88,11 +88,11 @@ def test_camera_tools_execution():
         )
 
         with mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"
+            "devices_mcp.tools.camera.camera_tools.TapoCameraServer"
         ) as mock_server_class, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_ip_address"
+            "devices_mcp.tools.camera.camera_tools.validate_ip_address"
         ) as mock_validate_ip, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_credentials"
+            "devices_mcp.tools.camera.camera_tools.validate_credentials"
         ) as mock_validate_creds:
             mock_validate_ip.return_value = "192.168.1.100"
             mock_validate_creds.return_value = ("test_user", "test_pass")
@@ -108,7 +108,7 @@ def test_camera_tools_execution():
         status_tool = GetCameraStatusTool(camera_id="test_camera")
 
         with mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"
+            "devices_mcp.tools.camera.camera_tools.TapoCameraServer"
         ) as mock_server_class:
             mock_server = mock.AsyncMock()
             mock_server.get_camera_status.return_value = {
@@ -134,7 +134,7 @@ def test_ptz_tools_execution():
     try:
         # Check if PTZ tools are available
         try:
-            from tapo_camera_mcp.tools.ptz.ptz_tools import (
+            from devices_mcp.tools.ptz.ptz_tools import (
                 GetCameraPresetsTool,
                 PTZControlTool,
                 SetCameraPresetTool,
@@ -148,7 +148,7 @@ def test_ptz_tools_execution():
         )
 
         with mock.patch(
-            "tapo_camera_mcp.tools.ptz.ptz_tools.TapoCameraServer"
+            "devices_mcp.tools.ptz.ptz_tools.TapoCameraServer"
         ) as mock_server_class:
             mock_server = mock.AsyncMock()
             mock_server.set_camera_preset.return_value = {"success": True}
@@ -161,7 +161,7 @@ def test_ptz_tools_execution():
         presets_tool = GetCameraPresetsTool(camera_id="test_camera")
 
         with mock.patch(
-            "tapo_camera_mcp.tools.ptz.ptz_tools.TapoCameraServer"
+            "devices_mcp.tools.ptz.ptz_tools.TapoCameraServer"
         ) as mock_server_class:
             mock_server = mock.AsyncMock()
             mock_server.get_camera_presets.return_value = {"presets": ["home", "away"]}
@@ -174,7 +174,7 @@ def test_ptz_tools_execution():
         ptz_tool = PTZControlTool(camera_id="test_camera", direction="up", duration=1.0)
 
         with mock.patch(
-            "tapo_camera_mcp.tools.ptz.ptz_tools.TapoCameraServer"
+            "devices_mcp.tools.ptz.ptz_tools.TapoCameraServer"
         ) as mock_server_class:
             mock_server = mock.AsyncMock()
             mock_server.ptz_control.return_value = {"success": True}
@@ -195,8 +195,8 @@ def test_ptz_tools_execution():
 def test_system_tools_execution():
     """Test system tools execution."""
     try:
-        from tapo_camera_mcp.tools.system.help_tool import HelpTool
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.system.help_tool import HelpTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Test StatusTool execution
         status_tool = StatusTool(section="system")
@@ -224,7 +224,7 @@ def test_system_tools_execution():
 def test_tool_validation_integration():
     """Test tool input validation integration."""
     try:
-        from tapo_camera_mcp.tools.camera.camera_tools import AddCameraTool
+        from devices_mcp.tools.camera.camera_tools import AddCameraTool
 
         # Test invalid camera name (should fail validation)
         try:
@@ -236,7 +236,7 @@ def test_tool_validation_integration():
             )
 
             # This should fail during validation in execute()
-            with mock.patch("tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"):
+            with mock.patch("devices_mcp.tools.camera.camera_tools.TapoCameraServer"):
                 result = asyncio.run(tool.execute())
                 # Should return error result
                 assert hasattr(result, "is_error") and result.is_error
@@ -253,7 +253,7 @@ def test_tool_validation_integration():
                 password="test_pass",
             )
 
-            with mock.patch("tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"):
+            with mock.patch("devices_mcp.tools.camera.camera_tools.TapoCameraServer"):
                 result = asyncio.run(tool.execute())
                 # Should return error result
                 assert hasattr(result, "is_error") and result.is_error
@@ -272,8 +272,8 @@ def test_tool_validation_integration():
 def test_tool_error_handling():
     """Test tool error handling with various failure scenarios."""
     try:
-        from tapo_camera_mcp.exceptions import ConnectionError
-        from tapo_camera_mcp.tools.camera.camera_tools import (
+        from devices_mcp.exceptions import ConnectionError
+        from devices_mcp.tools.camera.camera_tools import (
             AddCameraTool,
             ListCamerasTool,
         )
@@ -282,7 +282,7 @@ def test_tool_error_handling():
         list_tool = ListCamerasTool()
 
         with mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"
+            "devices_mcp.tools.camera.camera_tools.TapoCameraServer"
         ) as mock_server_class:
             mock_server_class.get_instance.side_effect = Exception("Server unavailable")
 
@@ -299,13 +299,13 @@ def test_tool_error_handling():
         )
 
         with mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"
+            "devices_mcp.tools.camera.camera_tools.TapoCameraServer"
         ) as mock_server_class, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_camera_name"
+            "devices_mcp.tools.camera.camera_tools.validate_camera_name"
         ) as mock_validate_name, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_ip_address"
+            "devices_mcp.tools.camera.camera_tools.validate_ip_address"
         ) as mock_validate_ip, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_credentials"
+            "devices_mcp.tools.camera.camera_tools.validate_credentials"
         ) as mock_validate_creds:
             mock_validate_name.return_value = "test_camera"
             mock_validate_ip.return_value = "192.168.1.100"
@@ -331,7 +331,7 @@ def test_tool_error_handling():
 def test_tool_async_behavior():
     """Test that tools properly handle async execution."""
     try:
-        from tapo_camera_mcp.tools.camera.camera_tools import (
+        from devices_mcp.tools.camera.camera_tools import (
             GetCameraStatusTool,
             ListCamerasTool,
         )
@@ -375,14 +375,14 @@ def test_tool_async_behavior():
 def test_tool_registry_integration():
     """Test tool registry integration with discovery."""
     try:
-        from tapo_camera_mcp.tools.base_tool import _tool_registry, get_all_tools
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.base_tool import _tool_registry, get_all_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Clear registry for clean test
         _tool_registry.clear()
 
         # Discover tools (this should register them)
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
 
         # Check that tools are registered
         registered_tools = get_all_tools()
@@ -407,10 +407,10 @@ def test_tool_registry_integration():
 def test_all_tools_comprehensive():
     """Run comprehensive tests on all discovered tools."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover all tools
-        all_tools = discover_tools("tapo_camera_mcp.tools")
+        all_tools = discover_tools("devices_mcp.tools")
 
         # Test each tool's basic structure
         for tool_cls in all_tools:

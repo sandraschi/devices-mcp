@@ -1,3 +1,6 @@
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Test camera connections and capture sample images.
@@ -6,7 +9,9 @@ This script helps verify that your camera configurations are correct
 and that the server can connect to all configured cameras.
 """
 
-import argparse
+import
+import logging
+ argparse
 import asyncio
 import os
 from pathlib import Path
@@ -14,8 +19,8 @@ from typing import Any, Dict
 
 import yaml
 
-from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-from tapo_camera_mcp.camera.manager import camera_manager
+from devices_mcp.camera.base import CameraConfig, CameraType
+from devices_mcp.camera.manager import camera_manager
 
 # Create output directories
 TEST_OUTPUT_DIR = Path("test_output")
@@ -24,7 +29,7 @@ TEST_OUTPUT_DIR.mkdir(exist_ok=True)
 
 async def test_camera_connection(camera_name: str, config: Dict[str, Any]) -> bool:
     """Test connection to a single camera and capture a test image."""
-    print(f"\nTesting camera: {camera_name} ({config['type']})")
+    logger.info(f"\nTesting camera: {camera_name} ({config['type']})")
     print("-" * 50)
 
     try:
@@ -39,53 +44,53 @@ async def test_camera_connection(camera_name: str, config: Dict[str, Any]) -> bo
         # Add camera to manager
         success = await camera_manager.add_camera(camera_config)
         if not success:
-            print(f"❌ Failed to add camera {camera_name}")
+            logger.info(f"❌ Failed to add camera {camera_name}")
             return False
 
         # Get camera instance
         camera = await camera_manager.get_camera(camera_name)
         if not camera:
-            print(f"❌ Camera {camera_name} not found after adding")
+            logger.info(f"❌ Camera {camera_name} not found after adding")
             return False
 
         # Test connection
-        print("🔌 Testing connection...")
+        logger.info("🔌 Testing connection...")
         connected = await camera.connect()
         if not connected:
-            print(f"❌ Failed to connect to {camera_name}")
+            logger.info(f"❌ Failed to connect to {camera_name}")
             return False
 
         # Get status
         status = await camera.get_status()
-        print(f"✅ Connected to {camera_name}")
-        print(f"   Status: {status}")
+        logger.info(f"✅ Connected to {camera_name}")
+        logger.info(f"   Status: {status}")
 
         # Capture test image
         output_path = TEST_OUTPUT_DIR / f"{camera_name}_test.jpg"
-        print(f"📸 Capturing test image to {output_path}...")
+        logger.info(f"📸 Capturing test image to {output_path}...")
         try:
             await camera.capture_still(str(output_path))
-            print(f"✅ Successfully captured image to {output_path}")
+            logger.info(f"✅ Successfully captured image to {output_path}")
         except Exception as e:
-            print(f"⚠️  Failed to capture image: {e}")
+            logger.info(f"⚠️  Failed to capture image: {e}")
 
         # Test stream URL
-        print("🌐 Testing stream URL...")
+        logger.info("🌐 Testing stream URL...")
         try:
             stream_url = await camera.get_stream_url()
             if stream_url:
-                print(f"✅ Stream URL: {stream_url}")
+                logger.info(f"✅ Stream URL: {stream_url}")
             else:
-                print("ℹ️  No stream URL available")
+                logger.info("ℹ️  No stream URL available")
         except Exception as e:
-            print(f"⚠️  Failed to get stream URL: {e}")
+            logger.info(f"⚠️  Failed to get stream URL: {e}")
 
         # Disconnect
         await camera.disconnect()
         return True
 
     except Exception as e:
-        print(f"❌ Error testing camera {camera_name}: {e}")
+        logger.info(f"❌ Error testing camera {camera_name}: {e}")
         import traceback
 
         traceback.print_exc()
@@ -100,17 +105,17 @@ async def main(config_path: str):
 
     cameras = config.get("cameras", [])
     if not cameras:
-        print("No cameras found in config")
+        logger.info("No cameras found in config")
         return
 
-    print(f"\n🔍 Found {len(cameras)} cameras in config")
+    logger.info(f"\n🔍 Found {len(cameras)} cameras in config")
     print("=" * 50)
 
     # Test each camera
     results = {}
     for cam_config in cameras:
         if not cam_config.get("enabled", True):
-            print(f"\n⏩ Skipping disabled camera: {cam_config['name']}")
+            logger.info(f"\n⏩ Skipping disabled camera: {cam_config['name']}")
             continue
 
         success = await test_camera_connection(cam_config["name"], cam_config)
@@ -118,12 +123,12 @@ async def main(config_path: str):
 
     # Print summary
     print("\n" + "=" * 50)
-    print("🏁 Test Summary")
+    logger.info("🏁 Test Summary")
     print("=" * 50)
 
     for name, success in results.items():
         status = "✅ PASS" if success else "❌ FAIL"
-        print(f"{status} - {name}")
+        logger.info(f"{status} - {name}")
 
     print("\nTest images saved to:", TEST_OUTPUT_DIR.absolute())
 
@@ -138,8 +143,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.exists(args.config):
-        print(f"Error: Config file not found: {args.config}")
-        print("Please create a config.yaml file or specify a different config file with --config")
+        logger.info(f"Error: Config file not found: {args.config}")
+        logger.info("Please create a config.yaml file or specify a different config file with --config")
         exit(1)
 
     asyncio.run(main(args.config))

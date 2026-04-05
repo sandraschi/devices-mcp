@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Tapo Camera MCP web interface has undergone a comprehensive CSS cleanup and theme optimization to ensure consistent styling, improved readability, and better maintainability across all dashboard pages.
+The Devices MCP web interface has undergone a comprehensive CSS cleanup and theme optimization to ensure consistent styling, improved readability, and better maintainability across all dashboard pages.
 
 ## Changes Summary
 
@@ -58,7 +58,7 @@ The Tapo Camera MCP web interface has undergone a comprehensive CSS cleanup and 
 ### 📁 File Structure
 
 ```
-src/tapo_camera_mcp/web/static/css/
+src/devices_mcp/web/static/css/
 ├── styles.css          # Base styles and theme variables
 ├── theme.css           # Main theme styles (from base.html)
 ├── cameras.css         # Camera-specific styles

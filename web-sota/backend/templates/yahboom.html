@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Yahboom ROS 2 - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ request.url_for('static', path='/css/yahboom.css') }}?v=20251203">
+{% endblock %}
+
+{% block content %}
+<div class="robot-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-0">🏎️ Yahboom G1 ROS 2</h1>
+            <p class="text-muted">Mastering autonomous navigation and edge AI</p>
+        </div>
+        <div class="ros-info">
+            <span class="badge bg-success">ROS 2 Humble</span>
+            <span class="badge bg-info">Connected</span>
+        </div>
+    </div>
+
+    <!-- Live Telemetry -->
+    <div class="status-grid">
+        <div class="status-card">
+            <div class="status-label">Battery Level</div>
+            <div id="batteryLevel" class="status-value">95.2%</div>
+            <div class="progress battery-progress">
+                <div id="batteryBar" class="progress-bar bg-info battery-bar" role="progressbar"
+                    aria-label="Battery level"></div>
+            </div>
+        </div>
+        <div class="status-card">
+            <div class="status-label">Linear Velocity</div>
+            <div id="linearVel" class="status-value">0.45 m/s</div>
+            <div class="ros-info">Topic: /cmd_vel</div>
+        </div>
+        <div class="status-card">
+            <div class="status-label">CPU Temp</div>
+            <div id="cpuTemp" class="status-value">42.5°C</div>
+            <div class="ros-info">Hardware: Jetson Nano</div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <!-- Control Section -->
+        <div class="panel-section">
+            <div class="d-flex justify-content-between">
+                <h3>🎮 Manual Control</h3>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="autoSwitch">
+                    <label class="form-check-label" for="autoSwitch">Autonomous Mode</label>
+                </div>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="joystick-container" id="joystick" title="Directional Joystick Area">
+                        <div class="joystick-handle" id="handle" title="Drag to move robot"></div>
+                    </div>
+                    <p class="text-center text-muted small mt-2">Use WASD or click-drag to drive</p>
+                </div>
+                <div class="col-md-6">
+                    <div class="btn-grid">
+                        <button class="yahboom-btn primary" title="Begin autonomous patrol sequence"
+                            onclick="sendCommand('start_patrol')">🚀 START
+                            PATROL</button>
+                        <button class="yahboom-btn" title="Return robot to charging dock"
+                            onclick="sendCommand('dock')">🏠 RETURN DOCK</button>
+                        <button class="yahboom-btn" title="Activate robot audible horn"
+                            onclick="sendCommand('play_sound')">🔊 HONK HORN</button>
+                        <button class="yahboom-btn text-danger" title="Immediate emergency halt"
+                            onclick="sendCommand('stop')">🛑 EMERGENCY STOP</button>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label" for="velRange">Max Velocity Limit: <span id="velLimit">0.8</span>
+                            m/s</label>
+                        <input type="range" class="form-range" min="0.1" max="1.5" step="0.1" value="0.8" id="velRange"
+                            title="Max Velocity Limit">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor Data -->
+        <div class="panel-section">
+            <h3>📡 Sensors</h3>
+            <table class="telemetry-table">
+                <tr>
+                    <td class="telemetry-label">Ultrasonic</td>
+                    <td id="ultrasonic" class="telemetry-value">1.24m</td>
+                </tr>
+                <tr>
+                    <td class="telemetry-label">IMU Pitch</td>
+                    <td id="imuPitch" class="telemetry-value">0.12°</td>
+                </tr>
+                <tr>
+                    <td class="telemetry-label">IMU Roll</td>
+                    <td id="imuRoll" class="telemetry-value">-0.05°</td>
+                </tr>
+                <tr>
+                    <td class="telemetry-label">Encoders L</td>
+                    <td id="encL" class="telemetry-value">14223</td>
+                </tr>
+                <tr>
+                    <td class="telemetry-label">Encoders R</td>
+                    <td id="encR" class="telemetry-value">14219</td>
+                </tr>
+            </table>
+
+            <div class="mt-4">
+                <h5>LiDAR Visualizer</h5>
+                <div class="lidar-container">
+                    <canvas id="lidarCanvas" width="200" height="150" class="lidar-canvas"
+                        title="LiDAR Visualizer Stream"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const robotId = 'yahboom_01';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setupJoystick();
+        startTelemetryLoop();
+        drawLidar();
+    });
+
+    async function sendCommand(command, params = {}) {
+        try {
+            const response = await fetch(`/robots/${robotId}/command`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ command, ...params })
+            });
+            const data = await response.json();
+            console.log('Command result:', data);
+        } catch (e) {
+            console.error('Command failed:', e);
+        }
+    }
+
+    function setupJoystick() {
+        const handle = document.getElementById('handle');
+        const container = document.getElementById('joystick');
+        let dragging = false;
+
+        const moveHandle = (e) => {
+            if (!dragging) return;
+            const rect = container.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            let x = (e.clientX || e.touches[0].clientX) - rect.left - centerX;
+            let y = (e.clientY || e.touches[0].clientY) - rect.top - centerY;
+
+            const dist = Math.sqrt(x * x + y * y);
+            const maxDist = rect.width / 2 - 30;
+
+            if (dist > maxDist) {
+                x = x * maxDist / dist;
+                y = y * maxDist / dist;
+            }
+
+            handle.style.left = `${centerX + x}px`;
+            handle.style.top = `${centerY + y}px`;
+
+            // Normalize to -1.0 to 1.0
+            const lin = -y / maxDist;
+            const ang = -x / maxDist;
+
+            // Debounced drive command
+            throttleDrive(lin, ang);
+        };
+
+        const stopDragging = () => {
+            dragging = false;
+            handle.style.left = '50%';
+            handle.style.top = '50%';
+            sendCommand('stop');
+        };
+
+        handle.addEventListener('mousedown', () => dragging = true);
+        window.addEventListener('mousemove', moveHandle);
+        window.addEventListener('mouseup', stopDragging);
+
+        handle.addEventListener('touchstart', () => dragging = true);
+        window.addEventListener('touchmove', moveHandle);
+        window.addEventListener('touchend', stopDragging);
+    }
+
+    let lastDriveTime = 0;
+    function throttleDrive(lin, ang) {
+        const now = Date.now();
+        if (now - lastDriveTime > 100) {
+            sendCommand('move', { linear: lin, angular: ang });
+            lastDriveTime = now;
+        }
+    }
+
+    async function startTelemetryLoop() {
+        while (true) {
+            try {
+                const response = await fetch(`/robots/${robotId}/telemetry`);
+                const data = await response.json();
+                if (data.success) {
+                    updateUI(data.telemetry);
+                }
+            } catch (e) { }
+            await new Promise(r => setTimeout(r, 2000));
+        }
+    }
+
+    function updateUI(tel) {
+        document.getElementById('batteryLevel').textContent = `${tel.battery_level}%`;
+        document.getElementById('batteryBar').style.width = `${tel.battery_level}%`;
+        document.getElementById('cpuTemp').textContent = `${tel.temperature}°C`;
+    }
+
+    function drawLidar() {
+        const canvas = document.getElementById('lidarCanvas');
+        const ctx = canvas.getContext('2d');
+        const draw = () => {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#00f2ff';
+            ctx.beginPath();
+            for (let i = 0; i < 360; i += 10) {
+                const angle = (i * Math.PI) / 180;
+                const dist = 30 + Math.random() * 40;
+                const x = canvas.width / 2 + Math.cos(angle) * dist;
+                const y = canvas.height / 2 + Math.sin(angle) * dist;
+                ctx.moveTo(canvas.width / 2, canvas.height / 2);
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            requestAnimationFrame(draw);
+        };
+        draw();
+    }
+</script>
+{% endblock %}

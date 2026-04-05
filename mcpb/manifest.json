@@ -1,6 +1,6 @@
 {
   "manifest_version": "0.2",
-  "name": "tapo-camera-mcp",
+  "name": "devices-mcp",
   "version": "1.1.0",
   "description": "Comprehensive camera management MCP server supporting Tapo, Ring, Furbo, and USB webcams with 26+ tools",
   "long_description": "Professional camera management and control platform with support for multiple camera types including TP-Link Tapo IP cameras, Ring doorbells, Furbo pet cameras, and USB webcams. Includes PTZ control, motion detection, image capture, video streaming, Grafana metrics integration, and AI-powered vision analysis using DINOv3. Features a web dashboard with live video streaming and comprehensive MCP tool suite.",
@@ -10,11 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sandraschi/tapo-camera-mcp"
+    "url": "https://github.com/sandraschi/devices-mcp"
   },
-  "homepage": "https://github.com/sandraschi/tapo-camera-mcp",
-  "documentation": "https://github.com/sandraschi/tapo-camera-mcp/blob/main/README.md",
-  "support": "https://github.com/sandraschi/tapo-camera-mcp/issues",
+  "homepage": "https://github.com/sandraschi/devices-mcp",
+  "documentation": "https://github.com/sandraschi/devices-mcp/blob/main/README.md",
+  "support": "https://github.com/sandraschi/devices-mcp/issues",
   "license": "MIT",
   "keywords": [
     "mcp",
@@ -51,12 +51,12 @@
   ],
   "server": {
     "type": "python",
-    "entry_point": "src/tapo_camera_mcp/server_v2.py",
+    "entry_point": "src/devices_mcp/server_v2.py",
     "mcp_config": {
       "command": "python",
       "args": [
         "-m",
-        "tapo_camera_mcp.server_v2",
+        "devices_mcp.server_v2",
         "--direct"
       ],
       "env": {
@@ -239,4 +239,3 @@
     "python_version": ">=3.10"
   }
 }
-

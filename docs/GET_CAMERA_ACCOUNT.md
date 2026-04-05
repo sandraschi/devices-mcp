@@ -51,4 +51,3 @@ Some app versions have different paths:
 1. Update `config.yaml` with username/password for each camera
 2. Test connection: `python scripts/test_tapo_connection.py`
 3. Verify both cameras work via API
-

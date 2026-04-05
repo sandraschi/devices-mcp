@@ -27,10 +27,10 @@ def test_tool_discovery():
         logger.info("Starting tool discovery test...")
 
         # Import the discovery module
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover tools
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
 
         logger.info(f"Discovered {len(tools)} tools:")
         for tool in tools:

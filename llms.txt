@@ -1,0 +1,38 @@
+# devices-mcp
+> **Guides, best practices, and lessons learned for developing notepadpp-mcp** --- 📄 [AI_DEVELOPMENT_RULES.md](AI_DEVELOPMENT_RULES.md) **Guidelines for AI-assisted development** - Best practices for wo...
+
+This project includes automated llms.txt generation for AI accessibility.
+
+## Docs
+- [Readme](docs\development\README.md): **Guides, best practices, and lessons learned for developing notepadpp-mcp**
+- [Readme](docs\github\README.md): > **Purpose**: Comprehensive GitHub configuration guide for the Devices MCP project.
+- [Readme](docs\glama-platform\README.md): **Complete guide to achieving and maintaining Gold Status on Glama.ai**
+- [Watchfiles Readme](docs\WATCHFILES_README.md): This directory contains crashproofing implementation for the Devices MCP WebApp using watchfiles. Th...
+- [Readme](docs\mcpb-packaging\README.md): **Complete guide to packaging and distributing MCP servers with MCPB**
+- [Readme](docs\notepadpp\README.md): **Everything you need to know about Notepad++ - from history to advanced usage**
+- [Readme](README.md): [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licens...
+- [Readme](docs\repository-protection\README.md): **Complete guide to keeping your notepadpp-mcp repository safe**
+- [Readme](docs\mcp-technical\README.md): **Technical guides for MCP server development, deployment, and troubleshooting**
+- [Quickstart](docs\monitoring\QUICKSTART.md): **Date:** 2025-12-10
+
+## Api
+- [  Init  ](src\devices_mcp\plex\api\__init__.py): Api definitions and implementations
+- [Admin](src\devices_mcp\plex\api\admin.py): Api definitions and implementations
+- [Playlists](src\devices_mcp\plex\api\playlists.py): Api definitions and implementations
+- [Models](src\devices_mcp\nest_protect\models.py): Models definitions and implementations
+- [Core](src\devices_mcp\plex\models\core.py): Models definitions and implementations
+- [Quality](src\devices_mcp\plex\models\quality.py): Models definitions and implementations
+
+## Examples
+- [Examples](examples/): Example code and implementations
+
+## Configuration
+- [Pyproject](pyproject.toml): Python project configuration and dependencies
+- [Package](grafana\plugins\tapo-camera-stream\package.json): Node.js project configuration and dependencies
+- [](.env): Environment variables and configuration
+- [Config](.git\config): Application configuration files
+
+## Optional
+- [Changelog](CHANGELOG.md): Project changelog information
+- [Contributing](CONTRIBUTING.md): Project contributing information
+- [License](LICENSE): Project license information

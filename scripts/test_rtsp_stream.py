@@ -1,11 +1,16 @@
 """Test RTSP stream connectivity with OpenCV."""
 
-import cv2
+import logging
 import time
+
+import cv2
+
+logger = logging.getLogger(__name__)
+
 
 def test_rtsp_stream(rtsp_url: str, timeout: int = 10):
     """Test RTSP stream connectivity."""
-    print(f"Testing RTSP stream: {rtsp_url[:60]}...")
+    logger.info(f"Testing RTSP stream: {rtsp_url[:60]}...")
 
     # Try to open the stream
     cap = cv2.VideoCapture(rtsp_url)
@@ -21,19 +26,19 @@ def test_rtsp_stream(rtsp_url: str, timeout: int = 10):
             ret, frame = cap.read()
             if ret and frame is not None:
                 height, width = frame.shape[:2]
-                print(f"SUCCESS: Stream opened! Resolution: {width}x{height}")
+                logger.info(f"SUCCESS: Stream opened! Resolution: {width}x{height}")
                 cap.release()
                 return True
-            else:
-                print("Stream opened but cannot read frames...")
+            logger.info("Stream opened but cannot read frames...")
         else:
-            print("Waiting for stream to open...")
+            logger.info("Waiting for stream to open...")
 
         time.sleep(0.5)
 
-    print("ERROR: Could not open RTSP stream within timeout")
+    logger.info("ERROR: Could not open RTSP stream within timeout")
     cap.release()
     return False
+
 
 if __name__ == "__main__":
     # Test the kitchen camera RTSP URL
@@ -41,11 +46,11 @@ if __name__ == "__main__":
     success = test_rtsp_stream(rtsp_url, timeout=15)
 
     if not success:
-        print("\nTrying alternative RTSP URLs...")
+        logger.info("\nTrying alternative RTSP URLs...")
 
         # Try without authentication
         rtsp_url_no_auth = "rtsp://192.168.0.164:554/stream1"
-        print(f"Trying without auth: {rtsp_url_no_auth}")
+        logger.info(f"Trying without auth: {rtsp_url_no_auth}")
         success = test_rtsp_stream(rtsp_url_no_auth, timeout=5)
 
         if not success:
@@ -58,12 +63,14 @@ if __name__ == "__main__":
             ]
 
             for url in alternative_urls:
-                print(f"Trying alternative: {url}")
+                logger.info(f"Trying alternative: {url}")
                 if test_rtsp_stream(url, timeout=5):
                     success = True
                     break
 
     if success:
-        print("\n🎉 RTSP stream test PASSED")
+        logger.info("\n🎉 RTSP stream test PASSED")
     else:
-        print("\n❌ RTSP stream test FAILED - Camera may not support RTSP or authentication issue")
+        logger.info(
+            "\n❌ RTSP stream test FAILED - Camera may not support RTSP or authentication issue"
+        )

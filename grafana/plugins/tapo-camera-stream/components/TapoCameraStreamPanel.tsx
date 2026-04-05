@@ -23,7 +23,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
     loading: false,
     error: null as string | null,
   });
-  
+
   const hlsRef = useRef<Hls | null>(null);
   const webrtcRef = useRef<RTCPeerConnection | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout>();
@@ -60,7 +60,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
-    
+
     if (webrtcRef.current) {
       webrtcRef.current.close();
       webrtcRef.current = null;
@@ -98,7 +98,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
               loaded: true,
               loading: false,
             }));
-            
+
             if (options.autoPlay) {
               video.play().catch(e => {
                 handleStreamError(`Auto-play failed: ${e.message}`);
@@ -109,7 +109,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
           // Safari native HLS
           video.src = streamUrl;
           setStreamInfo(prev => ({ ...prev, loaded: true, loading: false }));
-          
+
           if (options.autoPlay) {
             video.play().catch(e => {
               handleStreamError(`Auto-play failed: ${e.message}`);
@@ -123,7 +123,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
         const pc = await initWebRTC(video, streamUrl, (error) => {
           handleStreamError(error, true);
         });
-        
+
         if (pc) {
           webrtcRef.current = pc;
           setStreamInfo(prev => ({
@@ -137,13 +137,13 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
         // For MJPEG, RTSP, RTMP (handled by browser or external player)
         video.src = streamUrl;
         video.muted = options.muted ?? true;
-        
+
         setStreamInfo(prev => ({
           ...prev,
           loaded: true,
           loading: false,
         }));
-        
+
         const canAutoplay = options.streamType === 'mjpeg';
         if (options.autoPlay && canAutoplay) {
           video.play().catch(e => {
@@ -159,19 +159,19 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
   // Initialize stream when component mounts or options change
   useEffect(() => {
     initializeStream();
-    
+
     // Cleanup on unmount
     return () => {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
-      
+
       if (webrtcRef.current) {
         webrtcRef.current.close();
         webrtcRef.current = null;
       }
-      
+
       if (retryTimeoutRef.current) {
         clearTimeout(retryTimeoutRef.current);
         retryTimeoutRef.current = undefined;
@@ -199,7 +199,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('error', handleError);
-      
+
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
@@ -232,8 +232,8 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
 
   // Calculate dimensions
   const maxWidth = options.maxWidth > 0 ? Math.min(options.maxWidth, width) : width;
-  const aspectRatio = streamInfo.resolution.width && streamInfo.resolution.height 
-    ? streamInfo.resolution.width / streamInfo.resolution.height 
+  const aspectRatio = streamInfo.resolution.width && streamInfo.resolution.height
+    ? streamInfo.resolution.width / streamInfo.resolution.height
     : 16 / 9; // Default to 16:9 if resolution not available
   const videoHeight = maxWidth / aspectRatio;
 
@@ -242,7 +242,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
     if (!options.debug) {
       return null;
     }
-    
+
     return (
       <div className={styles.debugInfo}>
         <div>Status: {streamInfo.loading ? 'Loading...' : streamInfo.loaded ? 'Loaded' : 'Not Loaded'}</div>
@@ -302,26 +302,26 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
                 }));
               }}
             />
-            
+
             {options.showControls && (
               <div className={styles.controls}>
                 <div className={styles.controlGroup}>
-                  <button 
-                    onClick={togglePlayPause} 
+                  <button
+                    onClick={togglePlayPause}
                     className={styles.controlButton}
                     title={isPlaying ? 'Pause' : 'Play'}
                   >
                     {isPlaying ? '❚❚' : '▶'}
                   </button>
-                  <button 
-                    onClick={toggleMute} 
+                  <button
+                    onClick={toggleMute}
                     className={styles.controlButton}
                     title={isMuted ? 'Unmute' : 'Mute'}
                   >
                     {isMuted ? '🔇' : '🔊'}
                   </button>
                 </div>
-                
+
                 <div className={styles.streamInfo}>
                   {options.streamType.toUpperCase()}
                   {streamInfo.resolution.width > 0 && (
@@ -335,9 +335,9 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
                     </span>
                   )}
                 </div>
-                
+
                 <div className={styles.controlGroup}>
-                  <button 
+                  <button
                     onClick={initializeStream}
                     className={styles.controlButton}
                     title="Reconnect"
@@ -347,10 +347,10 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({ options, data, width, h
                 </div>
               </div>
             )}
-            
+
             {renderStreamInfo()}
           </div>
-          
+
           {!options.streamUrl && (
             <div className={styles.placeholder}>
               <p>No stream URL configured</p>
@@ -410,28 +410,28 @@ const getStyles = stylesFactory((theme) => ({
     justify-content: center;
     width: 36px;
     height: 36px;
-    
+
     &:hover {
       background-color: ${theme.colors.action.hover};
       transform: scale(1.1);
     }
-    
+
     &:active {
       transform: scale(0.95);
     }
-    
+
     &:focus {
       outline: none;
       box-shadow: 0 0 0 2px ${theme.colors.primary.main};
     }
-    
+
     &[disabled] {
       opacity: 0.5;
       cursor: not-allowed;
       transform: none !important;
     }
   `,
-  
+
   controlGroup: css`
     display: flex;
     align-items: center;
@@ -448,12 +448,12 @@ const getStyles = stylesFactory((theme) => ({
     align-items: center;
     gap: ${theme.spacing(2)};
     padding: 0 ${theme.spacing(1)};
-    
+
     @media (max-width: 600px) {
       display: none;
     }
   `,
-  
+
   streamQuality: css`
     background: ${theme.colors.background.secondary};
     border-radius: ${theme.shape.borderRadius(1)};
@@ -461,7 +461,7 @@ const getStyles = stylesFactory((theme) => ({
     font-size: ${theme.typography.bodySmall.fontSize};
     margin-left: ${theme.spacing(1)};
   `,
-  
+
   streamBitrate: css`
     color: ${theme.colors.text.disabled};
     font-size: ${theme.typography.bodySmall.fontSize};
@@ -486,7 +486,7 @@ const getStyles = stylesFactory((theme) => ({
     border: none;
     border-radius: ${theme.shape.borderRadius()};
     cursor: pointer;
-    
+
     &:hover {
       opacity: 0.9;
     }
@@ -498,7 +498,7 @@ const getStyles = stylesFactory((theme) => ({
     justify-content: center;
     height: 100%;
     color: ${theme.colors.text.secondary};
-    
+
     .${css`
       width: 40px;
       height: 40px;
@@ -507,14 +507,14 @@ const getStyles = stylesFactory((theme) => ({
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin-bottom: ${theme.spacing(2)};
-      
+
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
     `} {}
   `,
-  
+
   placeholder: css`
     display: flex;
     flex-direction: column;
@@ -526,7 +526,7 @@ const getStyles = stylesFactory((theme) => ({
     text-align: center;
     padding: ${theme.spacing(4)};
   `,
-  
+
   debugInfo: css`
     position: absolute;
     bottom: 40px;
@@ -538,7 +538,7 @@ const getStyles = stylesFactory((theme) => ({
     padding: ${theme.spacing(1)};
     font-family: ${theme.typography.fontFamilyMonospace};
   `,
-  
+
   buttonGroup: css`
     display: flex;
     gap: ${theme.spacing(1)};

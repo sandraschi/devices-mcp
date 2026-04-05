@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Integration tests for the full tapo-camera-mcp system.
+Integration tests for the full devices-mcp system.
 """
 
 import logging
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 def test_server_initialization():
     """Test server initialization and basic setup."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         # Test server creation (should not fail)
 
@@ -43,7 +43,7 @@ def test_server_initialization():
 def test_camera_manager_integration():
     """Test camera manager integration with server."""
     try:
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
 
         # Test CameraManager creation
         manager = CameraManager()
@@ -69,7 +69,7 @@ def test_camera_manager_integration():
 def test_validation_module():
     """Test validation module functionality."""
     try:
-        from tapo_camera_mcp.validation import (
+        from devices_mcp.validation import (
             ToolValidationError,
             validate_camera_name,
             validate_credentials,
@@ -127,7 +127,7 @@ def test_validation_module():
 def test_exception_hierarchy():
     """Test exception hierarchy and error handling."""
     try:
-        from tapo_camera_mcp.exceptions import (
+        from devices_mcp.exceptions import (
             AuthenticationError,
             CameraNotSupportedError,
             ConfigurationError,
@@ -170,7 +170,7 @@ def test_exception_hierarchy():
 def test_camera_base_classes():
     """Test camera base classes and factory pattern."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraFactory, CameraType
+        from devices_mcp.camera.base import CameraConfig, CameraFactory, CameraType
 
         # Test CameraType enum
         camera_types = [
@@ -210,7 +210,7 @@ def test_camera_base_classes():
 def test_core_models():
     """Test core data models."""
     try:
-        from tapo_camera_mcp.core.models import (
+        from devices_mcp.core.models import (
             CameraModel,
             CameraStatus,
             MotionDetectionSensitivity,
@@ -269,11 +269,11 @@ def test_web_server_routes():
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config for web server
-        with mock.patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, mock.patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with mock.patch("backend.server.get_config") as mock_get_config, mock.patch(
+            "backend.server.get_model"
         ) as mock_get_model:
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = mock.MagicMock()
@@ -308,7 +308,7 @@ def test_web_server_routes():
 def test_system_health_check():
     """Test system health check functionality."""
     try:
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Test StatusTool structure
         tool = StatusTool(section="system")
@@ -333,7 +333,7 @@ def test_configuration_loading():
     """Test configuration loading and validation."""
     try:
         # Test that we can import config functions
-        from tapo_camera_mcp.config import get_config, get_model
+        from devices_mcp.config import get_config, get_model
 
         # Test that config functions exist and are callable
         assert callable(get_config)
@@ -360,7 +360,7 @@ def test_configuration_loading():
 def test_logging_setup():
     """Test logging setup and configuration."""
     try:
-        from tapo_camera_mcp.utils.logging import setup_logging
+        from devices_mcp.utils.logging import setup_logging
 
         # Test that logging setup function exists and is callable
         assert callable(setup_logging)
@@ -385,11 +385,11 @@ def test_full_system_import():
     """Test that the full system can be imported without circular dependencies."""
     try:
         # Test importing main modules
-        from tapo_camera_mcp import exceptions, validation
-        from tapo_camera_mcp.camera import base, manager
-        from tapo_camera_mcp.core import models, server
-        from tapo_camera_mcp.tools import base_tool, discovery
-        from tapo_camera_mcp.web import server as web_server
+        from devices_mcp import exceptions, validation
+        from devices_mcp.camera import base, manager
+        from devices_mcp.core import models, server
+        from devices_mcp.tools import base_tool, discovery
+        from backend import server as web_server
 
         # Test that key classes exist
         assert hasattr(server, "TapoCameraServer")
@@ -441,3 +441,5 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         sys.exit(1)
+
+

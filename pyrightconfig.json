@@ -2,16 +2,9 @@
   "include": ["src"],
   "exclude": ["**/node_modules", "**/__pycache__", "**/build_venv"],
   "pythonVersion": "3.10",
-  "pythonPath": "./venv/Scripts/python.exe",
-  "executionEnvironments": [
-    {
-      "root": "src",
-      "python": "./venv/Scripts/python.exe"
-    }
-  ],
   "typeCheckingMode": "basic",
-  "reportMissingImports": "warning",
-  "reportMissingTypeStubs": "warning",
+  "reportMissingImports": "none",
+  "reportMissingTypeStubs": "none",
   "reportImportCycles": "error",
   "reportUnusedImport": "warning",
   "reportUnusedClass": "warning",

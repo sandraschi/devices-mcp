@@ -1,10 +1,10 @@
 # MCP Client Architecture
 
-Comprehensive guide to the MCP (Model Context Protocol) client implementation in the Tapo Camera MCP platform.
+Comprehensive guide to the MCP (Model Context Protocol) client implementation in the Devices MCP platform.
 
 ## 🏗️ **Architecture Overview**
 
-The Tapo Camera MCP platform uses a sophisticated client-server architecture where web API endpoints communicate with MCP tools through a standardized protocol. This design provides clean separation of concerns, improved testability, and enhanced maintainability.
+The Devices MCP platform uses a sophisticated client-server architecture where web API endpoints communicate with MCP tools through a standardized protocol. This design provides clean separation of concerns, improved testability, and enhanced maintainability.
 
 ### **Key Components**
 
@@ -334,7 +334,7 @@ result = await asyncio.wait_for(
 ```python
 # Enable debug logging
 import logging
-logging.getLogger("tapo_camera_mcp.mcp_client").setLevel(logging.DEBUG)
+logging.getLogger("devices_mcp.mcp_client").setLevel(logging.DEBUG)
 
 # Inspect MCP responses
 result = await call_mcp_tool("energy_management", {"action": "status"})

@@ -33,7 +33,7 @@
 
 | ID | Scenario | Expected Outcome |
 |----|----------|------------------|
-| CT-01 | Kill `tapo-camera-mcp` process | Alert triggers, dashboard shows offline, process restarts via supervisor. |
+| CT-01 | Kill `devices-mcp` process | Alert triggers, dashboard shows offline, process restarts via supervisor. |
 | CT-02 | Drop network between camera and hub for 60s | Camera status transitions to offline, alert fires, recovers after link restoration. |
 | CT-03 | Fill Loki storage volume | Promtail backpressure observed, alerts for log ingestion latency. |
 | CT-04 | Induce 500ms latency on Prometheus scrape | Dashboard shows delayed metrics, no data gaps >2 minutes. |
@@ -50,4 +50,3 @@
 2. Instrument metrics to detect experiment start/stop (custom Prometheus push).
 3. Document recovery procedures in runbooks.
 4. Scale to CT-03/CT-04 once storage stack matured.
-

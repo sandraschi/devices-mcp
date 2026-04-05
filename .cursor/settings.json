@@ -1,5 +1,5 @@
 {
-  "python.defaultInterpreterPath": "D:\\Dev\\repos\\tapo-camera-mcp\\venv\\Scripts\\python.exe",
+  "python.defaultInterpreterPath": "D:\\Dev\\repos\\devices-mcp\\venv\\Scripts\\python.exe",
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": false,

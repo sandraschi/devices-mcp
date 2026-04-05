@@ -31,4 +31,3 @@
 - Implement `sops` with age/PGP keys for encrypted repo-stored secrets.
 - Add CI checks to prevent committing plain text secrets.
 - Provide audit logging for secret access (Vault policy).
-

@@ -1,6 +1,6 @@
 # Why PostgreSQL? Analysis & Recommendation
 
-**Last Updated:** 2025-12-02  
+**Last Updated:** 2025-12-02
 **Status:** Questioning Necessity
 
 ---
@@ -68,7 +68,7 @@ CREATE TABLE recordings (
 );
 
 -- JSON queries work in SQLite
-SELECT * FROM recordings 
+SELECT * FROM recordings
 WHERE json_extract(metadata, '$.person_count') > 0;
 ```
 
@@ -168,7 +168,7 @@ except Exception as e:
 ### **Step 1: Create SQLite Media Metadata DB**
 
 ```python
-# src/tapo_camera_mcp/db/media_sqlite.py
+# src/devices_mcp/db/media_sqlite.py
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
@@ -177,19 +177,19 @@ import json
 
 class MediaMetadataDBSQLite:
     """SQLite-based media metadata database."""
-    
+
     def __init__(self, db_path: Optional[Path] = None):
         if db_path is None:
             db_path = Path(__file__).parent.parent.parent.parent / "data" / "media.db"
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
-    
+
     def _init_db(self):
         """Initialize SQLite database with same schema."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Recordings table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS recordings (
@@ -207,7 +207,7 @@ class MediaMetadataDBSQLite:
                     created_at INTEGER DEFAULT (strftime('%s', 'now'))
                 )
             """)
-            
+
             # Create indexes
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_recordings_camera_timestamp
@@ -221,13 +221,13 @@ class MediaMetadataDBSQLite:
                 CREATE INDEX IF NOT EXISTS idx_recordings_emergency
                 ON recordings(is_emergency) WHERE is_emergency = 1
             """)
-            
+
             # Snapshots table (similar structure)
             # AI analysis table (similar structure)
-            
+
             conn.commit()
-    
-    def add_recording(self, recording_id: str, camera_id: str, 
+
+    def add_recording(self, recording_id: str, camera_id: str,
                      file_path: str, file_size_bytes: int,
                      duration_seconds: Optional[float] = None,
                      recording_type: str = "automatic",
@@ -239,7 +239,7 @@ class MediaMetadataDBSQLite:
         if timestamp is None:
             timestamp = datetime.now(timezone.utc)
         ts = int(timestamp.timestamp())
-        
+
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
@@ -257,22 +257,22 @@ class MediaMetadataDBSQLite:
                 json.dumps(metadata or {})
             ))
             conn.commit()
-            
+
             # Return inserted record
             cursor.execute("SELECT * FROM recordings WHERE recording_id = ?", (recording_id,))
             row = cursor.fetchone()
             return dict(row) if row else {}
-    
+
     # ... other methods with same interface
 ```
 
 ### **Step 2: Update Storage to Use SQLite**
 
 ```python
-# src/tapo_camera_mcp/utils/storage.py
+# src/devices_mcp/utils/storage.py
 # Replace PostgreSQL with SQLite
 try:
-    from tapo_camera_mcp.db.media_sqlite import MediaMetadataDBSQLite
+    from devices_mcp.db.media_sqlite import MediaMetadataDBSQLite
     self.db = MediaMetadataDBSQLite()
     self.use_sqlite = True
 except Exception as e:
@@ -357,4 +357,3 @@ except Exception as e:
 ---
 
 **Bottom Line:** PostgreSQL adds complexity without providing necessary benefits for a home automation system. SQLite is simpler, sufficient, and better suited for this use case.
-

@@ -17,8 +17,8 @@ import os
 
 import pytest
 
-from tapo_camera_mcp.llm.manager import LLMManager
-from tapo_camera_mcp.llm.providers import (
+from devices_mcp.llm.manager import LLMManager
+from devices_mcp.llm.providers import (
     LMStudioProvider,
     OllamaProvider,
     OpenAIProvider,

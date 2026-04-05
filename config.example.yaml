@@ -34,7 +34,7 @@ cameras:
     port: 443  # Optional, defaults to 443
     verify_ssl: true  # Optional, defaults to true
     stream_type: "rtsp"  # rtsp, rtmp, or hls
-    
+
   # USB Webcam Example
   webcam1:
     type: webcam
@@ -106,7 +106,7 @@ cameras:
       # Alternative: use token instead of username/password
       # token: "your_ring_token_here"
       device_id: "optional_specific_device_id"  # Optional, uses first device if not specified
-    
+
   # Furbo Pet Camera Example
   pet_cam:
     type: furbo
@@ -125,7 +125,7 @@ ptz_presets:
     pan: 0
     tilt: 0
     zoom: 0
-  
+
   door:
     pan: -45
     tilt: 10
@@ -195,7 +195,7 @@ alerts:
     smtp_password: "your-email-password"
     from_email: "noreply@example.com"
     to_emails: ["your-email@example.com"]
-  
+
   # Webhook for custom integrations
   webhook:
     enabled: false
@@ -242,7 +242,7 @@ robotics:
     ip_address: "192.168.1.100"  # Robot IP address
     port: 9090              # ROS bridge WebSocket port
     mock_mode: true         # Use mock data for testing (set false with hardware)
-    
+
     # Apartment map (Stroheckgasse 9th District, Vienna)
     location:
       home_base:
@@ -264,7 +264,7 @@ robotics:
           x_max: 3
           y_min: 4
           y_max: 7
-    
+
     # Patrol routes
     patrols:
       default:
@@ -284,22 +284,22 @@ robotics:
         - {x: 6.5, y: 1.5, room: "bedroom"}
         - {x: 1.5, y: 5.5, room: "kitchen"}
         - {x: 0.0, y: 0.0, room: "home_base"}
-    
+
     # Automation settings
     automation:
       japan_trip_patrol:
         enabled: false      # Enable before October trip
         schedule: ["08:00", "14:00", "20:00", "02:00"]
         route: "default"
-      
+
       benny_follow:         # German Shepherd tracking
         enabled: false
         trigger: "motion_detected"
         follow_distance: 1.0  # meters
-      
+
       low_battery_auto_dock: true
       battery_threshold: 20   # % - return to dock when below this
-    
+
     # Camera streaming
     camera:
       rtsp_port: 8554

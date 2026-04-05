@@ -1,6 +1,6 @@
 # Testing Infrastructure Guide
 
-Comprehensive guide to the testing infrastructure for the Tapo Camera MCP platform.
+Comprehensive guide to the testing infrastructure for the Devices MCP platform.
 
 ## 🏗️ **Testing Architecture**
 
@@ -231,7 +231,7 @@ poetry run pytest tests/unit/         # Unit tests only
 poetry run pytest tests/integration/  # Integration tests only
 
 # Run with coverage
-poetry run pytest --cov=tapo_camera_mcp --cov-report=html
+poetry run pytest --cov=devices_mcp --cov-report=html
 
 # Run performance tests
 poetry run pytest -k "performance" --benchmark-only
@@ -252,7 +252,7 @@ poetry run pytest -x
 poetry run pytest -m "integration and not slow"
 
 # Generate coverage report
-poetry run pytest --cov=tapo_camera_mcp --cov-report=xml --cov-fail-under=90
+poetry run pytest --cov=devices_mcp --cov-report=xml --cov-fail-under=90
 ```
 
 ## 📝 **Writing Tests**
@@ -265,7 +265,7 @@ from tests.utils.test_helpers import test_data, assertions
 class TestEnergyAPI:
     def test_list_devices_success(self, client, mock_energy_tool_success):
         """Test successful device listing."""
-        with patch("tapo_camera_mcp.mcp_client.call_mcp_tool",
+        with patch("devices_mcp.mcp_client.call_mcp_tool",
                    return_value=mock_energy_tool_success):
             response = client.get("/api/energy/devices")
 
@@ -304,7 +304,7 @@ from tests.utils.test_helpers import performance
 class TestPerformance:
     def test_api_response_time(self, client, performance_timer):
         """Test API response time is acceptable."""
-        with patch("tapo_camera_mcp.mcp_client.call_mcp_tool",
+        with patch("devices_mcp.mcp_client.call_mcp_tool",
                    return_value={"success": True, "data": {}}):
             performance_timer.start()
             response = client.get("/api/energy/devices")
@@ -361,7 +361,7 @@ poetry run pytest tests/unit/test_api_energy.py -x --pdb
 
 # Inspect mock calls
 def test_with_inspection(self, client):
-    with patch("tapo_camera_mcp.mcp_client.call_mcp_tool") as mock_call:
+    with patch("devices_mcp.mcp_client.call_mcp_tool") as mock_call:
         mock_call.return_value = {"success": True}
         client.get("/api/energy/devices")
 
@@ -391,14 +391,14 @@ def test_response_inspection(self, client):
 ### **Coverage Reporting**
 ```bash
 # Terminal coverage report
-poetry run pytest --cov=tapo_camera_mcp --cov-report=term-missing
+poetry run pytest --cov=devices_mcp --cov-report=term-missing
 
 # HTML coverage report
-poetry run pytest --cov=tapo_camera_mcp --cov-report=html
+poetry run pytest --cov=devices_mcp --cov-report=html
 open htmlcov/index.html
 
 # Coverage by test type
-poetry run pytest --cov=tapo_camera_mcp --cov-report=term-missing:skip-covered
+poetry run pytest --cov=devices_mcp --cov-report=term-missing:skip-covered
 ```
 
 ### **Coverage Goals**
@@ -411,7 +411,7 @@ poetry run pytest --cov=tapo_camera_mcp --cov-report=term-missing:skip-covered
 ### **Coverage Configuration**
 ```ini
 [tool.coverage.run]
-source = ["tapo_camera_mcp"]
+source = ["devices_mcp"]
 omit = [
     "**/tests/**",
     "**/__main__.py",
@@ -474,7 +474,7 @@ poetry run pytest tests/unit/test_api_energy.py::TestEnergyAPI::test_list_device
 
 # Debug mock interactions
 def test_mock_debug(self, client):
-    with patch("tapo_camera_mcp.mcp_client.call_mcp_tool") as mock_call:
+    with patch("devices_mcp.mcp_client.call_mcp_tool") as mock_call:
         mock_call.return_value = {"success": True}
         response = client.get("/api/energy/devices")
 
@@ -495,7 +495,7 @@ poetry run pytest --profile --maxfail=1
 ### **Coverage Issues**
 ```bash
 # Check coverage configuration
-coverage run --source=tapo_camera_mcp -m pytest tests/unit/
+coverage run --source=devices_mcp -m pytest tests/unit/
 coverage report --show-missing
 
 # Debug coverage collection

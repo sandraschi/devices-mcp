@@ -1,12 +1,12 @@
-# Tapo Camera MCP Scripts
+# Devices MCP Scripts
 
-This directory contains utility scripts for managing the Tapo Camera MCP server.
+This directory contains utility scripts for managing the Devices MCP server.
 
 ## Portmanteau Tools Provision Script
 
 **File**: `provision-portmanteau-tools.ps1`
 
-**Purpose**: Verifies and provisions all portmanteau tools for the tapo-camera-mcp server.
+**Purpose**: Verifies and provisions all portmanteau tools for the devices-mcp server.
 
 **Status**: ✅ **PROVISION & REORGANIZATION COMPLETE** - 26 tools provisioned, consolidated to 16 functionality-based tools
 

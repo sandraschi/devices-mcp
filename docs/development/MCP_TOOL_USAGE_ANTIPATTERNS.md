@@ -1,6 +1,6 @@
 # MCP Tool Usage Antipatterns - Lessons Learned
 
-**Date:** 2025-11-17  
+**Date:** 2025-11-17
 **Context:** Critical failures in tool usage that wasted time and caused confusion
 
 ---
@@ -56,7 +56,7 @@ mcp_advanced-memory-mcp_write_note
    ```python
    # ❌ BAD: Positional, unclear
    write_note("Title", "Content", "folder")
-   
+
    # ✅ GOOD: Named parameters, clear
    write_note(
        title="Title",
@@ -216,7 +216,6 @@ Before calling ANY MCP tool:
 
 ---
 
-**Status:** ✅ Documented  
-**Last Updated:** 2025-11-17  
+**Status:** ✅ Documented
+**Last Updated:** 2025-11-17
 **Lessons Learned:** Always read tool definitions, understand tool limitations, use appropriate methods for the task
-

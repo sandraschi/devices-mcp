@@ -1,63 +1,72 @@
-# 🏠 Home Security MCP Platform
+# Home Security MCP Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.17.1-blue.svg)](https://github.com/sandraschi/tapo-camera-mcp/releases)
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/version-1.20.0-blue.svg)](https://github.com/sandraschi/devices-mcp/releases)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![MCP Version](https://img.shields.io/badge/MCP-2.14.1-blue)](https://mcp-standard.org)
-[![FastMCP](https://img.shields.io/badge/FastMCP-2.14.1-green.svg)](https://github.com/jlowin/fastmcp)
+[![MCP Version](https://img.shields.io/badge/MCP-3.1-blue)](https://mcp-standard.org)
+[![FastMCP](https://img.shields.io/badge/FastMCP-3.1-green.svg)](https://github.com/PrefectHQ/fastmcp)
+[![Stdio Stability](https://img.shields.io/badge/Stdio-Pure-success.svg)](https://github.com/sandraschi/devices-mcp)
 [![Cursor MCP](https://img.shields.io/badge/Cursor%20MCP-Working-success.svg)](https://cursor.sh)
-[![Status](https://img.shields.io/badge/status-Beta-yellow.svg)](https://github.com/sandraschi/tapo-camera-mcp)
-[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/sandraschi/tapo-camera-mcp/actions)
+[![Status](https://img.shields.io/badge/status-Beta-yellow.svg)](https://github.com/sandraschi/devices-mcp)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/sandraschi/devices-mcp/actions)
 [![Dashboard](https://img.shields.io/badge/Dashboard-Live-green.svg)](http://localhost:7777)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 [![Energy Dashboard](https://img.shields.io/badge/Energy%20Dashboard-Operational-success.svg)](http://localhost:7777/energy)
 [![Lighting Dashboard](https://img.shields.io/badge/Lighting%20Dashboard-Operational-success.svg)](http://localhost:7777/lighting)
-[![Multi-Device](https://img.shields.io/badge/Devices-Tapo%20%7C%20Ring%20%7C%20Nest%20%7C%20Plex%20%7C%20USB-blue.svg)](https://github.com/sandraschi/tapo-camera-mcp)
-[![LLM Integration](https://img.shields.io/badge/LLM-Multi--Provider-orange.svg)](https://github.com/sandraschi/tapo-camera-mcp)
+[![HomeAware Motion](https://img.shields.io/badge/HomeAware-Motion%20Detection-success.svg)](http://localhost:7777/api/lighting/hue/homeaware/status)
+[![Multi-Device](https://img.shields.io/badge/Devices-Tapo%20%7C%20Ring%20%7C%20Nest%20%7C%20Plex%20%7C%20USB-blue.svg)](https://github.com/sandraschi/devices-mcp)
+[![LLM Integration](https://img.shields.io/badge/LLM-Multi--Provider-orange.svg)](https://github.com/sandraschi/devices-mcp)
+[![Error Handling](https://img.shields.io/badge/Error%20Handling-Robust-green.svg)](https://github.com/sandraschi/devices-mcp)
 
-## 🎯 **DUAL-NATURE ARCHITECTURE**
+##  **DUAL-NATURE ARCHITECTURE**
 
 This repository serves **two complementary roles** in the smart home ecosystem:
 
-### **🎭 ROLE 1: Individual MCP Servers**
+### ** ROLE 1: Individual MCP Servers**
 Standalone MCP servers for specific device types, each providing specialized functionality:
-- **Tapo Camera MCP**: TP-Link camera control with PTZ and streaming
+- **Devices MCP**: TP-Link camera control with PTZ and streaming
 - **USB Webcam MCP**: Direct webcam capture and management
 - **Ring MCP**: Doorbell integration with WebRTC streaming
 - **Nest Protect MCP**: Smoke/CO monitoring via Home Assistant
-- **Lighting MCP**: Philips Hue control with scenes and groups
+- **Lighting MCP**: Philips Hue control with scenes, groups, and HomeAware motion detection
 - **Energy MCP**: Smart plug monitoring and appliance control
 - **Weather MCP**: Environmental sensors and forecasts
 
-### **🎪 ROLE 2: Unified Dashboard Platform**
+### ** ROLE 2: Unified Dashboard Platform**
 Complete orchestration platform that unifies all MCP servers into a single interface:
 - **Single Dashboard**: Monitor and control all devices from one place
 - **Cross-System Integration**: Event correlation and unified alerts
-- **Real-time Monitoring**: Live status updates and health checks
+- **Real-time Monitoring**: Live status updates and health checks with circuit breaker protection
+- **HomeAware Motion Detection**: Zigbee mesh signal strength monitoring (Bridge Pro)
+- **Robust Error Handling**: Timeouts, graceful degradation, and crash prevention
 - **AI Integration**: Claude Desktop MCP tools for natural language control
 - **Multi-Protocol Support**: ONVIF, WebRTC, RTSP, Zigbee, and more
 
-**Status: Beta - Active Development** | **Version: 1.17.1**
+**Status: Beta - Active Development** | **Version: 1.20.0**
+ 
+  **CURSOR IDE MCP INTEGRATION**: Full compatibility with Cursor IDE for AI-assisted smart home control.
+  **ROBOTICS INTEGRATION**: Dreame D20 Pro (Cloud) and Yahboom ROS 2 (Mock) functional in dashboard.
+  **FLEET EXPANSION**: Multi-camera support now standard (Kitchen + Living Room).
+  **ROBUST ERROR HANDLING**: Circuit breakers, timeouts, and graceful degradation prevent system hangs/crashes
+ **USB CAMERA SERVER**: Dedicated local capture server integrated into global startup flow on port 10715.
 
-✅ **CURSOR IDE MCP INTEGRATION**: Full compatibility with Cursor IDE for AI-assisted smart home control.
-
-> **✅ REPOSITORY STRUCTURE FIXED**: Refactored to separate MCP server (`src/tapo_camera_mcp/`) from webapp (`webapp/`). All .exe files properly organized in `integrations/` folder.
+> ** REPOSITORY STRUCTURE FIXED**: Refactored to separate MCP server (`src/devices_mcp/`) from webapp (`webapp/`). All .exe files properly organized in `integrations/` folder.
 >
 > **See: [EXE_FILES_ANALYSIS.md](EXE_FILES_ANALYSIS.md)** for detailed breakdown of all 50+ critical executables.
 >
-> **⚠️ Beta Status Notice**: This project is in active beta development. Features are working but may have bugs, APIs may change between versions, and some integrations are experimental. Not recommended for critical production use. Active development - contributions welcome.
+> ** Beta Status Notice**: This project is in active beta development. Features are working but may have bugs, APIs may change between versions, and some integrations are experimental. Not recommended for critical production use. Active development - contributions welcome.
 
-## 🤔 **WHEN TO USE EACH ROLE**
+##  **WHEN TO USE EACH ROLE**
 
-### **🎯 Use Individual MCP Servers When:**
+### ** Use Individual MCP Servers When:**
 - You need **specialized control** for specific device types
 - You want **lightweight, focused functionality** for one system
 - You're building **custom integrations** or automation scripts
 - You need **direct API access** to device-specific features
 - You're developing **device drivers** or extending functionality
 
-### **🎪 Use Unified Dashboard When:**
+### ** Use Unified Dashboard When:**
 - You want **complete home automation** across multiple systems
 - You need **single interface** to monitor and control everything
 - You want **AI-powered control** through Claude Desktop natural language
@@ -65,9 +74,9 @@ Complete orchestration platform that unifies all MCP servers into a single inter
 - You want **comprehensive monitoring** with health dashboards and alerts
 - You need **remote access** and unified security monitoring
 
-**💡 Pro Tip**: Most users will want the **unified dashboard** for complete smart home control, while developers may use individual MCP servers for specialized integrations.
+** Pro Tip**: Most users will want the **unified dashboard** for complete smart home control, while developers may use individual MCP servers for specialized integrations.
 
-## 🔧 **MCP SERVER CONFIGURATION & AUTHENTICATION**
+##  **MCP SERVER CONFIGURATION & AUTHENTICATION**
 
 ### **Configuration Sources (Hierarchical Priority)**
 
@@ -77,7 +86,7 @@ The MCP server loads IP addresses, usernames, passwords, and authentication cred
 **Location**: `config.yaml` (highest priority)
 **Search Order**:
 - `/app/config.yaml` (Docker container)
-- `~/.config/tapo-camera-mcp/config.yaml` (user home directory)
+- `~/.config/devices-mcp/config.yaml` (user home directory)
 - Repository root `config.yaml`
 - Current directory
 
@@ -154,6 +163,8 @@ lighting:
   philips_hue:
     bridge_ip: 192.168.0.83
     username: J1A3OQ1OMzJDtidSNQWWGmCBuAxZC3lxEjT9qnVc
+    # HomeAware motion detection available with Bridge Pro (BSB002)
+    # Automatically enabled when Bridge Pro is detected
 
   tapo_lighting:
     account:
@@ -212,19 +223,19 @@ security_integrations:
 - Environment variables used for sensitive fallbacks
 - Configuration files excluded from version control
 
-## 🏗️ **DUAL ARCHITECTURE OVERVIEW**
+##  **DUAL ARCHITECTURE OVERVIEW**
 
 **This repository has evolved into a comprehensive home security platform with dual-role architecture:**
 
-### **🎯 Role 1: Individual Security Device MCP Servers**
+### ** Role 1: Individual Security Device MCP Servers**
 **Standalone MCP servers** for specific security device types that can run independently:
-- **Tapo Camera MCP**: TP-Link camera control and monitoring
+- **Devices MCP**: TP-Link camera control and monitoring
 - **USB Webcam MCP**: Direct webcam management
 - **Ring MCP**: Doorbell and security camera integration
 - **Nest Protect MCP**: Smoke/CO detector monitoring
 - **Plex MCP**: Media server integration and webhook handling
 
-### **🎯 Role 2: Unified Security Dashboard**
+### ** Role 2: Unified Security Dashboard**
 **Multi-MCP orchestration platform** that coordinates multiple MCP servers:
 - **Single Interface**: Monitor all cameras + sensors + alarms + media in one dashboard
 - **Cross-System Integration**: Correlate events across different security systems
@@ -234,130 +245,130 @@ security_integrations:
 
 **The platform serves as the "conductor" that brings together multiple specialized security devices (MCP servers) into a cohesive home surveillance ecosystem.**
 
-## 🏆 **v1.17.1 RELEASE - CURSOR IDE MCP INTEGRATION FIXED** ✅ (January 2026)
+##  **v1.17.1 RELEASE - CURSOR IDE MCP INTEGRATION FIXED**  (January 2026)
 
-**⚠️ BETA STATUS - Active Development:**
-- **🔍 Dependency Validator**: Checks all libraries on EVERY startup - no more "it worked yesterday"!
-- **👁️ Connection Supervisor**: Polls ALL devices every 60s with auto-reconnect
-- **🚨 3-Level Messaging**: Info/Warning/Alarm system with acknowledgement tracking
-- **🏥 Health Dashboard**: Real-time device status at `/health-dashboard`
-- **📢 Alerts Dashboard**: Message center at `/alerts`
-- **📊 Prometheus Integration**: Metrics endpoint for Grafana monitoring
-- **📝 Loki-Compatible Logs**: Structured JSON logging for Promtail/Loki
-- **📈 Dual-Line Weather Graphs**: Compare main station + bathroom + outdoor modules
-- **🔌 Tapo P115 Fixed**: Smart plugs now showing real-time power data
-- **🎬 Plex Integration**: Media server webhook support with activity tracking
-- **🔗 Complete Routing**: All 25+ webapp pages now functional (no more 404s!)
-- **🎨 Enhanced Theming**: Camera cards and status indicators fully theme-aware
+** BETA STATUS - Active Development:**
+- ** Dependency Validator**: Checks all libraries on EVERY startup - no more "it worked yesterday"!
+- ** Connection Supervisor**: Polls ALL devices every 60s with auto-reconnect
+- ** 3-Level Messaging**: Info/Warning/Alarm system with acknowledgement tracking
+- ** Health Dashboard**: Real-time device status at `/health-dashboard`
+- ** Alerts Dashboard**: Message center at `/alerts`
+- ** Prometheus Integration**: Metrics endpoint for Grafana monitoring
+- ** Loki-Compatible Logs**: Structured JSON logging for Promtail/Loki
+- ** Dual-Line Weather Graphs**: Compare main station + bathroom + outdoor modules
+- ** Tapo P115 Fixed**: Smart plugs now showing real-time power data
+- ** Plex Integration**: Media server webhook support with activity tracking
+- ** Complete Routing**: All 25+ webapp pages now functional (no more 404s!)
+- ** Enhanced Theming**: Camera cards and status indicators fully theme-aware
 
 **v1.7.0:**
-- **🔐 Session-Based Auth**: Complete authentication system with secure password hashing
-- **💡 Global Lighting Controls**: All On/Off, 50%, 100%, Disco mode buttons
-- **🎨 Color Controls**: Full RGB color picker for color-capable Hue bulbs
-- **⚡ Performance**: Near-instant light changes (optimized API calls)
-- **🔄 Auto-Refresh**: Periodic device rescan to catch wall switch/remote changes
-- **🎯 User Menu**: Dropdown with Settings and Sign Out in topbar
+- ** Session-Based Auth**: Complete authentication system with secure password hashing
+- ** Global Lighting Controls**: All On/Off, 50%, 100%, Disco mode buttons
+- ** Color Controls**: Full RGB color picker for color-capable Hue bulbs
+- ** Performance**: Near-instant light changes (optimized API calls)
+- ** Auto-Refresh**: Periodic device rescan to catch wall switch/remote changes
+- ** User Menu**: Dropdown with Settings and Sign Out in topbar
 
 **v1.6.1:**
-- **🎙️ SOTA Voice Stack**: Faster-Whisper → Vosk → Whisper (STT), Piper → Edge-TTS → pyttsx3 (TTS)
-- **👂 Always-On Wake Word**: OpenWakeWord/Vosk background listener ("hey tapo")
-- **🔐 Real Nest OAuth**: Direct Google Nest API integration (no Home Assistant needed!)
-- **🎉 Prank Modes**: Hue light chaos/wave/disco/sos + PTZ camera nod/shake/dizzy
-- **🔇 Fully Offline**: Zero network traffic for voice - all local processing
+- ** SOTA Voice Stack**: Faster-Whisper  Vosk  Whisper (STT), Piper  Edge-TTS  pyttsx3 (TTS)
+- ** Always-On Wake Word**: OpenWakeWord/Vosk background listener ("hey tapo")
+- ** Real Nest OAuth**: Direct Google Nest API integration (no Home Assistant needed!)
+- ** Prank Modes**: Hue light chaos/wave/disco/sos + PTZ camera nod/shake/dizzy
+- ** Fully Offline**: Zero network traffic for voice - all local processing
 
 **v1.6.0:**
-- **📢 TTS/STT**: speak, announce, listen, voice_command actions
-- **🎵 Alarm Sounds**: 10 built-in types (siren, beep, doorbell, etc.)
-- **📹 PTZ Pranks**: Camera movement fun modes
+- ** TTS/STT**: speak, announce, listen, voice_command actions
+- ** Alarm Sounds**: 10 built-in types (siren, beep, doorbell, etc.)
+- ** PTZ Pranks**: Camera movement fun modes
 
-## 🏆 **v1.5.0 RELEASE - RING & NEST INTEGRATION**
+##  **v1.5.0 RELEASE - RING & NEST INTEGRATION**
 
-**✅ PREVIOUS:
-- **🔔 Ring Doorbell WebRTC**: Live video streaming + push-to-talk (NO subscription required!)
-- **🚨 Ring Alerts**: Full-screen DING popup + motion toast notifications on dashboard
-- **🎬 Plex Media Server**: Webhook integration for media activity tracking
-- **🔥 Nest Protect Setup**: Home Assistant bridge for smoke/CO detector integration
-- **📹 Two-Way Talk**: WebRTC audio for speaking to visitors at door
-- **🧪 Ring Tests**: Comprehensive pytest suite for Ring client and API
-- **📚 Ring Docs**: Full integration guide with subscription comparison
-- **🎨 Enhanced UI**: Modern gradient status cards, setup instructions, one-click initialization
-- **📱 Ring Dashboard**: Dedicated `/ring` page with device cards, alarm controls, event timeline
-- **🔥 Nest Dashboard**: Dedicated `/nest` page with device status, alerts, and Home Assistant integration
+** PREVIOUS:
+- ** Ring Doorbell WebRTC**: Live video streaming + push-to-talk (NO subscription required!)
+- ** Ring Alerts**: Full-screen DING popup + motion toast notifications on dashboard
+- ** Plex Media Server**: Webhook integration for media activity tracking
+- ** Nest Protect Setup**: Home Assistant bridge for smoke/CO detector integration
+- ** Two-Way Talk**: WebRTC audio for speaking to visitors at door
+- ** Ring Tests**: Comprehensive pytest suite for Ring client and API
+- ** Ring Docs**: Full integration guide with subscription comparison
+- ** Enhanced UI**: Modern gradient status cards, setup instructions, one-click initialization
+- ** Ring Dashboard**: Dedicated `/ring` page with device cards, alarm controls, event timeline
+- ** Nest Dashboard**: Dedicated `/nest` page with device status, alerts, and Home Assistant integration
 
 **Previous v1.4.0:**
-- **💡 Philips Hue Lighting**: 18 lights, 6 groups, 11 predefined scenes, cached device lists
-- **🌤️ Netatmo Weather**: Live indoor weather from your station (pyatmo 8.x OAuth)
-- **🌍 Vienna External Weather**: Open-Meteo API (free, no key) with 5-day forecast
-- **🍳 Kitchen Dashboard**: Tefal Optigrill, Zojirushi water boiler integration
-- **🤖 Robots Dashboard**: Roomba, Unitree Go2 planned integrations
+- ** Philips Hue Lighting**: 18 lights, 6 groups, 11 predefined scenes, cached device lists
+- ** Netatmo Weather**: Live indoor weather from your station (pyatmo 8.x OAuth)
+- ** Vienna External Weather**: Open-Meteo API (free, no key) with 5-day forecast
+- ** Kitchen Dashboard**: Tefal Optigrill, Zojirushi water boiler integration
+- ** Robots Dashboard**: Roomba, Unitree Go2 planned integrations
 
-**🎯 Current Status**: Beta - Full smart home platform with Ring doorbell, lighting, weather, kitchen, and robots dashboards. **Active development - features may change.**
+** Current Status**: Beta - Full smart home platform with Ring doorbell, lighting, weather, kitchen, and robots dashboards. **Active development - features may change.**
 
-## 🚀 **DUAL ARCHITECTURE CAPABILITIES** (November 2025)
+##  **DUAL ARCHITECTURE CAPABILITIES** (November 2025)
 
-### **🎯 ASPECT 1: INDIVIDUAL MCP SERVERS**
+### ** ASPECT 1: INDIVIDUAL MCP SERVERS**
 
-#### ✅ **WORKING NOW**
-- **🎥 Tapo Camera MCP**: TP-Link Tapo camera control and monitoring
-- **📹 USB Webcam MCP**: Auto-detection and management
-- **🎯 Cursor IDE Integration**: ✅ WORKING - Full MCP protocol compliance for Cursor IDE
-- **🤖 Claude Desktop Integration**: MCP protocol compliance for AI assistants
-- **🔧 Camera Management Tools**: Add, configure, and control cameras
-- **📊 Real-time Status**: Camera connection health and diagnostics
+####  **WORKING NOW**
+- ** Devices MCP**: TP-Link Tapo camera control and monitoring
+- ** USB Webcam MCP**: Auto-detection and management
+- ** Cursor IDE Integration**:  WORKING - Full MCP protocol compliance for Cursor IDE
+- ** Claude Desktop Integration**: MCP protocol compliance for AI assistants
+- ** Camera Management Tools**: Add, configure, and control cameras
+- ** Real-time Status**: Camera connection health and diagnostics
 
-#### 🎯 **CORE MCP FEATURES**
-- **MCP 2.12.0 Protocol**: Full Model Context Protocol compliance
+####  **CORE MCP FEATURES**
+- **MCP 3.1 Protocol**: Full Model Context Protocol compliance (FastMCP 3.1)
 - **Modular Camera Types**: Extensible architecture for new camera brands
 - **Asynchronous Operations**: High-performance async I/O
 - **Type-Safe APIs**: Full type hints and Pydantic validation
 
-### **🎯 ASPECT 2: UNIFIED SECURITY DASHBOARD**
+### ** ASPECT 2: UNIFIED SECURITY DASHBOARD**
 
-#### ✅ **WORKING NOW**
-- **🏠 Live Security Dashboard**: Single interface at `localhost:7777`
-- **🔗 Multi-MCP Integration**: Connect multiple security MCP servers
-- **📊 Real-time Monitoring**: Cameras + sensors + alarms in one view
-- **🚨 Alert Aggregation**: Unified security event display
-- **📱 Mobile Access**: Works on iPad/iPhone via Tailscale
+####  **WORKING NOW**
+- ** Live Security Dashboard**: Single interface at `localhost:7777`
+- ** Multi-MCP Integration**: Connect multiple security MCP servers
+- ** Real-time Monitoring**: Cameras + sensors + alarms in one view
+- ** Alert Aggregation**: Unified security event display
+- ** Mobile Access**: Works on iPad/iPhone via Tailscale
 
-#### 🎯 **CORE DASHBOARD FEATURES**
+####  **CORE DASHBOARD FEATURES**
 - **Multi-Server Coordination**: Nest Protect, Ring, and other MCPs
 - **Security Event Correlation**: Cross-system alert analysis
 - **Professional UI/UX**: Responsive design with real-time updates
 - **Remote Monitoring**: Access anywhere via secure VPN
 
-### 📷 **SUPPORTED CAMERA TYPES**
-- **✅ USB Webcams**: Auto-detected with live thumbnails (WORKING)
-- **✅ Tapo Cameras**: TP-Link Tapo series with full control
-- **✅ Ring Cameras**: Ring doorbell and security cameras
-- **🐱 Petcube Cameras**: Petcube pet cameras with full API access (READY)
+###  **SUPPORTED CAMERA TYPES**
+- ** USB Webcams**: Auto-detected with live thumbnails (WORKING)
+- ** Tapo Cameras**: TP-Link Tapo series with full control
+- ** Ring Cameras**: Ring doorbell and security cameras
+- ** Petcube Cameras**: Petcube pet cameras with full API access (READY)
 
-### 🤖 **LLM INTEGRATION** (NEW in v1.3.0)
+###  **LLM INTEGRATION** (NEW in v1.3.0)
 - **Ollama**: Local LLM support with model management
 - **LM Studio**: Desktop LLM integration
 - **OpenAI**: Cloud-based AI capabilities
 - **Chatbot UI**: Floating chat interface with streaming support
 - **API Access**: Complete REST API for LLM operations
 
-### 🐳 **DOCKER DEPLOYMENT** (NEW in v1.3.0)
+###  **DOCKER DEPLOYMENT** (NEW in v1.3.0)
 - **MyHomeControl Stack**: Complete Docker Compose setup
 - **Production Builds**: Optimized images with minimal dependencies
 - **Health Monitoring**: Container health checks and monitoring
 - **Network Integration**: Unified Docker network for all services
 
-## 🔄 **MCP CLIENT ARCHITECTURE** (v1.17.0)
+##  **MCP CLIENT ARCHITECTURE** (v1.17.0)
 
-### **🏗️ Unified Communication Layer**
+### ** Unified Communication Layer**
 
 **All web API endpoints now use MCP client architecture** instead of direct manager calls, providing:
 
-- **🔗 Standardized Protocol**: Consistent MCP stdio communication across all APIs
-- **🧪 Enhanced Testability**: Comprehensive mocking and integration testing
-- **⚡ Better Performance**: Async connection pooling and optimized tool calls
-- **🔧 Improved Maintainability**: Clean separation between web and business logic
-- **🚀 Future-Proof**: Extensible architecture for new MCP integrations
+- ** Standardized Protocol**: Consistent MCP stdio communication across all APIs
+- ** Enhanced Testability**: Comprehensive mocking and integration testing
+- ** Better Performance**: Async connection pooling and optimized tool calls
+- ** Improved Maintainability**: Clean separation between web and business logic
+- ** Future-Proof**: Extensible architecture for new MCP integrations
 
-### **🛠️ MCP Tool Integration**
+### ** MCP Tool Integration**
 
 #### **Portmanteau Tools** - Consolidated Operations
 - `energy_management` - Smart plug and energy monitoring
@@ -381,7 +392,7 @@ result = await call_mcp_tool("energy_management", {"action": "status"})
 devices = result.get("data", {}).get("devices", [])
 ```
 
-### **🧪 Enterprise Testing Infrastructure**
+### ** Enterprise Testing Infrastructure**
 
 #### **Comprehensive Test Coverage** (120+ test methods)
 - **Unit Tests**: 92% coverage with isolated component testing
@@ -397,7 +408,7 @@ devices = result.get("data", {}).get("devices", [])
 - **Async Testing Support**: Comprehensive asyncio testing utilities
 - **CI/CD Integration**: Automated testing pipeline with artifact generation
 
-### **📊 Production-Ready CI/CD**
+### ** Production-Ready CI/CD**
 
 #### **10 Comprehensive Pipeline Jobs**
 1. **Quality Checks**: Linting, type checking, security scanning
@@ -411,40 +422,40 @@ devices = result.get("data", {}).get("devices", [])
 9. **Deployment Tests**: Production deployment validation
 10. **Test Reporting**: Comprehensive results and artifact generation
 
-### ⚠️ **UNSUPPORTED CAMERAS**
-- **🚫 Furbo Cameras**: **NOT SUPPORTED** - Furbo intentionally blocks third-party API access. Use official Furbo app only.
+###  **UNSUPPORTED CAMERAS**
+- ** Furbo Cameras**: **NOT SUPPORTED** - Furbo intentionally blocks third-party API access. Use official Furbo app only.
 
-### 🐾 **PETCUBE INTEGRATION** ⭐
+###  **PETCUBE INTEGRATION** 
 
 **Petcube Bites 2 Lite** is now fully supported as an excellent Furbo replacement!
 
-#### **🎥 Camera Features:**
+#### ** Camera Features:**
 - **1080p Full HD** video with night vision
-- **160° wide-angle** lens
+- **160 wide-angle** lens
 - **Two-way audio** with noise cancellation
 - **Motion detection** with smart alerts
 - **Cloud storage** (30 days free)
 
-#### **🍖 Smart Features:**
+#### ** Smart Features:**
 - **Dual treat compartments** (vs Furbo's single)
 - **Laser pointer** for interactive play
 - **Auto-play** mode with built-in toys
 - **Custom feeding schedules**
 - **Medication dispensing** capability
 
-#### **🔋 Battery & Connectivity:**
+#### ** Battery & Connectivity:**
 - **12-hour battery life** (rechargeable)
 - **WiFi + Bluetooth** connectivity
 - **Mobile app** for iOS/Android
 - **Alexa/Google Home** integration
 
-#### **💰 Pricing & Value:**
+#### ** Pricing & Value:**
 - **Price:** $199-249 (vs Furbo's $249-349)
 - **Better value:** More features, lower price
 - **API access:** Full third-party integration
 - **Where to buy:** Amazon, Petcube website, pet stores
 
-#### **🔧 MCP Configuration:**
+#### ** MCP Configuration:**
 ```yaml
 cameras:
   my_petcube:
@@ -455,66 +466,66 @@ cameras:
       device_id: "optional_device_id"  # Auto-detected if not specified
 ```
 
-#### **🎮 MCP Features:**
-- ✅ **Live video streaming**
-- ✅ **Remote treat dispensing**
-- ✅ **Motion/sound alerts**
-- ✅ **Battery monitoring**
-- ✅ **Status tracking**
-- ✅ **Automated pet care**
+#### ** MCP Features:**
+-  **Live video streaming**
+-  **Remote treat dispensing**
+-  **Motion/sound alerts**
+-  **Battery monitoring**
+-  **Status tracking**
+-  **Automated pet care**
 
-#### **🚀 Why Petcube Over Furbo:**
-| Feature | Furbo ❌ | Petcube ✅ |
+#### ** Why Petcube Over Furbo:**
+| Feature | Furbo  | Petcube  |
 |---------|----------|------------|
-| **API Access** | Blocked | ✅ Official API |
+| **API Access** | Blocked |  Official API |
 | **Treat Compartments** | 1 | 2 |
 | **Interactive Toys** | Limited | Laser + Auto-play |
-| **Third-party Apps** | Forbidden | ✅ Allowed |
+| **Third-party Apps** | Forbidden |  Allowed |
 | **Price** | $249-349 | $199-249 |
-| **MCP Integration** | ❌ Impossible | ✅ Full support |
+| **MCP Integration** |  Impossible |  Full support |
 
-**Petcube is the clear winner for API-accessible pet cameras!** 🐱✨
+**Petcube is the clear winner for API-accessible pet cameras!** 
 
-### 🎥 **CAMERA CONTROLS** (Next Phase)
+###  **CAMERA CONTROLS** (Next Phase)
 - **Live Streaming**: RTSP, RTMP, and HLS streaming support
 - **PTZ Control**: Pan, tilt, and zoom (where supported)
 - **Motion Detection**: Configurable motion detection settings
 - **Snapshot Capture**: Capture still images from video streams
 - **Audio Support**: Two-way audio where available
 
-### 🔌 **INTEGRATIONS**
+###  **INTEGRATIONS**
 
-#### **🔗 MCP SERVER ECOSYSTEM** (Dual Role)
+#### ** MCP SERVER ECOSYSTEM** (Dual Role)
 **This repository serves dual purposes:**
-1. **🎥 Individual MCP Servers**: Standalone camera control (Tapo, USB, Ring)
-2. **🏠 Unified Security Dashboard**: Multi-MCP orchestration platform
+1. ** Individual MCP Servers**: Standalone camera control (Tapo, USB, Ring)
+2. ** Unified Security Dashboard**: Multi-MCP orchestration platform
 
-#### **🔗 Multi-MCP Coordination** (Dashboard Role)
+#### ** Multi-MCP Coordination** (Dashboard Role)
 - **Nest Protect MCP**: Real-time smoke/CO detector monitoring
 - **Ring MCP**: Doorbell and security camera integration
 - **Unified Dashboard**: Single interface for all security devices
 - **Cross-System Alerts**: Correlated security events and notifications
 - **Health Monitoring**: Real-time status of all integrated MCP servers
 
-#### **🤖 Claude Desktop Integration** (MCP Server Role)
-- **✅ MCP 2.14.1 Protocol**: Seamless Claude Desktop & Cursor IDE integration (WORKING)
-- **🎯 Cursor IDE**: ✅ WORKING - Full camera control through Cursor MCP tools
-- **🔧 Camera Management Tools**: Add, configure, and control cameras
-- **📊 Real-time Status**: Camera connection health and diagnostics
-- **🎯 AI Assistant Ready**: Full MCP compliance for intelligent camera control
+#### ** Claude Desktop Integration** (MCP Server Role)
+- ** MCP 3.1 Protocol**: Seamless Claude Desktop & Cursor IDE integration (WORKING)
+- ** Cursor IDE**:  WORKING - Full camera control through Cursor MCP tools
+- ** Camera Management Tools**: Add, configure, and control cameras
+- ** Real-time Status**: Camera connection health and diagnostics
+- ** AI Assistant Ready**: Full MCP compliance for intelligent camera control
 
-#### **🌐 Web & API Interfaces** (Dashboard Role)
-- **🏠 Live Security Dashboard**: Real-time monitoring at `localhost:7777`
-- **🔌 REST API**: HTTP endpoints for remote control and monitoring
-- **📊 Grafana Dashboards**: Real-time monitoring and visualization (planned)
-- **📱 Mobile Access**: Works on iPad/iPhone via Tailscale
+#### ** Web & API Interfaces** (Dashboard Role)
+- ** Live Security Dashboard**: Real-time monitoring at `localhost:7777`
+- ** REST API**: HTTP endpoints for remote control and monitoring
+- ** Grafana Dashboards**: Real-time monitoring and visualization (planned)
+- ** Mobile Access**: Works on iPad/iPhone via Tailscale
 
-### 📺 **VIDEO STREAMING DASHBOARD** (Next Phase)
+###  **VIDEO STREAMING DASHBOARD** (Next Phase)
 - **Live Video Streams**: Real-time MJPEG streaming from USB webcams
 - **RTSP Integration**: Direct streaming from Tapo cameras
 - **Dynamic Camera Management**: Add/remove cameras on the fly
 
-### 🎯 **DEVICE ONBOARDING SYSTEM** (NEW - January 2025)
+###  **DEVICE ONBOARDING SYSTEM** (NEW - January 2025)
 - **Progressive Discovery**: Automatic scanning for Tapo P115, Nest Protect, Ring devices, and USB webcams
 - **Smart Configuration**: User-friendly device naming, location assignment, and settings
 - **Authentication Integration**: OAuth setup for Nest Protect and Ring devices
@@ -523,21 +534,21 @@ cameras:
 - **Error Recovery**: Comprehensive error handling with user guidance
 - **API-First Design**: Full programmatic access to onboarding functionality
 
-### 💪 **STABILITY & MONITORING SYSTEM** (NEW - December 2025)
+###  **STABILITY & MONITORING SYSTEM** (NEW - December 2025)
 
-#### 🔍 **Beta Reliability Features**
+####  **Beta Reliability Features**
 - **Dependency Validator**: Checks all 20+ libraries on every startup - prevents "it worked yesterday" failures
 - **Connection Supervisor**: Polls ALL devices every 60s with automatic reconnection
-- **3-Level Alerting**: Info (💬) / Warning (⚠️) / Alarm (🚨) system with escalation
+- **3-Level Alerting**: Info () / Warning () / Alarm () system with escalation
 - **Health Dashboard**: Real-time device status at `/health-dashboard`
 - **Alerts Dashboard**: Message center with acknowledgement at `/alerts`
 - **Demo-Proof**: No silent failures during demonstrations!
 
-#### 📊 **Monitoring Stack Integration**
+####  **Monitoring Stack Integration**
 - **Prometheus Metrics**: `/api/messages/prometheus` endpoint ready for scraping
 - **Loki Logs**: Structured JSON logging compatible with Promtail ingestion
 - **Grafana Ready**: Dashboards for device uptime, alert timelines, power consumption
-- **Alert Escalation**: 1 failure → WARNING, 3 failures (180s) → ALARM
+- **Alert Escalation**: 1 failure  WARNING, 3 failures (180s)  ALARM
 - **Auto-Recovery**: Supervisor attempts reconnection on device failures
 
 **Prometheus Scrape Config:**
@@ -550,9 +561,9 @@ scrape_configs:
     scrape_interval: 30s
 ```
 
-### ⚡ **ADVANCED FEATURES** (NEW - January 2025)
+###  **ADVANCED FEATURES** (NEW - January 2025)
 
-#### 🔋 **Energy Management Dashboard**
+####  **Energy Management Dashboard**
 - **Tapo P115 Smart Plugs**: Energy monitoring and control (REAL DATA!)
 - **Real-time Power Consumption**: Live wattage, voltage, and current monitoring
 - **Cost Analysis**: Daily, monthly, and annual energy cost tracking
@@ -560,7 +571,7 @@ scrape_configs:
 - **Energy Saving Mode**: Intelligent power optimization
 - **Historical Data**: Limited to current day (P115 limitation) with Home Assistant integration recommended
 
-#### 💡 **Lighting Control Dashboard** (ENHANCED in v1.7.0)
+####  **Lighting Control Dashboard** (ENHANCED in v1.7.0)
 - **Philips Hue Integration**: Full support for Hue Bridge and lights
 - **Light Discovery**: Automatic discovery (18 lights, 6 groups detected)
 - **Light Control**: On/off toggle and brightness adjustment (instant response)
@@ -573,50 +584,50 @@ scrape_configs:
 - **Rescan Button**: Manual refresh of lights/groups/scenes with last scan timestamp
 - **Settings Integration**: Bridge IP and username configuration via settings page
 
-#### 🌤️ **Weather Dashboard** (ENHANCED v1.8.0)
+####  **Weather Dashboard** (ENHANCED v1.8.0)
 - **Multi-Module Netatmo**: Main station + bathroom module (NAModule4 support)
 - **Dual-Line Graphs**: Compare main (red) vs bathroom (orange) vs outdoor (teal)
-- **Real-Time Data**: 26.8°C main, 26.6°C bathroom - see room differences!
-- **Vienna External Weather**: Open-Meteo API (5.5°C, slight rain)
+- **Real-Time Data**: 26.8C main, 26.6C bathroom - see room differences!
+- **Vienna External Weather**: Open-Meteo API (5.5C, slight rain)
 - **Dynamic Station Cards**: Auto-loads YOUR real devices (70:ee:50:3a:0e:dc @ Stroheckgasse)
 - **5-Day Forecast**: Daily forecast with weather icons
-- **Historical Charts**: 4 metrics × 3 time ranges, auto-refresh every 30s
+- **Historical Charts**: 4 metrics  3 time ranges, auto-refresh every 30s
 - **CO2 Monitoring**: Threshold warnings (800 ppm yellow, 1000 ppm red)
-- **Battery Indicators**: Shows battery level for wireless modules (🔋 60%)
+- **Battery Indicators**: Shows battery level for wireless modules ( 60%)
 - **Outdoor Sensor Ready**: Automatic detection when NAModule1 installed
 
-#### 🍳 **Kitchen Dashboard** (NEW in v1.4.0)
+####  **Kitchen Dashboard** (NEW in v1.4.0)
 - **Tefal Optigrill**: Smart grill status and control
 - **Zojirushi Water Boiler**: On/off via Tapo P115 smart plug
 - **Smarter iKettle**: Alternative smart kettle research
 
-#### 🤖 **Robots Dashboard** (NEW in v1.4.0)
+####  **Robots Dashboard** (NEW in v1.4.0)
 - **Roomba**: Coming soon integration
 - **Unitree Go2**: Planned purchase with specs
 - **Pilot Labs Moorebot Scout**: AI home patrol robot (arriving Jan 2025)
 
-#### 🚨 **Alarm System Integration**
+####  **Alarm System Integration**
 - **Nest Protect**: Smoke and CO detector monitoring
 - **Ring Alarms**: Door/window sensors and motion detectors
 - **Alert Correlation**: Cross-system event analysis with camera feeds
 - **Battery Monitoring**: Device health and maintenance alerts
 - **Test Scheduling**: Automated device testing and validation
 
-#### 📊 **AI-Powered Analytics**
+####  **AI-Powered Analytics**
 - **Scene Analysis**: Computer vision-based scene understanding
 - **Object Detection**: People, vehicles, and activity recognition
 - **Performance Analytics**: System health and optimization recommendations
 - **Smart Automation**: Intelligent scheduling and predictive maintenance
 - **Pattern Recognition**: Usage pattern analysis and optimization
 
-#### 📈 **Advanced Dashboard Components**
+####  **Advanced Dashboard Components**
 - **Energy Charts**: Lightweight Chart.js-based energy consumption visualization
 - **Real-time Updates**: Live data refresh every minute
 - **Interactive Controls**: Device management and automation configuration
 - **Mobile Responsive**: Optimized for tablet and smartphone access
 - **Export Capabilities**: Chart and data export functionality
 
-## 🚀 **QUICK START** (What Works Now)
+##  **QUICK START** (What Works Now)
 
 ### **1. Start the Web Dashboard**
 ```bash
@@ -632,10 +643,10 @@ python start.py dashboard
 ```
 
 ### **3. Current Working Features**
-- ✅ **USB Webcam Detection**: Auto-discovered on dashboard load
-- ✅ **Real-time Status**: Camera connection monitoring
-- ✅ **Professional UI**: Clean, responsive dashboard interface
-- ✅ **MCP Tools**: 30+ tools available in Claude Desktop (FastMCP 2.12 compliant)
+-  **USB Webcam Detection**: Auto-discovered on dashboard load
+-  **Real-time Status**: Camera connection monitoring
+-  **Professional UI**: Clean, responsive dashboard interface
+-  **MCP Tools**: 30+ tools available in Claude Desktop (FastMCP 3.1 compliant)
   - **Device Onboarding**: Progressive discovery and configuration tools
   - **Energy Management**: Tapo P115 smart plug control and monitoring
   - **Lighting Control**: Philips Hue Bridge integration (18 lights, 11 scenes)
@@ -656,7 +667,7 @@ python start.py dashboard
 - **Snapshot Capture**: Instant image capture from any camera
 - **Multi-camera View**: Grid layout for multiple camera feeds
 
-### 🛠 Development Tools
+###  Development Tools
 - **CLI Interface**: Command-line tools for administration
 - **Mock Camera**: Simulated camera for testing
 - **Comprehensive Logging**: Structured logging throughout codebase
@@ -665,15 +676,15 @@ python start.py dashboard
 - **Security Scanning**: Automated vulnerability and dependency scanning
 - **Code Quality**: Ruff linting and formatting, mypy type checking, pylint linting
 
-## 🚀 Getting Started
+##  Getting Started
 
-### 🎯 **Device Onboarding** (NEW!)
+###  **Device Onboarding** (NEW!)
 
 **Progressive device setup for any combination of devices:**
 
 ```bash
 # Start the server
-python -m tapo_camera_mcp.web.server
+python -m devices_mcp.web.server
 
 # Open the onboarding dashboard
 open http://localhost:7777/onboarding
@@ -681,7 +692,7 @@ open http://localhost:7777/onboarding
 
 **Supported Device Types:**
 - **Tapo P115 Smart Plugs**: Energy monitoring and control
-- **Nest Protect Devices**: Smoke and CO detector monitoring  
+- **Nest Protect Devices**: Smoke and CO detector monitoring
 - **Ring Devices**: Doorbell, motion sensors, and contact sensors
 - **USB Webcams**: Video streaming and capture
 
@@ -691,21 +702,33 @@ open http://localhost:7777/onboarding
 - **Cross-Device Integration**: Intelligent automation recommendations
 - **Progressive UI**: Step-by-step guided setup process
 
-### Installation Options
+##  Installation
 
-This MCP server supports multiple installation methods:
+### Prerequisites
+- [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
+- Python 3.12+
 
-1. **MCPB Package** (Recommended) - One-click installation for Claude Desktop
-2. **Manual Installation** - Clone repository and install via pip/uv
-3. **JSON Config File** - Add to Claude Desktop or Cursor IDE config files
+###  Quick Start
+Run immediately via `uvx`:
+```bash
+uvx devices-mcp
+```
 
----
-
+###  Claude Desktop Integration
+Add to your `claude_desktop_config.json`:
+```json
+"mcpServers": {
+  "devices-mcp": {
+    "command": "uv",
+    "args": ["--directory", "D:/Dev/repos/devices-mcp", "run", "devices-mcp"]
+  }
+}
+```
 #### Option 1: MCPB Package (Recommended for Claude Desktop)
 
 **One-click installation** for Claude Desktop users:
 
-1. Download the latest `.mcpb` package from [GitHub Releases](https://github.com/sandraschi/tapo-camera-mcp/releases)
+1. Download the latest `.mcpb` package from [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases)
 2. Drag the `.mcpb` file to Claude Desktop
 3. Configure camera settings when prompted:
    - Tapo Camera IP Address (optional)
@@ -723,12 +746,35 @@ This MCP server supports multiple installation methods:
 
 **See [MCPB Quick Start Guide](docs/MCPB_QUICKSTART.md) for detailed instructions.**
 
+###  **Advanced Documentation**
+- **[HomeAware Motion Detection](docs/HOMEAWARE_MOTION_DETECTION.md)**: Zigbee mesh signal strength monitoring for motion detection
+- **[Error Handling Guide](docs/ERROR_HANDLING.md)**: Circuit breakers, timeouts, and crash prevention
+- **[MCP Production Checklist](docs/MCP_PRODUCTION_CHECKLIST.md)**: Audit checklist for production readiness
+
 ---
 
-#### Option 2: Manual Installation (Clone & Install)
+##  Installation
 
-**For developers or users who prefer manual setup:**
+### Prerequisites
+- [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
+- Python 3.12+
 
+###  Quick Start
+Run immediately via `uvx`:
+```bash
+uvx devices-mcp
+```
+
+###  Claude Desktop Integration
+Add to your `claude_desktop_config.json`:
+```json
+"mcpServers": {
+  "devices-mcp": {
+    "command": "uv",
+    "args": ["--directory", "D:/Dev/repos/devices-mcp", "run", "devices-mcp"]
+  }
+}
+```
 ### Prerequisites
 
 - Python 3.10 or higher
@@ -736,10 +782,28 @@ This MCP server supports multiple installation methods:
 - OpenCV (for webcam support)
 - TP-Link Tapo camera(s), Ring doorbell, or USB webcam
 
-### Version Manager Installation (Recommended)
+##  Installation
 
-Using version managers ensures you have the correct Python and Node.js versions without conflicts.
+### Prerequisites
+- [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
+- Python 3.12+
 
+###  Quick Start
+Run immediately via `uvx`:
+```bash
+uvx devices-mcp
+```
+
+###  Claude Desktop Integration
+Add to your `claude_desktop_config.json`:
+```json
+"mcpServers": {
+  "devices-mcp": {
+    "command": "uv",
+    "args": ["--directory", "D:/Dev/repos/devices-mcp", "run", "devices-mcp"]
+  }
+}
+```
 #### Python Version Management with uv (or pyenv)
 
 **uv** is a fast Python package installer and resolver (similar to nvm for Node.js). Alternatively, you can use **pyenv** for Python version management:
@@ -863,20 +927,28 @@ node --version
 npm --version
 ```
 
-### Installation
+##  Installation
 
-1. **Install from source (recommended):**
-   ```bash
-   git clone https://github.com/yourusername/tapo-camera-mcp.git
-   cd tapo-camera-mcp
-   pip install -e .
-   ```
+### Prerequisites
+- [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
+- Python 3.12+
 
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+###  Quick Start
+Run immediately via `uvx`:
+```bash
+uvx devices-mcp
+```
 
+###  Claude Desktop Integration
+Add to your `claude_desktop_config.json`:
+```json
+"mcpServers": {
+  "devices-mcp": {
+    "command": "uv",
+    "args": ["--directory", "D:/Dev/repos/devices-mcp", "run", "devices-mcp"]
+  }
+}
+```
 ### Configuration
 
 1. Copy the example configuration file:
@@ -895,7 +967,7 @@ npm --version
      webcam:
        type: webcam
        device_id: 0
-   
+
    # Authentication (optional - disabled by default)
    auth:
      enabled: false  # Set to true to require login
@@ -905,7 +977,7 @@ npm --version
          role: admin
    ```
 
-### 🔐 **Authentication** (NEW in v1.7.0)
+###  **Authentication** (NEW in v1.7.0)
 
 The dashboard supports optional session-based authentication:
 
@@ -927,27 +999,43 @@ When auth is first enabled, a default admin user is created with a random passwo
 
 ---
 
-#### Option 3: JSON Config File Installation (Claude Desktop / Cursor IDE)
+##  Installation
 
-**For users who prefer manual JSON configuration:**
+### Prerequisites
+- [uv](https://docs.astral.sh/uv/) installed (RECOMMENDED)
+- Python 3.12+
 
-After cloning and installing the repository, add the server to your MCP client configuration file.
+###  Quick Start
+Run immediately via `uvx`:
+```bash
+uvx devices-mcp
+```
 
-## ✅ **CURSOR IDE MCP INTEGRATION WORKING**
+###  Claude Desktop Integration
+Add to your `claude_desktop_config.json`:
+```json
+"mcpServers": {
+  "devices-mcp": {
+    "command": "uv",
+    "args": ["--directory", "D:/Dev/repos/devices-mcp", "run", "devices-mcp"]
+  }
+}
+```
+##  **CURSOR IDE MCP INTEGRATION WORKING**
 
-**Cursor IDE Configuration** - ✅ WORKING:
+**Cursor IDE Configuration** -  WORKING:
 
 Edit `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
-    "tapo-camera-mcp": {
+    "devices-mcp": {
       "command": "python",
-      "args": ["-m", "tapo_camera_mcp.server_v2", "--direct"],
-      "cwd": "D:/Dev/repos/tapo-camera-mcp",
+      "args": ["-m", "devices_mcp.server_v2", "--direct"],
+      "cwd": "D:/Dev/repos/devices-mcp",
       "env": {
-        "PYTHONPATH": "D:/Dev/repos/tapo-camera-mcp",
+        "PYTHONPATH": "D:/Dev/repos/devices-mcp",
         "TAPO_MCP_SKIP_HARDWARE_INIT": "true"
       }
     }
@@ -968,22 +1056,22 @@ If the server takes too long to start (>1 minute), add `TAPO_MCP_SKIP_HARDWARE_I
 
 A ready-to-use configuration file is provided: `mcp-config.json`. Copy this file to:
 
-- **Cursor**: `~/.cursor/mcp.json` (or use Cursor Settings → MCP tab)
+- **Cursor**: `~/.cursor/mcp.json` (or use Cursor Settings  MCP tab)
 - **Claude Desktop**: `%APPDATA%\Claude\claude_desktop_config.json`
 
 **Option 2: Manual configuration**
 
-Edit Cursor settings (Cmd+, on Mac or Ctrl+, on Windows) → MCP tab, or edit `~/.cursor/mcp.json`:
+Edit Cursor settings (Cmd+, on Mac or Ctrl+, on Windows)  MCP tab, or edit `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
-    "tapo-camera-mcp": {
-      "command": "D:/Dev/repos/tapo-camera-mcp/venv/Scripts/python.exe",
-      "args": ["-m", "tapo_camera_mcp.cli_v2"],
-      "cwd": "D:/Dev/repos/tapo-camera-mcp",
+    "devices-mcp": {
+      "command": "D:/Dev/repos/devices-mcp/venv/Scripts/python.exe",
+      "args": ["-m", "devices_mcp.cli_v2"],
+      "cwd": "D:/Dev/repos/devices-mcp",
       "env": {
-        "PYTHONPATH": "D:/Dev/repos/tapo-camera-mcp/src",
+        "PYTHONPATH": "D:/Dev/repos/devices-mcp/src",
         "TAPO_MCP_SKIP_HARDWARE_INIT": "true"
       }
     }
@@ -996,12 +1084,12 @@ Edit Cursor settings (Cmd+, on Mac or Ctrl+, on Windows) → MCP tab, or edit `~
 ```json
 {
   "mcpServers": {
-    "tapo-camera-mcp": {
-      "command": "D:/Dev/repos/tapo-camera-mcp/venv/Scripts/python.exe",
-      "args": ["-m", "tapo_camera_mcp.server_v2", "--direct"],
-      "cwd": "D:/Dev/repos/tapo-camera-mcp",
+    "devices-mcp": {
+      "command": "D:/Dev/repos/devices-mcp/venv/Scripts/python.exe",
+      "args": ["-m", "devices_mcp.server_v2", "--direct"],
+      "cwd": "D:/Dev/repos/devices-mcp",
       "env": {
-        "PYTHONPATH": "D:/Dev/repos/tapo-camera-mcp/src",
+        "PYTHONPATH": "D:/Dev/repos/devices-mcp/src",
         "TAPO_MCP_SKIP_HARDWARE_INIT": "true"
       }
     }
@@ -1010,18 +1098,18 @@ Edit Cursor settings (Cmd+, on Mac or Ctrl+, on Windows) → MCP tab, or edit `~
 ```
 
 **Important Notes:**
-- Replace `D:/Dev/repos/tapo-camera-mcp` with your actual repository path
+- Replace `D:/Dev/repos/devices-mcp` with your actual repository path
 - Use absolute paths (not relative)
 - Ensure Python 3.10+ is in your PATH
 - Restart Claude Desktop or Cursor after configuration
 - Verify installation by asking Claude/Cursor: "List available camera tools"
-- ✅ **Cursor IDE**: All Tapo MCP tools should now be available in Cursor
+-  **Cursor IDE**: All Tapo MCP tools should now be available in Cursor
 
 **Troubleshooting JSON Config:**
 - Check Python path: `python --version` or `python3 --version`
-- Verify module exists: `python -m tapo_camera_mcp.cli_v2 --help`
+- Verify module exists: `python -m devices_mcp.cli_v2 --help`
 - Check logs: `%APPDATA%\Claude\logs\` (Windows) or Cursor logs
-- ✅ **Cursor IDE**: If tools don't appear, check Cursor MCP settings and restart Cursor
+-  **Cursor IDE**: If tools don't appear, check Cursor MCP settings and restart Cursor
 
 **Fast Startup (Skip Hardware Init):**
 
@@ -1030,12 +1118,12 @@ If the server takes more than 1 minute to start, add `TAPO_MCP_SKIP_HARDWARE_INI
 ```json
 {
   "mcpServers": {
-    "tapo-camera-mcp": {
+    "devices-mcp": {
       "command": "python",
-      "args": ["-m", "tapo_camera_mcp.server_v2", "--direct"],
-      "cwd": "D:/Dev/repos/tapo-camera-mcp",
+      "args": ["-m", "devices_mcp.server_v2", "--direct"],
+      "cwd": "D:/Dev/repos/devices-mcp",
       "env": {
-        "PYTHONPATH": "D:/Dev/repos/tapo-camera-mcp",
+        "PYTHONPATH": "D:/Dev/repos/devices-mcp",
         "TAPO_MCP_SKIP_HARDWARE_INIT": "true"
       }
     }
@@ -1047,23 +1135,23 @@ This skips hardware initialization during startup (reduces startup from 30-60s t
 
 ---
 
-## 🚀 Usage
+##  Usage
 
 ### Starting the MCP Server
 
 ```bash
 # Start MCP server for Claude Desktop integration
-python -m tapo_camera_mcp.server_v2 --direct
+python -m devices_mcp.server_v2 --direct
 
 # Start with debug logging
-python -m tapo_camera_mcp.server_v2 --direct --debug
+python -m devices_mcp.server_v2 --direct --debug
 ```
 
 ### Starting the Web Dashboard
 
 ```bash
 # Start the web dashboard (separate terminal)
-python -m tapo_camera_mcp.web.server
+python -m devices_mcp.web.server
 
 # Dashboard will be available at: http://localhost:7777
 ```
@@ -1097,27 +1185,27 @@ python start.py webcam
 
 ```bash
 # List all available commands
-tapo-camera-mcp --help
+devices-mcp --help
 
 # Camera Management
-tapo-camera-mcp camera list                   # List all cameras
-tapo-camera-mcp camera status <camera_name>   # Get camera status
-tapo-camera-mcp camera info <camera_name>     # Get detailed camera info
+devices-mcp camera list                   # List all cameras
+devices-mcp camera status <camera_name>   # Get camera status
+devices-mcp camera info <camera_name>     # Get detailed camera info
 
 # PTZ Controls
-tapo-camera-mcp camera ptz move --direction up --speed 0.5
-tapo-camera-mcp camera ptz preset save --name "Home"
-tapo-camera-mcp camera ptz preset goto --name "Home"
+devices-mcp camera ptz move --direction up --speed 0.5
+devices-mcp camera ptz preset save --name "Home"
+devices-mcp camera ptz preset goto --name "Home"
 
 # Media Controls
-tapo-camera-mcp camera snapshot               # Take a snapshot
-tapo-camera-mcp camera record start           # Start recording
-tapo-camera-mcp camera record stop            # Stop recording
+devices-mcp camera snapshot               # Take a snapshot
+devices-mcp camera record start           # Start recording
+devices-mcp camera record stop            # Stop recording
 
 # System Management
-tapo-camera-mcp system status                # Check system status
-tapo-camera-mcp system restart               # Restart the server
-tapo-camera-mcp system update                # Update to the latest version
+devices-mcp system status                # Check system status
+devices-mcp system restart               # Restart the server
+devices-mcp system update                # Update to the latest version
 ```
 
 ## API Reference
@@ -1162,33 +1250,33 @@ tapo-camera-mcp system update                # Update to the latest version
 - `set_led_enabled` - Control LED status
 - `set_privacy_mode` - Enable/disable privacy mode
 
-## 🛠 Development
+##  Development
 
 ### Project Structure
 
 ```
-src/tapo_camera_mcp/
-├── core/               # Core server implementation
-├── camera/             # Camera implementations
-│   ├── base.py         # Base camera class
-│   ├── tapo.py         # Tapo camera implementation
-│   └── ...
-├── api/                # API endpoints
-│   └── v1/             # API version 1
-├── tools/              # MCP tools
-│   ├── camera/         # Camera-related tools
-│   ├── ptz/            # PTZ controls
-│   └── system/         # System tools
-├── webapp/             # Web application (separated from MCP)
-└── cli_v2.py           # Command-line interface
+src/devices_mcp/
+ core/               # Core server implementation
+ camera/             # Camera implementations
+    base.py         # Base camera class
+    tapo.py         # Tapo camera implementation
+    ...
+ api/                # API endpoints
+    v1/             # API version 1
+ tools/              # MCP tools
+    camera/         # Camera-related tools
+    ptz/            # PTZ controls
+    system/         # System tools
+ webapp/             # Web application (separated from MCP)
+ cli_v2.py           # Command-line interface
 ```
 
 ### Setting Up Development Environment
 
 1. Fork and clone the repository:
    ```bash
-   git clone https://github.com/yourusername/tapo-camera-mcp.git
-   cd tapo-camera-mcp
+   git clone https://github.com/yourusername/devices-mcp.git
+   cd devices-mcp
    ```
 
 2. Create and activate a virtual environment:
@@ -1196,7 +1284,7 @@ src/tapo_camera_mcp/
    # On Windows
    python -m venv venv
    .\venv\Scripts\activate
-   
+
    # On Windows
    python -m venv venv
    venv\Scripts\activate
@@ -1217,10 +1305,10 @@ To build an MCPB package for distribution:
 .\scripts\build-mcpb-package.ps1 -NoSign
 
 # Or build manually
-mcpb pack . dist/tapo-camera-mcp.mcpb
+mcpb pack . dist/devices-mcp.mcpb
 ```
 
-The package will be created in `dist/tapo-camera-mcp.mcpb` (approximately 280KB).
+The package will be created in `dist/devices-mcp.mcpb` (approximately 280KB).
 
 **For automated builds**: Push a version tag to trigger GitHub Actions:
 ```bash
@@ -1232,7 +1320,7 @@ git push origin v1.0.0
 
 ```bash
 # Run unit tests with coverage
-pytest tests/unit/ --cov=tapo_camera_mcp --cov-report=html
+pytest tests/unit/ --cov=devices_mcp --cov-report=html
 
 # Run all tests
 pytest tests/ -v
@@ -1241,7 +1329,7 @@ pytest tests/ -v
 pytest tests/test_mcp_protocol.py
 
 # Run with specific Python version (in CI/CD)
-python -m pytest --cov=tapo_camera_mcp --cov-report=xml
+python -m pytest --cov=devices_mcp --cov-report=xml
 ```
 
 ### Code Style
@@ -1251,15 +1339,15 @@ This project uses `ruff` for code linting and formatting. Before committing, run
 ```bash
 ruff check src/ tests/
 ruff format src/ tests/
-pylint tapo_camera_mcp/
+pylint devices_mcp/
 ```
 
-## 📦 MCPB Packaging
+##  MCPB Packaging
 
 This project supports **MCPB (MCP Bundle)** packaging for one-click installation in Claude Desktop.
 
 **For Users:**
-- Download `.mcpb` file from [Releases](https://github.com/sandraschi/tapo-camera-mcp/releases)
+- Download `.mcpb` file from [Releases](https://github.com/sandraschi/devices-mcp/releases)
 - Drag to Claude Desktop
 - Configure and enjoy!
 
@@ -1280,10 +1368,68 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [FastMCP](https://github.com/jlowin/fastmcp) for the MCP framework
 - [Anthropic](https://www.anthropic.com/) for Claude Desktop and MCPB toolkit
 - [Ring](https://ring.com/) for Ring doorbell integration
+- [Home Assistant](https://www.home-assistant.io/) - The weird, wonderful smart home platform that inspired this entire ecosystem
 
 **Note:** Furbo cameras are not supported due to their intentional API restrictions. Use the official Furbo app for Furbo camera access.
 - [aiohttp](https://docs.aiohttp.org/) for the async HTTP client/server
 - [ONVIF](https://www.onvif.org/) for the camera control protocol
+
+##  **Home Assistant Integration**
+
+This project is designed to complement [Home Assistant](https://www.home-assistant.io/) - the "weird" but wonderful open-source smart home platform with 3400+ integrations.
+
+### **Why the Container Approach?**
+
+Home Assistant runs in VirtualBox containers on Windows for:
+- **Stability**: Isolation prevents conflicts with host system
+- **Consistency**: Same environment across all platforms
+- **Security**: Sandboxed execution model
+- **Dependency Management**: Clean Python environment
+
+### **MCP Integration with Home Assistant**
+
+#### **Automated HA Setup**
+Use the `virtualization-mcp` to automate Home Assistant deployment:
+
+```python
+# Via MCP tool - complete HA setup in one command
+result = await home_assistant_setup(
+    vm_name="home-assistant",
+    config_preset="recommended",
+    ha_version="latest"
+)
+```
+
+#### **Device Integration**
+Configure cameras in HA for unified control:
+
+```yaml
+# HA configuration.yaml
+camera:
+  - platform: generic
+    name: "Tapo Camera"
+    still_image_url: "http://localhost:7777/api/cameras/tapo_001/snapshot"
+    stream_source: "http://localhost:7777/api/cameras/tapo_001/stream"
+```
+
+### **The Community Factor**
+
+Home Assistant's "soldering iron brigade" - hardware enthusiasts who:
+- **DIY First**: Build before buying
+- **Open Standards**: Zigbee/Z-Wave over proprietary
+- **Local Control**: Data stays on your network
+- **Privacy Focus**: No cloud dependencies
+
+### **Complete Integration Guide**
+
+ **[Home Assistant Integration Guide](../../mcp-central-docs/integrations/home-assistant/HOME_ASSISTANT_INTEGRATION_GUIDE.md)**
+
+Covers:
+- HA's unique "weird" architecture and philosophy
+- Complete setup automation with virtualization MCP
+- Hardware integration for the tinkerer community
+- Camera and device integration patterns
+- Community resources and troubleshooting
 
 ## Contributing
 

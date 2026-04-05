@@ -55,4 +55,3 @@ May need to:
 - Check pytapo library version (may need update)
 - Contact TP-Link support with specific error
 - Try different third-party library (if available)
-

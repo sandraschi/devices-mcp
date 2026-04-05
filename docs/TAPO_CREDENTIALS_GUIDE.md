@@ -213,4 +213,3 @@ tapo_kitchen:
     port: 443
     verify_ssl: true
 ```
-

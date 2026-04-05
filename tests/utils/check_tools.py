@@ -18,11 +18,11 @@ def add_src_to_path():
 def check_imports():
     """Check if we can import the required modules."""
     modules = [
-        "tapo_camera_mcp.tools.camera",
-        "tapo_camera_mcp.tools.system",
-        "tapo_camera_mcp.tools.ptz",
-        "tapo_camera_mcp.tools.media",
-        "tapo_camera_mcp.tools.grafana",
+        "devices_mcp.tools.camera",
+        "devices_mcp.tools.system",
+        "devices_mcp.tools.ptz",
+        "devices_mcp.tools.media",
+        "devices_mcp.tools.grafana",
     ]
 
     for module in modules:
@@ -39,7 +39,7 @@ def check_imports():
 def check_tool_registration():
     """Check if tools are properly registered."""
     try:
-        from tapo_camera_mcp.tools import tools_registry
+        from devices_mcp.tools import tools_registry
 
         logger.info("\n=== Registered Tools ===")
         if not tools_registry:

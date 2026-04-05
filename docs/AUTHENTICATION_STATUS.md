@@ -1,6 +1,6 @@
 # Tapo Camera Authentication Status
 
-**Date**: November 29, 2025  
+**Date**: November 29, 2025
 **Status**: ✅ FULLY WORKING via ONVIF
 
 ## Summary

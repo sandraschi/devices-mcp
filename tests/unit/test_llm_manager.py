@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from tapo_camera_mcp.llm.manager import LLMManager, get_llm_manager
-from tapo_camera_mcp.llm.providers import (
+from devices_mcp.llm.manager import LLMManager, get_llm_manager
+from devices_mcp.llm.providers import (
     OllamaProvider,
     ProviderType,
 )

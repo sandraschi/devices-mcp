@@ -7,7 +7,7 @@
 ### Tool Categories (64 total):
 - **Utility**: 50 tools (MISCLASSIFIED - should be properly categorized)
 - **PTZ**: 8 tools → **Target: 2 tools**
-- **System**: 3 tools → **Target: 2 tools** 
+- **System**: 3 tools → **Target: 2 tools**
 - **Configuration**: 3 tools → **Target: 2 tools**
 
 ## 🎯 Consolidation Strategy
@@ -16,7 +16,7 @@
 ```
 Current:
 - MovePTZTool
-- GetPTZPositionTool  
+- GetPTZPositionTool
 - StopPTZTool
 - GetPTZPresetsTool
 - SavePTZPresetTool
@@ -164,7 +164,7 @@ Keep separate (unique functionality):
 
 ### Before: 64 tools
 - PTZ: 8 tools
-- Camera: 9 tools  
+- Camera: 9 tools
 - Energy: 8 tools
 - Weather: 5 tools
 - Alarms: 5 tools
@@ -177,7 +177,7 @@ Keep separate (unique functionality):
 ### After: 35 tools
 - PTZ: 2 tools
 - Camera: 3 tools
-- Energy: 2 tools  
+- Energy: 2 tools
 - Weather: 2 tools
 - Alarms: 2 tools
 - Media: 2 tools

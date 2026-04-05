@@ -2,7 +2,7 @@
 
 ## 🎯 Executive Summary
 
-**Transform the Home Security Dashboard MCP into a comprehensive multi-server orchestration platform** by integrating Nest Protect and Ring MCP servers alongside the existing Tapo Camera MCP, creating a unified security monitoring ecosystem.
+**Transform the Home Security Dashboard MCP into a comprehensive multi-server orchestration platform** by integrating Nest Protect and Ring MCP servers alongside the existing Devices MCP, creating a unified security monitoring ecosystem.
 
 ### **🎯 Dual Architecture Vision**
 **This platform serves two complementary roles:**
@@ -61,7 +61,7 @@
 ```
 Home Security Dashboard MCP
 ├── 🎯 Role 1: Individual MCP Servers
-│   ├── 🎥 Tapo Camera MCP (Existing)
+│   ├── 🎥 Devices MCP (Existing)
 │   ├── 📹 USB Webcam MCP (Existing)
 │   ├── 🔥 Nest Protect MCP (Phase 1)
 │   └── 🚨 Ring MCP (Phase 2)
@@ -219,8 +219,8 @@ class RingMCPProxy:
 3. **🔧 Integrate Motion/Doorbell Events**
 4. **🔧 Cross-System Event Correlation**
 
-### **Week 4: Tapo Camera MCP Dual Interface**
-1. **🔄 Add FastAPI** to Tapo Camera MCP dependencies
+### **Week 4: Devices MCP Dual Interface**
+1. **🔄 Add FastAPI** to Devices MCP dependencies
 2. **🏗️ Create TapoCameraDualServer** class
 3. **🌐 Implement REST endpoints** alongside MCP tools
 4. **🔐 Add authentication** middleware
@@ -295,15 +295,15 @@ security_integrations:
 - ✅ **Motion detection alerts**
 - ✅ **Cross-camera correlations**
 
-### **Phase 3: Tapo Camera MCP Dual Interface Upgrade**
+### **Phase 3: Devices MCP Dual Interface Upgrade**
 
 #### 3.1 Implementation Plan
 ```python
-# src/tapo_camera_mcp/dual_server.py
+# src/devices_mcp/dual_server.py
 class TapoCameraDualServer:
     def __init__(self):
         # Existing MCP server (stdio)
-        self.mcp_app = FastMCP("Tapo Camera MCP")
+        self.mcp_app = FastMCP("Devices MCP")
 
         # New REST API server
         self.rest_app = FastAPI(title="Tapo Camera API", version="1.0.0")
@@ -352,15 +352,15 @@ class TapoCameraDualServer:
 /api/system/status        # System health
 ```
 
-#### 3.3 Benefits for Tapo Camera MCP
+#### 3.3 Benefits for Devices MCP
 - **Direct Dashboard Integration**: No MCP proxy needed
 - **Mobile App Ready**: Standard HTTP APIs for iOS app
 - **Testing Simplified**: HTTP endpoints testable with curl/Postman
 - **Third-party Integration**: Any HTTP client can connect
 - **Performance**: Direct calls instead of protocol conversion
 
-### **Phase 3 Success (Tapo Camera MCP Dual Interface)**
-- ✅ **Tapo Camera MCP upgraded to dual interface**
+### **Phase 3 Success (Devices MCP Dual Interface)**
+- ✅ **Devices MCP upgraded to dual interface**
 - ✅ **REST API alongside existing MCP stdio**
 - ✅ **Direct dashboard integration** (no proxy needed)
 - ✅ **Mobile app ready** with standard HTTP APIs

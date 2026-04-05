@@ -1,6 +1,8 @@
 # FastMCP 2.12 Compliance Guide
 
-This document outlines the compliance standards for FastMCP 2.12 in the Tapo Camera MCP project.
+**Note:** This project now targets **FastMCP 3.1+**. The patterns below still apply; tool structure and registration are compatible.
+
+This document outlines the compliance standards for FastMCP 2.12 in the Devices MCP project (retained for reference).
 
 ## Tool Registration Standards
 
@@ -14,12 +16,12 @@ from ...tools.base_tool import BaseTool, ToolCategory, tool
 @tool("tool_name")
 class MyTool(BaseTool):
     """Tool description without triple quotes inside."""
-    
+
     class Meta:
         name = "tool_name"
         description = "Tool description"
         category = ToolCategory.UTILITY
-        
+
         class Parameters:
             param1: str = Field(..., description="Parameter description")
             param2: Optional[int] = Field(None, description="Optional parameter")
@@ -94,7 +96,7 @@ async def execute(self, **kwargs) -> Dict[str, Any]:
         return {"error": str(e)}
 ```
 
-## Tool Categories in Tapo Camera MCP
+## Tool Categories in Devices MCP
 
 ### Energy Management Tools
 - `get_smart_plug_status`: Tapo P115 smart plug status
@@ -159,45 +161,45 @@ from ...tools.base_tool import BaseTool, ToolCategory, tool
 @tool("example_tool")
 class ExampleTool(BaseTool):
     """Example tool demonstrating FastMCP 2.12 compliance.
-    
+
     This tool provides an example of proper FastMCP 2.12 tool
     implementation with all required components.
-    
+
     Parameters:
         input_param: Input parameter description
         optional_param: Optional parameter description
-    
+
     Returns:
         Dict with tool execution results
     """
-    
+
     class Meta:
         name = "example_tool"
         description = "Example tool demonstrating FastMCP 2.12 compliance"
         category = ToolCategory.UTILITY
-        
+
         class Parameters:
             input_param: str = Field(..., description="Input parameter description")
             optional_param: Optional[int] = Field(None, description="Optional parameter description")
-    
+
     async def execute(self, **kwargs) -> Dict[str, Any]:
         """Execute the example tool."""
         try:
             input_param = kwargs.get("input_param")
             optional_param = kwargs.get("optional_param")
-            
+
             # Tool logic here
             result = {"processed": input_param, "optional": optional_param}
-            
+
             return {
                 "status": "success",
                 "result": result,
                 "timestamp": "2025-01-16T10:30:00Z"
             }
-            
+
         except Exception as e:
             logger.exception("Example tool execution failed: %s", e)
             return {"error": str(e)}
 ```
 
-This guide ensures all tools in the Tapo Camera MCP project maintain FastMCP 2.12 compliance and provide consistent, reliable functionality.
+This guide ensures all tools in the Devices MCP project maintain FastMCP 2.12 compliance and provide consistent, reliable functionality.

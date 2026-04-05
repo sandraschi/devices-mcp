@@ -47,7 +47,7 @@ pip install "pyatmo>=8.0.0,<9.0.0"
 
 **⚠️ Without pyatmo installed**, the system will use simulated data even if credentials are configured.
 
-The client wrapper is at `src\tapo_camera_mcp\integrations\netatmo_client.py` and will switch to real calls when:
+The client wrapper is at `src\devices_mcp\integrations\netatmo_client.py` and will switch to real calls when:
 1. `pyatmo` is installed
 2. `enabled: true` in config
 3. Valid `client_id`, `client_secret`, and `refresh_token` are provided
@@ -73,8 +73,3 @@ The client wrapper is at `src\tapo_camera_mcp\integrations\netatmo_client.py` an
   }
   ```
   You should see: `netatmo_temperature_celsius`, `netatmo_humidity_percent`, `netatmo_co2_ppm`, `netatmo_pressure_mbar` populated from your station.
-
-
-
-
-

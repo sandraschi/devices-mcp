@@ -1,9 +1,204 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## [1.21.0] - 2026-03-15 ⬆️ **FastMCP 3.1 Upgrade & Completion**
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### 🆕 **FASTMCP 3.1**
+- **✅ Bump**: `fastmcp>=3.1.0` (from 2.14.x). Skills provider, prompts, sampling-ready.
+- **✅ Core server**: `from fastmcp import FastMCP`; `_register_fastmcp_31_providers_and_prompts()` registers SkillsDirectoryProvider (Cursor/Codex skills roots) and prompts (`device_status`, `list_cameras`).
+- **✅ Web-SOTA**: `/api/tools` uses `list_tools()` only (removed `get_tools` fallback).
+- **✅ Plex**: Removed `instructions` from FastMCP constructor; version 3.1.0.
+- **✅ Ring**: Version 3.1.0; removed `instructions` from composed app.
+- **✅ Nest Protect help_tool**: `get_tools()` → `list_tools()`, list-based tool handling.
+- **✅ Agentic security**: Sampling check accepts `ctx.sample` or `ctx.sample_step`; messages say FastMCP 3.1+.
+- **✅ inspect_server.py**: Uses `DevicesMCPServer` and `list_tools()`.
+
+### 📝 **Docs & comments**
+- README, PRD, MCPB_QUICKSTART, MCPB_IMPLEMENTATION, help.html, GLAMA checklist, assessment, FASTMCP_2.12_COMPLIANCE_GUIDE (note: now 3.1), DOCUMENTATION_INDEX references, and module docstrings updated to FastMCP 3.1.
+
+## [1.20.0] - 2026-03-02 🤖 **Robotics Integration & Fleet Expansion**
+
+### 🆕 **FEATURES**
+- **✅ Robotics Integration**:
+  - **Dreame D20 Pro**: Integrated via Home Assistant Cloud API (Dreame Vacuum component). Confirmed cloud-based control for Dreamehome-exclusive models.
+  - **Yahboom ROS 2 Car**: Implemented SOTA mock client and dashboard controls for development.
+- **✅ Fleet Expansion**:
+  - **Second Tapo Camera**: Added support and configuration for a second C200 camera (Living Room) at `192.168.0.206`.
+  - **ONVIF/OpenCV Bypass**: Implemented a robust bypass for Tapo C200 snapshot issues using direct ONVIF capture.
+
+### 🔧 **FIXES & ALIGNMENT**
+- **✅ MCP Pathing**: Fixed critical `ModuleNotFoundError` by correctly setting `PYTHONPATH` in the unified `start.ps1` script.
+- **✅ Plex Port Alignment**: Standardized Plex webhook port to `10716` to match project orchestration standards.
+
+## [1.19.0] - 2026-03-02 📸 **USB Camera Server & Massive Code Cleanup**
+
+### 🆕 **FEATURES**
+- **✅ Windows USB Camera Server**: Integrated a local USB camera server on port 10715 into the global `start.ps1` orchestration. This provides a robust alternative for local monitoring.
+- **✅ Hardware Support Documentation**: 
+  - Added research and connectivity guidelines for **Insta360 X5**.
+  - Confirmed and documented specifications for the **BETAFPV Pavo35** drone platform.
+
+### 🔧 **CODE QUALITY & LINTING**
+- **✅ Repository-Wide Cleanup**: Addressed over 270 linting warnings (`TRY400`, `TRY401`) across more than 160 files.
+- **✅ Idiomatic Logging**: Standardized exception logging to use `logger.exception()` without redundant exception objects, reducing code noise and improving maintainability.
+
+### 🛠️ **CLI & ARCHITECTURE**
+- **✅ CLI Restoration**: Fixed critical syntax and singleton usage in `cli_v2.py`.
+- **✅ Unified Transport**: Improved stability of the MCP transport runner for more reliable agentic integration.
+
+## [1.18.1] - 2026-02-04
+
+### Fixed
+- **Asyncio RuntimeError**: Resolved "Already running asyncio in this thread" error by properly managing event loop contexts in the CLI entry point.
+- **Stdout Corruption**: Redirected all diagnostic messages, initialization banners, and non-RPC data to `stderr`. This prevents plain-text strings from polluting the MCP JSON-RPC stream and causing client disconnections.
+- **Stability**: Enhanced server resilience when running within agentic IDEs (Antigravity/Cursor).
+
+## [1.18.0] - 2026-01-18 🏠 **HomeAware Motion Detection & Robust Error Handling**
+
+### 🎯 **HOMEAWARE MOTION DETECTION** ✅
+
+#### **Zigbee Mesh Signal Strength Monitoring**
+- **✅ Bridge Pro Detection**: Automatic detection of Philips Hue Bridge Pro (BSB002 model)
+- **✅ Signal Analysis**: Real-time monitoring of Zigbee mesh signal strength changes
+- **✅ Motion Detection**: Passive presence detection using signal attenuation between lights
+- **✅ No Extra Sensors**: Uses existing Hue lights as distributed motion sensors
+- **✅ Security Integration**: Motion events trigger alerts and can activate security systems
+
+#### **HomeAware API Endpoints**
+- `GET /api/lighting/hue/homeaware/status` - HomeAware system status
+- `GET /api/lighting/hue/homeaware/motion` - Recent motion detection events
+- Automatic initialization when Bridge Pro is detected
+
+### 🛡️ **ROBUST ERROR HANDLING & RELIABILITY** ✅
+
+#### **Circuit Breaker Patterns**
+- **✅ Failure Detection**: Automatic detection of consistently failing devices
+- **✅ Backoff Strategy**: 15-minute circuit breaker for problematic devices
+- **✅ Log Spam Prevention**: Reduces logging frequency for failing devices
+- **✅ Automatic Recovery**: Circuit breakers reset after backoff period
+
+#### **Timeout Protection**
+- **✅ Network Operations**: All network calls have configurable timeouts (3-10 seconds)
+- **✅ Camera Connections**: ONVIF camera connections protected from hanging
+- **✅ Device Polling**: Tapo plug queries timeout to prevent blocking
+- **✅ Hue Bridge**: Initialization and API calls have timeout protection
+
+#### **Graceful Degradation**
+- **✅ Single Failure Isolation**: One device failure doesn't crash the entire system
+- **✅ Fallback Behavior**: System continues operating with reduced functionality
+- **✅ Health Monitoring**: Comprehensive device health tracking with error details
+- **✅ Parallel Processing**: Device checks run concurrently with failure isolation
+
+#### **Terminal Output Control**
+- **✅ Log Level Management**: Configurable logging levels (WARNING/ERROR for production)
+- **✅ Uvicorn Access Logs**: Disabled to prevent HTTP request spam
+- **✅ Structured Logging**: Consistent log formatting across all components
+- **✅ Selective Silencing**: Noisy components can be silenced individually
+
+### 🎨 **UI/UX IMPROVEMENTS** ✅
+
+#### **Dashboard Theme Toggle**
+- **✅ Fixed CSS Variables**: Dashboard now properly responds to dark/light theme toggle
+- **✅ Consistent Theming**: All dashboard elements follow theme changes
+- **✅ Visual Feedback**: Theme toggle provides immediate visual feedback
+
+### 🔧 **DEVELOPMENT QUALITY** ✅
+
+#### **Code Quality Assurance**
+- **✅ Ruff Linting**: Code formatted and style-checked with Ruff
+- **✅ Import Organization**: Clean, consistent import structure
+- **✅ Documentation**: Updated README, CHANGELOG, and configuration docs
+
+## [1.17.1] - 2026-01-16 🎥 **Speakerphone & Doorbell Integration - Ring + Tapo**
+
+### 🎯 **SPEAKERPHONE FUNCTIONALITY** ✅
+
+#### **Complete Two-Way Audio Support**
+- **✅ Tapo Cameras**: Full speakerphone with built-in speakers (tinny but functional)
+- **✅ Ring Cameras**: WebRTC speakerphone via Ring's native infrastructure
+- **❌ USB Webcams**: Microphone-only (no speakers) - accurately detected and labeled
+
+#### **Speakerphone Detection Logic**
+- **Smart Classification**: Automatically detects speakerphone capability by camera type
+- **Realistic Expectations**: USB webcams labeled as "microphone-only" devices
+- **IP Camera Priority**: Tapo and Ring cameras get speakerphone buttons in UI
+- **Quality Disclosure**: Tapo speakers noted as "tinny sounding" in interface
+
+### 🔔 **RING DOORBELL INTEGRATION** ✅
+
+#### **Doorbell Event Detection**
+- **Real-Time Events**: Live doorbell press detection from Ring's event history
+- **Event Details**: Timestamp, answered status, recording availability
+- **Recording Links**: Direct access to Ring cloud recordings when available
+- **History Access**: Full event timeline with proper formatting
+
+#### **Doorbell UI Integration**
+- **🔔 Doorbell Button**: Dedicated control for Ring cameras only
+- **Event Panel**: Expandable panel showing recent doorbell events
+- **Status Indicators**: Clear visual feedback for unanswered rings
+- **Refresh Controls**: Manual refresh for latest doorbell activity
+
+### 🔧 **TECHNICAL IMPLEMENTATION**
+
+#### **Camera Architecture Updates**
+- **BaseCamera Speakerphone**: Added speakerphone methods to base camera class
+- **RingCamera Doorbell**: Full doorbell detection and event handling
+- **TapoCamera Speakerphone**: Two-way audio via existing pytapo integration
+- **WebCamera Limits**: Clear microphone-only labeling for USB cameras
+
+#### **API Endpoints Added**
+- `POST /api/cameras/speakerphone/enable` - Enable two-way audio
+- `POST /api/cameras/speakerphone/disable` - Disable speakerphone
+- `GET /api/cameras/speakerphone/status` - Get speakerphone status
+- `GET /api/cameras/doorbell/events/{camera_id}` - Get doorbell events
+- `GET /api/cameras/doorbell/status/{camera_id}` - Get doorbell status
+
+#### **MCP Tool Integration**
+- **speakerphone_management**: Unified speakerphone control for all cameras
+- **doorbell_management**: Ring-specific doorbell event management
+- **Portmanteau Updates**: Enhanced camera management with audio capabilities
+
+### 🎨 **WEB INTERFACE ENHANCEMENTS**
+
+#### **Smart Button Display**
+- **Conditional Speakerphone**: Only shows for cameras with speakers (Tapo, Ring)
+- **Ring Doorbell Controls**: Special doorbell event panel for Ring cameras
+- **Status Clarity**: Clear messaging about camera audio capabilities
+- **Real-Time Updates**: Live status for speakerphone and doorbell events
+
+#### **Camera Status Enhancements**
+- **Speakerphone Status**: Shows enabled/disabled state with manufacturer info
+- **Doorbell Events**: Recent event count in camera overview
+- **Audio Capability**: Microphone and speaker status clearly displayed
+- **Quality Notes**: Realistic expectations set for different camera types
+
+### 📊 **CAMERA CAPABILITY MATRIX**
+
+| Camera Type | Microphone | Speaker | Speakerphone | Doorbell Detection |
+|-------------|------------|---------|--------------|-------------------|
+| **Ring Video Doorbell** | ✅ Yes | ✅ Yes | ✅ Yes (WebRTC) | ✅ Yes |
+| **Tapo C200/C210** | ✅ Yes | ✅ Yes (tinny) | ✅ Yes | ❌ No |
+| **Logitech Webcam C920** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| **USB Microscope** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+
+### 🔄 **BACKWARD COMPATIBILITY**
+- **Existing APIs**: All previous endpoints continue to work unchanged
+- **UI Consistency**: Speakerphone buttons appear automatically for compatible cameras
+- **Configuration**: No breaking changes to existing camera configurations
+- **Migration**: Seamless upgrade with automatic capability detection
+
+### 🐛 **BUG FIXES**
+- **Speakerphone Detection**: Fixed incorrect assumption that USB webcams have speakers
+- **Ring Doorbell Events**: Proper event parsing from Ring API responses
+- **Audio Status**: Accurate reporting of microphone vs speakerphone capabilities
+- **UI Responsiveness**: Improved loading states for doorbell event fetching
+
+### 📚 **DOCUMENTATION UPDATES**
+- **API Documentation**: Added speakerphone and doorbell endpoint references
+- **Camera Setup Guide**: Updated with speakerphone capability information
+- **Ring Integration**: Enhanced with doorbell event management details
+- **User Guide**: Added speakerphone usage instructions and limitations
+
+---
 
 ## [1.17.1] - 2026-01-12 ✅ **Cursor IDE MCP Integration Fixed**
 
@@ -774,7 +969,7 @@ ptz_management(action="prank", camera_name="Kitchen", prank_mode="nod", duration
 
 #### **Cursor MCP Config Fixed**
 - **Issue**: `cwd` was set to `src/` subdirectory, breaking module imports
-- **Fix**: Changed `cwd` from `D:/Dev/repos/tapo-camera-mcp/src` to `D:/Dev/repos/tapo-camera-mcp`
+- **Fix**: Changed `cwd` from `D:/Dev/repos/devices-mcp/src` to `D:/Dev/repos/devices-mcp`
 - **Removed**: Placeholder env vars (server reads from `config.yaml`)
 
 ### 📝 **TECHNICAL DETAILS**
@@ -790,12 +985,12 @@ logger.info(f"Websockets found: {websockets.__file__}")
 **Cursor `mcp.json` fix:**
 ```json
 {
-  "tapo-mcp": {
+  "devices-mcp": {
     "command": "python",
-    "args": ["-m", "tapo_camera_mcp.server_v2", "--direct"],
-    "cwd": "D:/Dev/repos/tapo-camera-mcp",  // NOT /src!
+    "args": ["-m", "devices_mcp.server_v2", "--direct"],
+    "cwd": "D:/Dev/repos/devices-mcp",  // NOT /src!
     "env": {
-      "PYTHONPATH": "D:/Dev/repos/tapo-camera-mcp/src",
+      "PYTHONPATH": "D:/Dev/repos/devices-mcp/src",
       "PYTHONUNBUFFERED": "1"
     }
   }
@@ -1266,13 +1461,13 @@ Closes #123
 ## Contact
 
 For questions, suggestions, or issues, please:
-1. Check existing [Issues](https://github.com/yourusername/tapo-camera-mcp/issues)
-2. Open a new [Issue](https://github.com/yourusername/tapo-camera-mcp/issues/new)
+1. Check existing [Issues](https://github.com/yourusername/devices-mcp/issues)
+2. Open a new [Issue](https://github.com/yourusername/devices-mcp/issues/new)
 3. Contact the maintainers
 
 ---
 
 **Document Version**: 1.0
 **Last Updated**: October 1, 2025
-**Repository**: tapo-camera-mcp
+**Repository**: devices-mcp
 **Status**: Gold Tier (85/100) 🏆

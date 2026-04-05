@@ -1,6 +1,6 @@
-# GitHub Setup for Tapo Camera MCP
+# GitHub Setup for Devices MCP
 
-> **Purpose**: Comprehensive GitHub configuration guide for the Tapo Camera MCP project.
+> **Purpose**: Comprehensive GitHub configuration guide for the Devices MCP project.
 >
 > **Production-ready setup** that works out of the box!
 
@@ -101,9 +101,9 @@ jobs:
   publish-pypi:
     # Only publish stable releases to PyPI
     if: >
-      startsWith(github.ref, 'refs/tags/v') && 
-      !contains(github.ref, 'alpha') && 
-      !contains(github.ref, 'beta') && 
+      startsWith(github.ref, 'refs/tags/v') &&
+      !contains(github.ref, 'alpha') &&
+      !contains(github.ref, 'beta') &&
       !contains(github.ref, 'rc')
 ```
 
@@ -241,20 +241,20 @@ dev-dependencies = [
     "pytest>=8.3.4",
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.24.0",
-    
+
     # Linting & Type Checking
     "ruff>=0.1.6",
     "pyright>=1.1.390",
     "mypy>=1.8.0",
-    
+
     # Security
     "bandit>=1.7.0",
     "safety>=3.0.0",
-    
+
     # Building & Publishing (CRITICAL - don't forget!)
     "build>=1.0.0",
     "twine>=5.0.0",
-    
+
     # Security (XML parsing)
     "defusedxml>=0.7.1",
 ]
@@ -561,4 +561,3 @@ If you encounter issues not covered here:
 ---
 
 **Remember**: Better to spend 30 minutes setting up correctly than 6 hours debugging! 🚀
-

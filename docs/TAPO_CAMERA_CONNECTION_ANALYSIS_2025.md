@@ -1,7 +1,7 @@
 # Tapo Camera Connection Analysis - 2025
 
-**Timestamp**: 2025-01-17  
-**Status**: ANALYSIS - Critical Issues Identified  
+**Timestamp**: 2025-01-17
+**Status**: ANALYSIS - Critical Issues Identified
 **Tags**: tapo-camera, authentication, klap-protocol, pytapo, connection-issues
 
 ## Executive Summary
@@ -24,7 +24,7 @@ Tapo cameras are refusing connections due to **KLAP protocol changes** in recent
 
 ### Code Review
 
-**File**: `src/tapo_camera_mcp/camera/tapo.py`
+**File**: `src/devices_mcp/camera/tapo.py`
 
 **Current Method**:
 ```python
@@ -267,7 +267,6 @@ rtsp://username:password@host:554/stream1
 
 ---
 
-**Last Updated**: 2025-01-17  
-**Priority**: HIGH - Blocking camera integration  
+**Last Updated**: 2025-01-17
+**Priority**: HIGH - Blocking camera integration
 **Assigned**: Development Team
-

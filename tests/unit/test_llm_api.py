@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from tapo_camera_mcp.llm.manager import get_llm_manager
-from tapo_camera_mcp.llm.providers import ProviderType
-from tapo_camera_mcp.web.server import WebServer
+from devices_mcp.llm.manager import get_llm_manager
+from devices_mcp.llm.providers import ProviderType
+from backend.server import WebServer
 
 
 @pytest.fixture
@@ -194,3 +194,4 @@ class TestLLMChatAPI:
             data = response.json()
             assert data["success"] is True
             assert data["response"] == "AI response text"
+

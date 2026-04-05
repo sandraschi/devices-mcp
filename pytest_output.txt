@@ -1,0 +1,456 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.11, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\sandr\miniconda3\python.exe
+cachedir: .pytest_cache
+metadata: {'Python': '3.13.11', 'Platform': 'Windows-11-10.0.28020-SP0', 'Packages': {'pytest': '8.4.2', 'pluggy': '1.6.0'}, 'Plugins': {'langsmith': '0.3.42', 'asyncio': '0.23.8', 'html': '4.1.1', 'metadata': '3.1.1', 'mock': '3.14.1', 'cov': '2.12.1', 'anyio': '4.12.1', 'hypothesis': '6.151.5', 'httpx': '0.35.0'}, 'JAVA_HOME': 'C:\\Program Files\\Eclipse Adoptium\\jdk-25.0.1.8-hotspot'}
+hypothesis profile 'default'
+rootdir: D:\Dev\repos\devices-mcp
+configfile: pyproject.toml
+plugins: langsmith-0.3.42, asyncio-0.23.8, html-4.1.1, metadata-3.1.1, mock-3.14.1, cov-2.12.1, anyio-4.12.1, hypothesis-6.151.5, httpx-0.35.0
+asyncio: mode=Mode.AUTO
+collecting ... collected 9 items
+
+tests/unit/test_web_dashboard.py::test_web_server_initialization FAILED  [ 11%]
+tests/unit/test_web_dashboard.py::test_api_status_endpoint FAILED        [ 22%]
+tests/unit/test_web_dashboard.py::test_api_cameras_endpoint FAILED       [ 33%]
+tests/unit/test_web_dashboard.py::test_api_camera_stream_endpoint FAILED [ 44%]
+tests/unit/test_web_dashboard.py::test_api_camera_snapshot_endpoint SKIPPEDalse) [ 55%]
+tests/unit/test_web_dashboard.py::test_dashboard_pages FAILED            [ 66%]
+tests/unit/test_web_dashboard.py::test_error_handling PASSED             [ 77%]
+tests/unit/test_web_dashboard.py::test_middleware_functionality FAILED   [ 88%]
+C:\Users\sandr\miniconda3\Lib\site-packages\coverage\report_core.py:107: CoverageWarning: Couldn't parse Python file 'D:\Dev\repos\devices-mcp\src\devices_mcp\cli_v2.py' (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.3/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+C:\Users\sandr\miniconda3\Lib\site-packages\coverage\report_core.py:107: CoverageWarning: Couldn't parse Python file 'D:\Dev\repos\devices-mcp\src\devices_mcp\plex\mcp_setup.py' (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.3/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+tests/unit/test_web_dashboard.py::test_template_rendering FAILED         [100%]
+
+================================== FAILURES ===================================
+_______________________ test_web_server_initialization ________________________
+tests\unit\test_web_dashboard.py:55: in test_web_server_initialization
+    assert server.app.title == "Devices MCP"
+E   AssertionError: assert 'Test Server' == 'Devices MCP'
+E     
+E     - Devices MCP
+E     + Test Server
+
+During handling of the above exception, another exception occurred:
+tests\unit\test_web_dashboard.py:68: in test_web_server_initialization
+    assert False
+E   assert False
+---------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "D:\Dev\repos\devices-mcp\tests\unit\test_web_dashboard.py", line 55, in test_web_server_initialization
+    assert server.app.title == "Devices MCP"
+AssertionError: assert 'Test Server' == 'Devices MCP'
+  
+  - Devices MCP
+  + Test Server
+------------------------------ Captured log call ------------------------------
+WARNING  backend.server:server.py:78 Could not load security middleware: No module named 'backend.middleware'
+ERROR    backend.server:server.py:180 Failed to import router module: cannot import name 'TapoCameraServer' from 'devices_mcp.core.server' (D:\Dev\repos\devices-mcp\src\devices_mcp\core\server.py)
+__________________________ test_api_status_endpoint ___________________________
+tests\unit\test_web_dashboard.py:92: in test_api_status_endpoint
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+
+During handling of the above exception, another exception occurred:
+tests\unit\test_web_dashboard.py:103: in test_api_status_endpoint
+    assert False
+E   assert False
+---------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "D:\Dev\repos\devices-mcp\tests\unit\test_web_dashboard.py", line 92, in test_api_status_endpoint
+    assert response.status_code == 200
+AssertionError: assert 404 == 200
+ +  where 404 = <Response [404 Not Found]>.status_code
+------------------------------ Captured log call ------------------------------
+WARNING  backend.server:server.py:78 Could not load security middleware: No module named 'backend.middleware'
+ERROR    backend.server:server.py:180 Failed to import router module: cannot import name 'TapoCameraServer' from 'devices_mcp.core.server' (D:\Dev\repos\devices-mcp\src\devices_mcp\core\server.py)
+__________________________ test_api_cameras_endpoint __________________________
+tests\unit\test_web_dashboard.py:117: in test_api_cameras_endpoint
+    ), patch("backend.server.TapoCameraServer") as mock_server_class:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\sandr\miniconda3\Lib\unittest\mock.py:1497: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+C:\Users\sandr\miniconda3\Lib\unittest\mock.py:1467: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'backend.server' from 'D:\\Dev\\repos\\devices-mcp\\web-sota\\backend\\server.py'> does not have the attribute 'TapoCameraServer'
+
+During handling of the above exception, another exception occurred:
+tests\unit\test_web_dashboard.py:141: in test_api_cameras_endpoint
+    assert False
+E   assert False
+---------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "D:\Dev\repos\devices-mcp\tests\unit\test_web_dashboard.py", line 117, in test_api_cameras_endpoint
+    ), patch("backend.server.TapoCameraServer") as mock_server_class:
+       ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sandr\miniconda3\Lib\unittest\mock.py", line 1497, in __enter__
+    original, local = self.get_original()
+                      ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sandr\miniconda3\Lib\unittest\mock.py", line 1467, in get_original
+    raise AttributeError(
+        "%s does not have the attribute %r" % (target, name)
+    )
+AttributeError: <module 'backend.server' from 'D:\\Dev\\repos\\devices-mcp\\web-sota\\backend\\server.py'> does not have the attribute 'TapoCameraServer'
+_______________________ test_api_camera_stream_endpoint _______________________
+tests\unit\test_web_dashboard.py:155: in test_api_camera_stream_endpoint
+    ), patch("backend.server.TapoCameraServer") as mock_server_class:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\sandr\miniconda3\Lib\unittest\mock.py:1497: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+C:\Users\sandr\miniconda3\Lib\unittest\mock.py:1467: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'backend.server' from 'D:\\Dev\\repos\\devices-mcp\\web-sota\\backend\\server.py'> does not have the attribute 'TapoCameraServer'
+
+During handling of the above exception, another exception occurred:
+tests\unit\test_web_dashboard.py:185: in test_api_camera_stream_endpoint
+    assert False
+E   assert False
+---------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "D:\Dev\repos\devices-mcp\tests\unit\test_web_dashboard.py", line 155, in test_api_camera_stream_endpoint
+    ), patch("backend.server.TapoCameraServer") as mock_server_class:
+       ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\sandr\miniconda3\Lib\unittest\mock.py", line 1497, in __enter__
+    original, local = self.get_original()
+                      ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\sandr\miniconda3\Lib\unittest\mock.py", line 1467, in get_original
+    raise AttributeError(
+        "%s does not have the attribute %r" % (target, name)
+    )
+AttributeError: <module 'backend.server' from 'D:\\Dev\\repos\\devices-mcp\\web-sota\\backend\\server.py'> does not have the attribute 'TapoCameraServer'
+____________________________ test_dashboard_pages _____________________________
+tests\unit\test_web_dashboard.py:256: in test_dashboard_pages
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <Response [404 Not Found]>.status_code
+
+During handling of the above exception, another exception occurred:
+tests\unit\test_web_dashboard.py:271: in test_dashboard_pages
+    assert False
+E   assert False
+---------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "D:\Dev\repos\devices-mcp\tests\unit\test_web_dashboard.py", line 256, in test_dashboard_pages
+    assert response.status_code == 200
+AssertionError: assert 404 == 200
+ +  where 404 = <Response [404 Not Found]>.status_code
+------------------------------ Captured log call ------------------------------
+WARNING  backend.server:server.py:78 Could not load security middleware: No module named 'backend.middleware'
+ERROR    backend.server:server.py:180 Failed to import router module: cannot import name 'TapoCameraServer' from 'devices_mcp.core.server' (D:\Dev\repos\devices-mcp\src\devices_mcp\core\server.py)
+________________________ test_middleware_functionality ________________________
+tests\unit\test_web_dashboard.py:347: in test_middleware_functionality
+    assert "Access-Control-Allow-Origin" in response.headers
+E   AssertionError: assert 'Access-Control-Allow-Origin' in Headers({'vary': 'Origin', 'access-control-allow-methods': 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT', 'access-control-max-age': '600', 'access-control-allow-credentials': 'true', 'access-control-allow-headers': 'Content-Type', 'content-length': '22', 'content-type': 'text/plain; charset=utf-8'})
+E    +  where Headers({'vary': 'Origin', 'access-control-allow-methods': 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT', 'access-control-max-age': '600', 'access-control-allow-credentials': 'true', 'access-control-allow-headers': 'Content-Type', 'content-length': '22', 'content-type': 'text/plain; charset=utf-8'}) = <Response [400 Bad Request]>.headers
+
+During handling of the above exception, another exception occurred:
+tests\unit\test_web_dashboard.py:360: in test_middleware_functionality
+    assert False
+E   assert False
+---------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "D:\Dev\repos\devices-mcp\tests\unit\test_web_dashboard.py", line 347, in test_middleware_functionality
+    assert "Access-Control-Allow-Origin" in response.headers
+AssertionError: assert 'Access-Control-Allow-Origin' in Headers({'vary': 'Origin', 'access-control-allow-methods': 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT', 'access-control-max-age': '600', 'access-control-allow-credentials': 'true', 'access-control-allow-headers': 'Content-Type', 'content-length': '22', 'content-type': 'text/plain; charset=utf-8'})
+ +  where Headers({'vary': 'Origin', 'access-control-allow-methods': 'DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT', 'access-control-max-age': '600', 'access-control-allow-credentials': 'true', 'access-control-allow-headers': 'Content-Type', 'content-length': '22', 'content-type': 'text/plain; charset=utf-8'}) = <Response [400 Bad Request]>.headers
+------------------------------ Captured log call ------------------------------
+WARNING  backend.server:server.py:78 Could not load security middleware: No module named 'backend.middleware'
+ERROR    backend.server:server.py:180 Failed to import router module: cannot import name 'TapoCameraServer' from 'devices_mcp.core.server' (D:\Dev\repos\devices-mcp\src\devices_mcp\core\server.py)
+___________________________ test_template_rendering ___________________________
+tests\unit\test_web_dashboard.py:396: in test_template_rendering
+    assert "test camera mcp" in content or "Devices MCP" in content
+E   AssertionError: assert ('test camera mcp' in '\n                <html>\n                    <head><title>devices mcp</title></head>\n                    <body>\n                        <h1>\U0001f3af devices mcp web dashboard</h1>\n                        <p>\u2705 port 10716 - following mcp central docs</p>\n                        <p>\U0001f916 dreame d20 pro integration ready</p>\n                        <p>\U0001f4f9 all camera systems restored</p>\n                        <p>\u26a1 full functionality available</p>\n                    </body>\n                </html>\n                ' or 'Devices MCP' in '\n                <html>\n                    <head><title>devices mcp</title></head>\n                    <body>\n                        <h1>\U0001f3af devices mcp web dashboard</h1>\n                        <p>\u2705 port 10716 - following mcp central docs</p>\n                        <p>\U0001f916 dreame d20 pro integration ready</p>\n                        <p>\U0001f4f9 all camera systems restored</p>\n                        <p>\u26a1 full functionality available</p>\n                    </body>\n                </html>\n                ')
+
+During handling of the above exception, another exception occurred:
+tests\unit\test_web_dashboard.py:403: in test_template_rendering
+    assert False
+E   assert False
+---------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "D:\Dev\repos\devices-mcp\tests\unit\test_web_dashboard.py", line 396, in test_template_rendering
+    assert "test camera mcp" in content or "Devices MCP" in content
+AssertionError: assert ('test camera mcp' in '\n                <html>\n                    <head><title>devices mcp</title></head>\n                    <body>\n                        <h1>\U0001f3af devices mcp web dashboard</h1>\n                        <p>\u2705 port 10716 - following mcp central docs</p>\n                        <p>\U0001f916 dreame d20 pro integration ready</p>\n                        <p>\U0001f4f9 all camera systems restored</p>\n                        <p>\u26a1 full functionality available</p>\n                    </body>\n                </html>\n                ' or 'Devices MCP' in '\n                <html>\n                    <head><title>devices mcp</title></head>\n                    <body>\n                        <h1>\U0001f3af devices mcp web dashboard</h1>\n                        <p>\u2705 port 10716 - following mcp central docs</p>\n                        <p>\U0001f916 dreame d20 pro integration ready</p>\n                        <p>\U0001f4f9 all camera systems restored</p>\n                        <p>\u26a1 full functionality available</p>\n                    </body>\n                </html>\n                ')
+------------------------------ Captured log call ------------------------------
+WARNING  backend.server:server.py:78 Could not load security middleware: No module named 'backend.middleware'
+ERROR    backend.server:server.py:180 Failed to import router module: cannot import name 'TapoCameraServer' from 'devices_mcp.core.server' (D:\Dev\repos\devices-mcp\src\devices_mcp\core\server.py)
+=============================== tests coverage ================================
+______________ coverage: platform win32, python 3.13.11-final-0 _______________
+
+Name                                                                Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------------------------------
+src\devices_mcp\analysis.py                                            33     33     0%   3-120
+src\devices_mcp\camera\__init__.py                                     31     10    68%   24-27, 38-39, 44-47
+src\devices_mcp\camera\base.py                                        116     59    49%   48, 72-79, 88-90, 98, 113-114, 123-124, 133, 160, 168, 178-182, 190-191, 199, 227-239, 244-280
+src\devices_mcp\camera\digicam.py                                      74     74     0%   3-215
+src\devices_mcp\camera\groups.py                                       80     54    32%   19-22, 26-29, 33, 37, 49-54, 58-71, 75-86, 90-103, 107, 111-113, 117, 121-124, 128, 132
+src\devices_mcp\camera\iphone.py                                       88     88     0%   3-269
+src\devices_mcp\camera\laptop.py                                      110     92    16%   21-27, 31-49, 53-85, 89-99, 103-133, 137, 141-157, 175-177
+src\devices_mcp\camera\manager.py                                     250    215    14%   30-41, 45-144, 148-165, 169-177, 189-199, 207-216, 220-229, 233-242, 246-255, 259-267, 271-280, 284-293, 304-340, 351-366, 370, 381-433, 439-450, 463-467, 479, 490, 501, 509-513, 517-519
+src\devices_mcp\camera\microscope.py                                  147    147     0%   3-325
+src\devices_mcp\camera\onvif_camera.py                                367    329    10%   20-27, 31-55, 59-62, 72-78, 82-105, 109-130, 134-138, 142-170, 174-203, 207-216, 220-228, 232-238, 242-261, 265-273, 281-285, 290-324, 328-331, 339-387, 392-436, 440-489, 502-536, 554-602, 606-610, 614-618, 622-626, 630-634, 638-642
+src\devices_mcp\camera\otoscope.py                                     71     71     0%   3-175
+src\devices_mcp\camera\petcube.py                                     170    142    16%   21-25, 29-36, 40-62, 66-78, 82-93, 97-109, 113-126, 130-131, 140-145, 149-185, 189-191, 195-231, 235-244, 248-271, 283-291, 299-336
+src\devices_mcp\camera\public_webcam.py                                39     26    33%   19-23, 27-40, 44-46, 50-62, 66-73
+src\devices_mcp\camera\ring.py                                        149    124    17%   23-32, 36-96, 100-102, 106-132, 140-146, 150-175, 185-226, 232-249, 253-263, 267, 281-312, 316-317, 321-324
+src\devices_mcp\camera\scanner.py                                     121    121     0%   3-238
+src\devices_mcp\camera\tapo.py                                        271    243    10%   23-29, 41-136, 140-144, 148-175, 179-286, 290-347, 361-405, 410-418, 422-429, 433-440, 444-451, 455-462, 466-473, 479-496, 500-510, 514
+src\devices_mcp\camera\webcam.py                                      821    765     7%   28-71, 75-115, 119-167, 173-177, 181-242, 246-250, 255-284, 288-315, 319-368, 372-429, 435-436, 441, 445-565, 569-639, 643-665, 669-676, 680, 691-725, 729-739, 743-767, 771-789, 793-817, 821-853, 857-875, 881-898, 902-914, 918-934, 938-965, 969-1180, 1184-1199, 1203-1215, 1219-1231, 1238-1263, 1271-1291, 1295-1312, 1316-1326, 1330-1346, 1350, 1363-1399, 1403-1459, 1463-1485, 1489-1529
+src\devices_mcp\camera\windows_webcam.py                              103     82    20%   21-26, 30-69, 73-76, 80, 84-97, 101-108, 112-116, 120-152, 161-176
+src\devices_mcp\cli.py                                                 12     12     0%   3-35
+src\devices_mcp\compat\__init__.py                                     39     14    64%   25-26, 44-55, 65, 69, 72-74
+src\devices_mcp\config\__init__.py                                    114     92    19%   38-39, 50-95, 104-191, 199-230, 248-257, 268-326, 336-338, 343, 347, 351
+src\devices_mcp\config\models.py                                      111      6    95%   197-202
+src\devices_mcp\core\connection_supervisor.py                         354    354     0%   8-895
+src\devices_mcp\core\hardware_init.py                                 417    417     0%   8-777
+src\devices_mcp\core\messaging_service.py                             115    115     0%   16-354
+src\devices_mcp\core\models.py                                         95      6    94%   123-125, 130-132
+src\devices_mcp\core\server.py                                        316    274    13%   22-25, 51-56, 62-116, 121-140, 145-303, 308-328, 332-369, 373-465, 469-498, 502-556, 566-586, 592, 597-598
+src\devices_mcp\core\sync_runner.py                                    70     70     0%   7-134
+src\devices_mcp\db\__init__.py                                          3      3     0%   3-6
+src\devices_mcp\db\media.py                                           249    249     0%   5-618
+src\devices_mcp\db\timeseries.py                                       66     66     0%   7-322
+src\devices_mcp\dual_server.py                                        209    209     0%   9-423
+src\devices_mcp\edge\__init__.py                                        2      2     0%   5-7
+src\devices_mcp\edge\agents.py                                         71     71     0%   5-167
+src\devices_mcp\ingest\__init__.py                                      3      3     0%   5-8
+src\devices_mcp\ingest\tapo_p115.py                                   176    176     0%   7-368
+src\devices_mcp\ingest\wien_energie.py                                119    119     0%   8-316
+src\devices_mcp\integrations\vienna_alerts_client.py                  249    169    32%   126-129, 134, 139, 143, 189-197, 201-202, 214-243, 247-294, 298-345, 349-389, 393-451, 455-474, 478-493
+src\devices_mcp\llm\__init__.py                                         3      3     0%   3-6
+src\devices_mcp\llm\manager.py                                        100    100     0%   3-231
+src\devices_mcp\llm\providers.py                                      206    206     0%   3-370
+src\devices_mcp\mcp_client.py                                         146    106    27%   36-40, 44-63, 67-78, 82-83, 89-114, 118, 129-130, 134-137, 141-142, 146-147, 159-162, 166-169, 173-179, 183-188, 194-195, 204, 211, 217-218, 224-225, 231-241, 247, 252, 257, 263, 268, 273-277
+src\devices_mcp\mcp_integration.py                                     68     68     0%   7-141
+src\devices_mcp\metrics_service.py                                    142    142     0%   7-328
+src\devices_mcp\models.py                                             105    105     0%   5-175
+src\devices_mcp\nest_protect\exceptions.py                             12     12     0%   6-50
+src\devices_mcp\nest_protect\models.py                                 83     83     0%   8-154
+src\devices_mcp\nest_protect\state_manager.py                         141    141     0%   3-232
+src\devices_mcp\nest_protect\tools\__init__.py                         13     13     0%   6-86
+src\devices_mcp\nest_protect\tools\about_tool.py                       12     12     0%   3-289
+src\devices_mcp\nest_protect\tools\ai_orchestration.py                 70     70     0%   3-630
+src\devices_mcp\nest_protect\tools\auth_tools.py                       69     69     0%   3-191
+src\devices_mcp\nest_protect\tools\config_tools.py                    107    107     0%   3-207
+src\devices_mcp\nest_protect\tools\device_control.py                  121    121     0%   3-291
+src\devices_mcp\nest_protect\tools\device_status.py                   119    119     0%   3-519
+src\devices_mcp\nest_protect\tools\help_tool.py                       172    172     0%   3-342
+src\devices_mcp\nest_protect\tools\register.py                         15     15     0%   5-27
+src\devices_mcp\nest_protect\tools\system_status.py                    50     50     0%   3-167
+src\devices_mcp\patch_ring_doorbell.py                                 28     14    50%   31-39, 47-55
+src\devices_mcp\plex\__init__.py                                        6      6     0%   3-11
+src\devices_mcp\plex\api\__init__.py                                    2      2     0%   12-14
+src\devices_mcp\plex\api\admin.py                                      52     52     0%   8-212
+src\devices_mcp\plex\api\core.py                                      155    155     0%   8-664
+src\devices_mcp\plex\api\core_original.py                              61     61     0%   7-262
+src\devices_mcp\plex\api\playback.py                                   22     22     0%   7-130
+src\devices_mcp\plex\api\playlists.py                                  74     74     0%   7-287
+src\devices_mcp\plex\api\vienna.py                                     28     28     0%   12-95
+src\devices_mcp\plex\app.py                                            59     59     0%   11-160
+src\devices_mcp\plex\config.py                                         84     84     0%   8-178
+src\devices_mcp\plex\main.py                                           12     12     0%   7-34
+src\devices_mcp\plex\models\__init__.py                                 7      7     0%   10-31
+src\devices_mcp\plex\models\admin.py                                   26     26     0%   7-41
+src\devices_mcp\plex\models\core.py                                    34     34     0%   7-53
+src\devices_mcp\plex\models\media.py                                   99     99     0%   7-191
+src\devices_mcp\plex\models\playback.py                                39     39     0%   7-68
+src\devices_mcp\plex\models\playlists.py                               29     29     0%   7-50
+src\devices_mcp\plex\models\quality.py                                 30     30     0%   7-51
+src\devices_mcp\plex\models\server.py                                  12     12     0%   3-19
+src\devices_mcp\plex\models\session.py                                 46     46     0%   3-78
+src\devices_mcp\plex\models\user.py                                    39     39     0%   3-64
+src\devices_mcp\plex\models\vienna.py                                  23     23     0%   8-43
+src\devices_mcp\plex\plex_manager.py                                  138    138     0%   8-287
+src\devices_mcp\plex\server.py                                         37     37     0%   9-111
+src\devices_mcp\plex\server_fixed_head.py                              26     26     0%   8-57
+src\devices_mcp\plex\server_minimal.py                                 47     47     0%   8-94
+src\devices_mcp\plex\services\admin_service.py                         92     92     0%   8-290
+src\devices_mcp\plex\services\base.py                                  98     98     0%   7-236
+src\devices_mcp\plex\services\playlist_service.py                     115    115     0%   8-255
+src\devices_mcp\plex\services\plex_media_service.py                   704    704     0%   13-2187
+src\devices_mcp\plex\services\plex_service.py                        1029   1029     0%   3-2388
+src\devices_mcp\plex\services\vienna_service.py                        70     70     0%   7-184
+src\devices_mcp\plex\tools\__all__.py                                  11     11     0%   8-81
+src\devices_mcp\plex\tools\__init__.py                                  2      2     0%   11-13
+src\devices_mcp\plex\tools\agentic.py                                  27     27     0%   8-190
+src\devices_mcp\plex\tools\library.py                                 146    146     0%   3-355
+src\devices_mcp\plex\tools\media.py                                    54     54     0%   3-260
+src\devices_mcp\plex\tools\organization.py                             92     92     0%   3-216
+src\devices_mcp\plex\tools\playlists.py                               158    158     0%   3-437
+src\devices_mcp\plex\tools\portmanteau\__init__.py                     17     17     0%   19-36
+src\devices_mcp\plex\tools\portmanteau\audio_mgr.py                    51     51     0%   8-194
+src\devices_mcp\plex\tools\portmanteau\collections.py                  58     58     0%   8-293
+src\devices_mcp\plex\tools\portmanteau\help.py                         42     42     0%   8-406
+src\devices_mcp\plex\tools\portmanteau\integration.py                  62     62     0%   8-355
+src\devices_mcp\plex\tools\portmanteau\library.py                     103    103     0%   8-550
+src\devices_mcp\plex\tools\portmanteau\media.py                        55     55     0%   8-346
+src\devices_mcp\plex\tools\portmanteau\metadata.py                     87     87     0%   8-408
+src\devices_mcp\plex\tools\portmanteau\organization.py                 55     55     0%   8-310
+src\devices_mcp\plex\tools\portmanteau\performance.py                  83     83     0%   8-467
+src\devices_mcp\plex\tools\portmanteau\playlist.py                    141    141     0%   8-619
+src\devices_mcp\plex\tools\portmanteau\quality.py                      52     52     0%   8-260
+src\devices_mcp\plex\tools\portmanteau\reporting.py                    58     58     0%   8-270
+src\devices_mcp\plex\tools\portmanteau\search.py                       73     73     0%   8-417
+src\devices_mcp\plex\tools\portmanteau\server.py                       49     49     0%   8-277
+src\devices_mcp\plex\tools\portmanteau\streaming.py                    98     98     0%   8-533
+src\devices_mcp\plex\tools\portmanteau\user.py                         91     91     0%   8-406
+src\devices_mcp\plex\tools\quality.py                                  76     76     0%   3-222
+src\devices_mcp\plex\tools\server.py                                   50     50     0%   3-107
+src\devices_mcp\plex\tools\sessions.py                                 37     37     0%   3-94
+src\devices_mcp\plex\tools\users.py                                   108    108     0%   3-202
+src\devices_mcp\plex\utils\__init__.py                                  9      9     0%   9-52
+src\devices_mcp\plex\utils\async_utils.py                             160    160     0%   7-385
+src\devices_mcp\plex\utils\config.py                                  127    127     0%   8-286
+src\devices_mcp\plex\utils\error_handling.py                           64     64     0%   7-275
+src\devices_mcp\plex\utils\logging_utils.py                            55     55     0%   7-191
+src\devices_mcp\plex\utils\network.py                                 105    105     0%   7-277
+src\devices_mcp\plex\utils\validation.py                              196    196     0%   7-633
+src\devices_mcp\plugin.py                                              40     40     0%   7-105
+src\devices_mcp\polling_manager.py                                    183    183     0%   17-393
+src\devices_mcp\ring\composition.py                                    81     81     0%   11-232
+src\devices_mcp\ring\core\exceptions.py                                29     11    62%   14-15, 22, 29-30, 37, 47, 58-59, 66, 73
+src\devices_mcp\ring\core\port_manager.py                             130    130     0%   8-224
+src\devices_mcp\ring\core\ring_client.py                               86     56    35%   30-47, 51-76, 80, 91, 105-106, 110-114, 118-121, 125, 129, 135, 146, 152, 156, 167, 174, 180, 190, 194, 198, 202, 206, 212
+src\devices_mcp\ring\core\ring_client_modern.py                       287    279     3%   18-592
+src\devices_mcp\ring\core\token_manager.py                            145    145     0%   8-321
+src\devices_mcp\ring\http_server.py                                   153    153     0%   10-363
+src\devices_mcp\ring\server.py                                        221    211     5%   22-1018
+src\devices_mcp\ring\tools\__init__.py                                  1      1     0%   13
+src\devices_mcp\ring\tools\automation_tools.py                        116    116     0%   11-365
+src\devices_mcp\ring\tools\camera_tools.py                             45     45     0%   11-163
+src\devices_mcp\ring\tools\doorbell_tools.py                          154    154     0%   11-539
+src\devices_mcp\ring\tools\fire_safety_tools.py                        82     82     0%   11-260
+src\devices_mcp\ring\tools\help_tool.py                                96     96     0%   14-503
+src\devices_mcp\ring\tools\monitoring_tools.py                         77     77     0%   11-249
+src\devices_mcp\ring\tools\security_system_tools.py                   165    165     0%   11-592
+src\devices_mcp\ring\tools\status_tool.py                             209    209     0%   15-525
+src\devices_mcp\ring\utils\rate_limiter.py                            123    123     0%   8-296
+src\devices_mcp\sdr\__init__.py                                         4      4     0%   8-12
+src\devices_mcp\sdr\capture.py                                         82     82     0%   7-127
+src\devices_mcp\sdr\processor.py                                       55     55     0%   7-121
+src\devices_mcp\sdr\server.py                                         123    123     0%   7-199
+src\devices_mcp\security\__init__.py                                    2      2     0%   8-17
+src\devices_mcp\security\integrations.py                              185    185     0%   8-355
+src\devices_mcp\server.py                                               3      3     0%   7-11
+src\devices_mcp\server_v2.py                                           57     57     0%   7-118
+src\devices_mcp\tools\__init__.py                                      87     87     0%   8-202
+src\devices_mcp\tools\agentic_security.py                              37     37     0%   19-192
+src\devices_mcp\tools\ai\__init__.py                                    2      2     0%   8-10
+src\devices_mcp\tools\ai\scene_analyzer.py                            125    125     0%   9-344
+src\devices_mcp\tools\alarms\__init__.py                                2      2     0%   8-16
+src\devices_mcp\tools\alarms\nest_protect_tool.py                      56     56     0%   10-280
+src\devices_mcp\tools\alarms\nest_protect_tools.py                    192    192     0%   8-482
+src\devices_mcp\tools\alarms\security_analysis_tool.py                 86     86     0%   9-275
+src\devices_mcp\tools\analytics\__init__.py                             2      2     0%   8-10
+src\devices_mcp\tools\analytics\performance_analyzer.py                92     92     0%   8-235
+src\devices_mcp\tools\automation\__init__.py                            2      2     0%   8-10
+src\devices_mcp\tools\automation\smart_automation.py                  135    135     0%   16-411
+src\devices_mcp\tools\base_tool.py                                     86     86     0%   8-229
+src\devices_mcp\tools\camera.py                                        68     68     0%   7-130
+src\devices_mcp\tools\camera\__init__.py                                4      4     0%   7-11
+src\devices_mcp\tools\camera\camera_connection_tool.py                 36     36     0%   10-118
+src\devices_mcp\tools\camera\camera_info_tool.py                      106    106     0%   10-381
+src\devices_mcp\tools\camera\camera_management_tool.py                 47     47     0%   10-189
+src\devices_mcp\tools\camera\camera_tools.py                          303    303     0%   7-1131
+src\devices_mcp\tools\camera\usb_camera_tool.py                       245    245     0%   9-633
+src\devices_mcp\tools\configuration\__init__.py                         3      3     0%   7-10
+src\devices_mcp\tools\configuration\device_settings_tool.py            43     43     0%   9-159
+src\devices_mcp\tools\configuration\privacy_settings_tool.py           42     42     0%   8-185
+src\devices_mcp\tools\discovery.py                                     65     65     0%   7-124
+src\devices_mcp\tools\energy\__init__.py                                3      3     0%   8-25
+src\devices_mcp\tools\energy\energy_management_tool.py                164    164     0%   11-435
+src\devices_mcp\tools\energy\smart_meter_tools.py                     119    119     0%   8-298
+src\devices_mcp\tools\energy\tapo_plug_tools.py                       445    445     0%   8-1248
+src\devices_mcp\tools\grafana\__init__.py                               4      4     0%   6-10
+src\devices_mcp\tools\grafana\dashboards.py                            56     56     0%   3-169
+src\devices_mcp\tools\grafana\metrics.py                               61     61     0%   3-159
+src\devices_mcp\tools\grafana\snapshots.py                             25     25     0%   3-54
+src\devices_mcp\tools\lighting\hue_tools.py                           660    660     0%   7-1234
+src\devices_mcp\tools\lighting\tapo_lighting_tools.py                 301    301     0%   8-574
+src\devices_mcp\tools\media\__init__.py                                 3      3     0%   7-10
+src\devices_mcp\tools\media\image_capture_tool.py                      56     56     0%   10-247
+src\devices_mcp\tools\media\media_tools.py                            212    212     0%   7-547
+src\devices_mcp\tools\media\video_recording_tool.py                    49     49     0%   10-212
+src\devices_mcp\tools\onboarding\__init__.py                            2      2     0%   9-20
+src\devices_mcp\tools\onboarding\device_discovery_tools.py            255    255     0%   8-726
+src\devices_mcp\tools\portmanteau\__init__.py                          66     66     0%   11-107
+src\devices_mcp\tools\portmanteau\ai_analysis.py                       31     31     0%   8-131
+src\devices_mcp\tools\portmanteau\alerts_management.py                 53     53     0%   8-366
+src\devices_mcp\tools\portmanteau\analytics_management.py              30     30     0%   8-158
+src\devices_mcp\tools\portmanteau\appliance_monitor_management.py      53     53     0%   9-512
+src\devices_mcp\tools\portmanteau\audio_management.py                 598    598     0%   11-1441
+src\devices_mcp\tools\portmanteau\automation_management.py             51     51     0%   8-223
+src\devices_mcp\tools\portmanteau\camera_management.py                146    146     0%   8-551
+src\devices_mcp\tools\portmanteau\configuration_management.py          33     33     0%   7-136
+src\devices_mcp\tools\portmanteau\dymo_management.py                   46     46     0%   7-158
+src\devices_mcp\tools\portmanteau\energy_management.py                 40     40     0%   7-218
+src\devices_mcp\tools\portmanteau\grafana_management.py                77     77     0%   8-236
+src\devices_mcp\tools\portmanteau\home_assistant_management.py         78     78     0%   8-315
+src\devices_mcp\tools\portmanteau\ikettle_management.py                38     38     0%   7-138
+src\devices_mcp\tools\portmanteau\kitchen_management.py                59     59     0%   7-231
+src\devices_mcp\tools\portmanteau\lighting_management.py              186    186     0%   8-574
+src\devices_mcp\tools\portmanteau\media_management.py                  40     40     0%   7-180
+src\devices_mcp\tools\portmanteau\medical_management.py                56     56     0%   8-282
+src\devices_mcp\tools\portmanteau\messages_management.py               49     49     0%   8-374
+src\devices_mcp\tools\portmanteau\motion_management.py                 79     79     0%   7-275
+src\devices_mcp\tools\portmanteau\ptz_management.py                   112    112     0%   7-326
+src\devices_mcp\tools\portmanteau\ring_management.py                   94     94     0%   7-403
+src\devices_mcp\tools\portmanteau\robotics_management.py               62     62     0%   8-259
+src\devices_mcp\tools\portmanteau\security_management.py              113    113     0%   8-476
+src\devices_mcp\tools\portmanteau\shelly_management.py                 66     66     0%   17-317
+src\devices_mcp\tools\portmanteau\system_management.py                 42     42     0%   7-146
+src\devices_mcp\tools\portmanteau\tapo_control.py                     227    227     0%   8-603
+src\devices_mcp\tools\portmanteau\thermal_management.py                56     56     0%   9-372
+src\devices_mcp\tools\portmanteau\weather_management.py                32     32     0%   7-134
+src\devices_mcp\tools\ptz.py                                           80     80     0%   7-143
+src\devices_mcp\tools\ptz\__init__.py                                   2      2     0%   7-17
+src\devices_mcp\tools\ptz\custom_preset_manager.py                    101    101     0%   3-162
+src\devices_mcp\tools\ptz\preset_manager.py                            83     83     0%   12-172
+src\devices_mcp\tools\ptz\ptz_control_tool.py                          55     55     0%   10-163
+src\devices_mcp\tools\ptz\ptz_models.py                                87     87     0%   7-170
+src\devices_mcp\tools\ptz\ptz_preset_tool.py                           60     60     0%   11-194
+src\devices_mcp\tools\ptz\ptz_tools.py                                 95     95     0%   7-565
+src\devices_mcp\tools\register_tools.py                                52     52     0%   7-127
+src\devices_mcp\tools\robotics\moorebot_tools.py                       69     69     0%   10-381
+src\devices_mcp\tools\system\__init__.py                                3      3     0%   7-10
+src\devices_mcp\tools\system\health_tool.py                           166    166     0%   5-335
+src\devices_mcp\tools\system\help_tool.py                              26     26     0%   5-108
+src\devices_mcp\tools\system\status_tool.py                           182    182     0%   5-391
+src\devices_mcp\tools\system\system_control_tool.py                    51     51     0%   9-264
+src\devices_mcp\tools\system\system_info_tool.py                      120    120     0%   10-445
+src\devices_mcp\tools\system\system_tools.py                          116    116     0%   7-239
+src\devices_mcp\tools\weather\__init__.py                               2      2     0%   9-17
+src\devices_mcp\tools\weather\netatmo_analysis_tool.py                 57     57     0%   10-253
+src\devices_mcp\tools\weather\netatmo_tools.py                        291    291     0%   8-710
+src\devices_mcp\tools\weather\netatmo_weather_tool.py                  65     65     0%   9-212
+src\devices_mcp\transport.py                                           78     78     0%   31-252
+src\devices_mcp\utils\async_utils.py                                   20     20     0%   5-50
+src\devices_mcp\utils\camera.py                                        71     44    38%   29, 32-33, 36, 40-41, 45-47, 64-83, 95-99, 111, 126-131, 157, 173, 189, 206-213, 220-227
+src\devices_mcp\utils\config.py                                        39     29    26%   31-44, 59-86, 96, 106
+src\devices_mcp\utils\llms_txt.py                                      44     44     0%   1-555
+src\devices_mcp\utils\log_manager.py                                  157    157     0%   5-258
+src\devices_mcp\utils\logging.py                                       58     45    22%   24-48, 70-130
+src\devices_mcp\utils\mock_camera.py                                  121    121     0%   7-218
+src\devices_mcp\utils\mock_moorebot.py                                 60     60     0%   10-236
+src\devices_mcp\utils\response_builders.py                             40     40     0%   7-197
+src\devices_mcp\utils\storage.py                                      169    169     0%   5-357
+src\devices_mcp\utils\testing.py                                       25     25     0%   7-119
+src\devices_mcp\validation.py                                         131    131     0%   8-263
+src\devices_mcp\vision\__init__.py                                      2      2     0%   3-5
+src\devices_mcp\vision\dinov3.py                                       56     56     0%   3-146
+-------------------------------------------------------------------------------------------------
+TOTAL                                                               26267  25323     4%
+
+13 files skipped due to complete coverage.
+=========================== short test summary info ===========================
+FAILED tests/unit/test_web_dashboard.py::test_web_server_initialization - assert False
+FAILED tests/unit/test_web_dashboard.py::test_api_status_endpoint - assert False
+FAILED tests/unit/test_web_dashboard.py::test_api_cameras_endpoint - assert False
+FAILED tests/unit/test_web_dashboard.py::test_api_camera_stream_endpoint - assert False
+FAILED tests/unit/test_web_dashboard.py::test_dashboard_pages - assert False
+FAILED tests/unit/test_web_dashboard.py::test_middleware_functionality - assert False
+FAILED tests/unit/test_web_dashboard.py::test_template_rendering - assert False
+=================== 7 failed, 1 passed, 1 skipped in 4.35s ====================

@@ -35,11 +35,11 @@ def main():
     print_section("Testing Tool Module Imports")
 
     tool_modules = [
-        "tapo_camera_mcp.tools.camera",
-        "tapo_camera_mcp.tools.system",
-        "tapo_camera_mcp.tools.ptz",
-        "tapo_camera_mcp.tools.media",
-        "tapo_camera_mcp.tools.grafana",
+        "devices_mcp.tools.camera",
+        "devices_mcp.tools.system",
+        "devices_mcp.tools.ptz",
+        "devices_mcp.tools.media",
+        "devices_mcp.tools.grafana",
     ]
 
     for module_name in tool_modules:
@@ -49,7 +49,7 @@ def main():
     # Test tool registration
     print_section("Testing Tool Registration")
     try:
-        from tapo_camera_mcp.tools import get_all_tools
+        from devices_mcp.tools import get_all_tools
 
         tools = get_all_tools()
         for _tool in tools:

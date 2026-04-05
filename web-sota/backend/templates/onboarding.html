@@ -1,0 +1,754 @@
+{% extends "base.html" %}
+
+{% block title %}Device Setup - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .onboarding-dashboard {
+        padding: 20px;
+    }
+
+    .setup-wizard {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .wizard-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .wizard-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 8px;
+    }
+
+    .wizard-header p {
+        font-size: 18px;
+        color: var(--muted-text);
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 40px;
+        gap: 20px;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 25px;
+        background: var(--gray-100);
+        color: var(--muted-text);
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .step.active {
+        background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+        color: white;
+    }
+
+    .step.completed {
+        background: var(--success-green);
+        color: white;
+    }
+
+    .step-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.3;
+    }
+
+    .step.active .step-icon,
+    .step.completed .step-icon {
+        opacity: 1;
+    }
+
+    .device-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .device-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+        position: relative;
+    }
+
+    .device-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .device-card.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .device-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .device-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .device-icon.tapo {
+        background: linear-gradient(135deg, var(--warning-yellow), #d97706);
+    }
+
+    .device-icon.nest {
+        background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+    }
+
+    .device-icon.ring {
+        background: linear-gradient(135deg, var(--success-green), var(--success-dark));
+    }
+
+    .device-icon.webcam {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+
+    .device-icon.weather {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+    }
+
+    .device-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .device-subtitle {
+        font-size: 14px;
+        color: var(--muted-text);
+    }
+
+    .device-description {
+        color: var(--gray-600);
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    .device-features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .device-features li {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--muted-text);
+        margin-bottom: 4px;
+    }
+
+    .device-features li::before {
+        content: "OK";
+        color: var(--success-green);
+        font-weight: bold;
+    }
+
+    .device-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-blue-dark);
+    }
+
+    .btn-secondary {
+        background-color: var(--border-color);
+        color: var(--text-color);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--gray-300);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .progress-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .progress-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background-color: var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+        transition: width 0.3s ease;
+    }
+
+    .progress-text {
+        text-align: center;
+        margin-top: 12px;
+        font-size: 14px;
+        color: var(--muted-text);
+    }
+
+    .discovery-status {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+
+    .discovery-status h3 {
+        margin: 0 0 8px 0;
+        color: #0369a1;
+        font-size: 16px;
+    }
+
+    .discovery-status p {
+        margin: 0;
+        color: #075985;
+        font-size: 14px;
+    }
+
+    .discovered-devices {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .device-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        background: var(--card-bg);
+    }
+
+    .device-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .device-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .device-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+
+    .status-discovered {
+        background: var(--warning-bg);
+        color: #92400e;
+    }
+
+    .status-configured {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-error {
+        background: var(--error-bg);
+        color: #991b1b;
+    }
+
+    .welcome-section {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 40px;
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border-radius: 16px;
+        border: 1px solid #bae6fd;
+    }
+
+    .welcome-section h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0369a1;
+        margin-bottom: 12px;
+    }
+
+    .welcome-section p {
+        font-size: 16px;
+        color: #075985;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="onboarding-dashboard">
+    <div class="setup-wizard">
+        <div class="wizard-header">
+            <h1>START Device Setup Wizard</h1>
+            <p>Set up your home security and energy monitoring devices</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step-discovery">
+                <div class="step-icon"></div>
+                <span>1. Discovery</span>
+            </div>
+            <div class="step" id="step-configuration">
+                <div class="step-icon"></div>
+                <span>2. Configuration</span>
+            </div>
+            <div class="step" id="step-verification">
+                <div class="step-icon"></div>
+                <span>3. Verification</span>
+            </div>
+        </div>
+
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h2>Welcome to Device Onboarding!</h2>
+            <p>
+                This wizard will help you discover and configure your Tapo P115 smart plugs,
+                Nest Protect devices, Ring alarms, USB webcams, and Netatmo weather stations.
+                We'll automatically detect devices on your network and guide you through the setup process.
+            </p>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <h3 class="progress-title">Setup Progress</h3>
+                <span id="progress-percentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="progress-text">
+                Ready to begin device discovery
+            </div>
+        </div>
+
+        <!-- Discovery Status -->
+        <div class="discovery-status" id="discovery-status">
+            <h3>🔍 Discovering Devices...</h3>
+            <p>Scanning your network for compatible devices. This may take a few moments.</p>
+        </div>
+
+        <!-- Device Grid -->
+        <div class="device-grid">
+            <!-- Tapo P115 Smart Plugs -->
+            <div class="device-card" data-device-type="tapo_p115">
+                <div class="device-header">
+                    <div class="device-icon tapo">⚡</div>
+                    <div>
+                        <div class="device-title">Tapo P115 Smart Plugs</div>
+                        <div class="device-subtitle">Energy Monitoring & Control</div>
+                    </div>
+                </div>
+                <div class="device-description">
+                    Advanced smart plugs with dual functionality: switch control and detailed energy monitoring including voltage, current, power consumption, and cost tracking.
+                </div>
+                <ul class="device-features">
+                    <li>Real-time power monitoring (W, V, A)</li>
+                    <li>Daily and total energy consumption tracking</li>
+                    <li>Cost calculation and analysis</li>
+                    <li>Smart scheduling and automation</li>
+                    <li>Energy saving mode</li>
+                </ul>
+                <div class="device-actions">
+                    <button class="btn btn-primary" onclick="discoverDevices('tapo_p115')">
+                        <i class="fas fa-search"></i>
+                        Discover Devices
+                    </button>
+                    <button class="btn btn-secondary" onclick="showDeviceInfo('tapo_p115')">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nest Protect -->
+            <div class="device-card" data-device-type="nest_protect">
+                <div class="device-header">
+                    <div class="device-icon nest">ALERT</div>
+                    <div>
+                        <div class="device-title">Nest Protect</div>
+                        <div class="device-subtitle">Smoke & CO Detection</div>
+                    </div>
+                </div>
+                <div class="device-description">
+                    Smart smoke and carbon monoxide detectors with real-time monitoring, mobile alerts, and integration with Google Nest ecosystem.
+                </div>
+                <ul class="device-features">
+                    <li>Smoke and CO detection</li>
+                    <li>Mobile app notifications</li>
+                    <li>Battery level monitoring</li>
+                    <li>Self-testing capabilities</li>
+                    <li>Google Nest integration</li>
+                </ul>
+                <div class="device-actions">
+                    <button class="btn btn-primary" onclick="discoverDevices('nest_protect')">
+                        <i class="fas fa-search"></i>
+                        Discover Devices
+                    </button>
+                    <button class="btn btn-secondary" onclick="showDeviceInfo('nest_protect')">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ring Devices -->
+            <div class="device-card" data-device-type="ring">
+                <div class="device-header">
+                    <div class="device-icon ring">🛡️</div>
+                    <div>
+                        <div class="device-title">Ring Security</div>
+                        <div class="device-subtitle">Doorbells & Alarms</div>
+                    </div>
+                </div>
+                <div class="device-description">
+                    Ring doorbells, cameras, and alarm systems providing comprehensive home security with motion detection and mobile alerts.
+                </div>
+                <ul class="device-features">
+                    <li>Doorbell and camera integration</li>
+                    <li>Motion detection and alerts</li>
+                    <li>Two-way audio communication</li>
+                    <li>Cloud storage for recordings</li>
+                    <li>Professional monitoring</li>
+                </ul>
+                <div class="device-actions">
+                    <button class="btn btn-primary" onclick="discoverDevices('ring')">
+                        <i class="fas fa-search"></i>
+                        Discover Devices
+                    </button>
+                    <button class="btn btn-secondary" onclick="showDeviceInfo('ring')">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </button>
+                </div>
+            </div>
+
+            <!-- USB Webcams -->
+            <div class="device-card" data-device-type="webcam">
+                <div class="device-header">
+                    <div class="device-icon webcam">📹</div>
+                    <div>
+                        <div class="device-title">USB Webcams</div>
+                        <div class="device-subtitle">Local Camera Integration</div>
+                    </div>
+                </div>
+                <div class="device-description">
+                    Local USB webcams connected directly to your computer, providing instant camera integration without network configuration.
+                </div>
+                <ul class="device-features">
+                    <li>Instant USB detection</li>
+                    <li>No network configuration needed</li>
+                    <li>Local video streaming</li>
+                    <li>Motion detection support</li>
+                    <li>Recording capabilities</li>
+                </ul>
+                <div class="device-actions">
+                    <button class="btn btn-primary" onclick="discoverDevices('webcam')">
+                        <i class="fas fa-search"></i>
+                        Discover Devices
+                    </button>
+                    <button class="btn btn-secondary" onclick="showDeviceInfo('webcam')">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </button>
+                </div>
+            </div>
+
+            <!-- Netatmo Weather Stations -->
+            <div class="device-card" data-device-type="netatmo">
+                <div class="device-header">
+                    <div class="device-icon weather">🌡️</div>
+                    <div>
+                        <div class="device-title">Netatmo Weather</div>
+                        <div class="device-subtitle">Air Quality Monitoring</div>
+                    </div>
+                </div>
+                <div class="device-description">
+                    Indoor weather stations monitoring temperature, humidity, CO2 levels, noise, and atmospheric pressure with health analysis.
+                </div>
+                <ul class="device-features">
+                    <li>Temperature and humidity monitoring</li>
+                    <li>CO2 and air quality detection</li>
+                    <li>Noise level measurement</li>
+                    <li>Atmospheric pressure tracking</li>
+                    <li>Health index calculation</li>
+                </ul>
+                <div class="device-actions">
+                    <button class="btn btn-primary" onclick="discoverDevices('netatmo')">
+                        <i class="fas fa-search"></i>
+                        Discover Devices
+                    </button>
+                    <button class="btn btn-secondary" onclick="showDeviceInfo('netatmo')">
+                        <i class="fas fa-info-circle"></i>
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Discovered Devices -->
+        <div class="discovered-devices" id="discovered-devices" style="display: none;">
+            <h3>📱 Discovered Devices</h3>
+            <div id="devices-list">
+                <!-- Devices will be populated here -->
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn btn-primary" onclick="startDiscovery()" id="start-btn">
+                <i class="fas fa-play"></i>
+                Start Device Discovery
+            </button>
+            <button class="btn btn-secondary" onclick="skipSetup()" style="margin-left: 12px;">
+                <i class="fas fa-forward"></i>
+                Skip Setup
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mock device discovery and onboarding functionality
+let currentStep = 1;
+let discoveredDevices = [];
+let progress = 0;
+
+function updateProgress(newProgress, text) {
+    progress = newProgress;
+    document.getElementById('progress-fill').style.width = progress + '%';
+    document.getElementById('progress-percentage').textContent = progress + '%';
+    document.getElementById('progress-text').textContent = text;
+}
+
+function updateStepIndicator(step) {
+    // Update all steps
+    document.querySelectorAll('.step').forEach((stepEl, index) => {
+        stepEl.classList.remove('active', 'completed');
+        if (index + 1 < step) {
+            stepEl.classList.add('completed');
+        } else if (index + 1 === step) {
+            stepEl.classList.add('active');
+        }
+    });
+    currentStep = step;
+}
+
+function startDiscovery() {
+    updateStepIndicator(1);
+    updateProgress(10, 'Starting network scan...');
+
+    // Simulate device discovery
+    setTimeout(() => {
+        updateProgress(30, 'Scanning for Tapo devices...');
+        discoverDevices('tapo_p115');
+    }, 1000);
+
+    setTimeout(() => {
+        updateProgress(50, 'Scanning for Nest devices...');
+        discoverDevices('nest_protect');
+    }, 2000);
+
+    setTimeout(() => {
+        updateProgress(70, 'Scanning for Ring devices...');
+        discoverDevices('ring');
+    }, 3000);
+
+    setTimeout(() => {
+        updateProgress(90, 'Scanning for USB webcams...');
+        discoverDevices('webcam');
+    }, 4000);
+
+    setTimeout(() => {
+        updateProgress(100, 'Discovery complete!');
+        updateStepIndicator(2);
+        showDiscoveredDevices();
+    }, 5000);
+}
+
+function discoverDevices(deviceType) {
+    // Mock discovered devices
+    const mockDevices = {
+        'tapo_p115': [
+            { id: 'tapo_001', name: 'Living Room TV Plug', ip: '192.168.1.101', status: 'discovered' },
+            { id: 'tapo_002', name: 'Kitchen Coffee Maker', ip: '192.168.1.102', status: 'discovered' }
+        ],
+        'nest_protect': [
+            { id: 'nest_001', name: 'Kitchen Smoke Detector', status: 'discovered' },
+            { id: 'nest_002', name: 'Living Room CO Detector', status: 'discovered' }
+        ],
+        'ring': [
+            { id: 'ring_001', name: 'Front Door Camera', status: 'discovered' },
+            { id: 'ring_002', name: 'Garage Door Sensor', status: 'discovered' }
+        ],
+        'webcam': [
+            { id: 'webcam_001', name: 'USB Webcam 1', status: 'discovered' }
+        ],
+        'netatmo': [
+            { id: 'netatmo_001', name: 'Living Room Weather Station', status: 'discovered' }
+        ]
+    };
+
+    const devices = mockDevices[deviceType] || [];
+    devices.forEach(device => {
+        device.type = deviceType;
+        discoveredDevices.push(device);
+    });
+}
+
+function showDiscoveredDevices() {
+    const container = document.getElementById('discovered-devices');
+    const devicesList = document.getElementById('devices-list');
+
+    container.style.display = 'block';
+
+    if (discoveredDevices.length === 0) {
+        devicesList.innerHTML = '<p style="text-align: center; color: var(--muted-text); padding: 20px;">No devices discovered. Please check your network connection and device setup.</p>';
+        return;
+    }
+
+    devicesList.innerHTML = discoveredDevices.map(device => `
+        <div class="device-item">
+            <div class="device-info">
+                <div class="device-icon ${device.type}">${getDeviceIcon(device.type)}</div>
+                <div>
+                    <div style="font-weight: 600; color: var(--text-color);">${device.name}</div>
+                    <div style="font-size: 12px; color: var(--muted-text);">${device.ip || 'Local Device'}</div>
+                </div>
+            </div>
+            <div class="device-status status-${device.status}">
+                ${device.status === 'discovered' ? 'Discovered' : device.status}
+            </div>
+        </div>
+    `).join('');
+}
+
+function getDeviceIcon(deviceType) {
+    const icons = {
+        'tapo_p115': '⚡',
+        'nest_protect': 'ALERT',
+        'ring': '🛡️',
+        'webcam': '📹',
+        'netatmo': '🌡️'
+    };
+    return icons[deviceType] || '📱';
+}
+
+function showDeviceInfo(deviceType) {
+    const info = {
+        'tapo_p115': 'Tapo P115 smart plugs provide detailed energy monitoring including real-time power consumption, voltage, current measurements, and cost tracking. Perfect for understanding your energy usage patterns.',
+        'nest_protect': 'Nest Protect devices offer advanced smoke and CO detection with mobile alerts, self-testing capabilities, and integration with the Google Nest ecosystem for comprehensive home safety.',
+        'ring': 'Ring devices provide comprehensive home security including doorbells, cameras, and alarm systems with motion detection, two-way audio, and professional monitoring services.',
+        'webcam': 'USB webcams offer instant local camera integration without network configuration. Perfect for desktop monitoring and local surveillance applications.',
+        'netatmo': 'Netatmo weather stations monitor indoor air quality including temperature, humidity, CO2 levels, noise, and atmospheric pressure with detailed health analysis and recommendations.'
+    };
+
+    alert(info[deviceType] || 'Device information not available.');
+}
+
+function skipSetup() {
+    if (confirm('Are you sure you want to skip device setup? You can always set up devices later from the dashboard.')) {
+        window.location.href = '/';
+    }
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Onboarding dashboard loaded');
+
+    // Auto-start discovery after a short delay
+    setTimeout(() => {
+        if (discoveredDevices.length === 0) {
+            // Show a message about starting discovery
+            updateProgress(0, 'Ready to discover devices. Click "Start Device Discovery" to begin.');
+        }
+    }, 1000);
+});
+</script>
+{% endblock %}

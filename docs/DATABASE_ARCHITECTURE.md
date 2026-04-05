@@ -1,13 +1,13 @@
 # Database Architecture
 
-**Last Updated:** 2025-12-02  
+**Last Updated:** 2025-12-02
 **Status:** Dual Database System (SQLite + PostgreSQL)
 
 ---
 
 ## Overview
 
-The `tapo-camera-mcp` platform uses a **dual database architecture**:
+The `devices-mcp` platform uses a **dual database architecture**:
 
 1. **SQLite** - Time series data (energy, weather)
 2. **PostgreSQL** - Media metadata (recordings, snapshots, AI analysis)
@@ -31,7 +31,7 @@ Stores time series data for:
 
 #### **Outside Docker (Host):**
 ```
-D:\Dev\repos\tapo-camera-mcp\data\timeseries.db
+D:\Dev\repos\devices-mcp\data\timeseries.db
 ```
 
 #### **Inside Docker:**
@@ -41,7 +41,7 @@ D:\Dev\repos\tapo-camera-mcp\data\timeseries.db
 
 ### **Implementation**
 
-**File:** `src/tapo_camera_mcp/db/timeseries.py`
+**File:** `src/devices_mcp/db/timeseries.py`
 
 **Connection:**
 ```python
@@ -67,7 +67,7 @@ db = TimeSeriesDB(db_path="/custom/path/timeseries.db")
 
 **Usage:**
 ```python
-from tapo_camera_mcp.db import TimeSeriesDB
+from devices_mcp.db import TimeSeriesDB
 
 db = TimeSeriesDB()
 
@@ -132,11 +132,11 @@ Stores metadata for:
 
 ### **Implementation**
 
-**File:** `src/tapo_camera_mcp/db/media.py`
+**File:** `src/devices_mcp/db/media.py`
 
 **Connection:**
 ```python
-from tapo_camera_mcp.db import MediaMetadataDB
+from devices_mcp.db import MediaMetadataDB
 
 # Uses environment variables or defaults
 db = MediaMetadataDB()
@@ -178,7 +178,7 @@ POSTGRES_PASSWORD=myhomecontrol
 
 **Usage:**
 ```python
-from tapo_camera_mcp.db import MediaMetadataDB
+from devices_mcp.db import MediaMetadataDB
 
 db = MediaMetadataDB()
 
@@ -271,12 +271,12 @@ services:
 
 If PostgreSQL is not available, the system falls back to **JSONL files** for media metadata:
 
-**File:** `src/tapo_camera_mcp/utils/storage.py`
+**File:** `src/devices_mcp/utils/storage.py`
 
 ```python
 # Automatic fallback
 try:
-    from tapo_camera_mcp.db import MediaMetadataDB
+    from devices_mcp.db import MediaMetadataDB
     self.db = MediaMetadataDB()
     self.use_postgres = True
 except Exception as e:
@@ -329,7 +329,7 @@ The system health dashboard shows database status:
   "databases": {
     "timeseries": {
       "status": "ok",
-      "path": "D:\\Dev\\repos\\tapo-camera-mcp\\data\\timeseries.db",
+      "path": "D:\\Dev\\repos\\devices-mcp\\data\\timeseries.db",
       "size_bytes": 1048576,
       "size_mb": 1.0
     },
@@ -423,10 +423,10 @@ pip install psycopg2-binary
 
 ## Related Files
 
-- `src/tapo_camera_mcp/db/timeseries.py` - SQLite implementation
-- `src/tapo_camera_mcp/db/media.py` - PostgreSQL implementation
-- `src/tapo_camera_mcp/db/__init__.py` - Database module exports
-- `src/tapo_camera_mcp/utils/storage.py` - Fallback JSONL storage
+- `src/devices_mcp/db/timeseries.py` - SQLite implementation
+- `src/devices_mcp/db/media.py` - PostgreSQL implementation
+- `src/devices_mcp/db/__init__.py` - Database module exports
+- `src/devices_mcp/utils/storage.py` - Fallback JSONL storage
 - `deploy/myhomecontrol/docker-compose.yml` - PostgreSQL Docker setup
 - `pyproject.toml` - Dependencies (`psycopg2-binary`)
 
@@ -436,4 +436,3 @@ pip install psycopg2-binary
 - Consider adding TimescaleDB extension for PostgreSQL (time series optimization)
 - Add database migration scripts for schema changes
 - Implement automatic backups
-

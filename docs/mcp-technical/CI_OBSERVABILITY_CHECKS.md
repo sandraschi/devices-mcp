@@ -10,4 +10,3 @@
 - Build job depends on the new validation stage.
 - Docker is used to avoid installing binaries directly in the runner.
 - Promtool is downloaded dynamically (`v2.52.0`) and cached per job run.
-

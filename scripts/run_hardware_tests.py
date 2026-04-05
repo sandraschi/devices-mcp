@@ -2,7 +2,7 @@
 """
 Hardware Testing Runner Script
 
-Runs comprehensive hardware connectivity tests for Tapo Camera MCP.
+Runs comprehensive hardware connectivity tests for Devices MCP.
 This script tests ALL hardware devices to ensure the webapp will be functional.
 
 Usage:
@@ -12,17 +12,17 @@ Usage:
     python run_hardware_tests.py --verbose         # Detailed output
 """
 
-import asyncio
-import sys
 import argparse
+import asyncio
 import logging
+import sys
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Set up logging
-logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +30,7 @@ def run_pytest_hardware_tests(args):
     """Run hardware tests using pytest."""
     import subprocess
 
-    print("Running hardware connectivity tests with pytest...")
+    logger.info("Running hardware connectivity tests with pytest...")
 
     # Build pytest command
     cmd = ["python", "-m", "pytest", "tests/test_hardware_connectivity.py"]
@@ -51,15 +51,15 @@ def run_pytest_hardware_tests(args):
     # Add timeout for tests
     cmd.extend(["--timeout=60", "--tb=short"])
 
-    print(f"Running: {' '.join(cmd)}")
-    result = subprocess.run(cmd, cwd=Path(__file__).parent)
+    logger.info(f"Running: {' '.join(cmd)}")
+    result = subprocess.run(cmd, check=False, cwd=Path(__file__).parent)
 
     return result.returncode == 0
 
 
 async def run_verification_script(args):
     """Run the hardware connectivity verification script."""
-    print("Running hardware connectivity verification...")
+    logger.info("Running hardware connectivity verification...")
 
     # Import and run the verification script
     try:
@@ -68,13 +68,13 @@ async def run_verification_script(args):
     except SystemExit as e:
         return e.code == 0
     except Exception as e:
-        print(f"Verification script failed: {e}")
+        logger.info(f"Verification script failed: {e}")
         return False
 
 
 def run_selected_tests(args):
     """Run selected individual tests."""
-    print(f"Running selected hardware tests: {', '.join(args.tests)}")
+    logger.info(f"Running selected hardware tests: {', '.join(args.tests)}")
 
     # This would run specific test functions
     # For now, just run the verification script
@@ -83,25 +83,21 @@ def run_selected_tests(args):
 
 async def main():
     """Main test runner."""
-    parser = argparse.ArgumentParser(description="Hardware Testing Runner for Tapo Camera MCP")
-    parser.add_argument("--critical-only", action="store_true",
-                       help="Only test critical systems (cameras, config)")
-    parser.add_argument("--quick", action="store_true",
-                       help="Skip slow optional tests")
-    parser.add_argument("--verbose", "-v", action="store_true",
-                       help="Verbose output")
-    parser.add_argument("--pytest", action="store_true",
-                       help="Use pytest for running tests")
-    parser.add_argument("--verify", action="store_true",
-                       help="Run verification script only")
-    parser.add_argument("--tests", nargs="+",
-                       help="Run specific tests (not implemented yet)")
+    parser = argparse.ArgumentParser(description="Hardware Testing Runner for Devices MCP")
+    parser.add_argument(
+        "--critical-only", action="store_true", help="Only test critical systems (cameras, config)"
+    )
+    parser.add_argument("--quick", action="store_true", help="Skip slow optional tests")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument("--pytest", action="store_true", help="Use pytest for running tests")
+    parser.add_argument("--verify", action="store_true", help="Run verification script only")
+    parser.add_argument("--tests", nargs="+", help="Run specific tests (not implemented yet)")
 
     args = parser.parse_args()
 
-    print("=" * 60)
-    print("TAPO CAMERA MCP - HARDWARE CONNECTIVITY TESTING")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("Devices MCP - HARDWARE CONNECTIVITY TESTING")
+    logger.info("=" * 60)
 
     success = False
 
@@ -115,16 +111,15 @@ async def main():
         # Default: run verification script
         success = await run_verification_script(args)
 
-    print("\n" + "=" * 60)
+    logger.info("\n" + "=" * 60)
     if success:
-        print("SUCCESS: HARDWARE TESTS COMPLETED")
-        print("\nIf all critical systems are working, the webapp should be functional.")
+        logger.info("SUCCESS: HARDWARE TESTS COMPLETED")
+        logger.info("\nIf all critical systems are working, the webapp should be functional.")
         return 0
-    else:
-        print("FAILURE: HARDWARE TESTS FAILED")
-        print("\nCritical hardware systems are not working.")
-        print("The webapp will NOT be functional until these issues are resolved.")
-        return 1
+    logger.info("FAILURE: HARDWARE TESTS FAILED")
+    logger.info("\nCritical hardware systems are not working.")
+    logger.info("The webapp will NOT be functional until these issues are resolved.")
+    return 1
 
 
 if __name__ == "__main__":
@@ -132,8 +127,8 @@ if __name__ == "__main__":
         exit_code = asyncio.run(main())
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        print("\nTesting interrupted by user")
+        logger.info("\nTesting interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\nTesting suite crashed: {e}")
+        logger.info(f"\nTesting suite crashed: {e}")
         sys.exit(1)

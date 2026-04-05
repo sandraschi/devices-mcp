@@ -1,0 +1,1236 @@
+{% extends "base.html" %}
+
+{% block title %}Cameras - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ request.url_for('static', path='/css/cameras.css') }}?v=20251203">
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Cameras</h1>
+        <p class="text-gray-600">Manage and monitor your security cameras</p>
+    </div>
+
+    {% if load_error %}
+    <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800" role="alert">
+        <strong>Note:</strong> {{ load_error }}
+    </div>
+    {% endif %}
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value">{{ total_cameras }}</div>
+                <div class="stat-label">Total Cameras</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-green-600">{{ online_cameras }}</div>
+                <div class="stat-label">Online</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-yellow-600">{{ total_cameras - online_cameras }}</div>
+                <div class="stat-label">Offline</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-blue-600">{{ total_cameras }}</div>
+                <div class="stat-label">Configured</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cameras Grid -->
+    {% if cameras %}
+    <div class="cameras-grid">
+        {% for camera in cameras %}
+        <div class="camera-card">
+            <!-- Camera Header -->
+            <div class="camera-header">
+                <div class="flex items-center gap-2">
+                    <h3 class="camera-name" id="camera-name-{{ camera.name or camera.id }}">
+                        {{ camera.custom_name if camera.custom_name else (camera.name or camera.id) }}
+                        {% if camera.custom_name %}
+                        <span class="camera-id-hint">({{ camera.name or camera.id }})</span>
+                        {% endif %}
+                    </h3>
+                    <button onclick="openRenameDialog('{{ camera.name or camera.id }}')"
+                        class="action-button rename-button" title="Rename Camera">
+                        ✏️
+                    </button>
+                </div>
+                <span
+                    class="status-badge status-{{ 'online' if (camera.status == 'online' or (camera.status is mapping and camera.status.get('connected'))) else 'offline' if camera.status == 'offline' else 'error' }}">
+                    {% if camera.status is mapping %}
+                    {{ 'Online' if camera.status.get('connected') else 'Offline' }}
+                    {% else %}
+                    {{ (camera.status|string|title) if camera.status else 'Unknown' }}
+                    {% endif %}
+                </span>
+            </div>
+
+            <!-- Teams/Webcam Blocking Warning -->
+            {% if camera.teams_blocked or (camera.warning and ('teams' in camera.warning.lower() or 'in use' in
+            camera.warning.lower() or 'locked' in camera.warning.lower())) %}
+            <div class="warning-panel">
+                <div class="warning-header">
+                    <span class="warning-title">WARNING</span>
+                    <strong class="text-error">Camera Blocked by Another Application</strong>
+                </div>
+                <p class="warning-text">
+                    {{ camera.error_message or camera.warning or 'This USB camera is currently locked by Microsoft
+                    Teams, Zoom, Skype, or another video application.' }}
+                </p>
+                <p class="solution-text">
+                    <strong>💡 Solution:</strong> Close Microsoft Teams, Zoom, or other video applications that are
+                    using the camera, then refresh this page.
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Camera Details + Thumbnail -->
+            <div class="camera-details">
+                <div class="detail-item">
+                    <span class="detail-label">Type</span>
+                    <span class="detail-value">{{ camera.type|title }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Model</span>
+                    <span class="detail-value">{{ camera.model|default('Unknown') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Resolution</span>
+                    <span class="detail-value">{{ camera.resolution|default('Unknown') }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Firmware</span>
+                    <span class="detail-value">{{ camera.firmware|default('Unknown') }}</span>
+                </div>
+            </div>
+
+            <!-- Live Thumbnail (160x160) - Always show, try to load snapshot -->
+            <div class="thumbnail-container">
+                <div class="thumbnail-box">
+                    {% if camera.type == 'ring' %}
+                    <img src="/api/ring/snapshot/{{ camera.id }}" alt="{{ camera.custom_name or camera.name }}"
+                        class="thumbnail-img"
+                        onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        onload="this.nextElementSibling.style.display='none';">
+                    {% else %}
+                    <img src="/api/cameras/{{ camera.name or camera.id }}/snapshot" alt="{{ camera.name }}"
+                        class="thumbnail-img"
+                        onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        onload="this.nextElementSibling.style.display='none';">
+                    {% endif %}
+                    <div class="thumbnail-offline">
+                        Camera Offline
+                    </div>
+                </div>
+                <div class="thumbnail-hint">
+                    <div>Live thumbnail (click stream button below for full view).</div>
+                    {% if camera.type == 'ring' and camera.battery_life %}
+                    <div class="battery-wifi-info">
+                        <strong>Battery:</strong> {{ camera.battery_life }}% | <strong>WiFi:</strong> {{
+                        camera.wifi_signal }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Capabilities -->
+            <div class="capabilities-grid">
+                <div class="capability-item {% if camera.ptz_capable %}capability-supported{% endif %}">
+                    <svg class="capability-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="capability-name">PTZ</span>
+                </div>
+                <div class="capability-item {% if camera.digital_zoom_capable %}capability-supported{% endif %}">
+                    <svg class="capability-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 7a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm3-1a1 1 0 100 2h.01a1 1 0 100-2H10zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H9a1 1 0 01-1-1zm6-4a1 1 0 100 2h.01a1 1 0 100-2H14zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H12a1 1 0 01-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="capability-name">Zoom</span>
+                </div>
+                <div class="capability-item {% if camera.audio_capable %}capability-supported{% endif %}">
+                    <svg class="capability-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.816L4.414 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.414l3.969-3.816a1 1 0 011.234 0zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="capability-name">Audio</span>
+                </div>
+                <div class="capability-item {% if camera.streaming_capable %}capability-supported{% endif %}">
+                    <svg class="capability-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 7a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm3-1a1 1 0 100 2h.01a1 1 0 100-2H10zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H9a1 1 0 01-1-1zm6-4a1 1 0 100 2h.01a1 1 0 100-2H14zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H12a1 1 0 01-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="capability-name">Streaming</span>
+                </div>
+                <div class="capability-item capability-supported">
+                    <svg class="capability-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6zm2 2a1 1 0 000 2h8a1 1 0 100-2H6z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="capability-name">Capture</span>
+                </div>
+            </div>
+
+            <!-- Status Indicators -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4 text-sm">
+                    <div class="flex items-center gap-1">
+                        <span class="font-medium">Stream:</span>
+                        <span
+                            class="w-3 h-3 rounded-full {{ 'bg-green-500' if camera.streaming_capable else 'bg-red-500' }}"></span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="font-medium">Audio:</span>
+                        <span
+                            class="w-3 h-3 rounded-full {{ 'bg-green-500' if camera.audio_capable else 'bg-red-500' }}"></span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="font-medium">PTZ:</span>
+                        <span
+                            class="w-3 h-3 rounded-full {{ 'bg-green-500' if camera.ptz_capable else 'bg-red-500' }}"></span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <span class="font-medium">Zoom:</span>
+                        <span
+                            class="w-3 h-3 rounded-full {{ 'bg-green-500' if camera.digital_zoom_capable else 'bg-red-500' }}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            {% if camera.status == 'online' %}
+            <div class="camera-actions">
+                {% if camera.type == 'ring' %}
+                <!-- Ring-specific actions -->
+                <button onclick="viewRingLiveStream('{{ camera.id }}')" class="action-button action-button-primary">
+                    <svg class="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    Live View
+                </button>
+                <button onclick="getRingSnapshot('{{ camera.id }}')" class="action-button">
+                    <svg class="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 7a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm3-1a1 1 0 100 2h.01a1 1 0 100-2H10zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H9a1 1 0 01-1-1zm6-4a1 1 0 100 2h.01a1 1 0 100-2H14zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H12a1 1 0 01-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    📸 Snapshot
+                </button>
+                <a href="/ring" class="action-button">
+                    <svg class="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    Ring Dashboard
+                </a>
+                {% else %}
+                <!-- Standard camera actions -->
+                <button
+                    onclick="window.open('/stream/{{ camera.name or camera.id }}', 'stream-{{ camera.name or camera.id }}', 'width=900,height=700')"
+                    class="action-button action-button-primary">
+                    <svg class="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    Start Stream
+                </button>
+                <button onclick="toggleAudioPanel('{{ camera.name or camera.id }}')" class="action-button">
+                    <svg class="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0 5 5 0 01-10 0 1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    🔊 Audio
+                </button>
+                <button
+                    onclick="window.open('/api/cameras/{{ camera.name or camera.id }}/snapshot', 'snapshot-{{ camera.name or camera.id }}', 'width=800,height=600')"
+                    class="action-button">
+                    <svg class="w-4 h-4 mr-1 inline" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 7a1 1 0 011-1h.01a1 1 0 110 2H8a1 1 0 01-1-1zm3-1a1 1 0 100 2h.01a1 1 0 100-2H10zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H9a1 1 0 01-1-1zm6-4a1 1 0 100 2h.01a1 1 0 100-2H14zm-2 4a1 1 0 011-1h.01a1 1 0 110 2H12a1 1 0 01-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    📸 Snapshot
+                </button>
+                {% if camera.ptz_capable or camera.digital_zoom_capable %}
+                <button onclick="togglePTZ('{{ camera.name or camera.id }}')" class="action-button">
+                    {% if camera.ptz_capable %}🎮 PTZ{% else %}🔍 Zoom{% endif %} Controls
+                </button>
+                <button onclick="openPrecisePTZ('{{ camera.name or camera.id }}')" class="action-button"
+                    title="High-Precision PTZ Control">
+                    🎯 PRECISE
+                </button>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- PTZ Control Panel (hidden by default) -->
+            {% if camera.ptz_capable or camera.digital_zoom_capable %}
+            <div id="ptz-panel-{{ camera.name or camera.id }}" class="ptz-panel" style="display: none;">
+                <div class="ptz-header">
+                    <span class="ptz-title">
+                        {% if camera.ptz_capable %}🎮 PTZ{% else %}🔍 Digital Zoom{% endif %} Controls
+                    </span>
+                    <button onclick="togglePTZ('{{ camera.name or camera.id }}')" class="ptz-close">&times;</button>
+                </div>
+                <div class="ptz-controls">
+                    {% if camera.ptz_capable %}
+                    <!-- Full PTZ Controls for cameras with physical PTZ -->
+                    <div class="ptz-dpad">
+                        <button class="ptz-btn ptz-up"
+                            onmousedown="ptzMoveStart('{{ camera.name or camera.id }}', 0, 1.0, 0)"
+                            onmouseup="ptzStop('{{ camera.name or camera.id }}')"
+                            onmouseleave="ptzStop('{{ camera.name or camera.id }}')" title="Move Up">▲</button>
+                        <div class="ptz-middle-row">
+                            <button class="ptz-btn ptz-left"
+                                onmousedown="ptzMoveStart('{{ camera.name or camera.id }}', -1.0, 0, 0)"
+                                onmouseup="ptzStop('{{ camera.name or camera.id }}')"
+                                onmouseleave="ptzStop('{{ camera.name or camera.id }}')" title="Move Left">◀</button>
+                            <button class="ptz-btn ptz-center" onclick="ptzHome('{{ camera.name or camera.id }}')"
+                                title="Center/Home">⌂</button>
+                            <button class="ptz-btn ptz-right"
+                                onmousedown="ptzMoveStart('{{ camera.name or camera.id }}', 1.0, 0, 0)"
+                                onmouseup="ptzStop('{{ camera.name or camera.id }}')"
+                                onmouseleave="ptzStop('{{ camera.name or camera.id }}')" title="Move Right">▶</button>
+                        </div>
+                        <button class="ptz-btn ptz-down"
+                            onmousedown="ptzMoveStart('{{ camera.name or camera.id }}', 0, -1.0, 0)"
+                            onmouseup="ptzStop('{{ camera.name or camera.id }}')"
+                            onmouseleave="ptzStop('{{ camera.name or camera.id }}')" title="Move Down">▼</button>
+                    </div>
+                    {% endif %}
+                    {% if camera.digital_zoom_capable %}
+                    <!-- Digital Zoom Controls (available for all cameras) -->
+                    <div class="ptz-zoom">
+                        <div class="zoom-label">Digital Zoom</div>
+                        <button class="ptz-btn ptz-zoom-in"
+                            onclick="digitalZoomIn('{{ camera.name or camera.id }}')">🔍+</button>
+                        <button class="ptz-btn ptz-zoom-out"
+                            onclick="digitalZoomOut('{{ camera.name or camera.id }}')">🔍−</button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Audio Control Panel (hidden by default) -->
+            <div id="audio-panel-{{ camera.name or camera.id }}" class="audio-panel" style="display: none;">
+                <div class="audio-header">
+                    <span class="audio-title">🔊 Audio Stream</span>
+                    <button onclick="toggleAudioPanel('{{ camera.name or camera.id }}')"
+                        class="audio-close">&times;</button>
+                </div>
+                <div class="audio-content">
+                    <div class="audio-status" id="audio-status-{{ camera.name or camera.id }}">
+                        Ready to listen
+                    </div>
+                    <div class="audio-controls">
+                        <button class="audio-btn audio-btn-primary"
+                            onclick="openAudioPlayer('{{ camera.name or camera.id }}')">
+                            🎧 Open Audio Player
+                        </button>
+                        <button class="audio-btn audio-btn-vlc" onclick="openInVLC('{{ camera.name or camera.id }}')">
+                            🎬 Open in VLC
+                        </button>
+                        <button class="audio-btn" onclick="copyRtspUrl('{{ camera.name or camera.id }}')">
+                            📋 Copy RTSP URL
+                        </button>
+                    </div>
+                    <div class="audio-warning">
+                        <strong>WARNING Two-Way Audio Limitation</strong><br>
+                        ONVIF only supports <em>listening</em>. For two-way talk, use the <strong>Tapo app</strong>.
+                    </div>
+                </div>
+
+                <!-- Microscope Timelapse Controls -->
+                {% if camera.type == "microscope" %}
+                <div class="microscope-controls">
+                    <h4>🔬 Microscope Timelapse</h4>
+                    <div class="control-group">
+                        <button class="control-btn" onclick="openTimelapsePanel('{{ camera.name or camera.id }}')">
+                            📹 Start Plant Growth Timelapse
+                        </button>
+                        <button class="control-btn" onclick="getTimelapseStatus('{{ camera.name or camera.id }}')">
+                            DATA Check Timelapse Status
+                        </button>
+                    </div>
+                    <div class="microscope-info">
+                        <strong>Plant Growth Monitoring Ready!</strong><br>
+                        Built-in LED light ensures consistent illumination for time-lapse photography.
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                clip-rule="evenodd"></path>
+        </svg>
+        <h3 class="empty-state-title">No Cameras Configured</h3>
+        <p class="empty-state-description">
+            Get started by adding your first camera to the system. Configure IP cameras, webcams, or connect to cloud
+            services.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Microscope Timelapse Management Section -->
+<div class="mt-8 bg-green-50 rounded-lg shadow-sm border border-green-200 p-6">
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-green-900 mb-4">🌱 Plant Growth Monitoring</h3>
+        <p class="text-green-700 mb-4">Microscope time-lapse photography for germinating plants</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="bg-white p-4 rounded border border-green-200">
+                <h4 class="font-semibold text-green-800 mb-2">Quick Start</h4>
+                <button onclick="startQuickTimelapse()"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-medium">
+                    START Start 10min Intervals (24h)
+                </button>
+                <p class="text-xs text-gray-600 mt-2">Perfect for germinating seeds</p>
+            </div>
+
+            <div class="bg-white p-4 rounded border border-green-200">
+                <h4 class="font-semibold text-green-800 mb-2">Create Video</h4>
+                <button onclick="createTimelapseVideo()"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium">
+                    🎬 Make Timelapse Video
+                </button>
+                <p class="text-xs text-gray-600 mt-2">Convert images to MP4 video</p>
+            </div>
+
+            <div class="bg-white p-4 rounded border border-green-200">
+                <h4 class="font-semibold text-green-800 mb-2">Analyze Growth</h4>
+                <button onclick="analyzePlantGrowth()"
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded font-medium">
+                    DATA Analyze Growth
+                </button>
+                <p class="text-xs text-gray-600 mt-2">AI growth pattern analysis</p>
+            </div>
+        </div>
+
+        <div class="bg-white border border-green-200 rounded-lg p-4">
+            <h4 class="font-semibold text-green-800 mb-2">Timelapse Tips</h4>
+            <ul class="text-sm text-green-700 space-y-1">
+                <li>• Position microscope over germinating plant/seed</li>
+                <li>• Ensure built-in LED provides consistent lighting</li>
+                <li>• Use 10-minute intervals for fast germination</li>
+                <li>• 24-72 hour sessions capture full germination cycle</li>
+                <li>• Auto-focus every 10 shots prevents focus drift</li>
+                <li>• Videos show roots emerging, leaves unfurling, growth acceleration</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Dymo Humorous Labels Section -->
+<div class="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">🎭 Humorous Fridge Labels</h3>
+        <p class="text-gray-600 mb-4">Generate AI-powered humorous labels for sticking all over your fridge!</p>
+
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div class="flex">
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">WARNING Warning: High Volume Printing!</h3>
+                    <div class="mt-2 text-sm text-yellow-700">
+                        <p>This will print up to 50 labels! Make sure you have plenty of tape loaded in your Dymo
+                            printer. Perfect for maximum fridge coverage with humor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="humorous-labels-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+                    <select id="humor-theme" title="Select humor theme"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="random">Random Mix</option>
+                        <option value="dad_jokes">Dad Jokes</option>
+                        <option value="puns">Puns</option>
+                        <option value="sarcastic">Sarcastic</option>
+                        <option value="motivational">Motivational</option>
+                        <option value="absurd">Absurd</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="humor-category" title="Select humor category"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="general">General</option>
+                        <option value="food">Food</option>
+                        <option value="chores">Chores</option>
+                        <option value="pets">Pets</option>
+                        <option value="tech">Tech</option>
+                        <option value="life">Life</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Style</label>
+                    <select id="humor-style" title="Select humor style"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="short">Short</option>
+                        <option value="medium">Medium</option>
+                        <option value="long">Long</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Count</label>
+                    <input type="number" id="humor-count" value="50" min="1" max="100"
+                        title="Number of labels to generate"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <div class="flex space-x-4">
+                <button type="button" onclick="generateHumorousLabels()"
+                    class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md font-medium">
+                    START Print Humorous Labels!
+                </button>
+
+                <button type="button" onclick="previewHumorousLabels()"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md font-medium">
+                    MONITOR Preview Sample
+                </button>
+            </div>
+        </form>
+
+        <div id="humorous-results" class="mt-6 hidden">
+            <h4 class="text-md font-semibold text-gray-900 mb-2">🎭 Generated Labels Preview:</h4>
+            <div id="label-preview" class="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+                <!-- Preview will be shown here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Precise PTZ Modal -->
+<div id="precise-ptz-modal" class="ptz-modal" role="dialog" aria-modal="true" aria-labelledby="precise-ptz-title">
+    <div class="ptz-modal-content">
+        <div class="ptz-modal-header">
+            <h3 id="precise-ptz-title">🎯 Precise PTZ Control</h3>
+            <button onclick="closePrecisePTZ()" class="ptz-modal-close"
+                aria-label="Close precise PTZ control">&times;</button>
+        </div>
+
+        <div class="ptz-controls-grid">
+            <div class="ptz-coords-grid">
+                <div class="ptz-control-group">
+                    <label for="ptz-pan">Pan (X)</label>
+                    <input type="number" id="ptz-pan" value="0.0" step="0.1" title="Pan coordinate" class="ptz-input">
+                </div>
+                <div class="ptz-control-group">
+                    <label for="ptz-tilt">Tilt (Y)</label>
+                    <input type="number" id="ptz-tilt" value="0.0" step="0.1" title="Tilt coordinate" class="ptz-input">
+                </div>
+                <div class="ptz-control-group">
+                    <label for="ptz-zoom">Zoom (Z)</label>
+                    <input type="number" id="ptz-zoom" value="0.0" step="0.1" title="Zoom level" class="ptz-input">
+                </div>
+            </div>
+
+            <div class="ptz-control-group">
+                <label for="ptz-preset">Presets</label>
+                <select id="ptz-preset" title="Select camera preset" class="ptz-input">
+                    <option value="">-- Select Preset --</option>
+                    <option value="home">Home Position</option>
+                    <option value="entrance">Entrance Gate</option>
+                    <option value="driveway">Driveway</option>
+                    <option value="patio">Patio Area</option>
+                </select>
+            </div>
+
+            <div class="ptz-actions-grid">
+                <button onclick="executePreciseMove()" class="btn btn-primary">GO TO POSITION</button>
+                <button onclick="savePreset()" class="btn btn-outline">SAVE PRESET</button>
+            </div>
+        </div>
+
+        <div id="ptz-feedback" class="ptz-feedback">
+            System ready.
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // PTZ Control Functions
+    let precisePTZCamera = null;
+
+    function togglePTZ(cameraName) {
+        const panel = document.getElementById('ptz-panel-' + cameraName);
+        if (panel) {
+            const isOpening = panel.style.display === 'none';
+            panel.style.display = isOpening ? 'block' : 'none';
+
+            // Reset digital zoom when closing PTZ panel
+            if (!isOpening) {
+                resetDigitalZoom(cameraName);
+            }
+        }
+    }
+
+    function openPrecisePTZ(cameraName) {
+        precisePTZCamera = cameraName;
+        document.getElementById('precise-ptz-modal').style.display = 'flex';
+        document.getElementById('ptz-feedback').innerHTML = `Connected to [${cameraName}]`;
+    }
+
+    function closePrecisePTZ() {
+        document.getElementById('precise-ptz-modal').style.display = 'none';
+        precisePTZCamera = null;
+    }
+
+    async function executePreciseMove() {
+        if (!precisePTZCamera) return;
+
+        const pan = parseFloat(document.getElementById('ptz-pan').value);
+        const tilt = parseFloat(document.getElementById('ptz-tilt').value);
+        const zoom = parseFloat(document.getElementById('ptz-zoom').value);
+
+        document.getElementById('ptz-feedback').innerHTML = `Moving to [${pan}, ${tilt}, ${zoom}]...`;
+
+        try {
+            const response = await fetch('/api/ptz/absolute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    camera_name: precisePTZCamera,
+                    pan: pan,
+                    tilt: tilt,
+                    zoom: zoom
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('ptz-feedback').innerHTML = `✅ Successfully moved to target.`;
+                showToast("Precise movement complete");
+            } else {
+                document.getElementById('ptz-feedback').innerHTML = `❌ Error: ${result.error || 'Move failed'}`;
+            }
+        } catch (err) {
+            document.getElementById('ptz-feedback').innerHTML = `❌ Connection Error.`;
+        }
+    }
+
+    async function savePreset() {
+        if (!precisePTZCamera) return;
+        const presetName = prompt("Enter name for this preset:");
+        if (!presetName) return;
+
+        showToast(`Saving preset "${presetName}"...`);
+        // Mock save logic for now
+        setTimeout(() => {
+            showToast(`Preset "${presetName}" saved!`);
+        }, 1000);
+    }
+
+    async function ptzMove(cameraName, pan, tilt, zoom) {
+        try {
+            // Send single relative PTZ movement command
+            const response = await fetch('/api/ptz/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    camera_name: cameraName,
+                    pan: pan,
+                    tilt: tilt,
+                    zoom: zoom
+                })
+            });
+
+            if (!response.ok) {
+                console.error('PTZ command failed:', response.status);
+            } else {
+                console.log(`PTZ moved: ${cameraName} pan=${pan}, tilt=${tilt}, zoom=${zoom}`);
+            }
+        } catch (error) {
+            console.error('PTZ move error:', error);
+        }
+    }
+
+    async function ptzMoveStart(cameraName, pan, tilt, zoom) {
+        try {
+            // Store current movement for this camera
+            currentPTZMovements.set(cameraName, { pan, tilt, zoom });
+
+            // Send initial move command
+            await ptzMove(cameraName, pan, tilt, zoom);
+
+            // Start repeating interval if not already running
+            if (!ptzMovementIntervals.has(cameraName)) {
+                const intervalId = setInterval(async () => {
+                    const movement = currentPTZMovements.get(cameraName);
+                    if (movement) {
+                        await ptzMove(cameraName, movement.pan, movement.tilt, movement.zoom);
+                    }
+                }, 500); // 500ms repetitions for smoothness
+                ptzMovementIntervals.set(cameraName, intervalId);
+            }
+
+            console.log(`PTZ Move started for ${cameraName}: pan=${pan.toFixed(3)}, tilt=${tilt.toFixed(3)}, zoom=${zoom.toFixed(3)}`);
+
+        } catch (err) {
+            console.error('PTZ move start error:', err);
+        }
+    }
+
+    async function ptzStop(cameraName) {
+        try {
+            // Clear the movement interval for this camera
+            const intervalId = ptzMovementIntervals.get(cameraName);
+            if (intervalId) {
+                clearInterval(intervalId);
+                ptzMovementIntervals.delete(cameraName);
+            }
+
+            // Reset movement direction for this camera
+            currentPTZMovements.delete(cameraName);
+
+            // Send stop command to camera
+            const response = await fetch('/api/ptz/stop/' + cameraName, { method: 'POST' });
+            if (!response.ok) {
+                console.error('PTZ stop failed for', cameraName);
+            }
+
+            console.log(`PTZ movement stopped for ${cameraName}`);
+
+        } catch (err) {
+            console.error('PTZ stop error:', err);
+        }
+    }
+
+    // PTZ movement state (per camera)
+    const ptzMovementIntervals = new Map(); // cameraName -> intervalId
+    const currentPTZMovements = new Map(); // cameraName -> {pan, tilt, zoom}
+
+    // Digital Zoom Functions (for cameras without optical zoom)
+    const digitalZoomLevels = new Map(); // cameraName -> zoomLevel
+
+    function digitalZoomIn(cameraName) {
+        const currentLevel = digitalZoomLevels.get(cameraName) || 1.0;
+        const newLevel = Math.min(3.0, currentLevel + 0.25);
+        digitalZoomLevels.set(cameraName, newLevel);
+        applyDigitalZoom(cameraName, newLevel);
+        showToast(`Digital Zoom: ${newLevel.toFixed(1)}x`);
+    }
+
+    function digitalZoomOut(cameraName) {
+        const currentLevel = digitalZoomLevels.get(cameraName) || 1.0;
+        const newLevel = Math.max(1.0, currentLevel - 0.25);
+        digitalZoomLevels.set(cameraName, newLevel);
+        applyDigitalZoom(cameraName, newLevel);
+        showToast(`Digital Zoom: ${newLevel.toFixed(1)}x`);
+    }
+
+    function applyDigitalZoom(cameraName, zoomLevel) {
+        // For cameras.html, we need to find the camera's preview image
+        // This is more complex since cameras.html shows thumbnails, not full streams
+        // For now, just show the zoom level in a toast
+        // Full digital zoom would need to be implemented in the thumbnail display
+        console.log(`Digital zoom for ${cameraName}: ${zoomLevel}x`);
+    }
+
+    function resetDigitalZoom(cameraName) {
+        digitalZoomLevels.set(cameraName, 1.0);
+        applyDigitalZoom(cameraName, 1.0);
+    }
+
+    // Dymo humorous labels functions
+    async function generateHumorousLabels() {
+        const theme = document.getElementById('humor-theme').value;
+        const category = document.getElementById('humor-category').value;
+        const style = document.getElementById('humor-style').value;
+        const count = parseInt(document.getElementById('humor-count').value);
+
+        if (count > 50) {
+            if (!confirm(`You're about to print ${count} labels! Are you sure you have enough tape?`)) {
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch('/api/dymo/humorous-fridge-labels', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    theme: theme,
+                    category: category,
+                    style: style,
+                    count: count
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(`🎭 Printed ${count} humorous ${category} labels with ${theme} theme!`);
+                displayLabelPreview(result.result.generated_texts.slice(0, 10)); // Show first 10
+            } else {
+                alert('Failed to generate labels: ' + (result.error || 'Unknown error'));
+            }
+
+        } catch (error) {
+            console.error('Failed to generate humorous labels:', error);
+            alert('Failed to generate labels');
+        }
+    }
+
+    async function previewHumorousLabels() {
+        const theme = document.getElementById('humor-theme').value;
+        const category = document.getElementById('humor-category').value;
+        const style = document.getElementById('humor-style').value;
+
+        try {
+            // Generate just 5 for preview
+            const response = await fetch('/api/dymo/humorous-fridge-labels', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    theme: theme,
+                    category: category,
+                    style: style,
+                    count: 5
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                displayLabelPreview(result.result.generated_texts);
+                document.getElementById('humorous-results').classList.remove('hidden');
+            } else {
+                alert('Failed to preview labels: ' + (result.error || 'Unknown error'));
+            }
+
+        } catch (error) {
+            console.error('Failed to preview humorous labels:', error);
+            alert('Failed to preview labels');
+        }
+    }
+
+    function displayLabelPreview(labels) {
+        const previewDiv = document.getElementById('label-preview');
+        previewDiv.innerHTML = '';
+
+        labels.forEach((label, index) => {
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'mb-2 p-2 bg-white border border-gray-200 rounded text-sm';
+            labelDiv.innerHTML = `<strong>${index + 1}.</strong> ${label}`;
+            previewDiv.appendChild(labelDiv);
+        });
+
+        document.getElementById('humorous-results').classList.remove('hidden');
+    }
+
+    // Microscope Timelapse Functions
+    async function openTimelapsePanel(cameraName) {
+        const sessionName = prompt("Enter timelapse session name (e.g., 'basil_germination'):");
+        if (!sessionName) return;
+
+        const interval = parseInt(prompt("Interval between photos (minutes):", "10")) || 10;
+        const duration = parseInt(prompt("Duration in hours:", "24")) || 24;
+        const autoFocus = confirm("Enable auto-focus every 10 shots? (Recommended for plant growth)");
+
+        try {
+            const response = await fetch('/api/microscope/timelapse/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    camera_name: cameraName,
+                    session_name: sessionName,
+                    interval_minutes: interval,
+                    duration_hours: duration,
+                    auto_focus: autoFocus
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(`🌱 Timelapse started: ${sessionName} (${duration}h, every ${interval}min)`);
+                alert(`Timelapse session started!\n\nSession: ${sessionName}\nDuration: ${duration} hours\nInterval: ${interval} minutes\nTotal shots: ${result.session_info.total_shots}\n\nImages will be saved to: ${result.session_info.session_dir}`);
+            } else {
+                alert('Failed to start timelapse: ' + (result.error || 'Unknown error'));
+            }
+
+        } catch (error) {
+            console.error('Failed to start timelapse:', error);
+            alert('Failed to start timelapse');
+        }
+    }
+
+    async function getTimelapseStatus(cameraName) {
+        try {
+            const response = await fetch(`/api/microscope/timelapse/status/${cameraName}`);
+            const result = await response.json();
+
+            if (result.success) {
+                let message = `Timelapse Status for ${cameraName}:\n\n`;
+
+                if (result.status.active_sessions && result.status.active_sessions.length > 0) {
+                    message += "ACTIVE SESSIONS:\n";
+                    result.status.active_sessions.forEach(session => {
+                        message += `- ${session.session_name}: ${session.status} (${session.shots_taken || 0}/${session.total_shots} shots)\n`;
+                    });
+                } else {
+                    message += "No active timelapse sessions.\n";
+                }
+
+                if (result.status.recent_sessions && result.status.recent_sessions.length > 0) {
+                    message += "\nRECENT SESSIONS:\n";
+                    result.status.recent_sessions.slice(-3).forEach(session => {
+                        message += `- ${session.session_name}: ${session.status}\n`;
+                    });
+                }
+
+                alert(message);
+            } else {
+                alert('Failed to get timelapse status');
+            }
+
+        } catch (error) {
+            console.error('Failed to get timelapse status:', error);
+            alert('Failed to get timelapse status');
+        }
+    }
+
+    async function createTimelapseVideo() {
+        const sessionDir = prompt("Enter session directory path (e.g., 'data/timelapse/basil_germination_20251218_143000'):");
+        if (!sessionDir) return;
+
+        const fps = parseInt(prompt("Video FPS (frames per second):", "30")) || 30;
+        const addTimestamp = confirm("Add timestamp overlay to video?");
+
+        try {
+            const response = await fetch('/api/microscope/timelapse/video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_dir: sessionDir,
+                    fps: fps,
+                    add_timestamp: addTimestamp
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(`🎬 Timelapse video created: ${result.video_path}`);
+                alert(`Video created successfully!\n\nPath: ${result.video_path}\nFPS: ${fps}\nTimestamp overlay: ${addTimestamp ? 'Yes' : 'No'}`);
+            } else {
+                alert('Failed to create video: ' + (result.error || 'Unknown error'));
+            }
+
+        } catch (error) {
+            console.error('Failed to create timelapse video:', error);
+            alert('Failed to create video');
+        }
+    }
+
+    async function startQuickTimelapse() {
+        const plantName = prompt("What plant are you monitoring? (e.g., 'basil', 'tomato seeds'):");
+        if (!plantName) return;
+
+        const sessionName = `${plantName.replace(/\s+/g, '_')}_germination`;
+        const confirmed = confirm(`Start timelapse for "${plantName}"?\n\n- 10-minute intervals\n- 24-hour duration\n- Auto-focus enabled\n- Session: ${sessionName}`);
+
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch('/api/microscope/timelapse/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    camera_name: "microscope", // Will use first available microscope
+                    session_name: sessionName,
+                    interval_minutes: 10,
+                    duration_hours: 24,
+                    auto_focus: true
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(`🌱 Germination timelapse started for ${plantName}!`);
+                alert(`Germination monitoring started!\n\nPlant: ${plantName}\nSession: ${sessionName}\nDuration: 24 hours\nInterval: 10 minutes\nTotal shots: ${result.session_info.total_shots}\n\nPosition your microscope over the germinating seeds now!`);
+            } else {
+                alert('Failed to start timelapse: ' + (result.error || 'Unknown error'));
+            }
+
+        } catch (error) {
+            console.error('Failed to start quick timelapse:', error);
+            alert('Failed to start timelapse');
+        }
+    }
+
+    async function analyzePlantGrowth() {
+        const sessionDir = prompt("Enter session directory path to analyze:");
+        if (!sessionDir) return;
+
+        try {
+            const response = await fetch('/api/microscope/analyze-growth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_dir: sessionDir
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                let message = `Growth Analysis Results:\n\n`;
+                message += `Session: ${result.analysis.session_name}\n`;
+                message += `Total Images: ${result.analysis.total_images}\n\n`;
+                message += `Analysis Results:\n`;
+
+                for (const [key, value] of Object.entries(result.analysis.analysis)) {
+                    message += `- ${key}: ${value}\n`;
+                }
+
+                message += `\nRecommendations:\n`;
+                result.analysis.recommendations.forEach(rec => {
+                    message += `- ${rec}\n`;
+                });
+
+                alert(message);
+            } else {
+                alert('Failed to analyze growth: ' + (result.error || 'Unknown error'));
+            }
+
+        } catch (error) {
+            console.error('Failed to analyze plant growth:', error);
+            alert('Failed to analyze growth');
+        }
+    }
+
+    // Touch support for mobile
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.ptz-btn').forEach(btn => {
+            btn.addEventListener('touchstart', function (e) {
+                e.preventDefault();
+                this.dispatchEvent(new Event('mousedown'));
+            });
+            btn.addEventListener('touchend', function (e) {
+                e.preventDefault();
+                this.dispatchEvent(new Event('mouseup'));
+            });
+        });
+    });
+
+    // Audio Control Functions
+    function toggleAudioPanel(cameraName) {
+        const panel = document.getElementById('audio-panel-' + cameraName);
+        if (panel) {
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    function openAudioPlayer(cameraName) {
+        window.open('/api/audio/player/' + cameraName, 'audio-' + cameraName, 'width=900,height=700');
+    }
+
+    async function openInVLC(cameraName) {
+        try {
+            const response = await fetch('/api/audio/info/' + cameraName);
+            const data = await response.json();
+            if (data.rtsp_url_full) {
+                // Try to open VLC protocol handler
+                window.location.href = 'vlc://' + data.rtsp_url_full;
+                // Also show the URL for manual copy
+                const statusEl = document.getElementById('audio-status-' + cameraName);
+                if (statusEl) {
+                    statusEl.innerHTML = '🎬 Opening VLC... If it doesn\'t open, copy the RTSP URL.';
+                }
+            }
+        } catch (err) {
+            console.error('Failed to get RTSP URL:', err);
+            alert('Failed to get stream URL. Make sure camera is connected.');
+        }
+    }
+
+    async function copyRtspUrl(cameraName) {
+        try {
+            const response = await fetch('/api/audio/info/' + cameraName);
+            const data = await response.json();
+            if (data.rtsp_url_full) {
+                await navigator.clipboard.writeText(data.rtsp_url_full);
+                const statusEl = document.getElementById('audio-status-' + cameraName);
+                if (statusEl) {
+                    statusEl.innerHTML = '✅ RTSP URL copied to clipboard!';
+                    setTimeout(() => {
+                        statusEl.innerHTML = 'Ready to listen';
+                    }, 3000);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to copy RTSP URL:', err);
+            alert('Failed to copy URL. See console for details.');
+        }
+    }
+
+    // Camera Naming Functions
+    let currentRenameCameraId = null;
+
+    function openRenameDialog(cameraId) {
+        currentRenameCameraId = cameraId;
+        document.getElementById('rename-camera-id').textContent = cameraId;
+        document.getElementById('rename-input').value = '';
+        document.getElementById('rename-dialog').style.display = 'flex';
+        document.getElementById('rename-input').focus();
+    }
+
+    function closeRenameDialog() {
+        document.getElementById('rename-dialog').style.display = 'none';
+        currentRenameCameraId = null;
+    }
+
+    async function saveCameraName() {
+        const newName = document.getElementById('rename-input').value.trim();
+        if (!newName) {
+            alert('Please enter a name for the camera.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/camera-names/set', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    camera_id: currentRenameCameraId,
+                    name: newName
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Update the display name in the UI
+                const nameElement = document.getElementById('camera-name-' + currentRenameCameraId);
+                if (nameElement) {
+                    nameElement.innerHTML = `${newName} <span style="font-size: 0.8rem; color: var(--muted-text); font-weight: normal;">(${currentRenameCameraId})</span>`;
+                }
+
+                showToast(`Camera renamed to "${newName}"`);
+                closeRenameDialog();
+            } else {
+                alert('Failed to rename camera: ' + (result.error || 'Unknown error'));
+            }
+        } catch (err) {
+            console.error('Failed to rename camera:', err);
+            alert('Failed to rename camera. See console for details.');
+        }
+    }
+
+    // Close dialog on Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && document.getElementById('rename-dialog').style.display === 'flex') {
+            closeRenameDialog();
+        }
+    });
+
+    // Close dialog when clicking outside
+    document.getElementById('rename-dialog').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeRenameDialog();
+        }
+    });
+
+    // Ring-specific functions
+    async function viewRingLiveStream(deviceId) {
+        window.open(`/stream/ring_${deviceId}`, `ring-${deviceId}`, 'width=900,height=700');
+    }
+
+    async function getRingSnapshot(deviceId) {
+        const img = document.querySelector(`img[src*="/api/ring/snapshot/${deviceId}"]`);
+        if (img) {
+            img.src = `/api/ring/snapshot/${deviceId}?t=${Date.now()}`;
+            showToast('Ring snapshot refreshed');
+        }
+    }
+
+    // Toast notification function
+    function showToast(message) {
+        // Remove existing toast
+        const existingToast = document.querySelector('.toast-notification');
+        if (existingToast) {
+            existingToast.remove();
+        }
+
+        // Create new toast
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success-green);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        font-size: 0.875rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    `;
+        toast.textContent = message;
+
+        document.body.appendChild(toast);
+
+        // Show toast
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        }, 10);
+
+        // Hide toast after 3 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+</script>
+{% endblock %}

@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Build MCPB package for Tapo Camera MCP Server
+    Build MCPB package for Devices MCP Server
 
 .DESCRIPTION
     This script builds an MCPB (MCP Bundle) package for distribution.
@@ -44,7 +44,7 @@ if ($Help) {
 }
 
 Write-Host ""
-Write-Host "📦 Tapo Camera MCP - MCPB Package Builder" -ForegroundColor Magenta
+Write-Host "📦 Devices MCP - MCPB Package Builder" -ForegroundColor Magenta
 Write-Host "========================================" -ForegroundColor Magenta
 Write-Host ""
 
@@ -84,12 +84,12 @@ try {
     $fastmcpVersion = python -c "import fastmcp; print(fastmcp.__version__)" 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Success "FastMCP installed: v$fastmcpVersion"
-        
+
         # Verify version is >= 2.12.0
         $versionParts = $fastmcpVersion.Split('.')
         $major = [int]$versionParts[0]
         $minor = [int]$versionParts[1]
-        
+
         if ($major -lt 2 -or ($major -eq 2 -and $minor -lt 12)) {
             Write-Error "FastMCP version $fastmcpVersion is too old!"
             Write-Warning "MCPB requires FastMCP >= 2.12.0"
@@ -137,7 +137,7 @@ if (!(Test-Path $OutputDir)) {
     Write-Success "Created output directory: $OutputDir"
 } else {
     Write-Info "Output directory exists: $OutputDir"
-    
+
     # Clean old packages
     $oldPackages = Get-ChildItem $OutputDir -Filter "*.mcpb" -ErrorAction SilentlyContinue
     if ($oldPackages) {
@@ -151,15 +151,15 @@ Write-Host ""
 # 4. Build MCPB package
 Write-Info "Building MCPB package..."
 try {
-    $packageName = "tapo-camera-mcp.mcpb"
+    $packageName = "devices-mcp.mcpb"
     $outputPath = Join-Path $OutputDir $packageName
-    
+
     Write-Info "Running: mcpb pack . $outputPath"
     mcpb pack . $outputPath
-    
+
     if ($LASTEXITCODE -eq 0) {
         Write-Success "Package built successfully!"
-        
+
         # Get package size
         if (Test-Path $outputPath) {
             $size = (Get-Item $outputPath).Length
@@ -232,4 +232,3 @@ Write-Host "📚 Documentation:" -ForegroundColor Yellow
 Write-Host "  - MCPB Guide: docs/mcpb-packaging/MCPB_BUILDING_GUIDE.md" -ForegroundColor White
 Write-Host "  - Implementation Summary: docs/mcpb-packaging/MCPB_IMPLEMENTATION_SUMMARY.md" -ForegroundColor White
 Write-Host ""
-

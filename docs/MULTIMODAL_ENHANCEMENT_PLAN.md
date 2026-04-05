@@ -1,15 +1,15 @@
-# Tapo Camera MCP - Multimodal Enhancement Implementation Plan
+# Devices MCP - Multimodal Enhancement Implementation Plan
 
-**Date:** 2025-08-19  
-**Status:** Ready for Implementation  
-**Target:** Add multimodal LLM integration to existing MCP server  
-**Windsurf Task:** Enhance existing server without breaking current functionality  
+**Date:** 2025-08-19
+**Status:** Ready for Implementation
+**Target:** Add multimodal LLM integration to existing MCP server
+**Windsurf Task:** Enhance existing server without breaking current functionality
 
 ---
 
 ## Executive Summary
 
-The existing `tapo-camera-mcp` server is **well-implemented** with FastMCP 2.10+, real Tapo camera integration, and comprehensive control features. The enhancement adds **multimodal image analysis** capabilities to enable Claude Desktop to "see" camera feeds and provide intelligent analysis.
+The existing `devices-mcp` server is **well-implemented** with FastMCP 2.10+, real Tapo camera integration, and comprehensive control features. The enhancement adds **multimodal image analysis** capabilities to enable Claude Desktop to "see" camera feeds and provide intelligent analysis.
 
 **Key Gap:** Missing multimodal LLM integration for image analysis (schnitzel quality, security threats, pet monitoring).
 
@@ -37,7 +37,7 @@ The existing `tapo-camera-mcp` server is **well-implemented** with FastMCP 2.10+
 ### PHASE 1: Fix Image Capture Foundation 🔧
 
 #### Task 1.1: Fix Existing snapshot() Tool
-**File:** `src/tapo_camera_mcp/server_v2.py`
+**File:** `src/devices_mcp/server_v2.py`
 
 **Current Code (Lines ~400+):**
 ```python
@@ -46,7 +46,7 @@ async def handle_snapshot(self, message: McpMessage) -> Dict[str, Any]:
     try:
         # In a real implementation, this would capture a snapshot
         snapshot_data = b""  # Placeholder for actual image data
-        
+
         return {
             "status": "success",
             "snapshot": f"data:image/jpeg;base64,{base64.b64encode(snapshot_data).decode()}",
@@ -60,55 +60,55 @@ async def handle_snapshot(self, message: McpMessage) -> Dict[str, Any]:
 async def capture_still(params: dict) -> Dict[str, Any]:
     """
     Capture still image from camera with optional analysis.
-    
+
     Args:
         params: Dictionary containing:
             - save_to_temp: Save image to C:/temp/ (default: True)
             - analyze: Perform multimodal analysis (default: False)
             - prompt: Analysis prompt (default: "Describe what you see")
             - camera_name: Camera identifier (default: "main")
-    
+
     Returns:
         dict: Capture results with optional analysis
     """
     if not self.camera:
         return {"status": "error", "message": "Not connected to camera"}
-    
+
     try:
         # Capture image using pytapo
         image_data = await self.camera.getSnapshot()
-        
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         camera_name = params.get("camera_name", "main")
-        
+
         result = {
             "status": "success",
             "camera": camera_name,
             "timestamp": datetime.now().isoformat(),
             "image_size": len(image_data) if image_data else 0
         }
-        
+
         # Save to temp directory if requested
         if params.get("save_to_temp", True) and image_data:
             import os
             os.makedirs("C:/temp", exist_ok=True)
             temp_path = f"C:/temp/tapo_{camera_name}_{timestamp}.jpg"
-            
+
             with open(temp_path, 'wb') as f:
                 f.write(image_data)
-            
+
             result["saved_path"] = temp_path
-            
+
             # Perform analysis if requested
             if params.get("analyze", False):
                 analysis = await self._analyze_image(
-                    temp_path, 
+                    temp_path,
                     params.get("prompt", "Describe what you see in this image")
                 )
                 result["analysis"] = analysis
-        
+
         return result
-        
+
     except Exception as e:
         logger.error(f"Failed to capture image: {str(e)}")
         return {"status": "error", "message": str(e)}
@@ -121,7 +121,7 @@ async def capture_still(params: dict) -> Dict[str, Any]:
 ```toml
 dependencies = [
     "fastmcp>=2.10.0",
-    "pytapo>=3.3.48", 
+    "pytapo>=3.3.48",
     "pydantic>=2.0.0",
     "python-dotenv>=1.0.0",
     "aiohttp>=3.9.0",
@@ -132,46 +132,46 @@ dependencies = [
 ### PHASE 2: Implement Multimodal Analysis 🧠
 
 #### Task 2.1: Add Core Analysis Function
-**File:** `src/tapo_camera_mcp/server_v2.py` 
+**File:** `src/devices_mcp/server_v2.py`
 
 **ADD after `__init__` method:**
 ```python
 async def _analyze_image(self, image_path: str, prompt: str) -> Dict[str, Any]:
     """
     Prepare image for multimodal LLM analysis.
-    
+
     Args:
         image_path: Path to image file
         prompt: Analysis prompt for LLM
-        
+
     Returns:
         dict: Analysis preparation data for Claude Desktop
     """
     try:
         import base64
         from PIL import Image
-        
+
         # Load and validate image
         with Image.open(image_path) as img:
             # Convert to RGB if needed
             if img.mode != 'RGB':
                 img = img.convert('RGB')
-            
+
             # Resize if too large (max 2048x2048 for LLM efficiency)
             max_size = 2048
             if max(img.size) > max_size:
                 img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
-                
+
                 # Save resized image
                 resized_path = image_path.replace(".jpg", "_resized.jpg")
                 img.save(resized_path, "JPEG", quality=85)
                 image_path = resized_path
-        
+
         # Encode to base64 for multimodal LLM
         with open(image_path, 'rb') as image_file:
             image_data = image_file.read()
             base64_data = base64.b64encode(image_data).decode('utf-8')
-        
+
         return {
             "image_base64": base64_data,
             "image_path": image_path,
@@ -180,7 +180,7 @@ async def _analyze_image(self, image_path: str, prompt: str) -> Dict[str, Any]:
             "analysis_ready": True,
             "timestamp": datetime.now().isoformat()
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to prepare image for analysis: {str(e)}")
         return {
@@ -197,28 +197,28 @@ async def _analyze_image(self, image_path: str, prompt: str) -> Dict[str, Any]:
 async def analyze_image(params: dict) -> Dict[str, Any]:
     """
     Analyze existing image with multimodal LLM.
-    
+
     Args:
         params: Dictionary containing:
             - image_path: Path to image file (required)
             - prompt: Analysis prompt (default: "Analyze this image")
             - preset: Use predefined prompt (security/food/pets/general)
-    
+
     Returns:
         dict: Image analysis preparation data
     """
     image_path = params.get("image_path")
     if not image_path:
         return {"status": "error", "message": "image_path parameter required"}
-    
+
     import os
     if not os.path.exists(image_path):
         return {"status": "error", "message": f"Image file not found: {image_path}"}
-    
+
     # Handle preset prompts
     preset = params.get("preset")
     prompt = params.get("prompt")
-    
+
     if preset and not prompt:
         presets = {
             "security": "Analyze this security camera image for potential threats: unknown people, suspicious activity, unusual objects, or security concerns. Provide threat level (none/low/medium/high) and recommended actions.",
@@ -230,9 +230,9 @@ async def analyze_image(params: dict) -> Dict[str, Any]:
         prompt = presets.get(preset, presets["general"])
     elif not prompt:
         prompt = "Analyze this image and describe what you see"
-    
+
     analysis = await self._analyze_image(image_path, prompt)
-    
+
     return {
         "status": "success" if analysis.get("analysis_ready") else "error",
         **analysis
@@ -248,28 +248,28 @@ async def analyze_image(params: dict) -> Dict[str, Any]:
 async def security_scan(params: dict) -> Dict[str, Any]:
     """
     Perform security scan across multiple cameras.
-    
+
     Args:
         params: Dictionary containing:
             - cameras: List of camera configs (default: current camera)
             - threat_types: Types to detect (default: ["person", "unknown_person", "package"])
             - save_images: Save captured images (default: True)
-    
+
     Returns:
         dict: Security scan results from all cameras
     """
     import uuid
     import asyncio
-    
+
     # For now, use current camera (future: multi-camera support)
     if not self.camera:
         return {"status": "error", "message": "No camera connected"}
-    
+
     threat_types = params.get("threat_types", ["person", "unknown_person", "package"])
     save_images = params.get("save_images", True)
-    
+
     scan_id = str(uuid.uuid4())[:8]
-    
+
     try:
         # Capture image for analysis
         capture_result = await self.capture_still({
@@ -279,7 +279,7 @@ async def security_scan(params: dict) -> Dict[str, Any]:
 
 CRITICAL ASSESSMENT NEEDED:
 - Unknown people (not family members)
-- Suspicious or unusual activity  
+- Suspicious or unusual activity
 - Packages or deliveries
 - Unusual objects or vehicles
 - Animals (pets vs wildlife)
@@ -291,7 +291,7 @@ Respond with:
 - Recommended action if any''',
             "camera_name": f"security_scan_{scan_id}"
         })
-        
+
         # Format security scan result
         return {
             "status": "success",
@@ -302,11 +302,11 @@ Respond with:
             "threat_types_monitored": threat_types,
             "results": [capture_result]
         }
-        
+
     except Exception as e:
         logger.error(f"Security scan failed: {str(e)}")
         return {
-            "status": "error", 
+            "status": "error",
             "scan_id": scan_id,
             "message": str(e),
             "timestamp": datetime.now().isoformat()
@@ -326,18 +326,18 @@ import os
 ```
 
 #### Task 4.2: Create Analysis Presets Configuration
-**CREATE NEW FILE:** `src/tapo_camera_mcp/presets.py`
+**CREATE NEW FILE:** `src/devices_mcp/presets.py`
 ```python
 """Analysis presets for different scenarios."""
 
 ANALYSIS_PRESETS = {
     "security": {
         "prompt": """Security analysis - Look for potential threats:
-        
+
 ASSESS FOR:
 - Unknown people (not family members)
 - Suspicious or unusual activity
-- Packages or deliveries  
+- Packages or deliveries
 - Unusual objects or vehicles
 - Animals (pets vs wildlife)
 - Entry/exit activity
@@ -349,10 +349,10 @@ RESPOND WITH:
 - Recommended action""",
         "description": "Security threat detection and assessment"
     },
-    
+
     "food": {
         "prompt": """Food quality analysis:
-        
+
 ANALYZE:
 - Food presentation and appearance
 - Cooking status and doneness
@@ -366,10 +366,10 @@ PERFECT FOR:
 - Food safety evaluation""",
         "description": "Food quality and cooking analysis"
     },
-    
+
     "pets": {
         "prompt": """Pet activity monitoring:
-        
+
 OBSERVE:
 - Animals present and their species
 - Pet behavior and activity
@@ -383,10 +383,10 @@ GREAT FOR:
 - Pet behavior assessment""",
         "description": "Pet behavior and activity analysis"
     },
-    
+
     "delivery": {
         "prompt": """Delivery detection:
-        
+
 CHECK FOR:
 - Packages at door or entrance
 - Delivery personnel present
@@ -399,10 +399,10 @@ USEFUL FOR:
 - Entrance activity tracking""",
         "description": "Package and delivery monitoring"
     },
-    
+
     "general": {
         "prompt": """General image analysis:
-        
+
 DESCRIBE:
 - Main subjects and objects
 - Activities taking place
@@ -437,47 +437,47 @@ import os
 @pytest.mark.asyncio
 async def test_capture_still_with_analysis():
     """Test image capture with analysis functionality."""
-    from tapo_camera_mcp.server_v2 import TapoCameraServer
-    
+    from devices_mcp.server_v2 import TapoCameraServer
+
     server = TapoCameraServer()
     server.camera = AsyncMock()
-    
+
     # Mock image data
     fake_image_data = b"fake_jpeg_data"
     server.camera.getSnapshot.return_value = fake_image_data
-    
+
     # Test capture with analysis
     with tempfile.TemporaryDirectory() as temp_dir:
         with patch('os.makedirs'), \
              patch('builtins.open', mock_open()) as mock_file:
-            
+
             result = await server.capture_still({
                 "save_to_temp": True,
                 "analyze": True,
                 "prompt": "Test analysis"
             })
-            
+
             assert result["status"] == "success"
             assert "saved_path" in result
             assert "analysis" in result
 
-@pytest.mark.asyncio 
+@pytest.mark.asyncio
 async def test_security_scan():
     """Test security scanning functionality."""
-    from tapo_camera_mcp.server_v2 import TapoCameraServer
-    
+    from devices_mcp.server_v2 import TapoCameraServer
+
     server = TapoCameraServer()
     server.camera = AsyncMock()
     server.camera.getSnapshot.return_value = b"fake_image"
-    
+
     with patch.object(server, 'capture_still') as mock_capture:
         mock_capture.return_value = {
             "status": "success",
             "analysis": {"threat_level": "none"}
         }
-        
+
         result = await server.security_scan({})
-        
+
         assert result["status"] == "success"
         assert "scan_id" in result
         assert result["cameras_scanned"] == 1
@@ -490,7 +490,7 @@ async def test_security_scan():
 ```markdown
 ### New Multimodal Features
 - **Image Analysis**: Capture and analyze camera feeds with multimodal LLMs
-- **Security Scanning**: Multi-camera threat detection and assessment  
+- **Security Scanning**: Multi-camera threat detection and assessment
 - **Analysis Presets**: Pre-configured prompts for security, food, pets, delivery
 - **Base64 Integration**: Direct integration with Claude Desktop for image analysis
 - **Temp File Management**: Automatic image storage in C:/temp/ for analysis
@@ -594,13 +594,13 @@ analysis = await camera.analyze_image({
 The codebase is **production-ready** with good architecture. Focus on **adding features** rather than rewriting.
 
 ### Key Files to Modify
-1. `src/tapo_camera_mcp/server_v2.py` - Main enhancement target
+1. `src/devices_mcp/server_v2.py` - Main enhancement target
 2. `pyproject.toml` - Add dependencies
 3. `tests/test_server_v2.py` - Add test coverage
 4. `README.md` - Update documentation
 
 ### Key Files to CREATE
-1. `src/tapo_camera_mcp/presets.py` - Analysis presets
+1. `src/devices_mcp/presets.py` - Analysis presets
 2. `docs/MULTIMODAL_USAGE.md` - Usage examples
 
 ### Testing Approach

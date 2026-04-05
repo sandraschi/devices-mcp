@@ -35,5 +35,3 @@
 5. Update Grafana datasources to point at the new Prometheus endpoint.
 6. Add CI validation (linting + `promtool check config`) once the config is
    finalized (`ci-cd` task).
-
-

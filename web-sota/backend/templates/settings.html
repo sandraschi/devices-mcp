@@ -1,0 +1,1256 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-color);
+    }
+
+    .settings-section h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .settings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background-color: var(--card-bg);
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-label {
+        font-weight: 500;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .setting-description {
+        font-size: 0.875rem;
+        color: var(--muted-text);
+    }
+
+    .setting-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background-color: var(--primary-blue);
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(20px);
+    }
+
+    .btn-primary {
+        background-color: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-blue-dark);
+    }
+
+    .btn-secondary {
+        background-color: var(--gray-100);
+        color: var(--text-color);
+        border: 1px solid var(--gray-300);
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--border-color);
+    }
+
+    .btn-danger {
+        background-color: #dc2626;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-danger:hover {
+        background-color: #b91c1c;
+    }
+
+    .btn-danger:disabled {
+        background-color: var(--gray-400);
+        cursor: not-allowed;
+    }
+
+    .battery-status-good {
+        color: var(--success-green);
+    }
+
+    .battery-status-low {
+        color: var(--warning-yellow);
+    }
+
+    .battery-status-critical {
+        color: #dc2626;
+    }
+
+    .battery-status-unknown {
+        color: var(--muted-text);
+    }
+
+    .form-input {
+        padding: 0.5rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        width: 100%;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-online {
+        background-color: var(--success-light);
+        color: #166534;
+    }
+
+    .status-offline {
+        background-color: var(--warning-bg);
+        color: #92400e;
+    }
+
+    /* Dark theme support */
+    [data-theme="dark"] .settings-section {
+        background: var(--text-color);
+        border-color: var(--gray-600);
+    }
+
+    [data-theme="dark"] .setting-item {
+        background-color: var(--gray-600);
+        border-color: var(--muted-text);
+    }
+
+    [data-theme="dark"] .setting-label {
+        color: var(--card-bg);
+    }
+
+    [data-theme="dark"] .setting-description {
+        color: var(--gray-300);
+    }
+
+    [data-theme="dark"] .btn-primary {
+        background-color: var(--primary-blue);
+    }
+
+    [data-theme="dark"] .btn-primary:hover {
+        background-color: var(--primary-blue-dark);
+    }
+
+    [data-theme="dark"] .btn-secondary {
+        background-color: var(--gray-600);
+        color: var(--card-bg);
+        border-color: var(--muted-text);
+    }
+
+    [data-theme="dark"] .btn-secondary:hover {
+        background-color: var(--muted-text);
+    }
+
+    [data-theme="dark"] .form-input {
+        background-color: var(--gray-600);
+        color: var(--card-bg);
+        border-color: var(--muted-text);
+    }
+
+    [data-theme="dark"] .form-input:focus {
+        border-color: var(--primary-blue);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+        <p class="text-gray-600">Configure your Devices MCP system</p>
+    </div>
+
+    <!-- System Status -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-server text-blue-500"></i>
+            System Status
+        </h3>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Server Status</div>
+                    <div class="setting-description">MCP server operational status</div>
+                </div>
+                <div class="setting-control">
+                    <span class="status-indicator status-online">
+                        <i class="fas fa-circle"></i>
+                        Online
+                    </span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Version</div>
+                    <div class="setting-description">Current MCP version</div>
+                </div>
+                <div class="setting-control">
+                    <span class="text-sm font-medium">1.0.0</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Cameras Configured</div>
+                    <div class="setting-description">Total number of cameras</div>
+                </div>
+                <div class="setting-control">
+                    <span class="text-sm font-medium">{{ total_cameras or 0 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera Settings -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-video text-green-500"></i>
+            Camera Settings
+        </h3>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Auto-Discovery</div>
+                    <div class="setting-description">Automatically detect USB cameras</div>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Motion Detection</div>
+                    <div class="setting-description">Enable motion detection for cameras</div>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Recording Quality</div>
+                    <div class="setting-description">Video recording quality setting</div>
+                </div>
+                <div class="setting-control">
+                    <select class="form-input" style="width: auto;">
+                        <option>HD (1080p)</option>
+                        <option>FHD (1440p)</option>
+                        <option>4K</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Settings -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-network-wired text-purple-500"></i>
+            Network Settings
+        </h3>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Server Port</div>
+                    <div class="setting-description">HTTP server port (default: 8000)</div>
+                </div>
+                <div class="setting-control">
+                    <input type="number" class="form-input" value="8000" style="width: 80px;">
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Enable HTTPS</div>
+                    <div class="setting-description">Use secure HTTPS connections</div>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">CORS Enabled</div>
+                    <div class="setting-description">Allow cross-origin requests</div>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Settings -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-shield-alt text-red-500"></i>
+            Security Settings
+        </h3>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">API Authentication</div>
+                    <div class="setting-description">Require authentication for API access</div>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Rate Limiting</div>
+                    <div class="setting-description">Limit API request frequency</div>
+                </div>
+                <div class="setting-control">
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Log Level</div>
+                    <div class="setting-description">Logging verbosity level</div>
+                </div>
+                <div class="setting-control">
+                    <select class="form-input" style="width: auto;">
+                        <option>INFO</option>
+                        <option>DEBUG</option>
+                        <option>WARNING</option>
+                        <option>ERROR</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ring Battery Monitoring -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-battery-half text-yellow-500"></i>
+            Ring Doorbell Battery Status
+        </h3>
+        <div id="ring-battery-status" class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Loading...</div>
+                    <div class="setting-description">Checking Ring device battery status</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nest Protect Battery Monitoring -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-fire-extinguisher text-red-500"></i>
+            Nest Protect Battery Status
+        </h3>
+        <div id="nest-battery-status" class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Loading...</div>
+                    <div class="setting-description">Checking Nest Protect device battery status</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Philips Hue Bridge Configuration -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-lightbulb text-yellow-500"></i>
+            Philips Hue Bridge Configuration
+        </h3>
+        <div class="settings-grid">
+            <div class="setting-item" style="grid-column: 1 / -1;">
+                <div class="setting-info">
+                    <div class="setting-label">Bridge IP Address</div>
+                    <div class="setting-description">IP address of your Philips Hue Bridge (e.g., 192.168.1.100)</div>
+                </div>
+                <div class="setting-control">
+                    <input type="text" id="hue-bridge-ip" class="form-input" placeholder="192.168.1.100" style="width: 200px;">
+                </div>
+            </div>
+            <div class="setting-item" style="grid-column: 1 / -1;">
+                <div class="setting-info">
+                    <div class="setting-label">Bridge Username (API Key)</div>
+                    <div class="setting-description">Press the button on your Hue Bridge, then click "Connect" to generate</div>
+                </div>
+                <div class="setting-control">
+                    <input type="text" id="hue-username" class="form-input" placeholder="Leave empty to auto-generate" style="width: 300px;">
+                    <button id="hue-connect" class="btn-primary" style="margin-left: 12px;">
+                        <i class="fas fa-plug mr-2"></i>
+                        Create New Username (Press Button)
+                    </button>
+                    <button id="hue-test-existing" class="btn-secondary" style="margin-left: 12px;">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Test Existing Username
+                    </button>
+                </div>
+            </div>
+            <div class="setting-item" style="grid-column: 1 / -1;">
+                <div class="setting-info">
+                    <div class="setting-label">Connection Status</div>
+                    <div class="setting-description" id="hue-status-desc">Not configured</div>
+                </div>
+                <div class="setting-control">
+                    <span id="hue-status" class="status-indicator status-offline">
+                        <i class="fas fa-circle"></i>
+                        Disconnected
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-4">
+            <button id="save-hue-config" class="btn-primary">
+                <i class="fas fa-save mr-2"></i>
+                Save Configuration
+            </button>
+            <button id="test-hue-connection" class="btn-secondary">
+                <i class="fas fa-check-circle mr-2"></i>
+                Test Connection
+            </button>
+        </div>
+        <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p class="text-sm text-blue-800">
+                <strong>Option 1 - Use Existing Username:</strong> If you have a username from another app (Hue app, Home Assistant, etc.),
+                enter it and click "Test Existing".<br><br>
+                <strong>Option 2 - Create New Username:</strong> Press the button on your Hue Bridge, then click "Create New (Press Button)".
+                This creates a new API username for this system and will <strong>NOT</strong> affect your Alexa connection or any other integrations.
+            </p>
+        </div>
+    </div>
+
+    <!-- Retention Policies -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-clock text-purple-500"></i>
+            Data Retention Policies
+        </h3>
+        <div class="settings-grid">
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Video Recordings</div>
+                    <div class="setting-description">Days to keep video recordings</div>
+                </div>
+                <div class="setting-control">
+                    <input type="number" id="retention-video" class="form-input" min="1" max="3650" value="30" style="width: 100px;">
+                    <span class="text-sm text-gray-500 ml-2">days</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Snapshots</div>
+                    <div class="setting-description">Days to keep snapshot images</div>
+                </div>
+                <div class="setting-control">
+                    <input type="number" id="retention-snapshots" class="form-input" min="1" max="3650" value="90" style="width: 100px;">
+                    <span class="text-sm text-gray-500 ml-2">days</span>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-info">
+                    <div class="setting-label">Environment Data</div>
+                    <div class="setting-description">Days to keep weather/energy time series</div>
+                </div>
+                <div class="setting-control">
+                    <input type="number" id="retention-environment" class="form-input" min="1" max="3650" value="365" style="width: 100px;">
+                    <span class="text-sm text-gray-500 ml-2">days</span>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex gap-4">
+            <button id="save-retention" class="btn-primary">
+                <i class="fas fa-save mr-2"></i>
+                Save Retention Policies
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Management -->
+    <div class="settings-section" style="border: 2px solid #dc2626;">
+        <h3 style="color: #dc2626;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Data Management (Danger Zone)
+        </h3>
+        <div class="setting-item">
+            <div class="setting-info">
+                <div class="setting-label">Scrub Old Data</div>
+                <div class="setting-description">
+                    Permanently delete data older than retention policies. This action cannot be undone!
+                    Use "Preview" first to see what would be deleted.
+                </div>
+            </div>
+            <div class="setting-control">
+                <button id="scrub-preview" class="btn-secondary" style="margin-right: 0.5rem;">
+                    <i class="fas fa-eye mr-2"></i>
+                    Preview
+                </button>
+                <button id="scrub-execute" class="btn-danger" style="background-color: #dc2626; color: white;">
+                    <i class="fas fa-trash-alt mr-2"></i>
+                    Scrub Now
+                </button>
+            </div>
+        </div>
+        <div id="scrub-results" style="margin-top: 1rem; display: none;"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="settings-section">
+        <h3>
+            <i class="fas fa-save text-indigo-500"></i>
+            Actions
+        </h3>
+        <div class="flex gap-4">
+            <button class="btn-primary">
+                <i class="fas fa-save mr-2"></i>
+                Save Settings
+            </button>
+            <button class="btn-secondary">
+                <i class="fas fa-undo mr-2"></i>
+                Reset to Defaults
+            </button>
+            <button class="btn-secondary">
+                <i class="fas fa-download mr-2"></i>
+                Export Configuration
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Settings page functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Settings page loaded successfully');
+
+            // Load retention policies
+            loadRetentionPolicies();
+
+            // Load Ring battery status
+            loadRingBatteryStatus();
+            setInterval(loadRingBatteryStatus, 60000); // Refresh every minute
+
+            // Load Nest Protect battery status
+            loadNestBatteryStatus();
+            setInterval(loadNestBatteryStatus, 60000); // Refresh every minute
+
+            // Load Hue Bridge configuration
+            loadHueConfig();
+
+            // Hue Bridge configuration handlers
+            const saveHueBtn = document.getElementById('save-hue-config');
+            if (saveHueBtn) {
+                saveHueBtn.addEventListener('click', saveHueConfig);
+            }
+
+            const testHueBtn = document.getElementById('test-hue-connection');
+            if (testHueBtn) {
+                testHueBtn.addEventListener('click', testHueConnection);
+            }
+
+            const connectHueBtn = document.getElementById('hue-connect');
+            if (connectHueBtn) {
+                console.log('Attaching click handler to hue-connect button');
+                connectHueBtn.addEventListener('click', function(e) {
+                    console.log('hue-connect button clicked', e);
+                    e.preventDefault();
+                    connectHueBridge();
+                });
+            } else {
+                console.error('hue-connect button not found!');
+            }
+            const testExistingBtn = document.getElementById('hue-test-existing');
+            if (testExistingBtn) {
+                testExistingBtn.addEventListener('click', testExistingUsername);
+            }
+
+            // Save retention policies
+            const saveRetentionBtn = document.getElementById('save-retention');
+            if (saveRetentionBtn) {
+                saveRetentionBtn.addEventListener('click', saveRetentionPolicies);
+            }
+
+            // Scrub buttons
+            const scrubPreviewBtn = document.getElementById('scrub-preview');
+            const scrubExecuteBtn = document.getElementById('scrub-execute');
+            if (scrubPreviewBtn) {
+                scrubPreviewBtn.addEventListener('click', () => scrubData(true));
+            }
+            if (scrubExecuteBtn) {
+                scrubExecuteBtn.addEventListener('click', () => {
+                    if (confirm('WARNING WARNING: This will permanently delete old data based on retention policies!\n\nThis action CANNOT be undone. Are you absolutely sure?')) {
+                        if (confirm('Final confirmation: Delete old data now?')) {
+                            scrubData(false);
+                        }
+                    }
+                });
+            }
+
+            // Basic button functionality
+            const saveBtn = document.querySelector('.btn-primary:not(#save-retention)');
+            const resetBtn = document.querySelectorAll('.btn-secondary')[0];
+            const exportBtn = document.querySelectorAll('.btn-secondary')[1];
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    alert('Settings saved successfully!');
+                });
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    if (confirm('Reset all settings to defaults?')) {
+                        alert('Settings reset to defaults');
+                    }
+                });
+            }
+
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    alert('Configuration export not implemented yet');
+                });
+            }
+        });
+
+        async function loadRetentionPolicies() {
+            try {
+                const response = await fetch('/api/settings/retention');
+                const data = await response.json();
+                if (data.success && data.policies) {
+                    document.getElementById('retention-video').value = data.policies.video_recordings || 30;
+                    document.getElementById('retention-snapshots').value = data.policies.snapshots || 90;
+                    document.getElementById('retention-environment').value = data.policies.environment_data || 365;
+                }
+            } catch (error) {
+                console.error('Error loading retention policies:', error);
+            }
+        }
+
+        async function saveRetentionPolicies() {
+            const video = parseInt(document.getElementById('retention-video').value);
+            const snapshots = parseInt(document.getElementById('retention-snapshots').value);
+            const environment = parseInt(document.getElementById('retention-environment').value);
+
+            try {
+                const response = await fetch('/api/settings/retention', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        video_recordings: video,
+                        snapshots: snapshots,
+                        environment_data: environment,
+                    }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Retention policies saved successfully!');
+                } else {
+                    alert('Error saving retention policies: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving retention policies:', error);
+                alert('Error saving retention policies: ' + error.message);
+            }
+        }
+
+        async function loadRingBatteryStatus() {
+            const container = document.getElementById('ring-battery-status');
+            if (!container) return;
+
+            try {
+                const response = await fetch('/api/security/ring/status');
+                const data = await response.json();
+
+                if (data.devices && data.devices.length > 0) {
+                    container.innerHTML = data.devices.map(device => {
+                        const batteryLevel = device.battery_level;
+                        const batteryStatus = device.battery_status || 'unknown';
+                        const isCharging = device.is_charging;
+                        const statusClass = `battery-status-${batteryStatus}`;
+                        const statusIcon = batteryStatus === 'critical' ? 'fa-battery-empty' :
+                                          batteryStatus === 'low' ? 'fa-battery-quarter' :
+                                          batteryStatus === 'good' ? 'fa-battery-full' : 'fa-battery-half';
+                        const chargingIcon = isCharging ? '<i class="fas fa-plug text-green-500 ml-2"></i>' : '';
+
+                        return `
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">${device.name || device.device_id}</div>
+                                    <div class="setting-description">
+                                        ${device.model || 'Ring Doorbell'} - ${device.location || 'Unknown Location'}
+                                    </div>
+                                </div>
+                                <div class="setting-control">
+                                    <span class="${statusClass}" style="font-weight: 600;">
+                                        <i class="fas ${statusIcon}"></i>
+                                        ${batteryLevel !== null ? batteryLevel + '%' : batteryStatus}
+                                        ${chargingIcon}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">No Ring Devices</div>
+                                <div class="setting-description">No Ring doorbells configured or detected</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading Ring battery status:', error);
+                container.innerHTML = `
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-label">Error</div>
+                            <div class="setting-description">Failed to load Ring battery status</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadNestBatteryStatus() {
+            const container = document.getElementById('nest-battery-status');
+            if (!container) return;
+
+            try {
+                const response = await fetch('/api/security/nest/status');
+                const data = await response.json();
+
+                if (data.devices && data.devices.length > 0) {
+                    container.innerHTML = data.devices.map(device => {
+                        const batteryLevel = device.battery_level;
+                        const batteryStatus = device.battery_status || 'unknown';
+                        const statusClass = `battery-status-${batteryStatus}`;
+                        const statusIcon = batteryStatus === 'critical' ? 'fa-battery-empty' :
+                                          batteryStatus === 'low' ? 'fa-battery-quarter' :
+                                          batteryStatus === 'good' ? 'fa-battery-full' : 'fa-battery-half';
+                        const deviceType = device.type === 'smoke_detector' ? 'Smoke/CO Detector' :
+                                          device.type === 'co_detector' ? 'CO Detector' : 'Protect';
+                        const statusBadge = device.status === 'online' ?
+                            '<span class="status-indicator status-online" style="margin-left: 0.5rem;">Online</span>' :
+                            device.status === 'offline' ?
+                            '<span class="status-indicator status-offline" style="margin-left: 0.5rem;">Offline</span>' :
+                            '<span class="status-indicator" style="background-color: var(--warning-bg); color: #92400e; margin-left: 0.5rem;">Warning</span>';
+
+                        return `
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-label">${device.name || device.device_id} ${statusBadge}</div>
+                                    <div class="setting-description">
+                                        ${deviceType} - ${device.location || 'Unknown Location'}
+                                    </div>
+                                </div>
+                                <div class="setting-control">
+                                    <span class="${statusClass}" style="font-weight: 600;">
+                                        <i class="fas ${statusIcon}"></i>
+                                        ${batteryLevel !== null ? batteryLevel + '%' : batteryStatus}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">No Nest Protect Devices</div>
+                                <div class="setting-description">No Nest Protect devices configured or detected</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading Nest Protect battery status:', error);
+                container.innerHTML = `
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <div class="setting-label">Error</div>
+                            <div class="setting-description">Failed to load Nest Protect battery status</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function scrubData(dryRun) {
+            const resultsDiv = document.getElementById('scrub-results');
+            const scrubExecuteBtn = document.getElementById('scrub-execute');
+
+            if (resultsDiv) {
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<p>Processing...</p>';
+            }
+
+            if (scrubExecuteBtn) {
+                scrubExecuteBtn.disabled = true;
+            }
+
+            try {
+                const response = await fetch('/api/storage/scrub', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        confirm: true,
+                        dry_run: dryRun,
+                    }),
+                });
+                const data = await response.json();
+
+                if (resultsDiv) {
+                    if (data.success) {
+                        const results = data.results || {};
+                        resultsDiv.innerHTML = `
+                            <div style="background: ${dryRun ? 'var(--warning-bg)' : 'var(--success-light)'}; border: 1px solid ${dryRun ? 'var(--warning-yellow)' : 'var(--success-green)'}; border-radius: 0.5rem; padding: 1rem;">
+                                <strong>${dryRun ? 'Preview Results:' : 'Scrub Completed:'}</strong>
+                                <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                                    <li>Videos: ${results.videos_deleted || 0}</li>
+                                    <li>Snapshots: ${results.snapshots_deleted || 0}</li>
+                                    <li>Environment records: ${results.environment_records_deleted || 0}</li>
+                                    <li>Files deleted: ${results.files_deleted || 0}</li>
+                                    <li>Space freed: ${(results.space_freed_mb || 0).toFixed(2)} MB</li>
+                                </ul>
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = `
+                            <div style="background: var(--error-bg); border: 1px solid #dc2626; border-radius: 0.5rem; padding: 1rem; color: #991b1b;">
+                                <strong>Error:</strong> ${data.error || 'Unknown error'}
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error scrubbing data:', error);
+                if (resultsDiv) {
+                    resultsDiv.innerHTML = `
+                        <div style="background: var(--error-bg); border: 1px solid #dc2626; border-radius: 0.5rem; padding: 1rem; color: #991b1b;">
+                            <strong>Error:</strong> ${error.message}
+                        </div>
+                    `;
+                }
+            } finally {
+                if (scrubExecuteBtn) {
+                    scrubExecuteBtn.disabled = false;
+                }
+            }
+        }
+
+        async function loadHueConfig() {
+            try {
+                const response = await fetch('/api/lighting/hue/config');
+                const data = await response.json();
+
+                if (data.bridge_ip) {
+                    document.getElementById('hue-bridge-ip').value = data.bridge_ip;
+                }
+                if (data.username) {
+                    document.getElementById('hue-username').value = data.username;
+                }
+
+                // Update status
+                updateHueStatus(data.connected || false, data.error || null);
+            } catch (error) {
+                console.error('Error loading Hue config:', error);
+                updateHueStatus(false, 'Failed to load configuration');
+            }
+        }
+
+        async function saveHueConfig() {
+            const bridgeIp = document.getElementById('hue-bridge-ip').value.trim();
+            const username = document.getElementById('hue-username').value.trim();
+
+            if (!bridgeIp) {
+                alert('Please enter a Bridge IP address');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lighting/hue/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bridge_ip: bridgeIp,
+                        username: username || null,
+                    }),
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Configuration saved successfully! Please restart the server for changes to take effect.');
+                    await loadHueConfig();
+                } else {
+                    alert('Error saving configuration: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving Hue config:', error);
+                alert('Error saving configuration: ' + error.message);
+            }
+        }
+
+        async function testHueConnection() {
+            const bridgeIp = document.getElementById('hue-bridge-ip').value.trim();
+            const username = document.getElementById('hue-username').value.trim();
+
+            if (!bridgeIp) {
+                alert('Please enter a Bridge IP address first');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lighting/hue/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bridge_ip: bridgeIp,
+                        username: username || null,
+                    }),
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Connection successful! Found ' + (data.lights_count || 0) + ' lights.');
+                    if (data.username && !username) {
+                        document.getElementById('hue-username').value = data.username;
+                    }
+                    updateHueStatus(true, null);
+                } else {
+                    alert('Connection failed: ' + (data.error || 'Unknown error'));
+                    updateHueStatus(false, data.error || 'Connection failed');
+                }
+            } catch (error) {
+                console.error('Error testing Hue connection:', error);
+                alert('Error testing connection: ' + error.message);
+            }
+        }
+
+        async function connectHueBridge() {
+            console.log('connectHueBridge called');
+            const bridgeIp = document.getElementById('hue-bridge-ip');
+            if (!bridgeIp) {
+                console.error('Bridge IP input not found');
+                alert('Error: Bridge IP input field not found');
+                return;
+            }
+
+            const bridgeIpValue = bridgeIp.value.trim();
+            console.log('Bridge IP:', bridgeIpValue);
+
+            if (!bridgeIpValue) {
+                alert('Please enter a Bridge IP address first');
+                return;
+            }
+
+            const confirmed = confirm(
+                'IMPORTANT: Press the button on your Hue Bridge NOW, then click OK to connect.\n\n' +
+                'You have 30 seconds after pressing the button to complete the connection.\n\n' +
+                'This will generate an API username. It will NOT affect your Alexa connection.'
+            );
+
+            if (!confirmed) {
+                console.log('User cancelled');
+                return;
+            }
+
+            console.log('Proceeding with connection...');
+
+            try {
+                const response = await fetch('/api/lighting/hue/connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bridge_ip: bridgeIpValue,
+                    }),
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'HTTP error! status: ' + response.status;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorData.error || errorMessage;
+                    } catch (e) {
+                        const text = await response.text();
+                        errorMessage = text || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    if (data.username) {
+                        document.getElementById('hue-username').value = data.username;
+                        alert('Connection successful! Username generated: ' + data.username + '\n\nClick "Save Configuration" to save it.');
+                    }
+                    updateHueStatus(true, null);
+                } else {
+                    const errorMsg = data.error || 'Unknown error';
+                    console.error('Connection failed:', errorMsg);
+                    alert('Connection failed: ' + errorMsg + '\n\nMake sure you pressed the button on your Hue Bridge.');
+                    updateHueStatus(false, errorMsg);
+                }
+            } catch (error) {
+                console.error('Error connecting to Hue Bridge:', error);
+                const errorMsg = error.message || String(error);
+                alert('Error connecting: ' + errorMsg + '\n\nCheck the browser console (F12) for more details.');
+                updateHueStatus(false, errorMsg);
+            }
+        }
+
+        async function testExistingUsername() {
+            const bridgeIp = document.getElementById('hue-bridge-ip').value.trim();
+            const username = document.getElementById('hue-username').value.trim();
+
+            if (!bridgeIp) {
+                alert('Please enter a Bridge IP address first');
+                return;
+            }
+
+            if (!username) {
+                alert('Please enter an existing username to test. If you don\'t have one, use "Create New (Press Button)" instead.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lighting/hue/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bridge_ip: bridgeIp,
+                        username: username,
+                    }),
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'HTTP error! status: ' + response.status;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorData.error || errorMessage;
+                    } catch (e) {
+                        const text = await response.text();
+                        errorMessage = text || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`Connection successful!\n\nFound ${data.lights_count || 0} lights and ${data.groups_count || 0} groups.\n\nClick "Save Configuration" to save this username.`);
+                    updateHueStatus(true, null);
+                } else {
+                    const errorMsg = data.error || 'Unknown error';
+                    alert('Connection failed: ' + errorMsg + '\n\nThe username may be incorrect, or you may need to create a new one by pressing the button.');
+                    updateHueStatus(false, errorMsg);
+                }
+            } catch (error) {
+                console.error('Error testing existing username:', error);
+                const errorMsg = error.message || String(error);
+                alert('Error testing connection: ' + errorMsg);
+                updateHueStatus(false, errorMsg);
+            }
+        }
+
+        async function testExistingUsername() {
+            const bridgeIp = document.getElementById('hue-bridge-ip').value.trim();
+            const username = document.getElementById('hue-username').value.trim();
+
+            if (!bridgeIp) {
+                alert('Please enter a Bridge IP address first');
+                return;
+            }
+
+            if (!username) {
+                alert('Please enter an existing username to test. If you don\'t have one, use "Create New (Press Button)" instead.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/lighting/hue/test-connection', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        bridge_ip: bridgeIp,
+                        username: username,
+                    }),
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'HTTP error! status: ' + response.status;
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorData.error || errorMessage;
+                    } catch (e) {
+                        const text = await response.text();
+                        errorMessage = text || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    alert(`Connection successful!\n\nFound ${data.lights_count || 0} lights and ${data.groups_count || 0} groups.\n\nClick "Save Configuration" to save this username.`);
+                    updateHueStatus(true, null);
+                } else {
+                    const errorMsg = data.error || 'Unknown error';
+                    alert('Connection failed: ' + errorMsg + '\n\nThe username may be incorrect, or you may need to create a new one by pressing the button.');
+                    updateHueStatus(false, errorMsg);
+                }
+            } catch (error) {
+                console.error('Error testing existing username:', error);
+                const errorMsg = error.message || String(error);
+                alert('Error testing connection: ' + errorMsg);
+                updateHueStatus(false, errorMsg);
+            }
+        }
+
+        function updateHueStatus(connected, error) {
+            const statusEl = document.getElementById('hue-status');
+            const descEl = document.getElementById('hue-status-desc');
+
+            if (connected) {
+                statusEl.className = 'status-indicator status-online';
+                statusEl.innerHTML = '<i class="fas fa-circle"></i> Connected';
+                descEl.textContent = 'Hue Bridge is connected and ready';
+            } else {
+                statusEl.className = 'status-indicator status-offline';
+                statusEl.innerHTML = '<i class="fas fa-circle"></i> Disconnected';
+                descEl.textContent = error || 'Hue Bridge not configured';
+            }
+        }
+    </script>
+</div>
+{% endblock %}

@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 """Universal USB Device Detection and Configuration Tool."""
 
-import cv2
 import logging
 import sys
 from pathlib import Path
+
+import cv2
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
 
 def detect_usb_cameras(max_devices=10):
     """Detect all available USB camera/scanner devices."""
-    print("Universal USB Device Detection")
-    print("=" * 50)
+    logger.info("Universal USB Device Detection")
+    logger.info("=" * 50)
     detected_devices = []
     for i in range(max_devices):
         cap = cv2.VideoCapture(i)
@@ -32,17 +34,49 @@ def detect_usb_cameras(max_devices=10):
                     "resolution": f"{width}x{height}",
                     "backend": backend,
                     "is_working": True,
-                    "suggested_type": suggest_device_type(width, height, i)
+                    "suggested_type": suggest_device_type(width, height, i),
+                    "likely_has_microphone": detect_microphone_likelihood(width, height, i, ""),
                 }
                 detected_devices.append(device_info)
                 device_type = device_info["suggested_type"].upper()
-                print(f"[{device_type}] Device {i}: {width}x{height} - {backend} (Working)")
+                logger.info(f"[{device_type}] Device {i}: {width}x{height} - {backend} (Working)")
             else:
-                print(f"[UNKNOWN] Device {i}: {width}x{height} - {backend} (Not working, possibly in use)")
+                logger.info(
+                    f"[UNKNOWN] Device {i}: {width}x{height} - {backend} (Not working, possibly in use)"
+                )
             cap.release()
         else:
-            print(f"[NOT FOUND] Device {i}: Not available")
+            logger.info(f"[NOT FOUND] Device {i}: Not available")
     return detected_devices
+
+
+def detect_microphone_likelihood(width, height, device_id, device_name=""):
+    """Estimate likelihood that a USB camera has a built-in microphone."""
+    resolution = f"{width}x{height}"
+    name_lower = device_name.lower()
+
+    # Microscopes typically don't have microphones
+    if "microscope" in name_lower:
+        return False
+
+    # Logitech cameras typically DO have microphones
+    if "logitech" in name_lower:
+        return True
+
+    # Most modern USB webcams have microphones
+    # Only very specialized cameras (like industrial/scientific) might not
+    if width >= 1280 and height >= 720:
+        # HD+ cameras almost always have microphones
+        return True
+    if width >= 640 and height >= 480:
+        # Standard definition and up - likely has microphone
+        return True
+    if device_id == 0:
+        # First camera (usually built-in laptop camera) - almost always has mic
+        return True
+    # Conservative default for unknown cameras
+    return True
+
 
 def suggest_device_type(width, height, device_id):
     """Suggest device type based on resolution and characteristics."""
@@ -52,23 +86,22 @@ def suggest_device_type(width, height, device_id):
     if resolution in ["640x480", "800x600", "1024x768", "1280x720", "1920x1080"]:
         if resolution in ["640x480", "800x600"]:
             return "otoscope"  # Common otoscope resolutions
-        elif resolution == "1280x720":
+        if resolution == "1280x720":
             return "microscope"  # Common microscope resolution
-        else:
-            return "webcam"  # General webcam - could also be digicam or iPhone
+        return "webcam"  # General webcam - could also be digicam or iPhone
 
     # High resolution (likely scanners or professional cameras)
-    elif width > 2000 or height > 1500:
+    if width > 2000 or height > 1500:
         return "scanner"
 
     # Unknown/default - provide templates for manual configuration
-    else:
-        return "webcam"
+    return "webcam"
+
 
 def generate_device_configs(detected_devices):
     """Generate configuration for all detected devices."""
-    print("\nConfiguration Suggestions:")
-    print("=" * 50)
+    logger.info("\nConfiguration Suggestions:")
+    logger.info("=" * 50)
 
     configs = []
 
@@ -76,15 +109,19 @@ def generate_device_configs(detected_devices):
         device_type = device["suggested_type"]
         device_id = device["device_id"]
         resolution = device["resolution"]
+        has_microphone = device.get("likely_has_microphone", True)
 
         if device_type == "webcam":
+            mic_config = (
+                f"  audio_capable: {str(has_microphone).lower()}" if not has_microphone else ""
+            )
             config = f"""
 # Webcam Configuration (Device {device_id})
 webcam{device_id}:
   type: webcam
   device_id: {device_id}
   resolution: "{resolution}"
-  fps: 30"""
+  fps: 30{mic_config}"""
 
         elif device_type == "microscope":
             config = f"""
@@ -170,45 +207,52 @@ unknown{device_id}:
   fps: 30"""
 
         configs.append(config)
-        print(config)
+        logger.info(config)
 
     return configs
 
+
 def main():
     """Main detection function."""
-    print("Universal USB Device Detection Tool")
-    print("Finds cameras, microscopes, otoscopes, scanners, digicams, iPhones, and other USB imaging devices.")
-    print()
+    logger.info("Universal USB Device Detection Tool")
+    logger.info(
+        "Finds cameras, microscopes, otoscopes, scanners, digicams, iPhones, and other USB imaging devices."
+    )
+    logger.info()
 
     detected_devices = detect_usb_cameras()
     configs = generate_device_configs(detected_devices)
 
-    print(f"\n[SUCCESS] Found {len(detected_devices)} USB imaging device(s)")
-    print("Add the configuration above to your config.yaml file.")
-    print("Then restart the Tapo Camera MCP server.")
-    print("\nDevice Types Detected:")
+    logger.info(f"\n[SUCCESS] Found {len(detected_devices)} USB imaging device(s)")
+    logger.info("Add the configuration above to your config.yaml file.")
+    logger.info("Then restart the Devices MCP server.")
+    logger.info("\nDevice Types Detected:")
     for device in detected_devices:
-        print(f"  - Device {device['device_id']}: {device['suggested_type'].upper()} ({device['resolution']})")
+        logger.info(
+            f"  - Device {device['device_id']}: {device['suggested_type'].upper()} ({device['resolution']})"
+        )
 
-    print("\n[INFO] Additional Device Types Available:")
-    print("  - DIGICAM: For old digital cameras (Canon, Nikon, Sony, etc.)")
-    print("  - IPHONE: For repurposed iPhones as webcams")
-    print("  - MICROSCOPE: For USB digital microscopes")
-    print("  - OTOSCOPE: For USB medical otoscopes")
-    print("  - SCANNER: For document/slide scanners")
-    print("Configure manually if your device type isn't auto-detected.")
+    logger.info("\n[INFO] Additional Device Types Available:")
+    logger.info("  - DIGICAM: For old digital cameras (Canon, Nikon, Sony, etc.)")
+    logger.info("  - IPHONE: For repurposed iPhones as webcams")
+    logger.info("  - MICROSCOPE: For USB digital microscopes")
+    logger.info("  - OTOSCOPE: For USB medical otoscopes")
+    logger.info("  - SCANNER: For document/slide scanners")
+    logger.info("Configure manually if your device type isn't auto-detected.")
 
     return 0
+
 
 if __name__ == "__main__":
     try:
         exit_code = main()
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        print("\n\n[INTERRUPTED] Detection cancelled by user")
+        logger.info("\n\n[INTERRUPTED] Detection cancelled by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n[FATAL ERROR] {e}")
+        logger.info(f"\n[FATAL ERROR] {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

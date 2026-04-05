@@ -6,7 +6,7 @@
 
 Instead, please report security vulnerabilities by email to the maintainers at:
 
-**📧 Security Email:** security@tapo-camera-mcp.example.com
+**📧 Security Email:** security@devices-mcp.example.com
 
 ## Vulnerability Reporting Process
 
@@ -107,12 +107,12 @@ When security updates are released:
 ## Contact Information
 
 ### Primary Contact
-**Security Team:** security@tapo-camera-mcp.example.com
+**Security Team:** security@devices-mcp.example.com
 
 ### Alternative Contact
 For non-security sensitive questions, use:
-- **GitHub Issues:** https://github.com/yourusername/tapo-camera-mcp/issues
-- **Discussions:** https://github.com/yourusername/tapo-camera-mcp/discussions
+- **GitHub Issues:** https://github.com/yourusername/devices-mcp/issues
+- **Discussions:** https://github.com/yourusername/devices-mcp/discussions
 
 ## Legal
 
@@ -122,5 +122,5 @@ This security policy is subject to change. The most current version can be found
 
 **Document Version**: 1.0
 **Last Updated**: October 1, 2025
-**Repository**: tapo-camera-mcp
+**Repository**: devices-mcp
 **Status**: Gold Tier Security Standards

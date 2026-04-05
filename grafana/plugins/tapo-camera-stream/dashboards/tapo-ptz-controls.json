@@ -41,8 +41,8 @@
   "panels": [
     {
       "datasource": {
-        "type": "tapo-camera-mcp-datasource",
-        "uid": "${DS_TAPO-CAMERA-MCP}"
+        "type": "devices-mcp-datasource",
+        "uid": "${DS_devices-mcp}"
       },
       "description": "Live stream with PTZ controls",
       "fieldConfig": {
@@ -120,8 +120,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "refId": "A"
         }
@@ -131,8 +131,8 @@
     },
     {
       "datasource": {
-        "type": "tapo-camera-mcp-datasource",
-        "uid": "${DS_TAPO-CAMERA-MCP}"
+        "type": "devices-mcp-datasource",
+        "uid": "${DS_devices-mcp}"
       },
       "description": "Manage PTZ presets for the selected camera",
       "fieldConfig": {
@@ -217,8 +217,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "queryType": "ptzPresets",
           "refId": "A"
@@ -229,8 +229,8 @@
     },
     {
       "datasource": {
-        "type": "tapo-camera-mcp-datasource",
-        "uid": "${DS_TAPO-CAMERA-MCP}"
+        "type": "devices-mcp-datasource",
+        "uid": "${DS_devices-mcp}"
       },
       "description": "Current PTZ position and status",
       "fieldConfig": {
@@ -281,8 +281,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "camera_ptz_pan_position{camera=\"$camera\"}",
           "format": "time_series",
@@ -292,8 +292,8 @@
         },
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "camera_ptz_tilt_position{camera=\"$camera\"}",
           "hide": false,
@@ -302,8 +302,8 @@
         },
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "camera_ptz_zoom_position{camera=\"$camera\"}",
           "hide": false,
@@ -316,8 +316,8 @@
     },
     {
       "datasource": {
-        "type": "tapo-camera-mcp-datasource",
-        "uid": "${DS_TAPO-CAMERA-MCP}"
+        "type": "devices-mcp-datasource",
+        "uid": "${DS_devices-mcp}"
       },
       "description": "PTZ control history",
       "fieldConfig": {
@@ -394,8 +394,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "rate(camera_ptz_commands_total{direction=~\"$direction\",camera=\"$camera\"}[5m])",
           "legendFormat": "{{direction}}",
@@ -516,14 +516,14 @@
         "type": "custom"
       },
       {
-        "description": "Data source for Tapo Camera MCP",
+        "description": "Data source for Devices MCP",
         "hide": 0,
         "includeAll": false,
-        "label": "Tapo Camera MCP",
+        "label": "Devices MCP",
         "multi": false,
-        "name": "DS_TAPO-CAMERA-MCP",
+        "name": "DS_devices-mcp",
         "options": [],
-        "query": "tapo-camera-mcp",
+        "query": "devices-mcp",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

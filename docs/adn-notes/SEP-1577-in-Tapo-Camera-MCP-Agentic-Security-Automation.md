@@ -1,8 +1,8 @@
-# SEP-1577 in Tapo Camera MCP - Agentic Security Automation Revolution
+# SEP-1577 in Devices MCP - Agentic Security Automation Revolution
 
 ## Executive Summary
 
-Tapo Camera MCP now supports SEP-1577 (Sampling with Tools), enabling autonomous security workflows where the MCP server borrows the client's LLM to orchestrate complex multi-device security operations without client round-trips.
+Devices MCP now supports SEP-1577 (Sampling with Tools), enabling autonomous security workflows where the MCP server borrows the client's LLM to orchestrate complex multi-device security operations without client round-trips.
 
 ## Revolutionary Impact
 
@@ -146,6 +146,6 @@ build_error_response(
 
 ## Conclusion
 
-SEP-1577 implementation in Tapo Camera MCP represents a fundamental advancement in home automation, enabling truly autonomous security systems that understand and execute complex security workflows through natural language commands. The combination of FastMCP's sampling capabilities with comprehensive security tool ecosystem creates a powerful platform for intelligent home and facility protection.
+SEP-1577 implementation in Devices MCP represents a fundamental advancement in home automation, enabling truly autonomous security systems that understand and execute complex security workflows through natural language commands. The combination of FastMCP's sampling capabilities with comprehensive security tool ecosystem creates a powerful platform for intelligent home and facility protection.
 
 This implementation demonstrates the transformative potential of SEP-1577, where AI agents can autonomously coordinate complex multi-device operations, fundamentally changing how users interact with smart home systems.

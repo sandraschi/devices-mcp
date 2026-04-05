@@ -19,7 +19,7 @@ updates:
       python-dependencies:
         patterns:
           - "*"
-  
+
   # GitHub Actions - monthly updates
   - package-ecosystem: "github-actions"
     directory: "/"

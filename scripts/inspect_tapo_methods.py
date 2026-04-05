@@ -1,78 +1,89 @@
 """Inspect Tapo P115 plug object to see what methods are available."""
 
 import asyncio
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from tapo_camera_mcp.ingest.tapo_p115 import TapoP115IngestionService
+from devices_mcp.ingest.tapo_p115 import TapoP115IngestionService
 
 
 async def inspect_plug_methods(host: str, name: str):
     """Inspect the plug object to see what methods are available."""
-    print(f"\n{'='*60}")
-    print(f"Inspecting {name} (IP: {host})")
-    print(f"{'='*60}")
+    logger.info(f"\n{'=' * 60}")
+    logger.info(f"Inspecting {name} (IP: {host})")
+    logger.info(f"{'=' * 60}")
 
     try:
         service = TapoP115IngestionService()
         client = await service._get_client()
         plug = await client.p115(host)
 
-        print(f"\nPlug object type: {type(plug)}")
-        print("\nPlug object methods:")
-        methods = [attr for attr in dir(plug) if not attr.startswith('_') and callable(getattr(plug, attr))]
+        logger.info(f"\nPlug object type: {type(plug)}")
+        logger.info("\nPlug object methods:")
+        methods = [
+            attr for attr in dir(plug) if not attr.startswith("_") and callable(getattr(plug, attr))
+        ]
         for method in sorted(methods):
-            print(f"  - {method}")
+            logger.info(f"  - {method}")
 
         # Try to get device info and see what's available
-        print("\nDevice info:")
+        logger.info("\nDevice info:")
         device_info = await plug.get_device_info()
-        print(f"  Device info type: {type(device_info)}")
-        print(f"  Device info attributes: {[attr for attr in dir(device_info) if not attr.startswith('_')]}")
+        logger.info(f"  Device info type: {type(device_info)}")
+        logger.info(
+            f"  Device info attributes: {[attr for attr in dir(device_info) if not attr.startswith('_')]}"
+        )
 
         # Try to see if device_info has energy data
-        print("\nDevice info values:")
+        logger.info("\nDevice info values:")
         for attr in dir(device_info):
-            if not attr.startswith('_'):
+            if not attr.startswith("_"):
                 try:
                     val = getattr(device_info, attr)
                     if not callable(val):
-                        print(f"  {attr}: {val}")
+                        logger.info(f"  {attr}: {val}")
                 except:
                     pass
 
         # Try get_energy_usage
-        print("\nEnergy usage:")
+        logger.info("\nEnergy usage:")
         energy = await plug.get_energy_usage()
-        print(f"  Energy type: {type(energy)}")
-        print(f"  Energy attributes: {[attr for attr in dir(energy) if not attr.startswith('_')]}")
-        print(f"  today_energy: {energy.today_energy}")
-        print(f"  month_energy: {energy.month_energy}")
+        logger.info(f"  Energy type: {type(energy)}")
+        logger.info(
+            f"  Energy attributes: {[attr for attr in dir(energy) if not attr.startswith('_')]}"
+        )
+        logger.info(f"  today_energy: {energy.today_energy}")
+        logger.info(f"  month_energy: {energy.month_energy}")
 
         # Check if there's a to_dict method
-        if hasattr(energy, 'to_dict'):
-            print("\nEnergy as dict:")
+        if hasattr(energy, "to_dict"):
+            logger.info("\nEnergy as dict:")
             energy_dict = energy.to_dict()
             for key, val in energy_dict.items():
-                print(f"  {key}: {val}")
+                logger.info(f"  {key}: {val}")
 
         return True
 
     except Exception as e:
-        print(f"[FAILED] Inspection failed: {type(e).__name__}: {e}")
+        logger.info(f"[FAILED] Inspection failed: {type(e).__name__}: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
 
 async def main():
     """Inspect Server plug methods."""
-    print("="*60)
-    print("Tapo P115 Plug Methods Inspection")
-    print("="*60)
+    logger.info("=" * 60)
+    logger.info("Tapo P115 Plug Methods Inspection")
+    logger.info("=" * 60)
 
     # Inspect Server plug
     success = await inspect_plug_methods("192.168.0.38", "Server")
@@ -85,11 +96,11 @@ if __name__ == "__main__":
         exit_code = asyncio.run(main())
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        print("\n\n[INTERRUPTED] Inspection cancelled by user")
+        logger.info("\n\n[INTERRUPTED] Inspection cancelled by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n[FATAL ERROR] {e}")
+        logger.info(f"\n[FATAL ERROR] {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
-

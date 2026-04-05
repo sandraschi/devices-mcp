@@ -1,6 +1,6 @@
 # Device Onboarding System Design
 
-This document outlines the comprehensive device onboarding system for the Tapo Camera MCP platform, designed to handle the diversity of devices users might have.
+This document outlines the comprehensive device onboarding system for the Devices MCP platform, designed to handle the diversity of devices users might have.
 
 ## 🎯 **Onboarding Philosophy**
 
@@ -16,19 +16,19 @@ This document outlines the comprehensive device onboarding system for the Tapo C
 async def discover_devices():
     """Automatically discover devices on the local network."""
     discovered_devices = []
-    
+
     # Tapo P115 Smart Plugs (UPnP + mDNS)
     tapo_plugs = await discover_tapo_p115_devices()
-    
+
     # Nest Protect (Google Nest API)
     nest_devices = await discover_nest_protect_devices()
-    
+
     # Ring Devices (Ring API)
     ring_devices = await discover_ring_devices()
-    
+
     # USB Webcams (system enumeration)
     webcams = await discover_usb_webcams()
-    
+
     return {
         "tapo_plugs": tapo_plugs,
         "nest_devices": nest_devices,
@@ -69,13 +69,13 @@ tapo_p115_onboarding:
   step_1_discovery:
     - "Found 3 Tapo P115 smart plugs on your network"
     - "IP addresses: 192.168.1.101, 192.168.1.102, 192.168.1.103"
-  
+
   step_2_naming:
     - "Let's name your devices for easy identification"
     - "Living Room TV Plug" → 192.168.1.101
     - "Kitchen Coffee Maker" → 192.168.1.102
     - "Bedroom Lamp" → 192.168.1.103
-  
+
   step_3_energy_setup:
     - "Configure energy monitoring settings"
     - "Set electricity rate: $0.12/kWh (default)"
@@ -91,13 +91,13 @@ nest_protect_onboarding:
     - "Connect to your Google Nest account"
     - "OAuth flow for secure authentication"
     - "Grant permissions for device access"
-  
+
   step_2_device_mapping:
     - "Map discovered Nest Protect devices"
     - "Kitchen Smoke Detector" → location: "Kitchen"
     - "Living Room CO Detector" → location: "Living Room"
     - "Bedroom Smoke Detector" → location: "Bedroom"
-  
+
   step_3_alert_setup:
     - "Configure alert preferences"
     - "Critical alerts: Push notifications + email"
@@ -113,12 +113,12 @@ ring_onboarding:
     - "Connect to your Ring account"
     - "2FA authentication support"
     - "Location selection (if multiple locations)"
-  
+
   step_2_device_discovery:
     - "Ring Doorbell Pro" → Front Door
     - "Ring Motion Sensor" → Back Yard
     - "Ring Contact Sensor" → Garage Door
-  
+
   step_3_integration:
     - "Link with camera feeds for motion alerts"
     - "Set up cross-system notifications"
@@ -132,28 +132,28 @@ ring_onboarding:
 ```python
 class DeviceOnboardingAI:
     """AI-powered onboarding assistance."""
-    
+
     async def suggest_optimal_setup(self, discovered_devices: List[Device]) -> Dict:
         """Suggest optimal configuration based on discovered devices."""
-        
+
         suggestions = {
             "energy_optimization": [],
             "security_integration": [],
             "automation_opportunities": [],
             "cost_savings": []
         }
-        
+
         # Analyze device combinations
         if self.has_tapo_plugs_and_nest_protect():
             suggestions["security_integration"].append(
                 "Link Nest Protect smoke alerts with smart plug shutdown"
             )
-        
+
         if self.has_multiple_tapo_plugs():
             suggestions["automation_opportunities"].append(
                 "Set up whole-house energy management schedule"
             )
-        
+
         return suggestions
 ```
 
@@ -167,32 +167,32 @@ const OnboardingDashboard = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [discoveredDevices, setDiscoveredDevices] = useState<DiscoveredDevice[]>([]);
   const [configuration, setConfiguration] = useState<DeviceConfig>({});
-  
+
   return (
     <div className="onboarding-container">
       {/* Progress Indicator */}
       <OnboardingProgress currentStep={currentStep} totalSteps={4} />
-      
+
       {/* Device Discovery */}
-      <DeviceDiscoveryStep 
+      <DeviceDiscoveryStep
         onDevicesFound={setDiscoveredDevices}
         onNext={() => setCurrentStep(1)}
       />
-      
+
       {/* Device Configuration */}
       <DeviceConfigurationStep
         devices={discoveredDevices}
         onConfigured={setConfiguration}
         onNext={() => setCurrentStep(2)}
       />
-      
+
       {/* Integration Setup */}
       <IntegrationSetupStep
         devices={discoveredDevices}
         config={configuration}
         onNext={() => setCurrentStep(3)}
       />
-      
+
       {/* Final Review */}
       <FinalReviewStep
         devices={discoveredDevices}
@@ -210,25 +210,25 @@ const OnboardingDashboard = () => {
 ```typescript
 const TapoP115ConfigWizard = ({ devices, onConfigured }) => {
   const [deviceConfigs, setDeviceConfigs] = useState({});
-  
+
   return (
     <div className="tapo-config-wizard">
       <h3>Configure Your Tapo P115 Smart Plugs</h3>
-      
+
       {devices.map(device => (
         <DeviceConfigCard key={device.deviceId}>
           <DeviceInfo device={device} />
-          
+
           <LocationSelector
             value={deviceConfigs[device.deviceId]?.location}
             onChange={(location) => updateConfig(device.deviceId, 'location', location)}
           />
-          
+
           <EnergySettings
             device={device}
             onSettingsChange={(settings) => updateConfig(device.deviceId, 'energy', settings)}
           />
-          
+
           <AutomationSetup
             device={device}
             onAutomationChange={(automation) => updateConfig(device.deviceId, 'automation', automation)}
@@ -246,14 +246,14 @@ const NestProtectConfig = ({ devices, onConfigured }) => {
   return (
     <div className="nest-config">
       <h3>Configure Your Nest Protect Devices</h3>
-      
+
       <GoogleOAuthButton onAuthenticated={handleNestAuth} />
-      
+
       <DeviceMapping
         devices={devices}
         onMappingComplete={handleDeviceMapping}
       />
-      
+
       <AlertPreferences
         onPreferencesSet={handleAlertPreferences}
       />
@@ -271,16 +271,16 @@ const NestProtectConfig = ({ devices, onConfigured }) => {
 async def discover_tapo_p115_devices():
     """Discover Tapo P115 devices on the network."""
     devices = []
-    
+
     # Method 1: UPnP discovery
     upnp_devices = await scan_upnp_devices(device_type="tapo_p115")
-    
+
     # Method 2: mDNS/Bonjour discovery
     mdns_devices = await scan_mdns_devices(service="_tapo._tcp")
-    
+
     # Method 3: Network range scan (if user provides IP range)
     network_devices = await scan_network_range("192.168.1.0/24", port=443)
-    
+
     for device in upnp_devices + mdns_devices + network_devices:
         if await is_tapo_p115_device(device):
             devices.append({
@@ -291,7 +291,7 @@ async def discover_tapo_p115_devices():
                 "requires_auth": True,
                 "status": "discovered"
             })
-    
+
     return devices
 ```
 
@@ -309,14 +309,14 @@ async def discover_tapo_p115_devices():
 async def discover_nest_protect_devices():
     """Discover Nest Protect devices via Google Nest API."""
     devices = []
-    
+
     # Requires Google OAuth authentication
     if not await has_valid_google_auth():
         return {"requires_auth": True, "devices": []}
-    
+
     # Query Google Nest API
     nest_devices = await google_nest_api.get_devices()
-    
+
     for device in nest_devices:
         if device["type"] == "smoke_co_alarm":
             devices.append({
@@ -327,7 +327,7 @@ async def discover_nest_protect_devices():
                 "capabilities": ["smoke_detection", "co_detection", "battery_monitoring"],
                 "status": "discovered"
             })
-    
+
     return devices
 ```
 
@@ -345,14 +345,14 @@ async def discover_nest_protect_devices():
 async def discover_ring_devices():
     """Discover Ring devices via Ring API."""
     devices = []
-    
+
     # Requires Ring account authentication
     if not await has_valid_ring_auth():
         return {"requires_auth": True, "devices": []}
-    
+
     # Query Ring API for devices
     ring_devices = await ring_api.get_devices()
-    
+
     for device in ring_devices:
         device_info = {
             "device_id": device["id"],
@@ -362,14 +362,14 @@ async def discover_ring_devices():
             "capabilities": device["capabilities"],
             "status": "discovered"
         }
-        
+
         if device["type"] == "doorbell":
             device_info["capabilities"].extend(["motion_detection", "two_way_audio"])
         elif device["type"] == "security_keypad":
             device_info["capabilities"].extend(["alarm_control", "status_monitoring"])
-        
+
         devices.append(device_info)
-    
+
     return devices
 ```
 
@@ -379,24 +379,24 @@ async def discover_ring_devices():
 ```python
 class OnboardingStateManager:
     """Manages onboarding state across sessions."""
-    
+
     def __init__(self):
         self.state_file = "onboarding_state.json"
         self.current_state = self.load_state()
-    
+
     def save_discovery_results(self, devices: List[Device]):
         """Save discovered devices to state."""
         self.current_state["discovered_devices"] = devices
         self.save_state()
-    
+
     def save_device_configuration(self, device_id: str, config: Dict):
         """Save individual device configuration."""
         if "device_configurations" not in self.current_state:
             self.current_state["device_configurations"] = {}
-        
+
         self.current_state["device_configurations"][device_id] = config
         self.save_state()
-    
+
     def get_onboarding_progress(self) -> Dict:
         """Get current onboarding progress."""
         return {
@@ -413,10 +413,10 @@ class OnboardingStateManager:
 ```python
 class DeviceNamingAI:
     """AI-powered device naming suggestions."""
-    
+
     def suggest_device_name(self, device: Device, location_hint: str = None) -> str:
         """Suggest appropriate device names based on context."""
-        
+
         if device.type == "tapo_p115":
             # Analyze network location and suggest names
             if "192.168.1.10" in device.ip_address:
@@ -425,11 +425,11 @@ class DeviceNamingAI:
                 return "Kitchen Coffee Maker"
             else:
                 return f"Smart Plug {device.mac_address[-4:]}"
-        
+
         elif device.type == "nest_protect":
             # Use location information from Nest API
             return f"{device.room} Smoke Detector"
-        
+
         return device.name
 ```
 
@@ -437,12 +437,12 @@ class DeviceNamingAI:
 ```python
 class AutomationRecommendations:
     """Generate automation recommendations based on device combinations."""
-    
+
     def generate_recommendations(self, devices: List[Device]) -> List[Dict]:
         """Generate smart automation recommendations."""
-        
+
         recommendations = []
-        
+
         # Energy optimization
         if self.has_multiple_tapo_plugs(devices):
             recommendations.append({
@@ -452,7 +452,7 @@ class AutomationRecommendations:
                 "estimated_savings": "$50-100/year",
                 "complexity": "medium"
             })
-        
+
         # Security integration
         if self.has_nest_protect_and_plugs(devices):
             recommendations.append({
@@ -462,7 +462,7 @@ class AutomationRecommendations:
                 "safety_benefit": "Reduces fire risk",
                 "complexity": "low"
             })
-        
+
         return recommendations
 ```
 
@@ -498,19 +498,19 @@ class AutomationRecommendations:
 ```python
 class OnboardingAnalytics:
     """Track onboarding success and user experience."""
-    
+
     def track_onboarding_step(self, step: str, success: bool, time_taken: int):
         """Track individual onboarding step completion."""
         pass
-    
+
     def track_device_discovery(self, device_type: str, count: int, success_rate: float):
         """Track device discovery success rates."""
         pass
-    
+
     def track_user_abandonment(self, step: str, reason: str):
         """Track where users abandon the onboarding process."""
         pass
-    
+
     def generate_onboarding_report(self) -> Dict:
         """Generate comprehensive onboarding analytics report."""
         return {

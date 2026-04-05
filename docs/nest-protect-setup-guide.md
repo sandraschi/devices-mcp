@@ -56,7 +56,7 @@ Ensure Home Assistant is running and accessible. The default URL is `http://loca
 1. Log into Home Assistant
 2. Go to **Profile** → **Security** → **Long-Lived Access Tokens**
 3. Click **Create Token**
-4. Give it a name (e.g., "Tapo Camera MCP")
+4. Give it a name (e.g., "Devices MCP")
 5. Copy the token and add it to `config.yaml`:
 
 ```yaml
@@ -134,7 +134,7 @@ If enabled but no devices appear:
 - Verify Home Assistant URL is correct (default: `http://localhost:8123`)
 - Test the access token by visiting `http://localhost:8123/api/` with the token
 - Check firewall settings if Home Assistant is on a different machine
-- Ensure Home Assistant is accessible from the Tapo Camera MCP server
+- Ensure Home Assistant is accessible from the Devices MCP server
 
 ## Integration with Other Systems
 

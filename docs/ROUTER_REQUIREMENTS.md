@@ -8,7 +8,7 @@ If devices are on the **same local network** as your computer, router changes ar
 
 ### 1. **Network Segmentation / VLANs**
 - **Problem**: Devices isolated on different VLANs/subnets
-- **Solution**: 
+- **Solution**:
   - Ensure cameras/plugs are on same network as your computer
   - Allow inter-VLAN communication if using VLANs
   - Check subnet: `ipconfig` (Windows) or `ip addr` (Linux)
@@ -31,7 +31,7 @@ If devices are on the **same local network** as your computer, router changes ar
 
 ### 4. **AP Isolation / Client Isolation**
 - **Problem**: Router setting preventing devices from talking to each other
-- **Solution**: 
+- **Solution**:
   - Disable "AP Isolation" or "Client Isolation" in router settings
   - This allows devices on Wi-Fi to communicate with each other
 
@@ -60,7 +60,7 @@ If devices are on the **same local network** as your computer, router changes ar
 
 ### Your Network:
 - **Kitchen Camera**: 192.168.0.164 (static IP enabled)
-- **Living Room Camera**: 192.168.0.206 (static IP enabled)  
+- **Living Room Camera**: 192.168.0.206 (static IP enabled)
 - **P115 Plug**: 192.168.0.17 (static IP enabled)
 
 ### Network Analysis:
@@ -101,7 +101,7 @@ Look for "IPv4 Address" - it should be on same network as devices (192.168.0.x)
 2. **Can You Ping?**
    ```powershell
    ping 192.168.0.164
-   ping 192.168.0.206  
+   ping 192.168.0.206
    ping 192.168.0.17
    ```
    - All should respond if devices are online
@@ -129,4 +129,3 @@ Look for "IPv4 Address" - it should be on same network as devices (192.168.0.x)
 2. Verify you can ping the devices
 3. Check router for AP Isolation setting
 4. If still failing, router firewall might be blocking
-

@@ -49,4 +49,3 @@ The Camera Account credentials (sandraschi / Sec1000kitchen) should now work via
 - Home Assistant Community: Tapo C200 requires this setting for integration
 - Tapo Lab feature explicitly mentions Home Assistant support
 - This is a security feature to control third-party access
-

@@ -1,5 +1,5 @@
 @echo off
-REM Windows batch file for Tapo Camera MCP
+REM Windows batch file for Devices MCP
 REM Calls Python module directly
 
 REM Find Python executable
@@ -28,5 +28,5 @@ exit /b 1
 
 :found
 REM Execute the main module
-"%PYTHON_EXE%" -m tapo_camera_mcp.cli_v2 %*
+"%PYTHON_EXE%" -m devices_mcp.cli_v2 %*
 exit /b %ERRORLEVEL%

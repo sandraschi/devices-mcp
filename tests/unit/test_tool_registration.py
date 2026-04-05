@@ -1,5 +1,5 @@
 """
-Test script to verify tool registration in Tapo Camera MCP.
+Test script to verify tool registration in Devices MCP.
 """
 
 import logging
@@ -28,7 +28,7 @@ def test_tool_registration():
         # Import the tools module to trigger registration
 
         # Get all registered tools
-        from tapo_camera_mcp.tools import tools_registry
+        from devices_mcp.tools import tools_registry
 
         # Print registered tools
         logger.info("\n=== Registered Tools ===")

@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 """Helper script to find Tapo camera credentials.
 
 This script tries common credential combinations to help identify
@@ -12,27 +16,27 @@ from pytapo import Tapo
 def try_credentials(ip, username, password):
     """Try to connect with given credentials."""
     try:
-        print(f"  Trying {username}/{password}...", end=" ")
+        logger.info(f"  Trying {username}/{password}...", end=" ")
         camera = Tapo(ip, username, password)
         info = camera.getBasicInfo()
-        print("[SUCCESS!]")
+        logger.info("[SUCCESS!]")
         return True
     except Exception as e:
         error_msg = str(e)
         if "Temporary Suspension" in error_msg:
-            print("[LOCKED OUT - Wait 30 min]")
+            logger.info("[LOCKED OUT - Wait 30 min]")
             return "locked"
         if "Invalid authentication" in error_msg:
-            print("[FAILED]")
+            logger.info("[FAILED]")
             return False
-        print(f"[ERROR: {error_msg[:50]}]")
+        logger.info(f"[ERROR: {error_msg[:50]}]")
         return False
 
 
 def find_credentials(ip):
     """Try common credential combinations."""
-    print(f"\nSearching for credentials for camera at {ip}...")
-    print("=" * 60)
+    logger.info(f"\nSearching for credentials for camera at {ip}...")
+    logger.info("=" * 60)
 
     # Common combinations to try
     combinations = [
@@ -48,23 +52,23 @@ def find_credentials(ip):
     for username, password in combinations:
         result = try_credentials(ip, username, password)
         if result is True:
-            print("\n[SUCCESS] Found working credentials!")
-            print(f"Username: {username}")
-            print(f"Password: {password}")
-            print("\nUpdate your config.yaml with these credentials.")
+            logger.info("\n[SUCCESS] Found working credentials!")
+            logger.info(f"Username: {username}")
+            logger.info(f"Password: {password}")
+            logger.info("\nUpdate your config.yaml with these credentials.")
             return (username, password)
         if result == "locked":
-            print("\n[STOPPED] Camera is locked out. Wait 30 minutes or power cycle camera.")
+            logger.info("\n[STOPPED] Camera is locked out. Wait 30 minutes or power cycle camera.")
             return None
 
-    print("\n" + "=" * 60)
-    print("[FAILED] None of the common credentials worked.")
-    print("\nTry manually:")
-    print("1. Check the camera label/sticker for default credentials")
-    print("2. Check device manual for default username/password")
-    print("3. In Tapo app: Camera -> Advanced -> Local Device Settings")
-    print("4. Password might be in TPL[numbers] format from label")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("[FAILED] None of the common credentials worked.")
+    logger.info("\nTry manually:")
+    logger.info("1. Check the camera label/sticker for default credentials")
+    logger.info("2. Check device manual for default username/password")
+    logger.info("3. In Tapo app: Camera -> Advanced -> Local Device Settings")
+    logger.info("4. Password might be in TPL[numbers] format from label")
+    logger.info("=" * 60)
     return None
 
 
@@ -74,17 +78,16 @@ if __name__ == "__main__":
     else:
         ip = "192.168.0.164"  # Kitchen camera
 
-    print("Tapo Camera Credential Finder")
-    print(f"Testing camera at {ip}")
-    print("\nWARNING: Too many failed attempts will lock the camera!")
-    print("This script tries common combinations carefully.\n")
+    logger.info("Tapo Camera Credential Finder")
+    logger.info(f"Testing camera at {ip}")
+    logger.info("\nWARNING: Too many failed attempts will lock the camera!")
+    logger.info("This script tries common combinations carefully.\n")
 
     result = find_credentials(ip)
 
     if result:
-        print(f"\nWorking credentials found: {result[0]}/{result[1]}")
+        logger.info(f"\nWorking credentials found: {result[0]}/{result[1]}")
         sys.exit(0)
     else:
-        print("\nManual credential lookup required.")
+        logger.info("\nManual credential lookup required.")
         sys.exit(1)
-

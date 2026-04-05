@@ -22,4 +22,3 @@ notifiers:
       text: "{{ .CommonAnnotations.description }}"
       # For browser-based sound alerts, use WebSocket or browser notification API
       # This endpoint should trigger browser notification with sound
-

@@ -1,10 +1,10 @@
 # Monitoring Stack Quickstart
 
-**Date:** 2025-12-10  
+**Date:** 2025-12-10
 **Status:** ✅ Fully Operational
 
 ## Overview
-Complete monitoring stack for Tapo Camera MCP:
+Complete monitoring stack for Devices MCP:
 - **Grafana**: Visualization dashboards
 - **Prometheus**: Metrics collection
 - **Loki**: Log aggregation
@@ -14,7 +14,7 @@ Complete monitoring stack for Tapo Camera MCP:
 - Docker Desktop installed
 - `myhomecontrol` network created
 - `myhomecontrol_app_logs` volume created
-- Tapo Camera MCP running locally on port `7777` (default from `config.yaml`)
+- Devices MCP running locally on port `7777` (default from `config.yaml`)
 
 ## Quick Setup
 
@@ -48,7 +48,7 @@ docker compose -f docker-compose.monitoring.yml up -d
 ## Prometheus Scraping
 Prometheus is preconfigured to scrape the MCP server metrics at `http://host.docker.internal:7777/metrics` using the consolidated config at `deploy\prometheus\prometheus.yaml` (mounted by the compose file).
 
-Ensure the MCP web server is running and exposes `/metrics`. This repo's `src\tapo_camera_mcp\web\server.py` provides the endpoint.
+Ensure the MCP web server is running and exposes `/metrics`. This repo's `src\devices_mcp\web\server.py` provides the endpoint.
 
 ## Grafana
 Grafana is pre-provisioned with:
@@ -61,12 +61,12 @@ Grafana is pre-provisioned with:
 
 **Navigate to**:
 - Dashboards → Manage → `Tapo P115 Overview`
-- Explore → Loki → Query: `{job="tapo-camera-mcp"}`
+- Explore → Loki → Query: `{job="devices-mcp"}`
 
 ## Log Shipping
 Promtail automatically ships logs from:
-- Docker container logs (`/var/log/tapo-camera-mcp/*.log`)
-- Native Windows logs (`/var/log/tapo-camera-mcp-host/tapo_mcp.log`)
+- Docker container logs (`/var/log/devices-mcp/*.log`)
+- Native Windows logs (`/var/log/devices-mcp-host/tapo_mcp.log`)
 
 Logs are available in Grafana Explore → Loki.
 
@@ -98,5 +98,3 @@ See `docs/monitoring/SETUP.md` for detailed troubleshooting guide.
 - Windows users: `host.docker.internal` resolves the host from inside containers.
 - Port conflicts resolved: Grafana (3001), Prometheus (9095), Loki (3101)
 - All deprecated configs have been updated for latest versions
-
-

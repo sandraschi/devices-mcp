@@ -11,8 +11,8 @@
     "sign": "grafana-toolkit plugin:sign",
     "start": "grafana-toolkit plugin:start"
   },
-  "repository": "github:tapo-camera-mcp",
-  "author": "Tapo Camera MCP Team",
+  "repository": "github:devices-mcp",
+  "author": "Devices MCP Team",
   "license": "MIT",
   "dependencies": {
     "@grafana/data": "^9.5.21",

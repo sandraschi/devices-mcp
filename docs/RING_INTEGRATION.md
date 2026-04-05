@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Tapo Camera MCP integrates with Ring devices to provide:
+The Devices MCP integrates with Ring devices to provide:
 - **Ring Alarm Base Station EU** with full sensor support
 - Live video streaming (WebRTC) for doorbells/cameras
 - Two-way audio communication
@@ -32,6 +32,33 @@ The Tapo Camera MCP integrates with Ring devices to provide:
 - Battery Backup: 24 hours
 - Connectivity: Wi-Fi, Ethernet, Z-Wave
 
+## Doorbell & Speakerphone Features (v1.18.0)
+
+### 🔔 Doorbell Detection
+- **Real-time doorbell press detection** from Ring's event API
+- **Event history** with timestamps and answered/unanswered status
+- **Recording availability** tracking for cloud-stored videos
+- **Web interface integration** with dedicated doorbell events panel
+- **Event notifications** with full metadata
+
+### 📢 Speakerphone Integration
+- **WebRTC two-way audio** using Ring's native infrastructure
+- **Built-in speaker control** for talking back to visitors
+- **Microphone input** for hearing doorbell audio
+- **Full duplex communication** (simultaneous send/receive)
+- **High-quality audio** compared to Tapo cameras
+
+### Speakerphone vs Other Cameras
+
+| Feature | Ring | Tapo | USB Webcam |
+|---------|------|------|------------|
+| **Two-way audio** | ✅ WebRTC | ✅ RTSP | ❌ None |
+| **Speaker quality** | ✅ Good | ⚠️ Tinny | ❌ None |
+| **Doorbell detection** | ✅ Real-time | ❌ None | ❌ None |
+| **Cloud integration** | ✅ Ring Cloud | ❌ Local | ❌ Local |
+
+---
+
 ## Features by Subscription
 
 ### Without Ring Protect (FREE)
@@ -44,6 +71,8 @@ The Tapo Camera MCP integrates with Ring devices to provide:
 | Ding Notifications | ✅ Works |
 | Device Status | ✅ Works |
 | Alarm Control | ✅ Works |
+| **Doorbell Events** | ✅ Works |
+| **Speakerphone** | ✅ Works |
 
 ### With Ring Protect (~€4/month)
 
@@ -185,4 +214,3 @@ The dashboard polls for new events every 10 seconds:
 - Ring API has rate limits
 - Dashboard caches responses for 60 seconds
 - Snapshot API limited without subscription
-

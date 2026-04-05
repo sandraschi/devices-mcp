@@ -17,10 +17,10 @@ python start.py webcam
 ### **Method 2: Manual Commands**
 ```bash
 # Terminal 1: Start MCP server (for Claude Desktop)
-python -m tapo_camera_mcp.server_v2 --direct
+python -m devices_mcp.server_v2 --direct
 
 # Terminal 2: Start web dashboard
-python -m tapo_camera_mcp.web.server
+python -m devices_mcp.web.server
 ```
 
 ### **Method 3: Test First**
@@ -29,7 +29,7 @@ python -m tapo_camera_mcp.web.server
 python test_webcam_streaming.py
 
 # Then start dashboard
-python -m tapo_camera_mcp.web.server
+python -m devices_mcp.web.server
 ```
 
 ## 🌐 **DASHBOARD ACCESS**
@@ -108,9 +108,6 @@ python start.py webcam
 
 ---
 
-**Dashboard URL**: `http://localhost:7777`  
-**Status**: Production Ready ✅  
+**Dashboard URL**: `http://localhost:7777`
+**Status**: Production Ready ✅
 **Last Updated**: December 2024
-
-
-

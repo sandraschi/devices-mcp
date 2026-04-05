@@ -15,4 +15,3 @@ Next steps:
    `tapo_camera_stream_bitrate`.
 2. Embed camera thumbnails via custom plugin once stream metrics validated.
 3. Add alert annotation stream after Alertmanager wiring is live.
-

@@ -14,7 +14,7 @@ Temporary Suspension: Try again in 1800 seconds
 
 ### Lockout Triggers
 
-1. **Multiple Failed Authentication Attempts**: 
+1. **Multiple Failed Authentication Attempts**:
    - Camera receives 3-5 incorrect username/password combinations
    - Security system activates temporary lockout
 
@@ -106,4 +106,3 @@ The code now prevents this from happening again by:
 - Immediate error detection
 - No retries on failures
 - Smart discovery that checks ports first
-

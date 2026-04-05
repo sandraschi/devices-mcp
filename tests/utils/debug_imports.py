@@ -45,18 +45,18 @@ def main():
     add_src_to_path()
 
     # Test importing base_tool first
-    test_import("tapo_camera_mcp.tools.base_tool")
+    test_import("devices_mcp.tools.base_tool")
 
     # Test importing tools/__init__.py
-    test_import("tapo_camera_mcp.tools")
+    test_import("devices_mcp.tools")
 
     # Test importing tool modules
     modules = [
-        "tapo_camera_mcp.tools.camera",
-        "tapo_camera_mcp.tools.system",
-        "tapo_camera_mcp.tools.ptz",
-        "tapo_camera_mcp.tools.media",
-        "tapo_camera_mcp.tools.grafana",
+        "devices_mcp.tools.camera",
+        "devices_mcp.tools.system",
+        "devices_mcp.tools.ptz",
+        "devices_mcp.tools.media",
+        "devices_mcp.tools.grafana",
     ]
 
     for module in modules:
@@ -64,7 +64,7 @@ def main():
 
     # Test tool registration
     try:
-        from tapo_camera_mcp.tools import get_all_tools
+        from devices_mcp.tools import get_all_tools
 
         tools = get_all_tools()
         logger.info("\n=== Registered Tools ===")

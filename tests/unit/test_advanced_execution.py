@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def test_server_singleton_pattern():
     """Test server singleton pattern implementation."""
-    from tapo_camera_mcp.core.server import TapoCameraServer
+    from devices_mcp.core.server import TapoCameraServer
 
     # Test that server is a singleton
     # We can't easily test the actual singleton without proper setup,
@@ -32,7 +32,7 @@ def test_server_singleton_pattern():
 
 def test_camera_factory_creation():
     """Test camera factory creation with different camera types."""
-    from tapo_camera_mcp.camera.base import CameraConfig, CameraFactory, CameraType
+    from devices_mcp.camera.base import CameraConfig, CameraFactory, CameraType
 
     # Test creating different camera types
     tapo_config = CameraConfig(
@@ -65,14 +65,14 @@ def test_camera_factory_creation():
 def test_tool_execution_with_mocking():
     """Test tool execution with comprehensive mocking."""
     try:
-        from tapo_camera_mcp.tools.camera.camera_tools import ListCamerasTool
-        from tapo_camera_mcp.tools.system.help_tool import HelpTool
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.camera.camera_tools import ListCamerasTool
+        from devices_mcp.tools.system.help_tool import HelpTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Test ListCamerasTool with full mocking
         list_tool = ListCamerasTool()
 
-        with mock.patch("tapo_camera_mcp.core.server.TapoCameraServer") as mock_server_class:
+        with mock.patch("devices_mcp.core.server.TapoCameraServer") as mock_server_class:
             # Mock the entire server instance and camera manager
             mock_server = mock.AsyncMock()
             mock_camera_manager = mock.AsyncMock()
@@ -135,7 +135,7 @@ def test_tool_execution_with_mocking():
 def test_validation_error_scenarios():
     """Test validation error scenarios in tools."""
     try:
-        from tapo_camera_mcp.tools.camera.camera_tools import AddCameraTool
+        from devices_mcp.tools.camera.camera_tools import AddCameraTool
 
         # Test tool with invalid parameters
         tool = AddCameraTool(
@@ -146,7 +146,7 @@ def test_validation_error_scenarios():
         )
 
         # Mock server to avoid actual execution
-        with mock.patch("tapo_camera_mcp.core.server.TapoCameraServer") as mock_server_class:
+        with mock.patch("devices_mcp.core.server.TapoCameraServer") as mock_server_class:
             mock_server = mock.AsyncMock()
             mock_server.add_camera.return_value = {"success": True}
             mock_server_class.get_instance.return_value = mock_server
@@ -172,9 +172,9 @@ def test_validation_error_scenarios():
 def test_camera_connection_scenarios():
     """Test camera connection scenarios and error handling."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.tapo import TapoCamera
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.webcam import WebCamera
 
         # Test Tapo camera connection error handling
         tapo_config = CameraConfig(
@@ -218,11 +218,11 @@ def test_web_api_error_handling():
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config
-        with mock.patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, mock.patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with mock.patch("backend.server.get_config") as mock_get_config, mock.patch(
+            "backend.server.get_model"
         ) as mock_get_model:
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = mock.MagicMock()
@@ -255,7 +255,7 @@ def test_web_api_error_handling():
 def test_tool_registry_operations():
     """Test tool registry operations and edge cases."""
     try:
-        from tapo_camera_mcp.tools.base_tool import (
+        from devices_mcp.tools.base_tool import (
             _tool_registry,
             get_all_tools,
             get_tool,
@@ -304,11 +304,11 @@ def test_tool_registry_operations():
 def test_async_tool_execution():
     """Test async tool execution patterns."""
     try:
-        from tapo_camera_mcp.tools.camera.camera_tools import (
+        from devices_mcp.tools.camera.camera_tools import (
             GetCameraStatusTool,
             ListCamerasTool,
         )
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Test that tools have async execute methods
         tools_to_test = [
@@ -351,7 +351,7 @@ def test_async_tool_execution():
 def test_system_resource_monitoring():
     """Test system resource monitoring in status tools."""
     try:
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Test StatusTool with different sections
         sections_to_test = ["system", "cameras", "tools"]
@@ -379,7 +379,7 @@ def test_system_resource_monitoring():
 def test_error_recovery_mechanisms():
     """Test error recovery mechanisms in the system."""
     try:
-        from tapo_camera_mcp.exceptions import (
+        from devices_mcp.exceptions import (
             AuthenticationError,
             ConnectionError,
             TapoCameraError,
@@ -415,7 +415,7 @@ def test_error_recovery_mechanisms():
 def test_configuration_validation():
     """Test configuration validation across the system."""
     try:
-        from tapo_camera_mcp.core.models import TapoCameraConfig
+        from devices_mcp.core.models import TapoCameraConfig
 
         # Test valid configuration
         valid_config = TapoCameraConfig(
@@ -493,3 +493,5 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         sys.exit(1)
+
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tapo Camera MCP Dashboard External Access Issue - Windows Firewall Blocking</title>
+    <title>Devices MCP Dashboard External Access Issue - Windows Firewall Blocking</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -97,18 +97,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>Tapo Camera MCP Dashboard External Access Issue - Windows Firewall Blocking</h1>
-        
+        <h1>Devices MCP Dashboard External Access Issue - Windows Firewall Blocking</h1>
+
         <div class="metadata">
             <strong>Type:</strong> Troubleshooting<br>
             <strong>Date:</strong> 2025-10-20<br>
-            <strong>Permalink:</strong> troubleshooting/tapo-camera-mcp-dashboard-external-access-issue-windows-firewall-blocking
+            <strong>Permalink:</strong> troubleshooting/devices-mcp-dashboard-external-access-issue-windows-firewall-blocking
         </div>
 
         <div class="tags">
             <span class="tag">networking</span>
             <span class="tag">windows-firewall</span>
-            <span class="tag">tapo-camera-mcp</span>
+            <span class="tag">devices-mcp</span>
             <span class="tag">dashboard</span>
             <span class="tag">troubleshooting</span>
             <span class="tag">external-access</span>
@@ -119,7 +119,7 @@
         </div>
 
         <h2>Problem Description</h2>
-        <p>The Tapo Camera MCP dashboard was accessible via Tailscale (<code>goliath:7777</code>) but not via external IP address (<code>213.47.34.131:7777</code>). The server was correctly configured to bind to <code>0.0.0.0:7777</code> but Windows Firewall was blocking incoming connections.</p>
+        <p>The Devices MCP dashboard was accessible via Tailscale (<code>goliath:7777</code>) but not via external IP address (<code>213.47.34.131:7777</code>). The server was correctly configured to bind to <code>0.0.0.0:7777</code> but Windows Firewall was blocking incoming connections.</p>
 
         <h2>Root Cause Analysis</h2>
         <ul>
@@ -131,7 +131,7 @@
 
         <h2>Technical Details</h2>
         <ul>
-            <li><strong>Server</strong>: Tapo Camera MCP FastAPI web server</li>
+            <li><strong>Server</strong>: Devices MCP FastAPI web server</li>
             <li><strong>Port</strong>: 7777 (configurable)</li>
             <li><strong>Host Binding</strong>: <code>0.0.0.0</code> (correct for external access)</li>
             <li><strong>Firewall Issue</strong>: Windows Defender Firewall blocking TCP port 7777</li>
@@ -141,22 +141,22 @@
         <h2>Configuration Files</h2>
         <ul>
             <li><strong>Main Config</strong>: <code>config.yaml</code> - <code>web.host: "0.0.0.0"</code> ✅</li>
-            <li><strong>Model Config</strong>: <code>src/tapo_camera_mcp/config/models.py</code> - <code>WebUISettings.host: "0.0.0.0"</code> ✅</li>
-            <li><strong>Server Code</strong>: <code>src/tapo_camera_mcp/web/server.py</code> - Uses config host setting ✅</li>
+            <li><strong>Model Config</strong>: <code>src/devices_mcp/config/models.py</code> - <code>WebUISettings.host: "0.0.0.0"</code> ✅</li>
+            <li><strong>Server Code</strong>: <code>src/devices_mcp/web/server.py</code> - Uses config host setting ✅</li>
         </ul>
 
         <h2>Solutions Provided</h2>
 
         <h3>Option 1: Add Windows Firewall Rule (Recommended)</h3>
         <pre><code># Run as Administrator
-netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in action=allow protocol=TCP localport=7777</code></pre>
+netsh advfirewall firewall add rule name="Devices MCP Dashboard" dir=in action=allow protocol=TCP localport=7777</code></pre>
 
         <h3>Option 2: Windows Firewall GUI</h3>
         <ol>
             <li>Windows Defender Firewall with Advanced Security</li>
             <li>Inbound Rules → New Rule → Port → TCP → Specific ports: 7777</li>
             <li>Allow connection → Apply to all profiles</li>
-            <li>Name: "Tapo Camera MCP Dashboard"</li>
+            <li>Name: "Devices MCP Dashboard"</li>
         </ol>
 
         <h3>Option 3: Temporarily Disable Firewall</h3>
@@ -177,10 +177,10 @@ netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in acti
 netstat -an | findstr :7777
 
 # Check existing firewall rules
-netsh advfirewall firewall show rule name="Tapo Camera MCP" dir=in
+netsh advfirewall firewall show rule name="Devices MCP" dir=in
 
 # Add firewall rule (requires admin)
-netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in action=allow protocol=TCP localport=7777</code></pre>
+netsh advfirewall firewall add rule name="Devices MCP Dashboard" dir=in action=allow protocol=TCP localport=7777</code></pre>
 
         <h2>Key Learning Points</h2>
         <ol>
@@ -204,9 +204,9 @@ netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in acti
         <h2>Related Files</h2>
         <ul>
             <li><code>start.py</code> - Dashboard startup script</li>
-            <li><code>src/tapo_camera_mcp/web/server.py</code> - Web server implementation</li>
+            <li><code>src/devices_mcp/web/server.py</code> - Web server implementation</li>
             <li><code>config.yaml</code> - Configuration file</li>
-            <li><code>src/tapo_camera_mcp/config/models.py</code> - Configuration models</li>
+            <li><code>src/devices_mcp/config/models.py</code> - Configuration models</li>
         </ul>
     </div>
 </body>

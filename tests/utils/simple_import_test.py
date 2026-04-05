@@ -7,7 +7,7 @@ if src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
 try:
-    from tapo_camera_mcp.tools import base_tool
+    from devices_mcp.tools import base_tool
 
     # Check if register_tool exists
     if hasattr(base_tool, "register_tool"):

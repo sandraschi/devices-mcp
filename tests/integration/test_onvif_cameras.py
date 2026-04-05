@@ -89,7 +89,7 @@ def onvif_cameras():
 @pytest.fixture(scope="module")
 def camera_manager():
     """Get camera manager instance."""
-    from tapo_camera_mcp.camera.manager import CameraManager
+    from devices_mcp.camera.manager import CameraManager
 
     return CameraManager()
 
@@ -99,8 +99,8 @@ async def test_onvif_camera_connection(onvif_cameras):
     """Test ONVIF camera connection to real hardware."""
     for camera_info in onvif_cameras:
         try:
-            from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-            from tapo_camera_mcp.camera.onvif_camera import ONVIFBasedCamera
+            from devices_mcp.camera.base import CameraConfig, CameraType
+            from devices_mcp.camera.onvif_camera import ONVIFBasedCamera
 
             config = CameraConfig(
                 name=camera_info["name"],
@@ -123,9 +123,9 @@ async def test_onvif_camera_connection(onvif_cameras):
             status = await asyncio.wait_for(camera.get_status(), timeout=10.0)
             assert status.get("connected", False), f"Camera {camera_info['name']} not connected"
 
-            print(f"SUCCESS: {camera_info['name']}: Connected successfully")
-            print(f"   Model: {status.get('model', 'Unknown')}")
-            print(f"   Resolution: {status.get('resolution', 'Unknown')}")
+            logger.info(f"SUCCESS: {camera_info['name']}: Connected successfully")
+            logger.info(f"   Model: {status.get('model', 'Unknown')}")
+            logger.info(f"   Resolution: {status.get('resolution', 'Unknown')}")
 
         except asyncio.TimeoutError:
             pytest.fail(f"Connection to {camera_info['name']} timed out")
@@ -151,8 +151,8 @@ async def test_onvif_stream_url(onvif_cameras):
     """Test getting stream URL from real ONVIF cameras."""
     for camera_info in onvif_cameras:
         try:
-            from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-            from tapo_camera_mcp.camera.onvif_camera import ONVIFBasedCamera
+            from devices_mcp.camera.base import CameraConfig, CameraType
+            from devices_mcp.camera.onvif_camera import ONVIFBasedCamera
 
             config = CameraConfig(
                 name=camera_info["name"],
@@ -177,8 +177,8 @@ async def test_onvif_stream_url(onvif_cameras):
             assert stream_url.startswith("rtsp://"), f"Invalid stream URL format: {stream_url}"
             assert camera_info["host"] in stream_url, "Stream URL doesn't contain camera host"
 
-            print(f"SUCCESS: {camera_info['name']}: Stream URL retrieved")
-            print(f"   URL: {stream_url[:60]}...")
+            logger.info(f"SUCCESS: {camera_info['name']}: Stream URL retrieved")
+            logger.info(f"   URL: {stream_url[:60]}...")
 
             # Test getting stream URL again (should still work, fresh connection)
             stream_url2 = await asyncio.wait_for(camera.get_stream_url(), timeout=15.0)
@@ -202,7 +202,7 @@ async def test_onvif_stream_endpoint(onvif_cameras):
     """Test stream endpoint with real ONVIF cameras."""
     for camera_info in onvif_cameras:
         try:
-            from tapo_camera_mcp.core.server import TapoCameraServer
+            from devices_mcp.core.server import TapoCameraServer
 
             # Get server instance
             server = await asyncio.wait_for(TapoCameraServer.get_instance(), timeout=10.0)
@@ -218,8 +218,8 @@ async def test_onvif_stream_endpoint(onvif_cameras):
             stream_url = await asyncio.wait_for(camera.get_stream_url(), timeout=15.0)
             assert stream_url is not None, f"No stream URL for {camera_info['name']}"
 
-            print(f"SUCCESS: {camera_info['name']}: Stream endpoint test passed")
-            print(f"   Stream URL available: {stream_url[:50]}...")
+            logger.info(f"SUCCESS: {camera_info['name']}: Stream endpoint test passed")
+            logger.info(f"   Stream URL available: {stream_url[:50]}...")
 
         except asyncio.TimeoutError:
             pytest.fail(f"Stream endpoint test for {camera_info['name']} timed out")
@@ -239,8 +239,8 @@ async def test_onvif_snapshot(onvif_cameras):
     """Test getting snapshot from real ONVIF cameras."""
     for camera_info in onvif_cameras:
         try:
-            from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-            from tapo_camera_mcp.camera.onvif_camera import ONVIFBasedCamera
+            from devices_mcp.camera.base import CameraConfig, CameraType
+            from devices_mcp.camera.onvif_camera import ONVIFBasedCamera
 
             config = CameraConfig(
                 name=camera_info["name"],
@@ -275,7 +275,7 @@ async def test_onvif_snapshot(onvif_cameras):
                     f"SUCCESS: {camera_info['name']}: Snapshot retrieved ({snapshot_image.size[0]}x{snapshot_image.size[1]})"
                 )
             else:
-                print(f"WARNING: {camera_info['name']}: Snapshot not supported (this is OK)")
+                logger.info(f"WARNING: {camera_info['name']}: Snapshot not supported (this is OK)")
 
         except asyncio.TimeoutError:
             pytest.fail(f"Snapshot retrieval for {camera_info['name']} timed out")
@@ -295,7 +295,7 @@ async def test_onvif_mjpeg_stream_endpoint(onvif_cameras):
     """Test MJPEG stream endpoint with real ONVIF cameras (simulates web request)."""
     for camera_info in onvif_cameras:
         try:
-            from tapo_camera_mcp.core.server import TapoCameraServer
+            from devices_mcp.core.server import TapoCameraServer
 
             # Get server instance (hardware init can take up to 30s)
             server = await asyncio.wait_for(TapoCameraServer.get_instance(), timeout=35.0)
@@ -319,9 +319,9 @@ async def test_onvif_mjpeg_stream_endpoint(onvif_cameras):
                 url = await asyncio.wait_for(camera.get_stream_url(), timeout=15.0)
                 assert url == stream_url, f"Stream URL changed on iteration {i + 1}"
 
-            print(f"SUCCESS: {camera_info['name']}: MJPEG stream endpoint test passed")
-            print(f"   Stream URL: {stream_url[:60]}...")
-            print("   Multiple requests: OK (fresh connections)")
+            logger.info(f"SUCCESS: {camera_info['name']}: MJPEG stream endpoint test passed")
+            logger.info(f"   Stream URL: {stream_url[:60]}...")
+            logger.info("   Multiple requests: OK (fresh connections)")
 
         except asyncio.TimeoutError:
             pytest.fail(f"MJPEG stream endpoint test for {camera_info['name']} timed out")
@@ -343,8 +343,8 @@ async def test_onvif_fresh_connection_each_time(onvif_cameras):
     """Test that each stream URL request creates a fresh connection (no stale auth)."""
     for camera_info in onvif_cameras:
         try:
-            from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-            from tapo_camera_mcp.camera.onvif_camera import ONVIFBasedCamera
+            from devices_mcp.camera.base import CameraConfig, CameraType
+            from devices_mcp.camera.onvif_camera import ONVIFBasedCamera
 
             config = CameraConfig(
                 name=camera_info["name"],
@@ -370,7 +370,7 @@ async def test_onvif_fresh_connection_each_time(onvif_cameras):
             assert stream_url2 is not None, "Second stream URL should work"
             assert stream_url1 == stream_url2, "Stream URLs should be the same"
 
-            print(f"SUCCESS: {camera_info['name']}: Fresh connections work correctly")
+            logger.info(f"SUCCESS: {camera_info['name']}: Fresh connections work correctly")
 
         except asyncio.TimeoutError:
             pytest.fail(f"Fresh connection test for {camera_info['name']} timed out")
@@ -391,7 +391,7 @@ async def test_onvif_camera_manager_integration(onvif_cameras, camera_manager):
     try:
         # Add cameras to manager
         for camera_info in onvif_cameras:
-            from tapo_camera_mcp.camera.base import CameraConfig, CameraType
+            from devices_mcp.camera.base import CameraConfig, CameraType
 
             config = CameraConfig(
                 name=camera_info["name"],
@@ -425,7 +425,7 @@ async def test_onvif_camera_manager_integration(onvif_cameras, camera_manager):
             stream_url = await asyncio.wait_for(camera.get_stream_url(), timeout=15.0)
             assert stream_url is not None, f"No stream URL for {camera_info['name']}"
 
-        print(f"SUCCESS: Camera manager integration: {len(onvif_cameras)} cameras working")
+        logger.info(f"SUCCESS: Camera manager integration: {len(onvif_cameras)} cameras working")
 
     except asyncio.TimeoutError:
         pytest.fail("Camera manager integration test timed out")

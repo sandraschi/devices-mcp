@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 @pytest.mark.skip(reason="# TODO: Fix test_base_camera - currently has assert False")
 def test_base_camera():
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.base import CameraConfig, CameraType
 
         # Test CameraType enum
         list(CameraType)
@@ -43,8 +43,8 @@ def test_base_camera():
 def test_tapo_camera():
     """Test Tapo camera implementation."""
     try:
-        from tapo_camera_mcp.camera.tapo import TapoCamera
-        from tapo_camera_mcp.core.models import TapoCameraConfig
+        from devices_mcp.camera.tapo import TapoCamera
+        from devices_mcp.core.models import TapoCameraConfig
 
         # Test TapoCameraConfig creation
         TapoCameraConfig(host="192.168.1.100", username="test_user", password="test_pass", port=443)
@@ -66,7 +66,7 @@ def test_tapo_camera():
 def test_webcam_camera():
     """Test webcam camera implementation."""
     try:
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.webcam import WebCamera
 
         # Test that WebCamera class exists and has required methods
         assert hasattr(WebCamera, "__init__"), "WebCamera should have __init__"
@@ -86,8 +86,8 @@ def test_webcam_camera():
 def test_camera_manager():
     """Test camera manager functionality."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.manager import CameraManager
 
         # Test CameraManager creation
         manager = CameraManager()
@@ -113,7 +113,7 @@ def test_camera_manager():
 def test_camera_groups():
     """Test camera groups functionality."""
     try:
-        from tapo_camera_mcp.camera.groups import CameraGroupManager
+        from devices_mcp.camera.groups import CameraGroupManager
 
         # Test CameraGroupManager creation
         group_manager = CameraGroupManager()
@@ -131,7 +131,7 @@ def test_camera_groups():
 def test_camera_factory():
     """Test camera factory pattern."""
     try:
-        from tapo_camera_mcp.camera.base import CameraFactory
+        from devices_mcp.camera.base import CameraFactory
 
         # Test that CameraFactory exists
         assert hasattr(CameraFactory, "create_camera"), (
@@ -150,7 +150,7 @@ def test_camera_factory():
 def test_camera_exceptions():
     """Test camera exception classes."""
     try:
-        from tapo_camera_mcp.exceptions import (
+        from devices_mcp.exceptions import (
             AuthenticationError,
             CameraNotFoundError,
             ConnectionError,

@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
+import datetime
+import logging
 import os
 import zipfile
-import datetime
-import shutil
-import glob
-import re
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # Configuration
 REPO_ROOT = Path(__file__).parent.parent
 BACKUP_DESTINATIONS = [
-    Path(os.path.expanduser("~/OneDrive/Backup/repo-backups/tapo-camera-mcp")),
+    Path(os.path.expanduser("~/OneDrive/Backup/repo-backups/devices-mcp")),
     # Add other destinations if needed as per original script
-    Path("C:/Users/sandr/OneDrive/Backup/repo-backups/tapo-camera-mcp"),
-    Path("D:/Backups/repo-backups/tapo-camera-mcp"),
+    Path("C:/Users/sandr/OneDrive/Backup/repo-backups/devices-mcp"),
+    Path("D:/Backups/repo-backups/devices-mcp"),
 ]
 
 RULES_FILE = REPO_ROOT / ".backup-rules.md"
 TIMESTAMP = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-BACKUP_NAME = f"tapo-camera-mcp_backup_{TIMESTAMP}.zip"
+BACKUP_NAME = f"devices-mcp_backup_{TIMESTAMP}.zip"
 
 
 def load_exclusions():
@@ -45,7 +45,7 @@ def load_exclusions():
     )
 
     if RULES_FILE.exists():
-        with open(RULES_FILE, "r", encoding="utf-8") as f:
+        with open(RULES_FILE, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line.startswith("EXCLUDE:"):
@@ -92,9 +92,7 @@ def get_files_to_backup(exclusions):
         root_path = Path(root)
 
         # Pruning directories in-place
-        dirs[:] = [
-            d for d in dirs if not should_exclude(root_path / d, REPO_ROOT, exclusions)
-        ]
+        dirs[:] = [d for d in dirs if not should_exclude(root_path / d, REPO_ROOT, exclusions)]
 
         for file in files:
             file_path = root_path / file
@@ -105,16 +103,16 @@ def get_files_to_backup(exclusions):
 
 
 def create_backup():
-    print(f"START: Starting backup for {REPO_ROOT.name}")
+    logger.info(f"START: Starting backup for {REPO_ROOT.name}")
     exclusions = load_exclusions()
-    print(f"LIST: Loaded {len(exclusions)} exclusion rules")
+    logger.info(f"LIST: Loaded {len(exclusions)} exclusion rules")
 
-    print("SCAN: Scanning files...")
+    logger.info("SCAN: Scanning files...")
     files = get_files_to_backup(exclusions)
-    print(f"SUCCESS: Found {len(files)} files to backup")
+    logger.info(f"SUCCESS: Found {len(files)} files to backup")
 
     total_size = sum(f.stat().st_size for f in files)
-    print(f"SIZE: Total size: {total_size / 1024 / 1024:.2f} MB")
+    logger.info(f"SIZE: Total size: {total_size / 1024 / 1024:.2f} MB")
 
     for dest_dir in BACKUP_DESTINATIONS:
         dest_dir = Path(dest_dir)
@@ -122,20 +120,20 @@ def create_backup():
             try:
                 dest_dir.mkdir(parents=True, exist_ok=True)
             except Exception as e:
-                print(f"WARNING: Could not create backup dir {dest_dir}: {e}")
+                logger.info(f"WARNING: Could not create backup dir {dest_dir}: {e}")
                 continue
 
         backup_path = dest_dir / BACKUP_NAME
-        print(f"BACKUP: Creating backup at {backup_path}...")
+        logger.info(f"BACKUP: Creating backup at {backup_path}...")
 
         try:
             with zipfile.ZipFile(backup_path, "w", zipfile.ZIP_DEFLATED) as zf:
                 for file in files:
                     arcname = file.relative_to(REPO_ROOT)
                     zf.write(file, arcname)
-            print(f"SUCCESS: Backup created successfully: {backup_path}")
+            logger.info(f"SUCCESS: Backup created successfully: {backup_path}")
         except Exception as e:
-            print(f"ERROR: Failed to create backup at {dest_dir}: {e}")
+            logger.info(f"ERROR: Failed to create backup at {dest_dir}: {e}")
 
 
 if __name__ == "__main__":

@@ -5,8 +5,8 @@
   "info": {
     "description": "Grafana panel for viewing and controlling Tapo camera streams with PTZ support",
     "author": {
-      "name": "Tapo Camera MCP Team",
-      "url": "https://github.com/your-org/tapo-camera-mcp"
+      "name": "Devices MCP Team",
+      "url": "https://github.com/your-org/devices-mcp"
     },
     "keywords": ["tapo", "camera", "stream", "ptz", "video", "surveillance"],
     "logos": {
@@ -14,8 +14,8 @@
       "large": "img/logo.svg"
     },
     "links": [
-      {"name": "Website", "url": "https://github.com/your-org/tapo-camera-mcp"},
-      {"name": "License", "url": "https://github.com/your-org/tapo-camera-mcp/blob/main/LICENSE"}
+      {"name": "Website", "url": "https://github.com/your-org/devices-mcp"},
+      {"name": "License", "url": "https://github.com/your-org/devices-mcp/blob/main/LICENSE"}
     ],
     "screenshots": [],
     "version": "1.0.0",

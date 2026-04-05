@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 def test_ptz_models():
     """Test PTZ model definitions."""
     try:
-        from tapo_camera_mcp.core.models import PTZPosition
+        from devices_mcp.core.models import PTZPosition
 
         # Test PTZ directions enum
 
@@ -69,7 +69,7 @@ def test_media_operations():
 def test_camera_types():
     """Test camera type definitions."""
     try:
-        from tapo_camera_mcp.camera.base import CameraType
+        from devices_mcp.camera.base import CameraType
 
         # Test camera types enum
         camera_types = list(CameraType)  # Get all enum values

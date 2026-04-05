@@ -1,0 +1,553 @@
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\camera\webcam.py:422:98
+    |
+420 |                 except Exception as e:
+421 |                     logger.exception(
+422 |                         f"Error during streaming frame generation for camera {self._device_id}: {e}"
+    |                                                                                                  ^
+423 |                     )
+424 |                     await asyncio.sleep(0.1)  # Brief pause before retry
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\integrations\netatmo_client.py:413:98
+    |
+411 |             # pyatmo API changes or missing attributes
+412 |             logger.exception(
+413 |                 f"Netatmo API attribute error during initialization (pyatmo version mismatch?): {e}"
+    |                                                                                                  ^
+414 |             )
+415 |             if self._session:
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\integrations\netatmo_client.py:653:100
+    |
+651 |                     # pyatmo API changes or missing attributes
+652 |                     logger.exception(
+653 |                         f"Netatmo API attribute error in current_data (pyatmo version mismatch?): {e}"
+    |                                                                                                    ^
+654 |                     )
+655 |                     return {}, time.time()
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\integrations\netatmo_client.py:708:86
+    |
+706 | …                     else:
+707 | …                         logger.exception(
+708 | …                             f"Netatmo token refresh failed in current_data: {refresh_error}"
+    |                                                                                ^^^^^^^^^^^^^
+709 | …                         )
+710 | …                     return {}, time.time()
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+  --> src\devices_mcp\nest_protect\state_manager.py:74:85
+   |
+72 |                         logger.warning(f"Backed up corrupted state file to {backup_file}")
+73 |                     except Exception as backup_error:
+74 |                         logger.exception(f"Failed to back up corrupted state file: {backup_error}")
+   |                                                                                     ^^^^^^^^^^^^
+75 |                     self._state = {}
+76 |         except Exception as e:
+   |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\nest_protect\state_manager.py:121:83
+    |
+119 |                         except Exception as cleanup_error:
+120 |                             logger.exception(
+121 |                                 f"Failed to clean up temporary file {temp_file}: {cleanup_error}"
+    |                                                                                   ^^^^^^^^^^^^^
+122 |                             )
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+  --> src\devices_mcp\plex\services\plex_service.py:47:67
+   |
+46 |         except PlexApiException as e:
+47 |             logger.exception(f"Failed to connect to Plex server: {e!s}")
+   |                                                                   ^
+48 |             raise
+   |
+
+TRY401 Redundant exception object included in `logging.exception` call
+  --> src\devices_mcp\plex\services\plex_service.py:67:62
+   |
+66 |         except PlexApiException as e:
+67 |             logger.exception(f"Failed to get server status: {e!s}")
+   |                                                              ^
+68 |             raise
+   |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\plex\services\plex_service.py:100:59
+    |
+ 99 |         except PlexApiException as e:
+100 |             logger.exception(f"Failed to list libraries: {e!s}")
+    |                                                           ^
+101 |             raise
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\plex\services\plex_service.py:142:97
+    |
+140 |             except Exception as e:
+141 |                 logger.exception(
+142 |                     f"Error processing library section {getattr(section, 'title', 'unknown')}: {e!s}"
+    |                                                                                                 ^
+143 |                 )
+144 |                 continue
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\plex\services\plex_service.py:160:48
+    |
+159 |         except PlexApiException as e:
+160 |             logger.exception(f"Search failed: {e!s}")
+    |                                                ^
+161 |             raise
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:1639:57
+     |
+1637 |             return await self._run_in_executor(self._get_sessions_sync)
+1638 |         except Exception as e:
+1639 |             logger.exception(f"Failed to get sessions: {e!s}")
+     |                                                         ^
+1640 |             return []
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:1682:56
+     |
+1680 |             return clients
+1681 |         except Exception as e:
+1682 |             logger.exception(f"Failed to get clients: {e!s}")
+     |                                                        ^
+1683 |             return []
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:1950:55
+     |
+1948 |             return await self._run_in_executor(self._play_media_sync, client_identifier, media_key)
+1949 |         except Exception as e:
+1950 |             logger.exception(f"Failed to play media: {e!s}")
+     |                                                       ^
+1951 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2165:58
+     |
+2163 |             return await self._run_in_executor(self._stop_playback_sync, client_identifier)
+2164 |         except Exception as e:
+2165 |             logger.exception(f"Failed to stop playback: {e!s}")
+     |                                                          ^
+2166 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2180:58
+     |
+2178 |             return self._send_client_command(client, "stop")
+2179 |         except Exception as e:
+2180 |             logger.exception(f"Error stopping playback: {e!s}")
+     |                                                          ^
+2181 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2202:61
+     |
+2200 |             )
+2201 |         except Exception as e:
+2202 |             logger.exception(f"Failed to control playback: {e!s}")
+     |                                                             ^
+2203 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2268:61
+     |
+2266 |             return self._send_client_command(client, command, params)
+2267 |         except Exception as e:
+2268 |             logger.exception(f"Error controlling playback: {e!s}")
+     |                                                             ^
+2269 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2293:78
+     |
+2291 |             return streams
+2292 |         except Exception as e:
+2293 |             logger.exception(f"Failed to get audio streams for {media_key}: {e!s}")
+     |                                                                              ^
+2294 |             return []
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2305:61
+     |
+2303 |             )
+2304 |         except Exception as e:
+2305 |             logger.exception(f"Failed to set audio stream: {e!s}")
+     |                                                             ^
+2306 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2322:61
+     |
+2320 |             return self._send_client_command(client, "setStreams", {"audioStreamID": stream_id})
+2321 |         except Exception as e:
+2322 |             logger.exception(f"Error setting audio stream: {e!s}")
+     |                                                             ^
+2323 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2334:59
+     |
+2332 |             )
+2333 |         except Exception as e:
+2334 |             logger.exception(f"Failed to handover media: {e!s}")
+     |                                                           ^
+2335 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\plex\services\plex_service.py:2387:62
+     |
+2385 |             return True
+2386 |         except Exception as e:
+2387 |             logger.exception(f"Error during media handover: {e!s}")
+     |                                                              ^
+2388 |             return False
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\plex\tools\portmanteau\audio_mgr.py:193:67
+    |
+192 |     except Exception as e:
+193 |         logger.exception(f"Error in plex_audio_mgr({operation}): {e!s}")
+    |                                                                   ^
+194 |         return {"success": False, "error": str(e), "error_code": "EXECUTION_ERROR"}
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\composition.py:101:88
+    |
+100 |             except Exception as e:
+101 |                 logger.exception("Failed to connect to server %s: %s", server_url, str(e))
+    |                                                                                        ^
+102 |                 raise RuntimeError(f"Failed to connect to server: {e!s}")
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\composition.py:140:87
+    |
+139 |             except Exception as e:
+140 |                 logger.exception("Failed to disconnect server %s: %s", namespace, str(e))
+    |                                                                                       ^
+141 |                 raise RuntimeError(f"Failed to disconnect server: {e!s}")
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\composition.py:177:96
+    |
+175 |             except Exception as e:
+176 |                 logger.exception(
+177 |                     "Error calling tool %s on server %s: %s", actual_tool_name, namespace, str(e)
+    |                                                                                                ^
+178 |                 )
+179 |                 raise RuntimeError(f"Failed to call tool {tool_name}: {e!s}")
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\composition.py:188:91
+    |
+186 |                 logger.info("Disconnected from server: %s", namespace)
+187 |             except Exception as e:
+188 |                 logger.exception("Error disconnecting from server %s: %s", namespace, str(e))
+    |                                                                                           ^
+189 |
+190 |         self.connected_servers.clear()
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\ring_client_modern.py:179:81
+    |
+177 |                             await asyncio.to_thread(self._ring.update_data)
+178 |                         except Exception as e:
+179 |                             logger.exception("Failed to refresh token: %s", str(e))
+    |                                                                                 ^
+180 |
+181 |                     # Sleep until it's time to refresh or for a maximum of 1 hour
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\ring_client_modern.py:187:77
+    |
+186 |                 except Exception as e:
+187 |                     logger.exception("Error in token refresh loop: %s", str(e))
+    |                                                                             ^
+188 |                     await asyncio.sleep(300)  # Wait 5 minutes before retrying
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\ring_client_modern.py:473:89
+    |
+471 |                 devices_data.append(device_info)
+472 |             except Exception as e:
+473 |                 logger.exception("Error getting info for device %s: %s", device_id, str(e))
+    |                                                                                         ^
+474 |
+475 |         await self.cache.set(cache_key, devices_data, ttl=self.cache_ttl)
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\ring_client_modern.py:524:87
+    |
+522 |             ]
+523 |         except Exception as e:
+524 |             logger.exception("Error getting events for device %s: %s", device_id, str(e))
+    |                                                                                       ^
+525 |             raise RingError(f"Failed to get device events: {e!s}") from e
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\ring_client_modern.py:548:84
+    |
+547 |         except Exception as e:
+548 |             logger.exception("Error getting stream URL for %s: %s", device_id, str(e))
+    |                                                                                    ^
+549 |             raise StreamingError(f"Failed to get stream URL: {e!s}") from e
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\ring_client_modern.py:572:84
+    |
+571 |         except Exception as e:
+572 |             logger.exception("Error setting arm status for %s: %s", device_id, str(e))
+    |                                                                                    ^
+573 |             raise RingError(f"Failed to set arm status: {e!s}") from e
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\ring_client_modern.py:591:82
+    |
+590 |         except Exception as e:
+591 |             logger.exception("Error triggering chime for %s: %s", device_id, str(e))
+    |                                                                                  ^
+592 |             raise RingError(f"Failed to trigger chime: {e!s}") from e
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\token_manager.py:143:86
+    |
+141 |                 return True
+142 |             except (InvalidToken, json.JSONDecodeError) as e:
+143 |                 logger.exception("Failed to decrypt or parse token storage: %s", str(e))
+    |                                                                                      ^
+144 |                 # Create a backup of the corrupted file
+145 |                 backup_path = f"{self.storage_path}.corrupted.{int(datetime.now().timestamp())}"
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\core\token_manager.py:256:94
+    |
+254 |                             logger.info("Successfully refreshed token for %s", username)
+255 |                     except Exception as e:
+256 |                         logger.exception("Failed to refresh token for %s: %s", username, str(e))
+    |                                                                                              ^
+257 |                         # If refresh fails, we'll return None to force re-authentication
+258 |                         return None
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\http_server.py:154:65
+    |
+152 |         auth_credentials = None
+153 |         ring_client = None
+154 |         logger.exception(f"Failed to configure authentication: {e!s}")
+    |                                                                 ^
+155 |         raise HTTPException(status_code=500, detail=f"Failed to configure authentication: {e!s}")
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\server.py:949:61
+    |
+947 |             return StatusResponse(success=True, message="Ring MCP service is healthy")
+948 |         except Exception as e:
+949 |             logger.exception("Health check failed: %s", str(e))
+    |                                                             ^
+950 |             return StatusResponse(success=False, message=f"Health check failed: {e!s}")
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\server.py:981:69
+    |
+980 |     except Exception as e:
+981 |         logger.exception("Failed to register tools on app: %s", str(e))
+    |                                                                     ^
+982 |         # Don't crash the server if tool registration fails
+983 |         logger.warning("App will start with limited functionality")
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+    --> src\devices_mcp\ring\server.py:1015:73
+     |
+1013 |         logger.info("All Ring MCP tools registered successfully on new app instance")
+1014 |     except Exception as e:
+1015 |         logger.exception("Failed to register tools on new app: %s", str(e))
+     |                                                                         ^
+1016 |         logger.warning("New app will start with limited functionality")
+     |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\tools\status_tool.py:102:69
+    |
+101 |         except Exception as e:
+102 |             logger.exception("Error getting system status: %s", str(e))
+    |                                                                     ^
+103 |             status["system_status"] = "error"
+104 |             status["error"] = {
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\tools\status_tool.py:174:69
+    |
+173 |         except Exception as e:
+174 |             logger.exception("Authentication check failed: %s", str(e))
+    |                                                                     ^
+175 |             auth_status["auth_errors"].append(f"Check failed: {e!s}")
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\tools\status_tool.py:285:74
+    |
+284 |         except Exception as e:
+285 |             logger.exception("Device connectivity check failed: %s", str(e))
+    |                                                                          ^
+286 |             connectivity_results["error"] = str(e)
+287 |             connectivity_results["connectivity_score"] = 0
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\ring\tools\status_tool.py:370:69
+    |
+369 |         except Exception as e:
+370 |             logger.exception("Service health check failed: %s", str(e))
+    |                                                                     ^
+371 |             health_info["health_status"] = "error"
+372 |             health_info["health_score"] = 0
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\energy\tapo_plug_tools.py:134:79
+    |
+132 |             logger.info("Tapo P115 ingestion created successfully")
+133 |         except Exception as exc:
+134 |             logger.exception(f"Failed to create Tapo P115 ingestion service: {exc}")
+    |                                                                               ^^^
+135 |             self._ingestion = None
+136 |             self._ingestion_error = str(exc)
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:111:56
+    |
+110 |         except Exception as e:
+111 |             logger.exception(f"Error capturing image: {e!s}")
+    |                                                        ^
+112 |             return {"status": "error", "message": f"Failed to capture image: {e!s}"}
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:147:63
+    |
+145 |             )
+146 |         except Exception as e:
+147 |             logger.exception(f"Error finding similar images: {e!s}")
+    |                                                               ^
+148 |             return {"status": "error", "message": f"Failed to find similar images: {e!s}"}
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:183:59
+    |
+181 |             return await server.get_stream_url(quality=self.quality, protocol=self.protocol)
+182 |         except Exception as e:
+183 |             logger.exception(f"Error getting stream URL: {e!s}")
+    |                                                           ^
+184 |             return {"status": "error", "message": f"Failed to get stream URL: {e!s}"}
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:216:59
+    |
+214 |             )
+215 |         except Exception as e:
+216 |             logger.exception(f"Error starting recording: {e!s}")
+    |                                                           ^
+217 |             return {"status": "error", "message": f"Failed to start recording: {e!s}"}
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:240:59
+    |
+238 |             return await server.stop_recording()
+239 |         except Exception as e:
+240 |             logger.exception(f"Error stopping recording: {e!s}")
+    |                                                           ^
+241 |             return {"status": "error", "message": f"Failed to stop recording: {e!s}"}
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:296:56
+    |
+294 |             )
+295 |         except Exception as e:
+296 |             logger.exception(f"Error analyzing image: {e!s}")
+    |                                                        ^
+297 |             return {"status": "error", "message": f"Failed to analyze image: {e!s}"}
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:332:65
+    |
+330 |             )
+331 |         except Exception as e:
+332 |             logger.exception(f"Error performing security scan: {e!s}")
+    |                                                                 ^
+333 |             return {
+334 |                 "status": "error",
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+   --> src\devices_mcp\tools\media\media_tools.py:546:65
+    |
+544 |             )
+545 |         except Exception as e:
+546 |             logger.exception(f"Error capturing still image(s): {e!s}")
+    |                                                                 ^
+547 |             return {
+548 |                 "status": "error",
+    |
+
+TRY401 Redundant exception object included in `logging.exception` call
+  --> src\devices_mcp\utils\async_utils.py:45:74
+   |
+44 |             logger.exception(
+45 |                 f"Unhandled exception in background task '{task_name}': {e}",
+   |                                                                          ^
+46 |                 extra=extra,
+47 |             )
+   |
+
+Found 55 errors.

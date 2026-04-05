@@ -1,5 +1,5 @@
-# Start Tapo Camera MCP Dashboard
-# Validates dependencies and fixes Unicode encoding issues on Windows
+# Start Devices MCP Dashboard (legacy: devices_mcp.web on port 7777)
+# For SOTA Vite + FastAPI + USB camera helper on 10715-10717, use .\start.ps1 from repo root.
 
 Write-Host "`n" -NoNewline
 Write-Host "====================================================" -ForegroundColor Cyan
@@ -32,8 +32,8 @@ Write-Host ""
 $port = 7777
 Write-Host "CHECK: Checking port 7777 availability..." -ForegroundColor Cyan
 # Add timeout to port check (max 1 second)
-$portCheckJob = Start-Job -ScriptBlock { 
-    Get-NetTCPConnection -LocalPort 7777 -ErrorAction SilentlyContinue 
+$portCheckJob = Start-Job -ScriptBlock {
+    Get-NetTCPConnection -LocalPort 7777 -ErrorAction SilentlyContinue
 }
 $portInUse = $null
 if (Wait-Job -Job $portCheckJob -Timeout 1) {
@@ -49,7 +49,7 @@ if ($portInUse) {
     $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
     $processName = if ($process) { $process.ProcessName } else { "Unknown" }
     $processPath = if ($process) { $process.Path } else { "N/A" }
-    
+
     Write-Host "`nERROR: PORT CONFLICT DETECTED!" -ForegroundColor Red
     Write-Host "   Port 7777 is already in use by:" -ForegroundColor Yellow
     Write-Host "   • Process: $processName (PID: $processId)" -ForegroundColor White
@@ -64,7 +64,7 @@ if ($portInUse) {
     Write-Host "      docker stop <container-id>" -ForegroundColor Gray
     Write-Host ""
     Write-Host "   3. Use a different port:" -ForegroundColor White
-    Write-Host "      python -m tapo_camera_mcp.web --host 0.0.0.0 --port 7778" -ForegroundColor Gray
+    Write-Host "      python -m devices_mcp.web --host 0.0.0.0 --port 7778" -ForegroundColor Gray
     Write-Host ""
     exit 1
 }
@@ -78,5 +78,4 @@ Write-Host "   Connection supervisor will monitor all devices" -ForegroundColor 
 Write-Host "   Health dashboard: http://localhost:7777/health-dashboard" -ForegroundColor Gray
 Write-Host "   Alerts dashboard: http://localhost:7777/alerts`n" -ForegroundColor Gray
 
-python -m tapo_camera_mcp.web --host 0.0.0.0 --port 7777
-
+python -m devices_mcp.web --host 0.0.0.0 --port 7777

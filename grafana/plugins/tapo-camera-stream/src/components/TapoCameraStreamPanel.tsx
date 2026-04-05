@@ -55,15 +55,15 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({
   options,
   width,
   height,
-  
+
   // Other props we might use
   data,
   timeRange,
   timeZone,
-  
+
   // Event handlers we might use
   onOptionsChange,
-  
+
   // Rest props
   ...rest
 }) => {
@@ -174,7 +174,7 @@ export const TapoCameraStreamPanel: React.FC<Props> = ({
           Your browser does not support the video tag.
         </video>
       )}
-      
+
       {options.showControls && (
         <div className={styles.controls}>
           <button className={styles.button} onClick={togglePlay}>

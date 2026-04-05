@@ -1,5 +1,5 @@
 """
-Direct test script for Tapo Camera MCP server (FastMCP 2.10).
+Direct test script for Devices MCP server (FastMCP 2.10).
 This script tests the server functionality directly without using pytest.
 """
 
@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, patch
 # Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
 
-from tapo_camera_mcp.core.server import TapoCameraServer
+from devices_mcp.core.server import TapoCameraServer
 
 
 async def run_tests():
@@ -24,7 +24,7 @@ async def run_tests():
     test_password = "testpass"
 
     # Test 1: Connect to camera
-    with patch("tapo_camera_mcp.server_v2.Tapo") as mock_tapo_class:
+    with patch("devices_mcp.server_v2.Tapo") as mock_tapo_class:
         # Setup mock
         mock_camera = AsyncMock()
         mock_camera.host = test_host

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-Quick script to add a test camera to the Tapo Camera MCP system.
+Quick script to add a test camera to the Devices MCP system.
 """
 
 import asyncio
+import logging
 import os
 import sys
+
+logger = logging.getLogger(__name__)
 
 # Add the src directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
@@ -14,12 +17,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 async def add_test_webcam():
     """Add a USB webcam for testing."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import DevicesMCPServer
 
-        print("CAMERA: Adding test USB webcam...")
+        logger.info("CAMERA: Adding test USB webcam...")
 
         # Get the server instance
-        server = await TapoCameraServer.get_instance()
+        server = await DevicesMCPServer.get_instance()
 
         # Add the camera using the camera manager
         config = {
@@ -31,13 +34,13 @@ async def add_test_webcam():
         success = await server.camera_manager.add_camera(config)
 
         if success:
-            print("SUCCESS: Test webcam added successfully!")
+            logger.info("SUCCESS: Test webcam added successfully!")
             return True
-        print("ERROR Failed to add webcam: Camera manager returned False")
+        logger.info("ERROR Failed to add webcam: Camera manager returned False")
         return False
 
     except Exception as e:
-        print(f"ERROR Failed to add webcam: {e}")
+        logger.info(f"ERROR Failed to add webcam: {e}")
         import traceback
 
         traceback.print_exc()
@@ -47,9 +50,9 @@ async def add_test_webcam():
 async def add_tapo_camera(ip_address, username, password, camera_name="tapo_camera"):
     """Add a Tapo camera with provided details."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
-        print(f"CAMERA: Adding Tapo camera '{camera_name}' at {ip_address}...")
+        logger.info(f"CAMERA: Adding Tapo camera '{camera_name}' at {ip_address}...")
 
         # Get the server instance
         server = await TapoCameraServer.get_instance()
@@ -64,13 +67,13 @@ async def add_tapo_camera(ip_address, username, password, camera_name="tapo_came
         success = await server.camera_manager.add_camera(config)
 
         if success:
-            print("SUCCESS: Tapo camera added successfully!")
+            logger.info("SUCCESS: Tapo camera added successfully!")
             return True
-        print("ERROR Failed to add Tapo camera: Camera manager returned False")
+        logger.info("ERROR Failed to add Tapo camera: Camera manager returned False")
         return False
 
     except Exception as e:
-        print(f"ERROR Failed to add Tapo camera: {e}")
+        logger.info(f"ERROR Failed to add Tapo camera: {e}")
         import traceback
 
         traceback.print_exc()
@@ -81,7 +84,7 @@ def main():
     """Main entry point."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Add a camera to Tapo Camera MCP")
+    parser = argparse.ArgumentParser(description="Add a camera to Devices MCP")
     parser.add_argument(
         "--type",
         choices=["webcam", "tapo"],
@@ -97,7 +100,7 @@ def main():
 
     if args.type == "tapo":
         if not args.ip:
-            print("ERROR Error: --ip is required for Tapo cameras")
+            logger.info("ERROR Error: --ip is required for Tapo cameras")
             return 1
 
         success = asyncio.run(add_tapo_camera(args.ip, args.username, args.password, args.name))

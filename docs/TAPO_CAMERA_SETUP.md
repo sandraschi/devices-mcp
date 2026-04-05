@@ -72,4 +72,3 @@ password = "YOUR_LOCAL_ADMIN_PASSWORD"  # Your local admin password
 ### MAC Address
 
 **No, you don't need the MAC address** - only the IP address, local username, and local password are required.
-

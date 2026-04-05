@@ -28,5 +28,5 @@ exit /b 1
 
 :found
 REM Execute the main module
-"%PYTHON_EXE%" -m tapo_camera_mcp.cli %*
+"%PYTHON_EXE%" -m devices_mcp.cli %*
 exit /b %ERRORLEVEL%

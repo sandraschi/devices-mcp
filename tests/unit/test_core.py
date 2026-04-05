@@ -25,9 +25,9 @@ def test_core_imports():
 def test_tools_discovery():
     """Test tools discovery."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
-        discover_tools("tapo_camera_mcp.tools")
+        discover_tools("devices_mcp.tools")
         assert True
     except Exception:
         assert False

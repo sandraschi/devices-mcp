@@ -14,7 +14,7 @@ Fixed three critical issues with the energy management dashboard that were preve
 **Solution**: Added device initialization in the web server startup event handler.
 
 **Files Changed**:
-- `src/tapo_camera_mcp/web/server.py`
+- `src/devices_mcp/web/server.py`
   - Added `tapo_plug_manager` initialization in `startup_event()`
   - Devices are now discovered when the server starts
 
@@ -41,7 +41,7 @@ except Exception as e:
 **Solution**: Implemented a Pydantic model (`ToggleRequest`) for proper request body validation.
 
 **Files Changed**:
-- `src/tapo_camera_mcp/web/api/sensors.py`
+- `src/devices_mcp/web/api/sensors.py`
   - Created `ToggleRequest` Pydantic model
   - Updated endpoint to use Pydantic model instead of raw dictionary
   - Added proper error handling and logging
@@ -62,7 +62,7 @@ async def toggle_tapo_p115(
 ```
 
 **Frontend Changes**:
-- `src/tapo_camera_mcp/web/templates/energy.html`
+- `src/devices_mcp/web/templates/energy.html`
   - Improved error handling in `toggleDevice()` function
   - Added detailed logging for debugging
   - Better error message extraction from FastAPI validation errors
@@ -78,7 +78,7 @@ async def toggle_tapo_p115(
 **Solution**: Updated Content Security Policy to allow Chart.js and Font Awesome from their respective CDNs.
 
 **Files Changed**:
-- `src/tapo_camera_mcp/web/server.py`
+- `src/devices_mcp/web/server.py`
   - Updated CSP header to allow scripts from `cdn.jsdelivr.net`
   - Updated CSP header to allow styles from `cdnjs.cloudflare.com`
 
@@ -93,7 +93,7 @@ response.headers["Content-Security-Policy"] = (
 ```
 
 **Frontend Changes**:
-- `src/tapo_camera_mcp/web/templates/energy.html`
+- `src/devices_mcp/web/templates/energy.html`
   - Added Chart.js loading checks in `loadChartData()` and `initChart()`
   - Added retry logic if Chart.js hasn't loaded yet
   - Improved error messages for Chart.js loading failures
@@ -117,10 +117,10 @@ All fixes have been tested and verified:
 
 ## Related Files
 
-- `src/tapo_camera_mcp/web/server.py` - Server startup and CSP configuration
-- `src/tapo_camera_mcp/web/api/sensors.py` - API endpoint with Pydantic validation
-- `src/tapo_camera_mcp/web/templates/energy.html` - Frontend JavaScript and error handling
-- `src/tapo_camera_mcp/tools/energy/tapo_plug_tools.py` - Device manager (no changes needed)
+- `src/devices_mcp/web/server.py` - Server startup and CSP configuration
+- `src/devices_mcp/web/api/sensors.py` - API endpoint with Pydantic validation
+- `src/devices_mcp/web/templates/energy.html` - Frontend JavaScript and error handling
+- `src/devices_mcp/tools/energy/tapo_plug_tools.py` - Device manager (no changes needed)
 
 ## Notes
 
@@ -151,7 +151,7 @@ After recent changes, the energy page was showing 0 devices instead of the confi
 - Ensured all required attributes (`_email`, `_password`, `_hosts`, etc.) are set during initialization
 
 **Files Changed:**
-- `src/tapo_camera_mcp/ingest/tapo_p115.py`
+- `src/devices_mcp/ingest/tapo_p115.py`
   - Fixed `__init__` method structure
   - Moved `_hosts` initialization before `_get_db()` definition
   - Ensured proper attribute initialization order
@@ -162,7 +162,7 @@ After recent changes, the energy page was showing 0 devices instead of the confi
 - All 3 configured devices now appear in the API response
 
 **Files Changed:**
-- `src/tapo_camera_mcp/ingest/tapo_p115.py`
+- `src/devices_mcp/ingest/tapo_p115.py`
   - Updated `discover_devices()` to create device entries for failed connections
   - Changed `_fetch_device_snapshot` to return exceptions instead of `None`
   - Added proper device creation from config metadata for failed connections
@@ -172,7 +172,7 @@ After recent changes, the energy page was showing 0 devices instead of the confi
 - Restored proper initialization flow without premature timeouts
 
 **Files Changed:**
-- `src/tapo_camera_mcp/tools/energy/tapo_plug_tools.py`
+- `src/devices_mcp/tools/energy/tapo_plug_tools.py`
   - Removed 5-second timeout from initialization discovery
   - Removed 3-second timeout from rediscovery in `get_all_devices()`
   - Ensured devices are discovered even if some fail
@@ -197,10 +197,10 @@ After recent changes, the energy page was showing 0 devices instead of the confi
 
 ### Testing
 
-✅ **All 3 devices now appear** in `/api/energy/devices` response  
-✅ **Failed devices show with error information** but are still visible  
-✅ **Online device shows real-time data** correctly  
-✅ **Energy page loads** and displays all devices  
+✅ **All 3 devices now appear** in `/api/energy/devices` response
+✅ **Failed devices show with error information** but are still visible
+✅ **Online device shows real-time data** correctly
+✅ **Energy page loads** and displays all devices
 
 ### Impact
 
@@ -218,13 +218,12 @@ After recent changes, the energy page was showing 0 devices instead of the confi
 
 ### Related Files
 
-- `src/tapo_camera_mcp/ingest/tapo_p115.py` - Fixed `__init__` structure and exception handling
-- `src/tapo_camera_mcp/tools/energy/tapo_plug_tools.py` - Removed aggressive timeouts, fixed initialization
-- `src/tapo_camera_mcp/web/api/energy.py` - Removed unnecessary timeout wrappers
-- `src/tapo_camera_mcp/core/hardware_init.py` - Fixed import to use `tapo_plug_manager` directly
+- `src/devices_mcp/ingest/tapo_p115.py` - Fixed `__init__` structure and exception handling
+- `src/devices_mcp/tools/energy/tapo_plug_tools.py` - Removed aggressive timeouts, fixed initialization
+- `src/devices_mcp/web/api/energy.py` - Removed unnecessary timeout wrappers
+- `src/devices_mcp/core/hardware_init.py` - Fixed import to use `tapo_plug_manager` directly
 
 ---
 
-*Documentation created: November 26, 2025*  
+*Documentation created: November 26, 2025*
 *Updated: January 13, 2026*
-

@@ -1,16 +1,16 @@
 <h1
-id="tapo-camera-mcp-dashboard-external-access-issue---windows-firewall-blocking">Tapo
+id="devices-mcp-dashboard-external-access-issue---windows-firewall-blocking">Tapo
 Camera MCP Dashboard External Access Issue - Windows Firewall
 Blocking</h1>
 <p><strong>Type:</strong> Troubleshooting<br />
 <strong>Date:</strong> 2025-10-20<br />
 <strong>Permalink:</strong>
-troubleshooting/tapo-camera-mcp-dashboard-external-access-issue-windows-firewall-blocking</p>
-<p><strong>Tags:</strong> networking, windows-firewall, tapo-camera-mcp,
+troubleshooting/devices-mcp-dashboard-external-access-issue-windows-firewall-blocking</p>
+<p><strong>Tags:</strong> networking, windows-firewall, devices-mcp,
 dashboard, troubleshooting, external-access, tailscale, fastapi,
 port-7777, system-administration</p>
 <h2 id="problem-description">Problem Description</h2>
-<p>The Tapo Camera MCP dashboard was accessible via Tailscale
+<p>The Devices MCP dashboard was accessible via Tailscale
 (<code>goliath:7777</code>) but not via external IP address
 (<code>213.47.34.131:7777</code>). The server was correctly configured
 to bind to <code>0.0.0.0:7777</code> but Windows Firewall was blocking
@@ -29,7 +29,7 @@ Firewall</li>
 </ul>
 <h2 id="technical-details">Technical Details</h2>
 <ul>
-<li><strong>Server</strong>: Tapo Camera MCP FastAPI web server</li>
+<li><strong>Server</strong>: Devices MCP FastAPI web server</li>
 <li><strong>Port</strong>: 7777 (configurable)</li>
 <li><strong>Host Binding</strong>: <code>0.0.0.0</code> (correct for
 external access)</li>
@@ -43,10 +43,10 @@ application</li>
 <li><strong>Main Config</strong>: <code>config.yaml</code> -
 <code>web.host: "0.0.0.0"</code> ✅</li>
 <li><strong>Model Config</strong>:
-<code>src/tapo_camera_mcp/config/models.py</code> -
+<code>src/devices_mcp/config/models.py</code> -
 <code>WebUISettings.host: "0.0.0.0"</code> ✅</li>
 <li><strong>Server Code</strong>:
-<code>src/tapo_camera_mcp/web/server.py</code> - Uses config host
+<code>src/devices_mcp/web/server.py</code> - Uses config host
 setting ✅</li>
 </ul>
 <h2 id="solutions-provided">Solutions Provided</h2>
@@ -54,14 +54,14 @@ setting ✅</li>
 Windows Firewall Rule (Recommended)</h3>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run as Administrator</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>netsh advfirewall firewall add rule name<span class="op">=</span><span class="st">&quot;Tapo Camera MCP Dashboard&quot;</span> <span class="fu">dir</span><span class="op">=</span><span class="kw">in</span> action<span class="op">=</span>allow protocol<span class="op">=</span>TCP localport<span class="op">=</span><span class="dv">7777</span></span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>netsh advfirewall firewall add rule name<span class="op">=</span><span class="st">&quot;Devices MCP Dashboard&quot;</span> <span class="fu">dir</span><span class="op">=</span><span class="kw">in</span> action<span class="op">=</span>allow protocol<span class="op">=</span>TCP localport<span class="op">=</span><span class="dv">7777</span></span></code></pre></div>
 <h3 id="option-2-windows-firewall-gui">Option 2: Windows Firewall
 GUI</h3>
 <ol type="1">
 <li>Windows Defender Firewall with Advanced Security</li>
 <li>Inbound Rules → New Rule → Port → TCP → Specific ports: 7777</li>
 <li>Allow connection → Apply to all profiles</li>
-<li>Name: “Tapo Camera MCP Dashboard”</li>
+<li>Name: “Devices MCP Dashboard”</li>
 </ol>
 <h3 id="option-3-temporarily-disable-firewall">Option 3: Temporarily
 Disable Firewall</h3>
@@ -84,10 +84,10 @@ class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb2-
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>netstat <span class="op">-</span>an <span class="op">|</span> findstr <span class="op">:</span><span class="dv">7777</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check existing firewall rules</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>netsh advfirewall firewall show rule name<span class="op">=</span><span class="st">&quot;Tapo Camera MCP&quot;</span> <span class="fu">dir</span><span class="op">=</span><span class="kw">in</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>netsh advfirewall firewall show rule name<span class="op">=</span><span class="st">&quot;Devices MCP&quot;</span> <span class="fu">dir</span><span class="op">=</span><span class="kw">in</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Add firewall rule (requires admin)</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>netsh advfirewall firewall add rule name<span class="op">=</span><span class="st">&quot;Tapo Camera MCP Dashboard&quot;</span> <span class="fu">dir</span><span class="op">=</span><span class="kw">in</span> action<span class="op">=</span>allow protocol<span class="op">=</span>TCP localport<span class="op">=</span><span class="dv">7777</span></span></code></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>netsh advfirewall firewall add rule name<span class="op">=</span><span class="st">&quot;Devices MCP Dashboard&quot;</span> <span class="fu">dir</span><span class="op">=</span><span class="kw">in</span> action<span class="op">=</span>allow protocol<span class="op">=</span>TCP localport<span class="op">=</span><span class="dv">7777</span></span></code></pre></div>
 <h2 id="key-learning-points">Key Learning Points</h2>
 <ol type="1">
 <li><strong>Tailscale vs External IP</strong>: Tailscale creates a
@@ -111,9 +111,9 @@ firewall rule (requires admin privileges)</li>
 <h2 id="related-files">Related Files</h2>
 <ul>
 <li><code>start.py</code> - Dashboard startup script</li>
-<li><code>src/tapo_camera_mcp/web/server.py</code> - Web server
+<li><code>src/devices_mcp/web/server.py</code> - Web server
 implementation</li>
 <li><code>config.yaml</code> - Configuration file</li>
-<li><code>src/tapo_camera_mcp/config/models.py</code> - Configuration
+<li><code>src/devices_mcp/config/models.py</code> - Configuration
 models</li>
 </ul>

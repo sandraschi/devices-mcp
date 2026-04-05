@@ -1,5 +1,5 @@
 """
-Standalone test script for Tapo Camera MCP server (FastMCP 2.10).
+Standalone test script for Devices MCP server (FastMCP 2.10).
 This script tests the server functionality directly without any project imports.
 """
 
@@ -80,7 +80,7 @@ async def test_server():
         fastmcp_mock.FastMCP = MockFastMCP
 
         # Import the server after patching
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         # Create a server instance (singleton pattern)
         server = TapoCameraServer()
@@ -109,7 +109,7 @@ async def test_server():
         print_success("All expected tools are registered")
 
         # Test 2: Connect to camera
-        with patch("tapo_camera_mcp.server_v2.Tapo") as mock_tapo_class:
+        with patch("devices_mcp.server_v2.Tapo") as mock_tapo_class:
             # Setup mock
             mock_camera = AsyncMock()
             mock_camera.host = "192.168.1.100"

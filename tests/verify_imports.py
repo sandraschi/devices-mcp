@@ -1,5 +1,7 @@
+logger = logging.getLogger(__name__)
+
 """
-Verify imports for Tapo Camera MCP tools.
+Verify imports for Devices MCP tools.
 """
 
 import sys
@@ -12,26 +14,26 @@ if src_dir not in sys.path:
 
 # List of modules to test
 modules_to_test = [
-    "tapo_camera_mcp.tools.camera",
-    "tapo_camera_mcp.tools.system",
-    "tapo_camera_mcp.tools.ptz",
-    "tapo_camera_mcp.tools.media",
-    "tapo_camera_mcp.tools.grafana",
+    "devices_mcp.tools.camera",
+    "devices_mcp.tools.system",
+    "devices_mcp.tools.ptz",
+    "devices_mcp.tools.media",
+    "devices_mcp.tools.grafana",
 ]
 
 # Test each module
 for module_name in modules_to_test:
     try:
-        print(f"Testing import: {module_name}")
+        logger.info(f"Testing import: {module_name}")
         __import__(module_name, fromlist=["*"])
-        print(f"SUCCESS: Successfully imported {module_name}")
+        logger.info(f"SUCCESS: Successfully imported {module_name}")
     except ImportError as e:
-        print(f"ERROR Failed to import {module_name}: {e}")
+        logger.info(f"ERROR Failed to import {module_name}: {e}")
         import traceback
 
         traceback.print_exc()
     except Exception as e:
-        print(f"WARNING Error importing {module_name}: {e}")
+        logger.info(f"WARNING Error importing {module_name}: {e}")
         import traceback
 
         traceback.print_exc()

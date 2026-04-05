@@ -190,11 +190,11 @@ filter {
     grok {
       match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} - %{WORD:logger} - %{LOGLEVEL:level} - %{GREEDYDATA:message}" }
     }
-    
+
     date {
       match => [ "timestamp", "ISO8601" ]
     }
-    
+
     mutate {
       add_field => { "service_type" => "mcp-server" }
     }
@@ -327,27 +327,27 @@ class StructuredFormatter(logging.Formatter):
             "line": record.lineno,
             "service": "mcp-server"
         }
-        
+
         if hasattr(record, 'request_id'):
             log_entry['request_id'] = record.request_id
-        
+
         if hasattr(record, 'user_id'):
             log_entry['user_id'] = record.user_id
-        
+
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
-        
+
         return json.dumps(log_entry)
 
 def setup_logging():
     """Setup structured logging for MCP server"""
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(StructuredFormatter())
-    
+
     logger = logging.getLogger()
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)
-    
+
     return logger
 ```
 
@@ -365,7 +365,7 @@ def setup_sentry(dsn: str, environment: str = "production"):
         level=logging.INFO,
         event_level=logging.ERROR
     )
-    
+
     sentry_sdk.init(
         dsn=dsn,
         environment=environment,
@@ -399,7 +399,7 @@ from typing import Dict, Any
 class HealthChecker:
     def __init__(self):
         self.checks = {}
-    
+
     async def check_database(self) -> Dict[str, Any]:
         """Check database connectivity"""
         try:
@@ -407,7 +407,7 @@ class HealthChecker:
             return {"status": "healthy", "response_time": 0.001}
         except Exception as e:
             return {"status": "unhealthy", "error": str(e)}
-    
+
     async def check_external_api(self) -> Dict[str, Any]:
         """Check external API connectivity"""
         try:
@@ -421,12 +421,12 @@ class HealthChecker:
                         return {"status": "unhealthy", "status_code": response.status}
         except Exception as e:
             return {"status": "unhealthy", "error": str(e)}
-    
+
     def check_system_resources(self) -> Dict[str, Any]:
         """Check system resource usage"""
         process = psutil.Process(os.getpid())
         memory_info = process.memory_info()
-        
+
         return {
             "status": "healthy",
             "memory_usage": {
@@ -436,7 +436,7 @@ class HealthChecker:
             },
             "cpu_percent": process.cpu_percent()
         }
-    
+
     async def run_all_checks(self) -> Dict[str, Any]:
         """Run all health checks"""
         checks = {
@@ -444,13 +444,13 @@ class HealthChecker:
             "external_api": await self.check_external_api(),
             "system_resources": self.check_system_resources()
         }
-        
+
         overall_status = "healthy"
         for check_name, result in checks.items():
             if result.get("status") != "healthy":
                 overall_status = "unhealthy"
                 break
-        
+
         return {
             "status": overall_status,
             "checks": checks,

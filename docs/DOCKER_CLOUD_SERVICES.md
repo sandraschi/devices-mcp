@@ -10,7 +10,7 @@ This document explains how cloud-accessed services (Netatmo, Ring, Nest via Home
 
 ### ✅ Netatmo Weather Station
 
-**Type:** Local hardware with cloud API access (OAuth-based)  
+**Type:** Local hardware with cloud API access (OAuth-based)
 **Status:** ✅ Works in Docker (no special configuration needed)
 
 **Hardware:**
@@ -28,7 +28,7 @@ This document explains how cloud-accessed services (Netatmo, Ring, Nest via Home
 - No direct local network access to modules (they use Netatmo cloud)
 - Token stored in memory (no file needed)
 
-**Important:** 
+**Important:**
 - Physical modules are **local devices** in your home (main station + outdoor module + bathroom module)
 - Modules communicate wirelessly with main station
 - Main station uploads data to Netatmo cloud via WiFi
@@ -81,7 +81,7 @@ Physical Hardware (Local):
 
 ### ✅ Ring Doorbell
 
-**Type:** Cloud API (email/password auth)  
+**Type:** Cloud API (email/password auth)
 **Status:** ✅ Works in Docker (token caching configured)
 
 **How it works:**
@@ -113,7 +113,7 @@ ring:
 
 ### ✅ Nest Protect (via Home Assistant)
 
-**Type:** Cloud API via Home Assistant bridge  
+**Type:** Cloud API via Home Assistant bridge
 **Status:** ✅ Works in Docker (URL auto-detection)
 
 **Why Home Assistant?**
@@ -124,7 +124,7 @@ ring:
 **How it works:**
 1. Home Assistant authenticates with Google (verified OAuth)
 2. HA exposes Nest devices via REST API
-3. Tapo Camera MCP connects to HA API
+3. Devices MCP connects to HA API
 4. HA proxies requests to Nest cloud API
 
 **Configuration:**
@@ -194,7 +194,7 @@ security:
 3. Go to **Security** tab
 4. Scroll to **Long-Lived Access Tokens**
 5. Click **Create Token**
-6. Name it "tapo-camera-mcp"
+6. Name it "devices-mcp"
 7. **Copy token immediately** (won't be shown again!)
 
 ---
@@ -385,4 +385,3 @@ security:
 | **Nest (via HA)** | Cloud via HA | ✅ URL auto-detect | Auto-adjusts localhost |
 
 **All cloud services work in Docker with minimal or no configuration changes!** ✅
-

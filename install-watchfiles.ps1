@@ -1,4 +1,4 @@
-# Install Watchfiles Dependencies for Tapo Camera MCP WebApp Crashproofing
+# Install Watchfiles Dependencies for Devices MCP WebApp Crashproofing
 # Run this script to install the required dependencies for crashproofing
 
 Write-Host "Installing watchfiles crashproofing dependencies..." -ForegroundColor Green
@@ -19,7 +19,7 @@ pip install -r requirements-watchfiles.txt
 if ($LASTEXITCODE -eq 0) {
     Write-Host "✓ Watchfiles dependencies installed successfully" -ForegroundColor Green
     Write-Host ""
-    Write-Host "To run Tapo Camera MCP WebApp with crashproofing:" -ForegroundColor Cyan
+    Write-Host "To run Devices MCP WebApp with crashproofing:" -ForegroundColor Cyan
     Write-Host "  python watchfiles_runner.py" -ForegroundColor White
     Write-Host ""
     Write-Host "Environment variables you can set:" -ForegroundColor Cyan

@@ -1,0 +1,625 @@
+{% extends "base.html" %}
+
+{% block title %}Nest Protect - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-card {
+        background: linear-gradient(135deg, var(--info-blue) 0%, #764ba2 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-card.error {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .status-card.warning {
+        background: linear-gradient(135deg, #fad961 0%, #f76b1c 100%);
+    }
+
+    .status-card.success {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .status-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .status-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .status-icon {
+        font-size: 2rem;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .status-message {
+        font-size: 1rem;
+        opacity: 0.95;
+        margin-top: 0.5rem;
+    }
+
+    .setup-instructions {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid var(--primary-blue);
+    }
+
+    .setup-instructions h3 {
+        margin-top: 0;
+        color: var(--text-color);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .setup-instructions ol {
+        margin: 1rem 0;
+        padding-left: 1.5rem;
+        color: var(--gray-600);
+    }
+
+    .setup-instructions li {
+        margin: 0.5rem 0;
+        line-height: 1.6;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-blue-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        background: var(--muted-text);
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: var(--gray-600);
+    }
+
+    .nest-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .nest-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease-in-out;
+        border-left: 4px solid var(--success-green);
+    }
+
+    .nest-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .nest-card.alert {
+        border-left-color: var(--error-red);
+        background: #fef2f2;
+    }
+
+    .nest-card.warning {
+        border-left-color: var(--warning-yellow);
+        background: #fffbeb;
+    }
+
+    .nest-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .nest-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .status-badge-small {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-online {
+        background-color: var(--success-light);
+        color: #166534;
+    }
+
+    .status-offline {
+        background-color: var(--warning-bg);
+        color: #92400e;
+    }
+
+    .status-emergency {
+        background-color: var(--error-bg);
+        color: #991b1b;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .nest-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--muted-text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-size: 0.875rem;
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    .detail-value.ok {
+        color: var(--success-green);
+    }
+
+    .detail-value.warning {
+        color: var(--warning-yellow);
+    }
+
+    .detail-value.emergency {
+        color: var(--error-red);
+        font-weight: 700;
+    }
+
+    .alerts-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .alerts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .alert-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid var(--muted-text);
+    }
+
+    .alert-item.emergency {
+        background: #fef2f2;
+        border-left-color: var(--error-red);
+    }
+
+    .alert-item.warning {
+        background: #fffbeb;
+        border-left-color: var(--warning-yellow);
+    }
+
+    .alert-type {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .alert-type.emergency {
+        color: var(--error-red);
+    }
+
+    .alert-type.warning {
+        color: var(--warning-yellow);
+    }
+
+    .alert-location {
+        font-size: 0.875rem;
+        color: var(--muted-text);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted-text);
+    }
+
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+    }
+
+    .connection-status {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: var(--muted-text);
+    }
+
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: var(--text-color);
+        color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Nest Protect</h1>
+        <p class="text-gray-600">Monitor fire and CO alarms from your Nest Protect devices</p>
+    </div>
+
+    <!-- Status Card -->
+    <div id="status-card" class="status-card">
+        <div class="status-header">
+            <h2 class="status-title">
+                <span class="status-icon">🔥</span>
+                Connection Status
+            </h2>
+            <span id="status-badge" class="status-badge">Checking...</span>
+        </div>
+        <div id="status-message" class="status-message">Loading connection status...</div>
+        <div id="action-buttons" class="action-buttons" style="display: none;">
+            <button id="refresh-btn" class="btn btn-secondary" onclick="loadNestStatus()">
+                <span>🔄</span> Refresh Status
+            </button>
+        </div>
+    </div>
+
+    <!-- Setup Instructions (shown when disabled) -->
+    <div id="setup-instructions" class="setup-instructions" style="display: none;">
+        <h3>Setup Instructions</h3>
+        <ol>
+            <li>Nest Protect is integrated via Home Assistant</li>
+            <li>Ensure Home Assistant is running and accessible at <code>http://localhost:8123</code></li>
+            <li>Configure Home Assistant access token in <code>config.yaml</code> under <code>security.integrations.homeassistant</code></li>
+            <li>Enable Nest integration in Home Assistant (Settings → Devices & Services)</li>
+            <li>Once configured, Nest Protect devices will appear automatically</li>
+        </ol>
+    </div>
+
+    <!-- Nest Protect Devices -->
+    <div id="devices-section" style="display: none;">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Protect Devices</h2>
+        <div id="devices-grid" class="nest-grid">
+            <!-- Devices will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Active Alerts -->
+    <div id="alerts-section" class="alerts-section" style="display: none;">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Active Alerts</h2>
+        <div id="alerts-list" class="alerts-list">
+            <!-- Alerts will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state" style="display: none;">
+        <h3 class="empty-state-title">No Nest Protect Devices Found</h3>
+        <p class="empty-state-description">
+            Make sure your Nest Protect account is configured via Home Assistant and devices are connected.
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let refreshInterval = null;
+
+async function loadNestStatus() {
+    try {
+        const response = await fetch('/api/security/nest/status');
+        const status = await response.json();
+
+        const card = document.getElementById('status-card');
+        const badge = document.getElementById('status-badge');
+        const message = document.getElementById('status-message');
+        const actionButtons = document.getElementById('action-buttons');
+        const setupInstructions = document.getElementById('setup-instructions');
+
+        // Reset card classes
+        card.className = 'status-card';
+
+        if (status.enabled && status.devices_total > 0) {
+            card.classList.add('success');
+            badge.textContent = 'Connected';
+            message.textContent = `Nest Protect connected: ${status.devices_total} device(s)`;
+            actionButtons.style.display = 'flex';
+            setupInstructions.style.display = 'none';
+            loadNestData();
+        } else if (status.enabled) {
+            card.classList.add('warning');
+            badge.textContent = 'No Devices';
+            message.textContent = 'Nest Protect is enabled but no devices found. Check Home Assistant configuration.';
+            actionButtons.style.display = 'flex';
+            setupInstructions.style.display = 'block';
+        } else {
+            card.classList.add('error');
+            badge.textContent = 'Disabled';
+            message.textContent = 'Nest Protect integration is disabled. Enable it in config.yaml under security.integrations.homeassistant';
+            actionButtons.style.display = 'flex';
+            setupInstructions.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Failed to load Nest status:', error);
+        const card = document.getElementById('status-card');
+        const badge = document.getElementById('status-badge');
+        card.className = 'status-card error';
+        badge.textContent = 'Error';
+        document.getElementById('status-message').textContent = 'Failed to connect to Nest Protect API: ' + error.message;
+    }
+}
+
+async function loadNestData() {
+    try {
+        const summaryResponse = await fetch('/api/security/nest/summary');
+        const summary = await summaryResponse.json();
+
+        if (summary.initialized && summary.total_devices > 0) {
+            document.getElementById('devices-section').style.display = 'block';
+            document.getElementById('empty-state').style.display = 'none';
+            loadDevices();
+        } else {
+            document.getElementById('devices-section').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'block';
+        }
+
+        loadAlerts();
+    } catch (error) {
+        console.error('Failed to load Nest data:', error);
+    }
+}
+
+async function loadDevices() {
+    try {
+        const response = await fetch('/api/security/nest/devices');
+        const data = await response.json();
+        const grid = document.getElementById('devices-grid');
+        grid.innerHTML = '';
+
+        data.devices.forEach(device => {
+            grid.appendChild(createDeviceCard(device));
+        });
+    } catch (error) {
+        console.error('Failed to load devices:', error);
+    }
+}
+
+function createDeviceCard(device) {
+    const card = document.createElement('div');
+    card.className = 'nest-card';
+
+    const smokeStatus = device.smoke_status || device.status || 'ok';
+    const coStatus = device.co_status || 'ok';
+    const batteryStatus = device.battery_status || device.battery_health || 'ok';
+    const isOnline = device.is_online !== false;
+
+    // Determine card alert level
+    if (smokeStatus === 'emergency' || coStatus === 'emergency') {
+        card.classList.add('alert');
+    } else if (smokeStatus !== 'ok' || coStatus !== 'ok' || batteryStatus !== 'ok' || !isOnline) {
+        card.classList.add('warning');
+    }
+
+    const smokeDisplay = smokeStatus === 'ok' ? 'OK' : smokeStatus.toUpperCase();
+    const coDisplay = coStatus === 'ok' ? 'OK' : coStatus.toUpperCase();
+    const batteryDisplay = batteryStatus === 'ok' ? 'OK' : batteryStatus.toUpperCase();
+
+    card.innerHTML = `
+        <div class="nest-header">
+            <h3 class="nest-name">${device.name || device.device_id || 'Unknown Device'}</h3>
+            <span class="status-badge-small ${isOnline ? 'status-online' : 'status-offline'}">
+                ${isOnline ? 'Online' : 'Offline'}
+            </span>
+        </div>
+        <div class="nest-details">
+            <div class="detail-item">
+                <span class="detail-label">Smoke</span>
+                <span class="detail-value ${smokeStatus === 'ok' ? 'ok' : smokeStatus === 'emergency' ? 'emergency' : 'warning'}">${smokeDisplay}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">CO</span>
+                <span class="detail-value ${coStatus === 'ok' ? 'ok' : coStatus === 'emergency' ? 'emergency' : 'warning'}">${coDisplay}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Battery</span>
+                <span class="detail-value ${batteryStatus === 'ok' ? 'ok' : 'warning'}">${batteryDisplay}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Location</span>
+                <span class="detail-value">${device.location || 'Unknown'}</span>
+            </div>
+            ${device.model ? `
+            <div class="detail-item">
+                <span class="detail-label">Model</span>
+                <span class="detail-value">${device.model}</span>
+            </div>
+            ` : ''}
+            ${device.battery_level !== null && device.battery_level !== undefined ? `
+            <div class="detail-item">
+                <span class="detail-label">Battery Level</span>
+                <span class="detail-value">${device.battery_level}%</span>
+            </div>
+            ` : ''}
+        </div>
+    `;
+
+    return card;
+}
+
+async function loadAlerts() {
+    try {
+        const response = await fetch('/api/security/nest/alerts');
+        const data = await response.json();
+
+        if (data.total_alerts > 0) {
+            document.getElementById('alerts-section').style.display = 'block';
+            const list = document.getElementById('alerts-list');
+            list.innerHTML = '';
+
+            data.alerts.forEach(alert => {
+                list.appendChild(createAlertItem(alert));
+            });
+        } else {
+            document.getElementById('alerts-section').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Failed to load alerts:', error);
+    }
+}
+
+function createAlertItem(alert) {
+    const item = document.createElement('div');
+    item.className = `alert-item ${alert.severity}`;
+
+    const typeLabel = alert.type === 'smoke' ? 'SMOKE DETECTED' :
+                     alert.type === 'co' ? 'CO DETECTED' :
+                     alert.type === 'offline' ? 'DEVICE OFFLINE' :
+                     alert.type === 'battery' ? 'BATTERY WARNING' : alert.type.toUpperCase();
+
+    item.innerHTML = `
+        <div class="alert-type ${alert.severity}">${typeLabel}</div>
+        <div style="font-weight: 600; margin-bottom: 0.25rem;">${alert.device_name || alert.device_id}</div>
+        <div class="alert-location">Location: ${alert.location || 'Unknown'}</div>
+        ${alert.status ? `<div class="alert-location">Status: ${alert.status}</div>` : ''}
+    `;
+
+    return item;
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease-out reverse';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadNestStatus();
+    refreshInterval = setInterval(() => { loadNestStatus(); }, 30000);
+});
+
+window.addEventListener('beforeunload', function() {
+    if (refreshInterval) { clearInterval(refreshInterval); }
+});
+</script>
+{% endblock %}

@@ -67,20 +67,20 @@ Push-Location (Split-Path $composeFile -Parent)
 
 try {
     $buildStart = Get-Date
-    
+
     if ($buildArgs.Count -gt 0) {
         docker compose -f (Split-Path $composeFile -Leaf) build @buildArgs
     } else {
         docker compose -f (Split-Path $composeFile -Leaf) build
     }
-    
+
     if ($LASTEXITCODE -ne 0) {
         Write-Host "`n❌ Build failed!" -ForegroundColor Red
         exit $LASTEXITCODE
     }
-    
+
     $buildDuration = (Get-Date) - $buildStart
-    
+
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
     Write-Host "║              ✅ Build Complete! ✅                       ║" -ForegroundColor Green
@@ -91,8 +91,7 @@ try {
     Write-Host "💡 Next steps:" -ForegroundColor White
     Write-Host "   docker compose -f deploy/myhomecontrol/docker-compose.yml up -d" -ForegroundColor Gray
     Write-Host ""
-    
+
 } finally {
     Pop-Location
 }
-

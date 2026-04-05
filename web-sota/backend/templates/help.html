@@ -1,0 +1,1236 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Documentation{% endblock %}
+
+{% block content %}
+<div class="help-container">
+    <h1>🏠 Devices MCP Platform - Help & Documentation</h1>
+
+    <!-- Table of Contents -->
+    <div class="help-section toc-section" style="background: linear-gradient(135deg, var(--info-blue) 0%, #764ba2 100%); color: white; border: 2px solid #4c51bf; border-left: 4px solid #4c51bf; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        <h2 style="color: white; margin-top: 0;">📋 Table of Contents</h2>
+        <div class="toc-grid">
+            <div class="toc-item"><a href="#overview" style="color: #ffd700;">1. System Overview</a></div>
+            <div class="toc-item"><a href="#architecture" style="color: #ffd700;">2. Architecture</a></div>
+            <div class="toc-item"><a href="#hardware" style="color: #ffd700;">3. Supported Hardware</a></div>
+            <div class="toc-item"><a href="#quickstart" style="color: #ffd700;">4. Quick Start Guide</a></div>
+            <div class="toc-item"><a href="#mcp-tools" style="color: #ffd700;">5. MCP Server Tools</a></div>
+            <div class="toc-item"><a href="#dashboard" style="color: #ffd700;">6. Dashboard Features</a></div>
+            <div class="toc-item"><a href="#troubleshooting" style="color: #ffd700;">7. Troubleshooting</a></div>
+            <div class="toc-item"><a href="#api-reference" style="color: #ffd700;">8. API Reference</a></div>
+            <div class="toc-item"><a href="#configuration" style="color: #ffd700;">9. Configuration</a></div>
+            <div class="toc-item"><a href="#monitoring" style="color: #ffd700;">10. Monitoring & Stability</a></div>
+            <div class="toc-item"><a href="#resources" style="color: #ffd700;">11. Learning Resources</a></div>
+        </div>
+    </div>
+
+    <!-- System Overview -->
+    <div id="overview" class="help-section">
+        <h2>📋 System Overview</h2>
+        <div class="info-grid">
+            <div class="info-card">
+                <h4>Version</h4>
+                <p><strong>1.8.0</strong> (Beta - Stability Enhanced)</p>
+            </div>
+            <div class="info-card">
+                <h4>MCP Server</h4>
+                <p><strong>FastMCP 3.1</strong> with 16 portmanteau tools (75% consolidation)</p>
+            </div>
+            <div class="info-card">
+                <h4>Dashboard URL</h4>
+                <p><a href="http://localhost:7777">http://localhost:7777</a></p>
+            </div>
+            <div class="info-card">
+                <h4>Status</h4>
+                <p>✅ All hardware detected and operational</p>
+            </div>
+        </div>
+        <p><strong>Stability:</strong> 🔍 Dependency validation + MONITOR 60s device polling + ALERT Alert system</p>
+        <p><strong>Monitoring:</strong> DATA Prometheus metrics + LOG Loki logs ready for Grafana</p>
+    </div>
+
+    <!-- Architecture -->
+    <div id="architecture" class="help-section">
+        <h2>🏗️ System Architecture</h2>
+
+        <h3>Dual-Role Architecture</h3>
+        <p>This platform serves two complementary roles:</p>
+
+        <div class="architecture-grid">
+            <div class="arch-card">
+                <h4>TARGET Role 1: Individual MCP Servers</h4>
+                <p>Standalone MCP servers for specific device types:</p>
+                <ul>
+                    <li><strong>Devices MCP</strong> - TP-Link camera control</li>
+                    <li><strong>USB Webcam MCP</strong> - Direct webcam management</li>
+                    <li><strong>Ring MCP</strong> - Doorbell integration</li>
+                    <li><strong>Nest Protect MCP</strong> - Smoke/CO monitoring</li>
+                </ul>
+            </div>
+            <div class="arch-card">
+                <h4>TARGET Role 2: Unified Dashboard</h4>
+                <p>Multi-MCP orchestration platform:</p>
+                <ul>
+                    <li><strong>Single Interface</strong> - Monitor all devices</li>
+                    <li><strong>Cross-System Integration</strong> - Event correlation</li>
+                    <li><strong>Real-time Monitoring</strong> - Live status updates</li>
+                    <li><strong>Remote Access</strong> - Via Tailscale VPN</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>System Components</h3>
+        <div class="component-diagram">
+            <div class="component-layer">
+                <h4>🌐 Web Layer</h4>
+                <ul>
+                    <li><strong>FastAPI Web Server</strong> - Dashboard and API endpoints</li>
+                    <li><strong>WebSocket Support</strong> - Real-time updates</li>
+                    <li><strong>Static Assets</strong> - HTML, CSS, JavaScript</li>
+                </ul>
+            </div>
+            <div class="component-layer">
+                <h4>🔌 MCP Layer</h4>
+                <ul>
+                    <li><strong>FastMCP 3.1</strong> - MCP protocol implementation</li>
+                    <li><strong>16 Portmanteau Tools</strong> - Consolidated tool interface</li>
+                    <li><strong>Tool Registry</strong> - Dynamic tool registration</li>
+                </ul>
+            </div>
+            <div class="component-layer">
+                <h4>📡 Device Layer</h4>
+                <ul>
+                    <li><strong>Camera Manager</strong> - Unified camera interface</li>
+                    <li><strong>Device Drivers</strong> - Tapo, Ring, USB, etc.</li>
+                    <li><strong>Connection Supervisor</strong> - Health monitoring</li>
+                </ul>
+            </div>
+            <div class="component-layer">
+                <h4>💾 Data Layer</h4>
+                <ul>
+                    <li><strong>Configuration System</strong> - YAML-based config</li>
+                    <li><strong>State Management</strong> - Device state tracking</li>
+                    <li><strong>Logging System</strong> - Structured JSON logs</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Data Flow</h3>
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <strong>1. User Action</strong> → Dashboard UI or MCP Tool
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">
+                <strong>2. Request Processing</strong> → FastAPI Router or MCP Handler
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">
+                <strong>3. Device Communication</strong> → Camera Manager → Device Driver
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">
+                <strong>4. Response</strong> → JSON Response or MCP Result
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">
+                <strong>5. Update</strong> → WebSocket Broadcast or MCP Notification
+            </div>
+        </div>
+    </div>
+
+    <!-- Supported Hardware -->
+    <div id="hardware" class="help-section">
+        <h2>🎥 Supported Hardware</h2>
+
+        <h3>📹 Cameras</h3>
+        <div class="hardware-grid">
+            <div class="hardware-card">
+                <h4>🟢 TP-Link Universal IoT Devices</h4>
+                <p><strong>Models:</strong> C200, C210, C310, C500, and other ONVIF-compatible models</p>
+                <p><strong>Description:</strong> TP-Link Universal IoT Devices are affordable IP security cameras with pan-tilt-zoom capabilities. They support both the proprietary Tapo API and the standard ONVIF protocol, making them compatible with this system. The cameras feature 1080p HD video, infrared night vision up to 10 meters, two-way audio communication, and motion detection alerts. They can be powered via Ethernet (PoE) or WiFi, and support both local and cloud storage options.</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>Pan-Tilt-Zoom (PTZ) control:</strong> Full 360° horizontal rotation, 114° vertical tilt, and 4x digital zoom for comprehensive coverage</li>
+                    <li><strong>ONVIF protocol support:</strong> Standard IP camera protocol ensures compatibility with third-party software and systems</li>
+                    <li><strong>Live streaming:</strong> Real-time MJPEG streams for web viewing and RTSP streams for VLC/other players</li>
+                    <li><strong>Motion detection:</strong> AI-powered motion detection with customizable sensitivity zones</li>
+                    <li><strong>Night vision:</strong> Automatic infrared (IR) night vision with 10-meter range</li>
+                    <li><strong>Two-way audio:</strong> Built-in microphone and speaker for remote communication</li>
+                    <li><strong>Weather resistance:</strong> IP65 rating for indoor and outdoor use</li>
+                    <li><strong>Privacy mode:</strong> Physical lens cover for complete privacy when not in use</li>
+                </ul>
+                <p><strong>Connection:</strong> IP-based connection via Ethernet (recommended) or WiFi. Requires static IP or DHCP reservation for reliable access.</p>
+                <p><strong>Protocol:</strong> ONVIF (port 2020) for standard camera control, RTSP (port 554) for video streaming, and Tapo API for advanced features.</p>
+                <p><strong>Setup Requirements:</strong> Enable ONVIF in the Tapo app (Settings → Advanced → ONVIF), create ONVIF user credentials, and configure IP address in config.yaml.</p>
+            </div>
+
+            <div class="hardware-card">
+                <h4>🔔 Ring Doorbells & Cameras</h4>
+                <p><strong>Models:</strong> Video Doorbell (1st, 2nd, 3rd, 4th gen), Stick Up Cam, Spotlight Cam, Floodlight Cam, Indoor Cam</p>
+                <p><strong>Description:</strong> Ring devices are smart security cameras and doorbells that connect to your home WiFi and provide cloud-based monitoring. Unlike many competitors, Ring supports WebRTC streaming without requiring a subscription, allowing real-time video access through this dashboard. The devices feature HD video quality, night vision, motion detection with customizable zones, and two-way audio communication. Ring devices are designed for both indoor and outdoor use with weather-resistant construction.</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>WebRTC live streaming:</strong> Real-time video streaming without subscription fees (unlike cloud recording which requires Ring Protect)</li>
+                    <li><strong>Two-way talk:</strong> Built-in microphone and speaker for remote communication with visitors</li>
+                    <li><strong>Motion detection alerts:</strong> Advanced motion detection with customizable sensitivity and motion zones</li>
+                    <li><strong>DING notifications:</strong> Instant push notifications when doorbell is pressed or motion is detected</li>
+                    <li><strong>Event history:</strong> Access to recent motion and doorbell events (requires Ring Protect for full history)</li>
+                    <li><strong>Night vision:</strong> Infrared night vision for 24/7 monitoring</li>
+                    <li><strong>1080p HD video:</strong> High-definition video quality for clear footage</li>
+                    <li><strong>Battery or wired:</strong> Multiple power options depending on model</li>
+                </ul>
+                <p><strong>Connection:</strong> Cloud-based connection via Ring API. Devices connect to your WiFi network and communicate through Ring's cloud infrastructure. Requires internet connection for all features.</p>
+                <p><strong>Protocol:</strong> Ring REST API for device control and authentication, WebRTC for real-time video streaming, and WebSocket for live event notifications.</p>
+                <p><strong>Setup Requirements:</strong> Ring account with email/password, two-factor authentication (2FA) enabled, and initial device setup completed through Ring app. First-time integration requires 2FA code entry.</p>
+            </div>
+
+            <div class="hardware-card">
+                <h4>📹 USB Webcams</h4>
+                <p><strong>Models:</strong> Any USB video device (UVC-compatible) including Logitech, Microsoft, Creative, and generic USB cameras</p>
+                <p><strong>Description:</strong> USB webcams are plug-and-play video devices that connect directly to your computer via USB. This system supports any webcam that follows the USB Video Class (UVC) standard, which includes most modern webcams. USB webcams are ideal for indoor monitoring, video conferencing integration, or as a low-cost security camera solution. The system automatically detects available webcams and can stream video in real-time to the dashboard.</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>Direct USB capture:</strong> Low-latency video capture directly from USB device using OpenCV</li>
+                    <li><strong>MJPEG streaming:</strong> Motion JPEG format for efficient web-based streaming without codec requirements</li>
+                    <li><strong>Resolution auto-detection:</strong> Automatically detects and uses the camera's native resolution</li>
+                    <li><strong>Multiple device support:</strong> Can connect and manage multiple USB webcams simultaneously (device_id: 0, 1, 2, etc.)</li>
+                    <li><strong>Auto-discovery:</strong> System automatically attempts to add USB webcam if no cameras are configured</li>
+                    <li><strong>Real-time streaming:</strong> Live video feed accessible through dashboard and API endpoints</li>
+                    <li><strong>Snapshot capture:</strong> Capture still images on demand</li>
+                </ul>
+                <p><strong>Connection:</strong> Direct USB connection to the computer running the dashboard. No network configuration required. Plug-and-play operation.</p>
+                <p><strong>Protocol:</strong> UVC (USB Video Class) standard protocol, accessed via OpenCV's VideoCapture API. No additional drivers needed for UVC-compatible devices.</p>
+                <p><strong>Setup Requirements:</strong> Webcam must be connected via USB, Windows Camera permissions granted (Settings → Privacy → Camera), and no other application (Teams, Zoom, Skype) using the camera. The system will automatically detect and configure the first available webcam (device_id: 0).</p>
+                <p><strong>Known Issues:</strong> If webcam is blocked by Microsoft Teams, Zoom, or other video applications, you'll see a warning message in the UI. Close the other application and refresh the page to regain access.</p>
+            </div>
+
+            <div class="hardware-card">
+                <h4>🐕 Furbo Pet Cameras</h4>
+                <p><strong>Models:</strong> Furbo 360°, Furbo Dog Camera, Furbo 2K</p>
+                <p><strong>Description:</strong> Furbo cameras are specialized pet monitoring devices designed for pet owners who want to keep an eye on their furry friends. These cameras feature treat-tossing capabilities, allowing you to remotely reward your pet with treats. They include advanced features like bark detection, night vision, and two-way audio. The Furbo 360° model offers full 360-degree rotation for complete room coverage, while the standard Furbo provides wide-angle viewing.</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>Pet monitoring:</strong> HD video streaming with wide-angle lens for comprehensive room coverage</li>
+                    <li><strong>Treat tossing:</strong> Remote treat dispensing feature to reward pets from anywhere</li>
+                    <li><strong>Bark detection:</strong> AI-powered bark detection sends alerts when your dog barks</li>
+                    <li><strong>Night vision:</strong> Infrared night vision for 24/7 monitoring</li>
+                    <li><strong>Two-way audio:</strong> Built-in microphone and speaker for communication with your pet</li>
+                    <li><strong>360° rotation:</strong> Full room coverage with pan capability (Furbo 360° model)</li>
+                    <li><strong>Treat capacity:</strong> Holds up to 100 small treats for extended use</li>
+                    <li><strong>Mobile alerts:</strong> Push notifications for barking, motion, and treat tossing events</li>
+                </ul>
+                <p><strong>Connection:</strong> WiFi connection to your home network, with cloud-based API access for remote control and monitoring.</p>
+                <p><strong>Protocol:</strong> Furbo REST API for device control, authentication, and event retrieval. Video streaming via cloud infrastructure.</p>
+                <p><strong>Setup Requirements:</strong> Furbo account, device connected to WiFi through Furbo app, and API credentials configured in config.yaml.</p>
+            </div>
+        </div>
+
+        <h3>⚡ Smart Plugs & Energy</h3>
+        <div class="hardware-grid">
+            <div class="hardware-card">
+                <h4>🔌 Tapo P115 Smart Plugs</h4>
+                <p><strong>Description:</strong> Tapo P115 smart plugs are WiFi-enabled power outlets that allow you to remotely control and monitor electrical devices. These plugs feature built-in energy monitoring capabilities, providing real-time power consumption data including watts, voltage, and current. They're perfect for controlling appliances, monitoring energy usage, and automating home devices. The plugs support scheduling, allowing you to set on/off times for automated control.</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>Real-time power monitoring:</strong> Live power consumption data (watts), voltage (V), and current (A) measurements updated every few seconds</li>
+                    <li><strong>Energy consumption tracking:</strong> Historical data showing daily, weekly, and monthly energy usage in kilowatt-hours (kWh)</li>
+                    <li><strong>Remote on/off control:</strong> Turn devices on or off remotely via dashboard or API, even when away from home</li>
+                    <li><strong>Cost calculations:</strong> Automatic cost calculation based on your electricity rate (configurable in settings)</li>
+                    <li><strong>Schedule support:</strong> Create schedules for automatic on/off times (e.g., turn on at 6 PM, off at 10 PM)</li>
+                    <li><strong>16A maximum load:</strong> Supports devices up to 16 amps (3680W at 230V), suitable for most household appliances</li>
+                    <li><strong>WiFi connectivity:</strong> 2.4GHz WiFi connection (5GHz not supported)</li>
+                    <li><strong>LED indicator:</strong> Visual status indicator showing connection and power state</li>
+                </ul>
+                <p><strong>Connection:</strong> WiFi connection to your 2.4GHz network. Each plug requires its own IP address (static IP or DHCP reservation recommended).</p>
+                <p><strong>Protocol:</strong> Tapo API using TP-Link's Kasa protocol. Communication is encrypted and requires device credentials (username/password).</p>
+                <p><strong>Setup Requirements:</strong> Plug must be set up through Tapo app first, then IP address and credentials added to config.yaml. Each plug needs individual configuration entry.</p>
+                <p><strong>Use Cases:</strong> Monitor air conditioner power usage, control Zojirushi rice cooker remotely, track server power consumption, automate lighting schedules, and reduce standby power waste.</p>
+            </div>
+        </div>
+
+        <h3>💡 Lighting</h3>
+        <div class="hardware-grid">
+            <div class="hardware-card">
+                <h4>🎨 Philips Hue</h4>
+                <p><strong>Description:</strong> Philips Hue is a comprehensive smart lighting system that uses Zigbee wireless technology to connect smart bulbs, light strips, and accessories to a central bridge. The system allows for precise control over color, brightness, and scheduling of individual lights or groups. Hue lights are known for their color accuracy, smooth dimming, and extensive ecosystem of compatible devices. The system supports millions of colors, warm-to-cool white temperature adjustment, and integration with various smart home platforms.</p>
+                <p><strong>Components:</strong></p>
+                <ul>
+                    <li><strong>Hue Bridge:</strong> Central hub (required) that connects to your router via Ethernet. Supports up to 50 lights and 12 accessories. Acts as the gateway between your WiFi network and the Zigbee mesh network.</li>
+                    <li><strong>Smart Bulbs:</strong> Various types including White (basic on/off), White Ambiance (warm-to-cool white temperature), and Color (full RGB color spectrum). Available in multiple form factors (A19, BR30, PAR38, etc.).</li>
+                    <li><strong>Light Strips:</strong> Flexible LED strips including standard Lightstrip Plus, Gradient (multi-color zones), and Play (designed for TV backlighting).</li>
+                    <li><strong>Smart Switches:</strong> Physical controls including Dimmer Switch, Tap Switch, and Smart Button for local control without using apps.</li>
+                    <li><strong>Accessories:</strong> Motion sensors, outdoor lights, smart plugs, and various fixtures.</li>
+                </ul>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>Individual light control:</strong> Control each light independently with precise color and brightness settings</li>
+                    <li><strong>Room/zone grouping:</strong> Organize lights into rooms (e.g., Kitchen, Living Room, Bedroom) for group control</li>
+                    <li><strong>Predefined scenes:</strong> 11 built-in scenes including "Relax", "Energize", "Reading", "Concentrate", and "Bright" for instant mood lighting</li>
+                    <li><strong>RGB color control:</strong> Full spectrum color control with 16 million color options and precise color temperature adjustment (2000K-6500K)</li>
+                    <li><strong>Brightness adjustment:</strong> Smooth dimming from 0-100% with 1% precision</li>
+                    <li><strong>Automation support:</strong> Create schedules, timers, and rules for automatic lighting control</li>
+                    <li><strong>Energy efficient:</strong> LED technology with long lifespan (25,000+ hours) and low power consumption</li>
+                    <li><strong>Zigbee mesh network:</strong> Self-healing mesh network where each device extends the network range</li>
+                </ul>
+                <p><strong>Connection:</strong> Zigbee wireless mesh network via Hue Bridge. Bridge connects to router via Ethernet cable. Lights connect wirelessly to bridge (or other lights in mesh).</p>
+                <p><strong>Protocol:</strong> Hue REST API (v1) for device control. Bridge exposes local API on port 80. Authentication via API key (username) generated during initial setup.</p>
+                <p><strong>Setup Requirements:</strong> Hue Bridge must be connected to router via Ethernet, powered on with all 3 lights solid. Generate API key (username) by pressing bridge button and calling /api endpoint. Add bridge IP and username to config.yaml.</p>
+                <p><strong>Limitations:</strong> Maximum 50 lights per bridge, 12 accessories per bridge. Requires bridge for all operations (lights don't connect directly to WiFi).</p>
+            </div>
+        </div>
+
+        <h3>🌤️ Weather & Environment</h3>
+        <div class="hardware-grid">
+            <div class="hardware-card">
+                <h4>📡 Netatmo Weather Station</h4>
+                <p><strong>Description:</strong> Netatmo Weather Station is a comprehensive home weather monitoring system that provides detailed environmental data both indoors and outdoors. The system consists of a main indoor module and optional outdoor modules that communicate wirelessly. It monitors temperature, humidity, air quality (CO₂ levels), noise levels, and barometric pressure. The outdoor modules can measure temperature, humidity, rainfall, and wind conditions. All data is accessible through Netatmo's cloud API and can be integrated into this dashboard for real-time monitoring and historical analysis.</p>
+                <p><strong>Components:</strong></p>
+                <ul>
+                    <li><strong>Indoor Module (NAMain):</strong> Main base station measuring indoor temperature (-40°C to 65°C), humidity (0-100%), CO₂ levels (0-5000 ppm), noise levels (0-120 dB), and barometric pressure (260-1260 mbar). Features LED display and connects to WiFi.</li>
+                    <li><strong>Outdoor Module (NAModule1):</strong> Weatherproof outdoor sensor measuring temperature (-40°C to 65°C) and humidity (0-100%). Battery-powered with 2-year battery life. Range up to 100 meters from indoor module.</li>
+                    <li><strong>Rain Gauge (NAModule3):</strong> Measures precipitation in millimeters with 0.1mm precision. Tracks rainfall intensity and accumulation. Battery-powered.</li>
+                    <li><strong>Wind Gauge (NAModule2):</strong> Measures wind speed (0-150 km/h) and wind direction (0-360°). Weatherproof design for outdoor installation. Battery-powered.</li>
+                    <li><strong>Additional Indoor Modules (NAModule4):</strong> Extra indoor sensors for monitoring multiple rooms (e.g., bedroom, bathroom). Measure temperature, humidity, and CO₂.</li>
+                </ul>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>Real-time indoor/outdoor data:</strong> Live updates of all sensor readings with timestamps and trend indicators (rising, falling, stable)</li>
+                    <li><strong>Air quality monitoring:</strong> CO₂ level tracking with color-coded indicators (green: good, yellow: fair, red: poor) and recommendations for ventilation</li>
+                    <li><strong>Historical data:</strong> Access to historical measurements for trend analysis and long-term monitoring</li>
+                    <li><strong>Multi-module support:</strong> Support for multiple stations and modules, allowing monitoring of different locations</li>
+                    <li><strong>Weather trends:</strong> Temperature and pressure trends showing whether values are rising, falling, or stable</li>
+                    <li><strong>Noise monitoring:</strong> Indoor noise level measurement to track environmental sound levels</li>
+                    <li><strong>Barometric pressure:</strong> Atmospheric pressure measurement for weather forecasting</li>
+                    <li><strong>Cloud sync:</strong> Automatic data synchronization to Netatmo cloud for remote access</li>
+                </ul>
+                <p><strong>Connection:</strong> WiFi connection for indoor module, wireless RF communication (868 MHz) for outdoor modules. All data accessible via Netatmo cloud API.</p>
+                <p><strong>Protocol:</strong> Netatmo REST API with OAuth 2.0 authentication. Requires client_id, client_secret, and refresh_token for API access. Uses sync DNS resolver to handle Windows async DNS issues.</p>
+                <p><strong>Setup Requirements:</strong> Netatmo account, device set up through Netatmo app, OAuth credentials obtained from Netatmo developer portal, and refresh token configured in config.yaml. Token is cached in netatmo_token.cache file for persistence.</p>
+                <p><strong>Data Access:</strong> API provides current measurements, historical data, and module status. Data is updated every 5-10 minutes by the weather station.</p>
+            </div>
+        </div>
+
+        <h3>ALERT Security & Safety</h3>
+        <div class="hardware-grid">
+            <div class="hardware-card">
+                <h4>🔥 Nest Protect</h4>
+                <p><strong>Models:</strong> Nest Protect (1st & 2nd gen), available in battery-powered and wired versions</p>
+                <p><strong>Description:</strong> Nest Protect is an intelligent smoke and carbon monoxide (CO) detector that goes beyond traditional alarms. It features a split-spectrum sensor that can distinguish between fast-burning fires and slow smoldering fires, reducing false alarms. The device includes a built-in night light (Pathlight) that automatically illuminates when motion is detected in the dark. Nest Protect provides voice alerts in addition to traditional alarm sounds, and can communicate with other Nest Protects in your home to create a network of interconnected safety devices. Status information and alerts are accessible through the Google Nest API.</p>
+                <p><strong>Features:</strong></p>
+                <ul>
+                    <li><strong>Smoke detection:</strong> Split-spectrum sensor detects both fast-burning and slow smoldering fires with reduced false alarms</li>
+                    <li><strong>CO (carbon monoxide) detection:</strong> Electrochemical sensor detects dangerous CO levels with 10-year sensor lifespan</li>
+                    <li><strong>Pathlight (night light):</strong> Automatic LED night light that activates when motion is detected in darkness</li>
+                    <li><strong>Status monitoring:</strong> Real-time status including battery level, sensor health, and alarm state</li>
+                    <li><strong>Voice alerts:</strong> Spoken alerts in addition to alarm sounds (e.g., "Heads up, there's smoke in the kitchen")</li>
+                    <li><strong>Interconnectivity:</strong> Multiple Nest Protects communicate wirelessly to create a home safety network</li>
+                    <li><strong>Self-testing:</strong> Automatic monthly self-tests to ensure sensors and speakers are working</li>
+                    <li><strong>Mobile alerts:</strong> Push notifications to your phone when alarms are triggered or batteries are low</li>
+                    <li><strong>Battery monitoring:</strong> Tracks battery level and provides low battery warnings</li>
+                </ul>
+                <p><strong>Connection:</strong> WiFi connection to home network. Integration with this system requires Home Assistant as a bridge, as Google has restricted direct OAuth access to Nest devices.</p>
+                <p><strong>Protocol:</strong> Google Nest API (OAuth 2.0) accessed through Home Assistant integration. Home Assistant acts as a bridge between this system and Nest devices.</p>
+                <p><strong>Setup Requirements:</strong> Nest Protect must be set up through Nest app, Home Assistant must be configured with Nest integration, and Home Assistant API credentials must be added to config.yaml. Direct Google OAuth is no longer supported for new integrations.</p>
+                <p><strong>Limitations:</strong> Requires Home Assistant as intermediary. Google has restricted direct API access, making Home Assistant the recommended integration method.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Start Guide -->
+    <div id="quickstart" class="help-section">
+        <h2>START Quick Start Guide</h2>
+
+        <h3>1️⃣ View Live Cameras</h3>
+        <ol>
+            <li>Click <strong>Cameras</strong> in the sidebar</li>
+            <li>Select any camera to view live stream</li>
+            <li>Use PTZ controls for Universal IoT Devices (pan, tilt, zoom)</li>
+            <li>Click <strong>Snapshot</strong> to capture still images</li>
+            <li>Use <strong>Grid View</strong> to see all cameras at once</li>
+        </ol>
+
+        <h3>2️⃣ Control Lighting</h3>
+        <ol>
+            <li>Click <strong>Lighting</strong> in the sidebar</li>
+            <li>Toggle individual lights on/off</li>
+            <li>Adjust brightness with sliders (0-100%)</li>
+            <li>Use color picker for RGB-capable bulbs</li>
+            <li>Apply predefined scenes (11 available)</li>
+            <li>Use global controls: All On/Off, 50%, 100%, Disco mode</li>
+        </ol>
+
+        <h3>3️⃣ Monitor Energy Usage</h3>
+        <ol>
+            <li>Click <strong>Energy</strong> in the sidebar</li>
+            <li>View real-time power consumption (watts)</li>
+            <li>See daily/weekly/monthly trends</li>
+            <li>Control smart plugs (turn on/off)</li>
+            <li>View cost calculations</li>
+        </ol>
+
+        <h3>4️⃣ Check Weather</h3>
+        <ol>
+            <li>Click <strong>Weather</strong> in the sidebar</li>
+            <li>View indoor Netatmo data (temperature, humidity, CO₂)</li>
+            <li>See Vienna external weather (5-day forecast)</li>
+            <li>Compare multiple modules (main station, bathroom, outdoor)</li>
+        </ol>
+
+        <h3>5️⃣ Use MCP Tools in Claude</h3>
+        <ol>
+            <li>Configure Claude Desktop with MCP server</li>
+            <li>Use natural language commands like "list all cameras"</li>
+            <li>Control devices: "turn on kitchen lights"</li>
+            <li>Get status: "what's the energy usage?"</li>
+            <li>See available tools in Claude's MCP panel</li>
+        </ol>
+    </div>
+
+    <!-- MCP Tools -->
+    <div id="mcp-tools" class="help-section">
+        <h2>🛠️ MCP Server Tools (16 Portmanteau)</h2>
+        <p>FastMCP 3.1 server with <strong>16 consolidated portmanteau tools</strong> (75% reduction from 64 individual tools)</p>
+        <p><em>Use these tools in Claude Desktop to control your entire smart home!</em></p>
+
+        <div class="tool-grid">
+            <div class="tool-card">
+                <h4>📹 camera_management</h4>
+                <p>Complete camera control and configuration</p>
+                <ul>
+                    <li><code>operation: list</code> - List all cameras with status</li>
+                    <li><code>operation: info</code> - Get detailed camera information</li>
+                    <li><code>operation: connect</code> - Connect to IP camera</li>
+                    <li><code>operation: snapshot</code> - Capture image</li>
+                    <li><code>operation: stream</code> - Get stream URL</li>
+                </ul>
+            </div>
+
+            <div class="tool-card">
+                <h4>🎮 ptz_management</h4>
+                <p>Pan/Tilt/Zoom controls for Universal IoT Devices</p>
+                <ul>
+                    <li><code>action: move</code> - Move camera (pan, tilt, zoom, speed)</li>
+                    <li><code>action: position</code> - Get current position</li>
+                    <li><code>action: stop</code> - Stop movement</li>
+                    <li><code>action: save_preset</code> - Save position</li>
+                    <li><code>action: recall_preset</code> - Go to saved position</li>
+                    <li><code>action: home</code> - Return to home position</li>
+                    <li><code>action: prank</code> - Fun modes (nod, shake, dizzy, chaos)</li>
+                </ul>
+            </div>
+
+            <div class="tool-card">
+                <h4>💡 lighting_management</h4>
+                <p>Philips Hue lighting management</p>
+                <ul>
+                    <li><code>action: list_lights</code> - Show all lights</li>
+                    <li><code>action: control</code> - Turn on/off, adjust brightness</li>
+                    <li><code>action: scene</code> - Apply predefined scenes</li>
+                    <li><code>action: group</code> - Control light groups</li>
+                    <li><code>action: color</code> - Set RGB color</li>
+                </ul>
+            </div>
+
+            <div class="tool-card">
+                <h4>⚡ energy_management</h4>
+                <p>Tapo P115 smart plug control and monitoring</p>
+                <ul>
+                    <li><code>operation: status</code> - Get current power usage</li>
+                    <li><code>operation: control</code> - Turn plugs on/off</li>
+                    <li><code>operation: consumption</code> - View usage trends</li>
+                    <li><code>operation: cost</code> - Calculate energy costs</li>
+                </ul>
+            </div>
+
+            <div class="tool-card">
+                <h4>🔔 ring_management</h4>
+                <p>Ring doorbell WebRTC and alerts</p>
+                <ul>
+                    <li><code>action: live_view</code> - Start WebRTC stream</li>
+                    <li><code>action: talk</code> - Two-way audio</li>
+                    <li><code>action: events</code> - Get motion/ding events</li>
+                    <li><code>action: history</code> - View event history</li>
+                </ul>
+            </div>
+
+            <div class="tool-card">
+                <h4>🌤️ weather_management</h4>
+                <p>Netatmo and Vienna weather information</p>
+                <ul>
+                    <li><code>action: current</code> - Current weather data</li>
+                    <li><code>action: stations</code> - List weather stations</li>
+                    <li><code>action: analyze</code> - Analyze weather patterns</li>
+                </ul>
+            </div>
+
+            <div class="tool-card">
+                <h4>TOOLS system_management</h4>
+                <p>Dashboard and server control</p>
+                <ul>
+                    <li><code>action: status</code> - System health check</li>
+                    <li><code>action: info</code> - System information</li>
+                    <li><code>action: health</code> - Comprehensive health check</li>
+                    <li><code>action: logs</code> - View system logs</li>
+                    <li><code>action: reboot</code> - Reboot camera</li>
+                </ul>
+            </div>
+
+            <div class="tool-card">
+                <h4>📸 media_management</h4>
+                <p>Image and video operations</p>
+                <ul>
+                    <li><code>action: capture</code> - Capture image</li>
+                    <li><code>action: analyze</code> - Analyze image with AI</li>
+                    <li><code>action: start_recording</code> - Start video recording</li>
+                    <li><code>action: get_stream_url</code> - Get stream URL</li>
+                </ul>
+            </div>
+        </div>
+
+        <p><strong>DOCS Full tool list:</strong> 16 portmanteau tools covering cameras, PTZ, lighting, energy, Ring, weather, security, automation, media, onboarding, configuration, analytics, AI, and system management.</p>
+    </div>
+
+    <!-- Dashboard Features -->
+    <div id="dashboard" class="help-section">
+        <h2>🌐 Dashboard Features</h2>
+        <p>Comprehensive web dashboard at <strong>http://localhost:7777</strong></p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>📹 Camera Dashboard</h4>
+                <ul>
+                    <li>Live MJPEG streaming</li>
+                    <li>Multi-camera grid view</li>
+                    <li>PTZ controls (Universal IoT Devices)</li>
+                    <li>Snapshot capture</li>
+                    <li>Camera status monitoring</li>
+                    <li>Preset management</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h4>💡 Lighting Dashboard</h4>
+                <ul>
+                    <li>18 Hue lights control</li>
+                    <li>6 room groups</li>
+                    <li>11 predefined scenes</li>
+                    <li>RGB color picker</li>
+                    <li>Global controls (All On/Off, Disco)</li>
+                    <li>Brightness sliders</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h4>⚡ Energy Dashboard</h4>
+                <ul>
+                    <li>Real-time power monitoring</li>
+                    <li>3 Tapo P115 plugs</li>
+                    <li>Usage trends & graphs</li>
+                    <li>Cost calculations</li>
+                    <li>Device control</li>
+                    <li>Historical data</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h4>🌤️ Weather Dashboard</h4>
+                <ul>
+                    <li>Netatmo indoor data</li>
+                    <li>Vienna 5-day forecast</li>
+                    <li>Temperature & humidity</li>
+                    <li>Air quality monitoring</li>
+                    <li>Multi-module comparison</li>
+                    <li>Dual-line graphs</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h4>🔔 Ring Integration</h4>
+                <ul>
+                    <li>WebRTC live view</li>
+                    <li>Two-way audio</li>
+                    <li>DING alert popups</li>
+                    <li>Motion notifications</li>
+                    <li>Event history</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h4>🏥 Health Dashboard</h4>
+                <ul>
+                    <li>Real-time device status</li>
+                    <li>Online/offline counts</li>
+                    <li>Error details</li>
+                    <li>Auto-refresh (10s)</li>
+                    <li>Connection health</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h4>ALERT Alerts Dashboard</h4>
+                <ul>
+                    <li>Message center</li>
+                    <li>Filter by severity</li>
+                    <li>Acknowledge alerts</li>
+                    <li>Last 24 hours</li>
+                    <li>3-level alerts (info/warning/alarm)</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h4>DATA Monitoring Integration</h4>
+                <ul>
+                    <li>Prometheus metrics endpoint</li>
+                    <li>Loki-compatible logs</li>
+                    <li>Grafana dashboard ready</li>
+                    <li>Alert correlation</li>
+                    <li>Real-time device health</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>🎨 UI Features</h3>
+        <ul>
+            <li>🌓 Dark/Light theme toggle</li>
+            <li>🔐 Session-based authentication (optional)</li>
+            <li>📱 Mobile-responsive design</li>
+            <li>🔄 Auto-refresh device status</li>
+            <li>TARGET User menu with settings</li>
+            <li>⌨️ Keyboard shortcuts</li>
+        </ul>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div id="troubleshooting" class="help-section">
+        <h2>TOOLS Troubleshooting & Common Issues</h2>
+
+        <h3>🎥 ONVIF Camera Streaming Issues</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Camera stream not showing / "Failed to get stream URL"</h4>
+            <p><strong>Step-by-step fix:</strong></p>
+            <ol>
+                <li><strong>Verify ONVIF is enabled:</strong> Check camera settings in Tapo app → Advanced → ONVIF (should be ON)</li>
+                <li><strong>Test ONVIF connection:</strong>
+                    <pre><code>python scripts/test_onvif_auth.py</code></pre>
+                </li>
+                <li><strong>Check credentials in config.yaml:</strong>
+                    <pre><code>cameras:
+  kitchen_cam:
+    type: onvif
+    params:
+      host: 192.168.0.164
+      onvif_port: 2020
+      username: your_username
+      password: your_password</code></pre>
+                </li>
+                <li><strong>Verify RTSP port:</strong> Most Universal IoT Devices use port 554 for RTSP. Check camera network settings.</li>
+                <li><strong>Test RTSP stream directly:</strong> Use VLC → Media → Open Network Stream → <code>rtsp://username:password@192.168.0.164:554/stream1</code></li>
+                <li><strong>Check firewall:</strong> Ensure ports 2020 (ONVIF) and 554 (RTSP) are not blocked</li>
+            </ol>
+            <p><strong>Common errors:</strong></p>
+            <ul>
+                <li><strong>"Connection refused"</strong> → ONVIF not enabled or wrong port (try 2020, 80, 8080)</li>
+                <li><strong>"Authentication failed"</strong> → Wrong username/password (use ONVIF credentials, not Tapo app login)</li>
+                <li><strong>"Stream URL is None"</strong> → Camera doesn't support ONVIF or profile not found</li>
+            </ul>
+        </div>
+
+        <div class="troubleshooting-item">
+            <h4>ERROR Camera page hangs / times out</h4>
+            <p><strong>Solutions:</strong></p>
+            <ol>
+                <li><strong>Check camera connectivity:</strong> <code>ping 192.168.0.164</code></li>
+                <li><strong>Verify camera is online:</strong> Check Health Dashboard at <code>/health-dashboard</code></li>
+                <li><strong>Check logs:</strong> Look for timeout errors in <code>tapo_mcp.log</code></li>
+                <li><strong>Restart camera:</strong> Power cycle the camera</li>
+                <li><strong>Clear browser cache:</strong> Hard refresh (Ctrl+F5) or clear cache</li>
+            </ol>
+        </div>
+
+        <div class="troubleshooting-item">
+            <h4>ERROR MJPEG stream shows "Failed to load" or black screen</h4>
+            <p><strong>Fix:</strong></p>
+            <ol>
+                <li><strong>Check browser console:</strong> Press F12 → Console tab for errors</li>
+                <li><strong>Verify stream endpoint:</strong> Visit <code>/api/cameras/kitchen_cam/mjpeg</code> directly</li>
+                <li><strong>Check OpenCV:</strong> Ensure <code>opencv-python</code> is installed: <code>pip install opencv-python</code></li>
+                <li><strong>Test RTSP manually:</strong> Use VLC to verify RTSP stream works</li>
+                <li><strong>Check camera encoding:</strong> Some cameras need H.264 codec - verify in camera settings</li>
+            </ol>
+        </div>
+
+        <h3>🎥 Tapo C200 Cameras</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Camera offline</h4>
+            <p><strong>Check:</strong></p>
+            <ul>
+                <li>Camera powered on (LED indicator)</li>
+                <li>Network cable connected (or WiFi signal strong)</li>
+                <li>Router can reach IP address: <code>ping 192.168.0.164</code></li>
+                <li>Credentials correct in <code>config.yaml</code></li>
+            </ul>
+            <p><strong>Test ONVIF:</strong></p>
+            <pre><code>python scripts/test_onvif_auth.py</code></pre>
+        </div>
+
+        <div class="troubleshooting-item">
+            <h4>ERROR PTZ not responding</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Wait 2-3 seconds between PTZ commands</li>
+                <li>Reset camera position: <code>action: home</code></li>
+                <li>Reboot camera via Tapo app</li>
+                <li>Check firmware: Should be 1.4.4 Build 250922 or newer</li>
+            </ul>
+        </div>
+
+        <h3>📹 USB Webcam</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Webcam not detected</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Check Windows Camera app works</li>
+                <li>Grant permissions: Settings > Privacy > Camera</li>
+                <li>Try different USB port</li>
+                <li>Update <code>device_id</code> in <code>config.yaml</code> (try 0, 1, 2)</li>
+            </ul>
+        </div>
+
+        <h3>⚡ Tapo P115 Smart Plugs</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Plug not responding</h4>
+            <p><strong>Check IPs:</strong></p>
+            <ul>
+                <li>Aircon: 192.168.0.17</li>
+                <li>Zojirushi: 192.168.0.137</li>
+                <li>Server: 192.168.0.38 (read-only)</li>
+            </ul>
+            <p><strong>Test connection:</strong></p>
+            <pre><code>python scripts/test_both_p115_plugs.py</code></pre>
+        </div>
+
+        <h3>💡 Philips Hue</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Lights not responding</h4>
+            <p><strong>Check:</strong></p>
+            <ul>
+                <li>Hue Bridge at 192.168.0.83 is powered on</li>
+                <li>Bridge shows 3 solid lights</li>
+                <li>Username token valid in <code>config.yaml</code></li>
+            </ul>
+            <p><strong>Test connection:</strong></p>
+            <pre><code>python scripts/test_list_lights.py</code></pre>
+        </div>
+
+        <h3>🔔 Ring Doorbell</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Ring not initialized</h4>
+            <p><strong>First-time setup requires 2FA:</strong></p>
+            <ol>
+                <li>Run initialization script</li>
+                <li>Enter Ring email/password</li>
+                <li>Complete 2FA on your phone</li>
+                <li>Token saved to <code>ring_token.cache</code></li>
+            </ol>
+        </div>
+
+        <h3>🌤️ Netatmo Weather</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Weather data not updating</h4>
+            <p><strong>Check:</strong></p>
+            <ul>
+                <li>Refresh token valid in <code>config.yaml</code></li>
+                <li>Netatmo station powered and connected</li>
+                <li>OAuth credentials not expired</li>
+            </ul>
+            <p><strong>Reauthorize:</strong></p>
+            <pre><code>python scripts/netatmo_oauth_helper.py</code></pre>
+        </div>
+
+        <h3>🖥️ Dashboard & Server Issues</h3>
+        <div class="troubleshooting-item">
+            <h4>ERROR Dashboard won't start / Port already in use</h4>
+            <p><strong>Check port 7777:</strong></p>
+            <pre><code># PowerShell
+Get-NetTCPConnection -LocalPort 7777 | Select-Object OwningProcess
+
+# Or find and kill process
+netstat -ano | findstr "7777"</code></pre>
+            <p><strong>Kill process on port:</strong></p>
+            <pre><code># Replace PID with actual process ID
+Stop-Process -Id &lt;PID&gt; -Force</code></pre>
+            <p><strong>Use different port:</strong></p>
+            <pre><code>python -m devices_mcp.web --port 7778</code></pre>
+        </div>
+
+        <div class="troubleshooting-item">
+            <h4>ERROR Server crashed / "Unhandled exception"</h4>
+            <p><strong>Check error logs:</strong></p>
+            <ul>
+                <li>View <code>tapo_mcp.log</code> for detailed error messages</li>
+                <li>Check Health Dashboard for device connection errors</li>
+                <li>Look for actionable error messages in logs (they now include fix steps)</li>
+            </ul>
+            <p><strong>Common causes:</strong></p>
+            <ul>
+                <li><strong>Network errors:</strong> Device unreachable → Check device power and network</li>
+                <li><strong>DNS errors:</strong> Netatmo API → Check internet connection</li>
+                <li><strong>Authentication errors:</strong> Invalid credentials → Update config.yaml</li>
+                <li><strong>Timeout errors:</strong> Device slow → Increase timeout or check device status</li>
+            </ul>
+            <p><strong>Error messages now include actionable steps:</strong> Check logs for numbered checklists (e.g., "Check: 1) Device is powered on, 2) Firewall isn't blocking...")</p>
+        </div>
+
+        <div class="troubleshooting-item">
+            <h4>ERROR Weather stations not connecting / "NetworkError"</h4>
+            <p><strong>Netatmo DNS fix applied:</strong> The system now uses sync DNS resolver to fix Windows async DNS issues.</p>
+            <p><strong>If still failing:</strong></p>
+            <ol>
+                <li><strong>Check Netatmo credentials:</strong> Verify <code>client_id</code>, <code>client_secret</code>, and <code>refresh_token</code> in config.yaml</li>
+                <li><strong>Reauthorize if needed:</strong> <code>python scripts/netatmo_oauth_helper.py</code></li>
+                <li><strong>Check internet connection:</strong> Netatmo requires internet access</li>
+                <li><strong>Verify station is online:</strong> Check Netatmo app or web dashboard</li>
+            </ol>
+        </div>
+
+        <div class="troubleshooting-item">
+            <h4>ERROR "Simulated" or mock data showing</h4>
+            <p><strong>All simulated data removed:</strong> System now returns empty data instead of fake data when services are unavailable.</p>
+            <p><strong>If you see empty data:</strong></p>
+            <ul>
+                <li>Check device/service is actually configured and online</li>
+                <li>Verify credentials in config.yaml</li>
+                <li>Check Health Dashboard for connection status</li>
+                <li>Review error logs for specific failure reasons</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Configuration -->
+    <div id="configuration" class="help-section" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: 2px solid #e91e63; border-left: 4px solid #e91e63; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        <h2 style="color: white;">📡 Configuration & Files</h2>
+
+        <h3 style="color: white;">📁 Important Locations</h3>
+        <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <p><strong>Project Root:</strong></p>
+            <pre><code>D:\Dev\repos\devices-mcp\</code></pre>
+
+            <p><strong>Main Configuration:</strong></p>
+            <pre><code>D:\Dev\repos\devices-mcp\config.yaml</code></pre>
+
+            <p><strong>Startup Script:</strong></p>
+            <pre><code>D:\Dev\repos\devices-mcp\start_dashboard.ps1</code></pre>
+
+            <p><strong>Test Scripts:</strong></p>
+            <pre><code>D:\Dev\repos\devices-mcp\scripts\</code></pre>
+        </div>
+
+        <h3 style="color: white;">⚙️ Configuration Keys</h3>
+        <p>Edit <code>config.yaml</code> to modify settings:</p>
+        <ul>
+            <li><strong>Cameras:</strong> <code>cameras.kitchen_cam.params</code></li>
+            <li><strong>Smart Plugs:</strong> <code>energy.tapo_p115.devices</code></li>
+            <li><strong>Hue Bridge:</strong> <code>lighting.philips_hue</code></li>
+            <li><strong>Ring Doorbell:</strong> <code>ring.email</code> and <code>ring.password</code></li>
+            <li><strong>Netatmo:</strong> <code>weather.integrations.netatmo</code></li>
+            <li><strong>Authentication:</strong> <code>auth.enabled</code> (currently disabled)</li>
+        </ul>
+    </div>
+
+    <!-- Monitoring & Stability -->
+    <div id="monitoring" class="help-section" style="background: linear-gradient(135deg, var(--success-green) 0%, var(--success-dark) 100%); color: white; border: 2px solid #047857; border-left: 4px solid #047857; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        <h2 style="color: white;">💪 Monitoring & Stability System (v1.8.0)</h2>
+
+        <h3 style="color: white;">🔍 No More "It Worked Yesterday" Failures!</h3>
+        <div style="background: rgba(255,255,255,0.1); padding: 16px; border-radius: 8px; margin: 16px 0;">
+            <p style="margin-bottom: 12px;"><strong>Problem Solved:</strong> Dependencies can disappear when venv is recreated or packages are updated.</p>
+
+            <p><strong>Solution: Complete Stability System!</strong></p>
+            <ul style="margin-top: 8px;">
+                <li><strong>Startup Validation:</strong> Checks all 20+ libraries before server starts</li>
+                <li><strong>Connection Supervisor:</strong> Polls ALL devices every 60 seconds</li>
+                <li><strong>Auto-Reconnect:</strong> Automatic recovery from device failures</li>
+                <li><strong>3-Level Alerts:</strong> Info (INFO) → Warning (WARNING) → Alarm (ALERT)</li>
+                <li><strong>Alert Escalation:</strong> 1 failure = warning, 3 failures = alarm</li>
+            </ul>
+        </div>
+
+        <h3 style="color: white;">🌐 Monitoring Dashboards</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 16px;">
+            <div style="background: rgba(255,255,255,0.15); padding: 16px; border-radius: 8px;">
+                <h4 style="color: white; margin-top: 0;">🏥 Health Dashboard</h4>
+                <p style="font-size: 14px; margin-bottom: 8px;"><strong>URL:</strong> <a href="/health-dashboard" style="color: #ffd700;">/health-dashboard</a></p>
+                <p style="font-size: 13px;">Real-time device status, online/offline counts, error details, auto-refresh 10s</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 16px; border-radius: 8px;">
+                <h4 style="color: white; margin-top: 0;">ALERT Alerts Dashboard</h4>
+                <p style="font-size: 14px; margin-bottom: 8px;"><strong>URL:</strong> <a href="/alerts" style="color: #ffd700;">/alerts</a></p>
+                <p style="font-size: 13px;">Message center, filter by severity, acknowledge alerts, last 24 hours</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 16px; border-radius: 8px;">
+                <h4 style="color: white; margin-top: 0;">DATA Prometheus Metrics</h4>
+                <p style="font-size: 14px; margin-bottom: 8px;"><strong>URL:</strong> <a href="/api/messages/prometheus" style="color: #ffd700;">/api/messages/prometheus</a></p>
+                <p style="font-size: 13px;">Scrape endpoint for Grafana integration, alert counts, uptime metrics</p>
+            </div>
+        </div>
+
+        <h3 style="color: white; margin-top: 24px;">DATA Monitoring Stack Integration</h3>
+        <p>Ready for Prometheus + Loki + Grafana:</p>
+        <ul>
+            <li><strong>Prometheus:</strong> Scrape metrics from <code>/api/messages/prometheus</code></li>
+            <li><strong>Loki:</strong> Structured JSON logs via Promtail</li>
+            <li><strong>Grafana:</strong> Pre-configured dashboards for device health</li>
+        </ul>
+    </div>
+
+    <!-- API Reference -->
+    <div id="api-reference" class="help-section">
+        <h2>📡 API Endpoints Reference</h2>
+
+        <h3>Camera Endpoints</h3>
+        <div class="api-grid">
+            <div class="api-card">
+                <h4>GET /api/cameras</h4>
+                <p>List all cameras with status</p>
+                <pre><code>curl http://localhost:7777/api/cameras</code></pre>
+            </div>
+            <div class="api-card">
+                <h4>GET /api/cameras/{camera_id}/mjpeg</h4>
+                <p>Get MJPEG stream for browser viewing</p>
+                <pre><code># Use in img tag:
+&lt;img src="/api/cameras/kitchen_cam/mjpeg"&gt;</code></pre>
+            </div>
+            <div class="api-card">
+                <h4>GET /api/cameras/{camera_id}/snapshot</h4>
+                <p>Capture still image</p>
+                <pre><code>curl http://localhost:7777/api/cameras/kitchen_cam/snapshot -o snapshot.jpg</code></pre>
+            </div>
+            <div class="api-card">
+                <h4>POST /api/cameras/{camera_id}/ptz</h4>
+                <p>Control PTZ (pan, tilt, zoom)</p>
+                <pre><code>curl -X POST http://localhost:7777/api/cameras/kitchen_cam/ptz \
+  -H "Content-Type: application/json" \
+  -d '{"action": "move", "pan": 10, "tilt": -5}'</code></pre>
+            </div>
+        </div>
+
+        <h3>System Endpoints</h3>
+        <div class="api-grid">
+            <div class="api-card">
+                <h4>GET /api/health</h4>
+                <p>System health check</p>
+                <pre><code>curl http://localhost:7777/api/health</code></pre>
+            </div>
+            <div class="api-card">
+                <h4>GET /api/system/connection-health</h4>
+                <p>Device connection status</p>
+                <pre><code>curl http://localhost:7777/api/system/connection-health</code></pre>
+            </div>
+            <div class="api-card">
+                <h4>GET /api/system/status</h4>
+                <p>System status (CPU, memory, disk)</p>
+                <pre><code>curl http://localhost:7777/api/system/status</code></pre>
+            </div>
+        </div>
+
+        <h3>Weather Endpoints</h3>
+        <div class="api-grid">
+            <div class="api-card">
+                <h4>GET /api/weather/stations</h4>
+                <p>List Netatmo weather stations</p>
+                <pre><code>curl http://localhost:7777/api/weather/stations</code></pre>
+            </div>
+            <div class="api-card">
+                <h4>GET /api/weather/vienna</h4>
+                <p>Vienna external weather (Open-Meteo)</p>
+                <pre><code>curl http://localhost:7777/api/weather/vienna</code></pre>
+            </div>
+        </div>
+
+        <h3>Error Responses</h3>
+        <p>All API errors now return actionable error messages:</p>
+        <pre><code>{
+  "detail": "Network connection failed",
+  "error_category": "network_error",
+  "error_type": "ConnectionError",
+  "actionable": "Failed to connect to device/service. Check: 1) Device is powered on and connected to network, 2) Firewall isn't blocking connections, 3) Network connectivity is working. Error: Connection refused"
+}</code></pre>
+    </div>
+
+    <!-- Learning Resources -->
+    <div id="resources" class="help-section">
+        <h2>🎓 Learning Resources & Quick Reference</h2>
+
+        <h3>DOCS Claude Desktop Integration</h3>
+        <p>Use MCP tools in Claude to control your smart home:</p>
+        <pre><code>// In Claude Desktop config (claude_desktop_config.json)
+"devices-mcp": {
+  "command": "python",
+  "args": ["-m", "devices_mcp.server"],
+  "cwd": "D:/Dev/repos/devices-mcp",
+  "env": {
+    "PYTHONPATH": "D:/Dev/repos/devices-mcp/src"
+  }
+}</code></pre>
+
+        <h3>TEST Testing Commands</h3>
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <p><strong>Test all cameras:</strong></p>
+            <pre><code>python scripts/demo.py --list</code></pre>
+
+            <p><strong>Test kitchen camera with PTZ:</strong></p>
+            <pre><code>python scripts/demo.py --camera kitchen_cam</code></pre>
+
+            <p><strong>Test smart plugs:</strong></p>
+            <pre><code>python scripts/test_both_p115_plugs.py</code></pre>
+
+            <p><strong>Test Hue lights:</strong></p>
+            <pre><code>python scripts/test_list_lights.py</code></pre>
+        </div>
+
+        <h3>📖 Documentation</h3>
+        <ul>
+            <li><strong>Stability System:</strong> <code>STABILITY_SYSTEM_COMPLETE.md</code></li>
+            <li><strong>Monitoring Integration:</strong> <code>MONITORING_INTEGRATION.md</code></li>
+            <li><strong>README:</strong> <code>README.md</code></li>
+            <li><strong>Changelog:</strong> <code>CHANGELOG.md</code></li>
+        </ul>
+
+        <h3>DATA System Status</h3>
+        <p><strong>Dashboard:</strong> <a href="http://localhost:7777">http://localhost:7777</a></p>
+        <p><strong>Health Check:</strong> <a href="http://localhost:7777/api/health">http://localhost:7777/api/health</a></p>
+        <p><strong>Camera List:</strong> <a href="http://localhost:7777/api/cameras">http://localhost:7777/api/cameras</a></p>
+    </div>
+</div>
+
+<style>
+.help-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.help-section {
+    margin-bottom: 3rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    border: 2px solid #0d6efd;
+    border-left: 4px solid #0d6efd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    scroll-margin-top: 80px;
+}
+
+.help-section h2 {
+    color: #0d6efd;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #0d6efd;
+    padding-bottom: 0.5rem;
+}
+
+.help-section h3 {
+    color: #495057;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.toc-section {
+    position: sticky;
+    top: 80px;
+    z-index: 10;
+}
+
+.toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.toc-item {
+    padding: 0.5rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 0.25rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.info-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+.info-card h4 {
+    color: #0d6efd;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.architecture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.arch-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.arch-card h4 {
+    color: #0d6efd;
+    margin-bottom: 0.75rem;
+}
+
+.component-diagram {
+    margin: 1.5rem 0;
+}
+
+.component-layer {
+    background: white;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 0.5rem;
+    border-left: 4px solid var(--success-green);
+}
+
+.component-layer h4 {
+    color: var(--success-green);
+    margin-bottom: 0.5rem;
+}
+
+.flow-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1.5rem 0;
+}
+
+.flow-step {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 2px solid #0d6efd;
+    margin: 0.5rem 0;
+    min-width: 300px;
+    text-align: center;
+}
+
+.flow-arrow {
+    font-size: 1.5rem;
+    color: #0d6efd;
+    margin: 0.25rem 0;
+}
+
+.hardware-grid, .tool-grid, .feature-grid, .api-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.hardware-card, .tool-card, .feature-card, .api-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hardware-card h4, .tool-card h4, .feature-card h4 {
+    color: #0d6efd;
+    margin-bottom: 0.75rem;
+}
+
+.api-card h4 {
+    color: #0d6efd;
+    margin-bottom: 0.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+}
+
+.api-card pre {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.troubleshooting-item {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.25rem;
+}
+
+.troubleshooting-item h4 {
+    color: #664d03;
+    margin-bottom: 0.5rem;
+}
+
+code {
+    background: #e9ecef;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+pre {
+    background: #2d3748;
+    color: var(--dark-text-secondary);
+    padding: 1rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+}
+
+ul, ol {
+    padding-left: 1.5rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+a {
+    color: #0d6efd;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .help-container {
+        padding: 1rem;
+    }
+
+    .toc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .architecture-grid, .hardware-grid, .tool-grid, .feature-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

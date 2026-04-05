@@ -34,7 +34,7 @@ tapo_p115_power_watts{device_id="tapo_p115_kitchen_zojirushi",host="192.168.0.17
 Add to `prometheus.yml`:
 ```yaml
 scrape_configs:
-  - job_name: 'tapo-camera-mcp'
+  - job_name: 'devices-mcp'
     scrape_interval: 30s
     static_configs:
       - targets: ['localhost:7777']
@@ -112,7 +112,7 @@ You can also create a dashboard panel that shows:
 
 2. Verify Prometheus is scraping:
    - Go to Prometheus UI → Status → Targets
-   - Check `tapo-camera-mcp` target is UP
+   - Check `devices-mcp` target is UP
 
 3. Verify metrics in Prometheus:
    - Prometheus UI → Graph
@@ -144,4 +144,3 @@ You can also create a dashboard panel that shows:
 - Add more alert rules for different power patterns
 - Integrate with home automation (e.g., turn on notifications when heating starts)
 - Create custom dashboard panels for alert visualization
-

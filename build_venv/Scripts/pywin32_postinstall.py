@@ -1,8 +1,13 @@
+
+logger = logging.getLogger(__name__)
+
 # postinstall script for pywin32
 #
 # copies pywintypesXX.dll and pythoncomXX.dll into the system directory,
 # and creates a pth file
-import argparse
+import
+import logging
+ argparse
 import glob
 import os
 import shutil
@@ -63,9 +68,7 @@ root_key_name = "Software\\Python\\PythonCore\\" + sys.winver
 
 def get_root_hkey():
     try:
-        winreg.OpenKey(
-            winreg.HKEY_LOCAL_MACHINE, root_key_name, 0, winreg.KEY_CREATE_SUB_KEY
-        )
+        winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, root_key_name, 0, winreg.KEY_CREATE_SUB_KEY)
         return winreg.HKEY_LOCAL_MACHINE
     except OSError:
         # Either not exist, or no permissions to create subkey means
@@ -104,12 +107,22 @@ def create_shortcut(
 def get_special_folder_path(path_name):
     from win32com.shell import shell, shellcon
 
-    for maybe in """
-        CSIDL_COMMON_STARTMENU CSIDL_STARTMENU CSIDL_COMMON_APPDATA
-        CSIDL_LOCAL_APPDATA CSIDL_APPDATA CSIDL_COMMON_DESKTOPDIRECTORY
-        CSIDL_DESKTOPDIRECTORY CSIDL_COMMON_STARTUP CSIDL_STARTUP
-        CSIDL_COMMON_PROGRAMS CSIDL_PROGRAMS CSIDL_PROGRAM_FILES_COMMON
-        CSIDL_PROGRAM_FILES CSIDL_FONTS""".split():
+    for maybe in [
+        "CSIDL_COMMON_STARTMENU",
+        "CSIDL_STARTMENU",
+        "CSIDL_COMMON_APPDATA",
+        "CSIDL_LOCAL_APPDATA",
+        "CSIDL_APPDATA",
+        "CSIDL_COMMON_DESKTOPDIRECTORY",
+        "CSIDL_DESKTOPDIRECTORY",
+        "CSIDL_COMMON_STARTUP",
+        "CSIDL_STARTUP",
+        "CSIDL_COMMON_PROGRAMS",
+        "CSIDL_PROGRAMS",
+        "CSIDL_PROGRAM_FILES_COMMON",
+        "CSIDL_PROGRAM_FILES",
+        "CSIDL_FONTS",
+    ]:
         if maybe == path_name:
             csidl = getattr(shellcon, maybe)
             return shell.SHGetSpecialFolderPath(0, csidl, False)
@@ -140,7 +153,7 @@ def CopyTo(desc, src, dest):
             )
             if rc == win32con.IDABORT:
                 raise
-            elif rc == win32con.IDIGNORE:
+            if rc == win32con.IDIGNORE:
                 return
             # else retry - around we go again.
 
@@ -178,7 +191,7 @@ def SetPyKeyVal(key_name, value_name, value):
         try:
             winreg.SetValueEx(my_key, value_name, 0, winreg.REG_SZ, value)
             if verbose:
-                print(f"-> {root_key_name}\\{key_name}[{value_name}]={value!r}")
+                logger.info(f"-> {root_key_name}\\{key_name}[{value_name}]={value!r}")
         finally:
             my_key.Close()
     finally:
@@ -193,13 +206,13 @@ def UnsetPyKeyVal(key_name, value_name, delete_key=False):
         try:
             winreg.DeleteValue(my_key, value_name)
             if verbose:
-                print(f"-> DELETE {root_key_name}\\{key_name}[{value_name}]")
+                logger.info(f"-> DELETE {root_key_name}\\{key_name}[{value_name}]")
         finally:
             my_key.Close()
         if delete_key:
             winreg.DeleteKey(root_key, key_name)
             if verbose:
-                print(f"-> DELETE {root_key_name}\\{key_name}")
+                logger.info(f"-> DELETE {root_key_name}\\{key_name}")
     except OSError as why:
         winerror = getattr(why, "winerror", why.errno)
         if winerror != 2:  # file not found
@@ -238,8 +251,7 @@ def RegisterHelpFile(register=True, lib_dir=None):
             SetPyKeyVal("Help", None, None)
             SetPyKeyVal("Help\\Pythonwin Reference", None, chm_file)
             return chm_file
-        else:
-            print("NOTE: PyWin32.chm can not be located, so has not been registered")
+        logger.info("NOTE: PyWin32.chm can not be located, so has not been registered")
     else:
         UnsetPyKeyVal("Help\\Pythonwin Reference", None, delete_key=True)
     return None
@@ -304,9 +316,7 @@ def RegisterPythonwin(register=True, lib_dir=None):
         # tell windows about the change
         from win32com.shell import shell, shellcon
 
-        shell.SHChangeNotify(
-            shellcon.SHCNE_ASSOCCHANGED, shellcon.SHCNF_IDLIST, None, None
-        )
+        shell.SHChangeNotify(shellcon.SHCNE_ASSOCCHANGED, shellcon.SHCNF_IDLIST, None, None)
 
 
 def get_shortcuts_folder():
@@ -367,15 +377,13 @@ def fixup_dbi():
         if os.path.isfile(this_pyd) and os.path.isfile(py_name):
             try:
                 if os.path.isfile(this_dest):
-                    print(
-                        f"Old dbi '{this_dest}' already exists - deleting '{this_pyd}'"
-                    )
+                    logger.info(f"Old dbi '{this_dest}' already exists - deleting '{this_pyd}'")
                     os.remove(this_pyd)
                 else:
                     os.rename(this_pyd, this_dest)
-                    print(f"renamed '{this_pyd}'->'{this_pyd}.old'")
+                    logger.info(f"renamed '{this_pyd}'->'{this_pyd}.old'")
             except OSError as exc:
-                print(f"FAILED to rename '{this_pyd}': {exc}")
+                logger.info(f"FAILED to rename '{this_pyd}': {exc}")
 
 
 def install(lib_dir):
@@ -388,12 +396,12 @@ def install(lib_dir):
         os.unlink(os.path.join(sys.prefix, "pywin32.pth"))
     # The .pth may be new and therefore not loaded in this session.
     # Setup the paths just in case.
-    for name in "win32 win32\\lib Pythonwin".split():
+    for name in ["win32", "win32\\lib", "Pythonwin"]:
         sys.path.append(os.path.join(lib_dir, name))
     # It is possible people with old versions installed with still have
     # pywintypes and pythoncom registered.  We no longer need this, and stale
     # entries hurt us.
-    for name in "pythoncom pywintypes".split():
+    for name in ["pythoncom", "pywintypes"]:
         keyname = "Software\\Python\\PythonCore\\" + sys.winver + "\\Modules\\" + name
         for root in winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER:
             try:
@@ -423,7 +431,7 @@ def install(lib_dir):
                 dst = os.path.join(dest_dir, base)
                 CopyTo("installing %s" % base, fname, dst)
                 if verbose:
-                    print(f"Copied {base} to {dst}")
+                    logger.info(f"Copied {base} to {dst}")
                 worked = 1
                 # Nuke any other versions that may exist - having
                 # duplicates causes major headaches.
@@ -451,14 +459,12 @@ def install(lib_dir):
                         "due to insufficient permissions.  You must "
                         "reinstall this software as an Administrator" % dst
                     )
-                    print(msg)
+                    logger.info(msg)
                     raise RuntimeError(msg)
                 continue
             raise
     else:
-        raise RuntimeError(
-            "You don't have enough permissions to install the system files"
-        )
+        raise RuntimeError("You don't have enough permissions to install the system files")
 
     # Register our demo COM objects.
     try:
@@ -467,10 +473,10 @@ def install(lib_dir):
         except win32api.error as details:
             if details.winerror != 5:  # ERROR_ACCESS_DENIED
                 raise
-            print("You do not have the permissions to install COM objects.")
-            print("The sample COM objects were not registered.")
+            logger.info("You do not have the permissions to install COM objects.")
+            logger.info("The sample COM objects were not registered.")
     except Exception:
-        print("FAILED to register the Python COM objects")
+        logger.info("FAILED to register the Python COM objects")
         traceback.print_exc()
 
     # There may be no main Python key in HKCU if, eg, an admin installed
@@ -481,11 +487,11 @@ def install(lib_dir):
     try:
         chm_file = RegisterHelpFile(True, lib_dir)
     except Exception:
-        print("Failed to register help file")
+        logger.info("Failed to register help file")
         traceback.print_exc()
     else:
         if verbose:
-            print("Registered help file")
+            logger.info("Registered help file")
 
     # misc other fixups.
     fixup_dbi()
@@ -494,17 +500,17 @@ def install(lib_dir):
     try:
         RegisterPythonwin(True, lib_dir)
     except Exception:
-        print("Failed to register pythonwin as editor")
+        logger.info("Failed to register pythonwin as editor")
         traceback.print_exc()
     else:
         if verbose:
-            print("Pythonwin has been registered in context menu")
+            logger.info("Pythonwin has been registered in context menu")
 
     # Create the win32com\gen_py directory.
     make_dir = os.path.join(lib_dir, "win32com", "gen_py")
     if not os.path.isdir(make_dir):
         if verbose:
-            print(f"Creating directory {make_dir}")
+            logger.info(f"Creating directory {make_dir}")
         os.mkdir(make_dir)
 
     try:
@@ -524,19 +530,18 @@ def install(lib_dir):
                 sys.prefix,
             )
             if verbose:
-                print("Shortcut for Pythonwin created")
+                logger.info("Shortcut for Pythonwin created")
             # And the docs.
             if chm_file:
                 dst = os.path.join(fldr, "Python for Windows Documentation.lnk")
                 doc = "Documentation for the PyWin32 extensions"
                 create_shortcut(chm_file, doc, dst)
                 if verbose:
-                    print("Shortcut to documentation created")
-        else:
-            if verbose:
-                print(f"Can't install shortcuts - {fldr!r} is not a folder")
+                    logger.info("Shortcut to documentation created")
+        elif verbose:
+            logger.info(f"Can't install shortcuts - {fldr!r} is not a folder")
     except Exception as details:
-        print(details)
+        logger.info(details)
 
     # importing win32com.client ensures the gen_py dir created - not strictly
     # necessary to do now, but this makes the installation "complete"
@@ -545,7 +550,7 @@ def install(lib_dir):
     except ImportError:
         # Don't let this error sound fatal
         pass
-    print("The pywin32 extensions were successfully installed.")
+    logger.info("The pywin32 extensions were successfully installed.")
 
 
 def uninstall(lib_dir):
@@ -557,23 +562,23 @@ def uninstall(lib_dir):
     try:
         RegisterCOMObjects(False)
     except Exception as why:
-        print(f"Failed to unregister COM objects: {why}")
+        logger.info(f"Failed to unregister COM objects: {why}")
 
     try:
         RegisterHelpFile(False, lib_dir)
     except Exception as why:
-        print(f"Failed to unregister help file: {why}")
+        logger.info(f"Failed to unregister help file: {why}")
     else:
         if verbose:
-            print("Unregistered help file")
+            logger.info("Unregistered help file")
 
     try:
         RegisterPythonwin(False, lib_dir)
     except Exception as why:
-        print(f"Failed to unregister Pythonwin: {why}")
+        logger.info(f"Failed to unregister Pythonwin: {why}")
     else:
         if verbose:
-            print("Unregistered Pythonwin")
+            logger.info("Unregistered Pythonwin")
 
     try:
         # remove gen_py directory.
@@ -581,7 +586,7 @@ def uninstall(lib_dir):
         if os.path.isdir(gen_dir):
             shutil.rmtree(gen_dir)
             if verbose:
-                print(f"Removed directory {gen_dir}")
+                logger.info(f"Removed directory {gen_dir}")
 
         # Remove pythonwin compiled "config" files.
         pywin_dir = os.path.join(lib_dir, "Pythonwin", "pywin")
@@ -599,7 +604,7 @@ def uninstall(lib_dir):
             pass
 
     except Exception as why:
-        print(f"Failed to remove misc files: {why}")
+        logger.info(f"Failed to remove misc files: {why}")
 
     try:
         fldr = get_shortcuts_folder()
@@ -608,9 +613,9 @@ def uninstall(lib_dir):
             if os.path.isfile(fqlink):
                 os.remove(fqlink)
                 if verbose:
-                    print(f"Removed {link}")
+                    logger.info(f"Removed {link}")
     except Exception as why:
-        print(f"Failed to remove shortcuts: {why}")
+        logger.info(f"Failed to remove shortcuts: {why}")
     # Now remove the system32 files.
     files = glob.glob(os.path.join(lib_dir, "pywin32_system32\\*.*"))
     # Try the system32 directory first - if that fails due to "access denied",
@@ -629,11 +634,11 @@ def uninstall(lib_dir):
                         if verbose:
                             print("Removed file %s" % (dst))
                     except Exception:
-                        print(f"FAILED to remove {dst}")
+                        logger.info(f"FAILED to remove {dst}")
             if worked:
                 break
     except Exception as why:
-        print(f"FAILED to remove system files: {why}")
+        logger.info(f"FAILED to remove system files: {why}")
 
 
 # NOTE: This used to be run from inside the bdist_wininst created binary un/installer.
@@ -645,9 +650,7 @@ def uninstall(lib_dir):
 def verify_destination(location: str) -> str:
     location = os.path.abspath(location)
     if not os.path.isdir(location):
-        raise argparse.ArgumentTypeError(
-            f'Path "{location}" is not an existing directory!'
-        )
+        raise argparse.ArgumentTypeError(f'Path "{location}" is not an existing directory!')
     return location
 
 
@@ -707,7 +710,7 @@ def main():
     args = parser.parse_args()
 
     if not args.quiet:
-        print(f"Parsed arguments are: {args}")
+        logger.info(f"Parsed arguments are: {args}")
 
     if not args.install ^ args.remove:
         parser.error("You need to either choose to -install or -remove!")

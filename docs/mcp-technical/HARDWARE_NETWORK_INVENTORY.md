@@ -4,7 +4,7 @@
 
 This inventory captures the currently documented hardware, active ingestion
 endpoints, and the known network layout for the home security surveillance
-stack that the `tapo-camera-mcp` platform orchestrates. It reflects repository
+stack that the `devices-mcp` platform orchestrates. It reflects repository
 documentation as of **2025-11-12** and highlights data gaps that need field
 verification during onsite assessment.
 
@@ -12,9 +12,9 @@ verification during onsite assessment.
 
 | Device / Service           | Category            | Deployment Location | Ingestion Path               | Status (Repo Docs) | Notes |
 |----------------------------|---------------------|---------------------|------------------------------|--------------------|-------|
-| TP-Link Tapo C200 / C210   | IP Camera           | Living areas        | `tapo_camera_mcp` (RTSP/HTTPS) | Pending auth completion | Requires credential validation and stable RTSP connectivity. |
-| USB Webcams (generic)      | USB Camera          | Workstations / NUC  | `tapo_camera_mcp` (OpenCV MJPEG) | Working            | Auto-discovered via `start.py dashboard`; provides baseline live feed. |
-| Petcube Bites 2 Lite       | Pet Camera          | Pet area            | `tapo_camera_mcp` (REST + WebSocket) | Supported          | Full API access documented; alternative to Furbo. |
+| TP-Link Tapo C200 / C210   | IP Camera           | Living areas        | `devices_mcp` (RTSP/HTTPS) | Pending auth completion | Requires credential validation and stable RTSP connectivity. |
+| USB Webcams (generic)      | USB Camera          | Workstations / NUC  | `devices_mcp` (OpenCV MJPEG) | Working            | Auto-discovered via `start.py dashboard`; provides baseline live feed. |
+| Petcube Bites 2 Lite       | Pet Camera          | Pet area            | `devices_mcp` (REST + WebSocket) | Supported          | Full API access documented; alternative to Furbo. |
 | Ring Doorbells / Cameras   | Security Camera     | Entry points        | Ring MCP (WebRTC/WebSocket)  | Experimental        | Requires Ring MCP node with WebRTC stream proxy. |
 | Nest Protect               | Smoke / CO Sensor   | Hallways            | Nest Protect MCP (HTTPS)     | Integration Ready   | Uses dedicated MCP server; ingestion via REST polling + push alerts. |
 | Tapo P115 Smart Plugs      | Energy Sensor       | Appliances          | Energy dashboard ingestion (HTTP polling) | Prototype          | Limited to current-day telemetry; Home Assistant recommended for history. |
@@ -30,9 +30,9 @@ verification during onsite assessment.
 
 | Endpoint / Service                         | Protocols | Source Hardware          | Consumer(s)                | Status | Notes |
 |--------------------------------------------|-----------|---------------------------|----------------------------|--------|-------|
-| `tapo_camera_mcp.web.server` (`/api/*`)    | HTTP/JSON | All managed cameras       | Web dashboard, Grafana JSON datasource | Running | Serves camera lists, snapshots, and streaming helpers. |
-| `tapo_camera_mcp.metrics_service`          | HTTP/JSON | Camera manager + PTZ telemetry | Grafana / Prometheus scrape | Prototype | Emits camera health metrics; needs integration with Prometheus. |
-| `tapo_camera_mcp.ingest.tapo_p115`         | TCP/TLS (vendor API) | Tapo P115 smart plugs | Energy dashboards, Prometheus exporter | New | Uses `python-kasa`; configure devices under `energy.tapo_p115` in `config.yaml` or via `TAPO_P115_HOSTS`. |
+| `devices_mcp.web.server` (`/api/*`)    | HTTP/JSON | All managed cameras       | Web dashboard, Grafana JSON datasource | Running | Serves camera lists, snapshots, and streaming helpers. |
+| `devices_mcp.metrics_service`          | HTTP/JSON | Camera manager + PTZ telemetry | Grafana / Prometheus scrape | Prototype | Emits camera health metrics; needs integration with Prometheus. |
+| `devices_mcp.ingest.tapo_p115`         | TCP/TLS (vendor API) | Tapo P115 smart plugs | Energy dashboards, Prometheus exporter | New | Uses `python-kasa`; configure devices under `energy.tapo_p115` in `config.yaml` or via `TAPO_P115_HOSTS`. |
 | `RingWebRtcStream` proxy                    | WebRTC/HTTPS | Ring devices             | Dashboard video panels     | Experimental | Success log on startup indicates module is importable; runtime validation outstanding. |
 | Nest Protect MCP REST API                  | HTTPS     | Nest Protect sensors      | Unified dashboard          | Pending | Requires OAuth flow finalization and periodic polling routine. |
 | Energy dashboard ingest (`/energy`)        | HTTP/JSON | Tapo P115 smart plugs     | Web dashboard              | Prototype | Uses lightweight polling; lacks historical persistence. |
@@ -43,7 +43,7 @@ verification during onsite assessment.
 ## Network Topology (Current Understanding)
 
 - **Core Hub (Home Lab / Rack):**
-  - Runs the primary `tapo-camera-mcp` application server and hosts the web dashboard on `http://localhost:7777`.
+  - Runs the primary `devices-mcp` application server and hosts the web dashboard on `http://localhost:7777`.
   - Will coordinate Prometheus, Loki, and Alertmanager once provisioned.
 
 - **Edge Nodes:**
@@ -73,5 +73,3 @@ verification during onsite assessment.
 4. Identify hardware gaps (UPS, PoE switches, storage arrays) required for high availability.
 
 Once validated, promote this document to the central monitoring plan and use it as the baseline for the `audit-stack` and `gap-review` tasks.
-
-

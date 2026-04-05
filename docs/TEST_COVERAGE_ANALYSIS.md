@@ -1,6 +1,6 @@
 # 📊 Test Coverage Analysis
 
-**Date**: November 21, 2025  
+**Date**: November 21, 2025
 **Project**: Home Security MCP Platform
 
 ---
@@ -41,9 +41,9 @@
 
 #### **1. Wien Energie Smart Meter Integration** ❌ **NO TESTS**
 **Files Missing Tests:**
-- `src/tapo_camera_mcp/ingest/wien_energie.py` (NEW - 0% coverage)
-- `src/tapo_camera_mcp/tools/energy/smart_meter_tools.py` (NEW - 0% coverage)
-- `src/tapo_camera_mcp/web/api/energy.py` (NEW - 0% coverage)
+- `src/devices_mcp/ingest/wien_energie.py` (NEW - 0% coverage)
+- `src/devices_mcp/tools/energy/smart_meter_tools.py` (NEW - 0% coverage)
+- `src/devices_mcp/web/api/energy.py` (NEW - 0% coverage)
 
 **Required Tests:**
 - [ ] `test_wien_energie_ingestion.py` - Ingestion service tests
@@ -65,8 +65,8 @@
 
 #### **3. Energy Tools** ⚠️ **PARTIAL COVERAGE**
 **Files:**
-- `src/tapo_camera_mcp/tools/energy/energy_management_tool.py` - Limited tests
-- `src/tapo_camera_mcp/tools/energy/tapo_plug_tools.py` - Some coverage via API tests
+- `src/devices_mcp/tools/energy/energy_management_tool.py` - Limited tests
+- `src/devices_mcp/tools/energy/tapo_plug_tools.py` - Some coverage via API tests
 
 **Missing:**
 - [ ] Direct tool execution tests
@@ -97,8 +97,8 @@
 
 #### **6. Database Layer** ⚠️ **LIMITED COVERAGE**
 **Files:**
-- `src/tapo_camera_mcp/db/timeseries.py` - No direct tests
-- `src/tapo_camera_mcp/db/media.py` - No direct tests
+- `src/devices_mcp/db/timeseries.py` - No direct tests
+- `src/devices_mcp/db/media.py` - No direct tests
 
 **Missing:**
 - [ ] Time series database tests
@@ -211,13 +211,13 @@ tests/
 ### **Configuration** (`pyproject.toml`)
 ```toml
 [tool.pytest.ini_options]
-addopts = "-v --cov=tapo_camera_mcp --cov-report=term-missing"
+addopts = "-v --cov=devices_mcp --cov-report=term-missing"
 markers = [
     "integration: marks tests as integration tests",
 ]
 
 [tool.coverage.run]
-source = ["tapo_camera_mcp"]
+source = ["devices_mcp"]
 omit = [
     "**/tests/**",
     "**/__main__.py",
@@ -284,6 +284,5 @@ omit = [
 
 ---
 
-**Status**: ⚠️ **Coverage meets minimum but gaps exist, especially for new features**  
+**Status**: ⚠️ **Coverage meets minimum but gaps exist, especially for new features**
 **Priority**: 🔴 **Add tests for Wien Energie integration immediately**
-

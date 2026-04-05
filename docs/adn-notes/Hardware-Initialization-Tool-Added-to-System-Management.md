@@ -19,7 +19,7 @@ result = await system_management(action="initialize")
 
 ## Implementation Details
 
-- **Location**: `src/tapo_camera_mcp/tools/portmanteau/system_management.py`
+- **Location**: `src/devices_mcp/tools/portmanteau/system_management.py`
 - **Action**: `"initialize"` - Initialize all cameras and hardware
 - **Parameters**: None required
 - **Function**: Calls `initialize_all_hardware()` from the core hardware initialization module

@@ -25,14 +25,14 @@ def test_real_tool_execution():
         logger.info("🔥 EXECUTING REAL TOOLS - forcing code coverage...")
 
         # Import everything we need
-        from tapo_camera_mcp.tools.camera.camera_tools import (
+        from devices_mcp.tools.camera.camera_tools import (
             AddCameraTool,
             ListCamerasTool,
         )
-        from tapo_camera_mcp.tools.discovery import discover_tools
-        from tapo_camera_mcp.tools.system.help_tool import HelpTool
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
-        from tapo_camera_mcp.validation import (
+        from devices_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.system.help_tool import HelpTool
+        from devices_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.validation import (
             validate_camera_name,
             validate_credentials,
             validate_ip_address,
@@ -88,12 +88,12 @@ def test_real_tool_execution():
 
         # 6. Discover tools - this should exercise discovery logic
         logger.info("🔍 Discovering tools...")
-        all_tools = discover_tools("tapo_camera_mcp.tools")
+        all_tools = discover_tools("devices_mcp.tools")
         logger.info(f"Discovered {len(all_tools)} tools")
 
         # 7. Test server initialization - this should exercise server setup
         logger.info("🖥️ Testing server initialization...")
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         try:
             asyncio.run(TapoCameraServer.get_instance())
@@ -103,15 +103,15 @@ def test_real_tool_execution():
 
         # 8. Test camera manager - this should exercise camera management
         logger.info("📹 Testing camera manager...")
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
 
         manager = CameraManager()
         logger.info(f"Camera manager created with {len(manager.cameras)} cameras")
 
         # 9. Test webcam creation - this should exercise camera creation
         logger.info("📷 Testing webcam creation...")
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.webcam import WebCamera
 
         webcam_config = CameraConfig(
             name="coverage_webcam", type=CameraType.WEBCAM, params={"device_id": 0}
@@ -144,8 +144,8 @@ def test_server_functionality():
     try:
         logger.info("🖥️ Testing server functionality...")
 
-        from tapo_camera_mcp.camera.manager import CameraManager
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.server import TapoCameraServer
 
         # Test server singleton
         server1 = asyncio.run(TapoCameraServer.get_instance())
@@ -180,9 +180,9 @@ def test_camera_creation_and_methods():
     try:
         logger.info("📷 Testing camera creation and methods...")
 
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraFactory, CameraType
-        from tapo_camera_mcp.camera.tapo import TapoCamera
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraFactory, CameraType
+        from devices_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.webcam import WebCamera
 
         # Test webcam creation
         webcam_config = CameraConfig(
@@ -233,7 +233,7 @@ def test_validation_execution():
     try:
         logger.info("✅ Testing validation execution...")
 
-        from tapo_camera_mcp.validation import (
+        from devices_mcp.validation import (
             ToolValidationError,
             validate_camera_name,
             validate_credentials,
@@ -272,11 +272,11 @@ def test_tools_registry_execution():
     try:
         logger.info("📋 Testing tools registry...")
 
-        from tapo_camera_mcp.tools.base_tool import get_all_tools, get_tool
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.base_tool import get_all_tools, get_tool
+        from devices_mcp.tools.discovery import discover_tools
 
         # Execute tool discovery (this actually runs the discovery code)
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
         logger.info(f"✅ Discovered {len(tools)} tools")
 
         # Test registry operations
@@ -307,7 +307,7 @@ def test_models_execution():
     try:
         logger.info("📊 Testing models execution...")
 
-        from tapo_camera_mcp.core.models import (
+        from devices_mcp.core.models import (
             CameraModel,
             CameraStatus,
             PTZDirection,

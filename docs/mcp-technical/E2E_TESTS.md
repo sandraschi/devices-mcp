@@ -13,4 +13,3 @@
   - Camera stream API verification (snapshot endpoints).
   - Combined metrics-to-dashboard checks once Prometheus exporter endpoints are
     finalized.
-

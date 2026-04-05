@@ -1,13 +1,17 @@
 """Detect and configure USB microscopes."""
 
-import cv2
+import logging
 import sys
-from pathlib import Path
+
+import cv2
+
+logger = logging.getLogger(__name__)
+
 
 def detect_usb_devices():
     """Detect all available USB camera devices."""
-    print("USB Camera Device Detection")
-    print("=" * 50)
+    logger.info("USB Camera Device Detection")
+    logger.info("=" * 50)
 
     devices_found = []
 
@@ -23,39 +27,41 @@ def detect_usb_devices():
 
                 # Try to get device name (limited info available)
                 device_info = {
-                    'device_id': device_id,
-                    'resolution': f"{width}x{height}",
-                    'type': 'unknown'
+                    "device_id": device_id,
+                    "resolution": f"{width}x{height}",
+                    "type": "unknown",
                 }
 
                 # Basic heuristics for microscope detection
                 if width >= 1280 and height >= 720:  # HD resolution common for microscopes
-                    device_info['type'] = 'potential_microscope'
-                    device_info['suggested_config'] = 'microscope'
+                    device_info["type"] = "potential_microscope"
+                    device_info["suggested_config"] = "microscope"
                 else:
-                    device_info['type'] = 'webcam'
-                    device_info['suggested_config'] = 'webcam'
+                    device_info["type"] = "webcam"
+                    device_info["suggested_config"] = "webcam"
 
                 devices_found.append(device_info)
 
-                print(f"[CAMERA] Device {device_id}: {width}x{height} - {device_info['type']}")
+                logger.info(
+                    f"[CAMERA] Device {device_id}: {width}x{height} - {device_info['type']}"
+                )
 
             cap.release()
         else:
-            print(f"[NOT FOUND] Device {device_id}: Not available")
+            logger.info(f"[NOT FOUND] Device {device_id}: Not available")
 
-    print("\n" + "=" * 50)
-    print("Configuration Suggestions:")
-    print("=" * 50)
+    logger.info("\n" + "=" * 50)
+    logger.info("Configuration Suggestions:")
+    logger.info("=" * 50)
 
     for device in devices_found:
-        if device['suggested_config'] == 'microscope':
-            print(f"""
-# USB Microscope Configuration (Device {device['device_id']})
-microscope_{device['device_id']}:
+        if device["suggested_config"] == "microscope":
+            logger.info(f"""
+# USB Microscope Configuration (Device {device["device_id"]})
+microscope_{device["device_id"]}:
   type: microscope
-  device_id: {device['device_id']}
-  resolution: "{device['resolution']}"
+  device_id: {device["device_id"]}
+  resolution: "{device["resolution"]}"
   fps: 15  # Lower FPS for better quality
   magnification: 50.0  # Starting magnification
   focus_mode: "auto"
@@ -63,50 +69,53 @@ microscope_{device['device_id']}:
   calibration_factor: 0.01  # Calibrate for accurate measurements
 """)
         else:
-            print(f"""
-# Webcam Configuration (Device {device['device_id']})
-webcam_{device['device_id']}:
+            logger.info(f"""
+# Webcam Configuration (Device {device["device_id"]})
+webcam_{device["device_id"]}:
   type: webcam
-  device_id: {device['device_id']}
-  resolution: "{device['resolution']}"
+  device_id: {device["device_id"]}
+  resolution: "{device["resolution"]}"
   fps: 30
 """)
 
     return devices_found
 
+
 def main():
     """Main detection function."""
-    print("USB Microscope Detection Tool")
-    print("This tool helps you find and configure USB microscopes.")
-    print()
+    logger.info("USB Microscope Detection Tool")
+    logger.info("This tool helps you find and configure USB microscopes.")
+    logger.info()
 
     devices = detect_usb_devices()
 
     if not devices:
-        print("\n[ERROR] No camera devices found!")
-        print("Make sure your USB microscope is connected and powered on.")
+        logger.info("\n[ERROR] No camera devices found!")
+        logger.info("Make sure your USB microscope is connected and powered on.")
         return 1
 
-    microscopes = [d for d in devices if d['suggested_config'] == 'microscope']
+    microscopes = [d for d in devices if d["suggested_config"] == "microscope"]
     if microscopes:
-        print(f"\n[SUCCESS] Found {len(microscopes)} potential microscope(s)!")
-        print("Add the configuration above to your config.yaml file.")
-        print("Then restart the Tapo Camera MCP server.")
+        logger.info(f"\n[SUCCESS] Found {len(microscopes)} potential microscope(s)!")
+        logger.info("Add the configuration above to your config.yaml file.")
+        logger.info("Then restart the Devices MCP server.")
     else:
-        print("\n[WARNING] No microscopes detected, but found other cameras.")
-        print("Your microscope might use a different device ID or require special drivers.")
+        logger.info("\n[WARNING] No microscopes detected, but found other cameras.")
+        logger.info("Your microscope might use a different device ID or require special drivers.")
 
     return 0
+
 
 if __name__ == "__main__":
     try:
         exit_code = main()
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        print("\n\n[INTERRUPTED] Detection cancelled by user")
+        logger.info("\n\n[INTERRUPTED] Detection cancelled by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\n[FATAL ERROR] {e}")
+        logger.info(f"\n[FATAL ERROR] {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

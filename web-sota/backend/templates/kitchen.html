@@ -1,0 +1,652 @@
+{% extends "base.html" %}
+
+{% block title %}Kitchen - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .kitchen-dashboard {
+        padding: 20px;
+    }
+
+    .kitchen-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .overview-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .overview-card h3 {
+        margin: 0 0 16px 0;
+        color: var(--text-color);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .overview-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--primary-blue);
+        margin-bottom: 8px;
+    }
+
+    .overview-label {
+        color: var(--muted-text);
+        font-size: 14px;
+    }
+
+    .appliance-section {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        margin-bottom: 30px;
+    }
+
+    .appliance-card {
+        background: var(--card-bg);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+
+    .appliance-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .appliance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .appliance-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .appliance-type {
+        color: var(--muted-text);
+        font-size: 14px;
+    }
+
+    .appliance-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .status-online {
+        background-color: var(--success-green);
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+
+    .status-offline {
+        background-color: var(--muted-text);
+    }
+
+    .status-smart-plug {
+        background-color: var(--primary-blue);
+    }
+
+    .status-coming-soon {
+        background-color: var(--warning-yellow);
+    }
+
+    .appliance-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-blue-dark);
+    }
+
+    .btn-secondary {
+        background-color: var(--muted-text);
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--gray-600);
+    }
+
+    .btn-success {
+        background-color: var(--success-green);
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: var(--success-dark);
+    }
+
+    .btn-danger {
+        background-color: var(--error-red);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #dc2626;
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .appliance-info {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-color);
+        color: var(--muted-text);
+        font-size: 14px;
+    }
+
+    .info-box {
+        background: #eff6ff;
+        border: 1px solid var(--primary-blue);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .info-box h4 {
+        margin: 0 0 8px 0;
+        color: #1e40af;
+        font-size: 16px;
+    }
+
+    .info-box p {
+        margin: 0;
+        color: #1e40af;
+        font-size: 14px;
+    }
+
+    .warning-box {
+        background: var(--warning-bg);
+        border: 1px solid var(--warning-yellow);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+
+    .warning-box h4 {
+        margin: 0 0 8px 0;
+        color: #92400e;
+        font-size: 16px;
+    }
+
+    .warning-box p {
+        margin: 0;
+        color: #92400e;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kitchen-dashboard">
+    <div class="page-header">
+        <h1>🍳 Kitchen</h1>
+        <p>Control and monitor your kitchen appliances</p>
+    </div>
+
+    <!-- Overview -->
+    <div class="kitchen-overview">
+        <div class="overview-card">
+            <h3>Total Appliances</h3>
+            <div class="overview-value" id="total-appliances">2</div>
+            <div class="overview-label">Connected</div>
+        </div>
+
+        <div class="overview-card">
+            <h3>Active</h3>
+            <div class="overview-value" id="active-appliances">0</div>
+            <div class="overview-label">Currently Running</div>
+        </div>
+
+        <div class="overview-card">
+            <h3>Power Usage</h3>
+            <div class="overview-value" id="power-usage">-</div>
+            <div class="overview-label">Current Draw</div>
+        </div>
+    </div>
+
+    <!-- Cooking Appliances -->
+    <div class="appliance-section">
+        <h2>🔥 Cooking Appliances</h2>
+        <p>Grills, ovens, and cooking devices</p>
+
+        <!-- Tefal Optigrill Card -->
+        <div class="appliance-card">
+            <div class="appliance-header">
+                <div>
+                    <div class="appliance-name">Tefal Optigrill</div>
+                    <div class="appliance-type">Intelligent Electric Grill • Automatic Sensor Cooking</div>
+                </div>
+                <div class="appliance-status">
+                    <span class="status-indicator status-offline"></span>
+                    <span>Not Connected</span>
+                </div>
+            </div>
+            <div class="appliance-info">
+                <p><strong>Features:</strong></p>
+                <ul style="margin: 8px 0; padding-left: 20px; color: var(--muted-text);">
+                    <li>Automatic Sensor Cooking - detects number and thickness of items</li>
+                    <li>Auto-adjusts temperature and cooking time</li>
+                    <li>Multiple cooking programs: Burgers, Poultry, Sandwiches, Sausages, Red Meat, Fish</li>
+                    <li>Cooking level indicator (rare to well-done)</li>
+                </ul>
+                <p><strong>Integration Status:</strong> No WiFi/API connectivity available. Manual control only.</p>
+                <p><strong>Note:</strong> Can be controlled via smart plug for basic on/off functionality.</p>
+            </div>
+            <div class="appliance-controls">
+                <button class="btn btn-secondary" disabled>No API Available</button>
+                <a href="/energy" class="btn btn-primary">View Energy Usage</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Beverage Appliances -->
+    <div class="appliance-section">
+        <h2>☕ Beverage Appliances</h2>
+        <p>Kettles, coffee makers, and hot water dispensers</p>
+
+        <div class="info-box">
+            <h4>💡 Smart Plug Control</h4>
+            <p>Your Zojirushi kettle is connected via Tapo P115 smart plug. You can control power on/off remotely, but temperature and keep-warm settings must be set manually on the device.</p>
+        </div>
+
+        <!-- Zojirushi Kettle Card -->
+        <div class="appliance-card">
+            <div class="appliance-header">
+                <div>
+                    <div class="appliance-name">Zojirushi Water Boiler & Warmer</div>
+                    <div class="appliance-type">Hot Water Dispenser • Kitchen</div>
+                </div>
+                <div class="appliance-status">
+                    <span class="status-indicator status-smart-plug"></span>
+                    <span>Smart Plug Control</span>
+                </div>
+            </div>
+            <div class="appliance-info">
+                <p><strong>Features:</strong></p>
+                <ul style="margin: 8px 0; padding-left: 20px; color: var(--muted-text);">
+                    <li>Microcomputerized temperature control</li>
+                    <li>Multiple keep-warm settings (160°F, 175°F, 195°F, 208°F)</li>
+                    <li>Energy-saving timer function</li>
+                    <li>Vacuum-electric hybrid technology (efficient heat retention)</li>
+                </ul>
+                <p><strong>Integration Status:</strong> Controlled via Tapo P115 smart plug (on/off only)</p>
+                <p><strong>Limitations:</strong> No WiFi/API. Temperature and keep-warm settings must be set manually.</p>
+                <p><strong>Note:</strong> Green tea requires lower temperature (160-180°F) than boiling water. Current setup cannot control temperature remotely - must be set manually on device.</p>
+            </div>
+            <div class="appliance-controls">
+                <a href="/energy" class="btn btn-primary">Control via Energy Dashboard</a>
+                <button class="btn btn-secondary" disabled>Temperature Control (Manual Only)</button>
+            </div>
+        </div>
+
+        <!-- Smarter iKettle Card (Future Option) -->
+        <div class="appliance-card">
+            <div class="appliance-header">
+                <div>
+                    <div class="appliance-name">Smarter iKettle <span style="color: var(--warning-yellow); font-size: 12px; font-weight: 600;">(Alternative Option)</span></div>
+                    <div class="appliance-type">WiFi-Enabled Smart Kettle • 1.8L Capacity • ~$80-$150</div>
+                </div>
+                <div class="appliance-status">
+                    <span class="status-indicator status-coming-soon"></span>
+                    <span>Not Owned</span>
+                </div>
+            </div>
+            <div class="appliance-info">
+                <p><strong>What is Smarter iKettle?</strong></p>
+                <p style="margin: 8px 0; color: var(--muted-text);">
+                    The Smarter iKettle is a WiFi-enabled electric kettle that allows remote control via smartphone app or voice commands (Alexa, Google Assistant).
+                </p>
+
+                <!-- iKettle Control Panel -->
+                <div id="ikettle-controls" style="margin-top: 20px; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--card-bg);">
+                    <h4 style="margin: 0 0 15px 0; color: var(--text-color);">iKettle Controls</h4>
+
+                    <div id="ikettle-status" style="margin-bottom: 15px; display: none;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div id="ikettle-status-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: var(--muted-text);"></div>
+                            <span id="ikettle-status-text" style="font-weight: 500;">Connecting...</span>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 14px; color: var(--muted-text);">
+                            <div id="ikettle-temp-display">Temperature: --°C</div>
+                            <div id="ikettle-water-display">Water Level: --</div>
+                            <div id="ikettle-mode-display">Mode: --</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                        <button onclick="ikettleBoilCoffee()" style="padding: 8px 12px; background: var(--success-dark); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            ☕ Coffee (95°C)
+                        </button>
+                        <button onclick="ikettleBoilTea()" style="padding: 8px 12px; background: #0891b2; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            🍵 Tea (100°C)
+                        </button>
+                        <button onclick="ikettleKeepWarm()" style="padding: 8px 12px; background: var(--warning-yellow); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            🌡️ Keep Warm
+                        </button>
+                        <button onclick="ikettleStop()" style="padding: 8px 12px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            ⏹️ Stop
+                        </button>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="ikettleMorningCoffee()" style="padding: 10px 15px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                            🌅 Setup Morning Coffee
+                        </button>
+                        <button onclick="ikettleRefreshStatus()" style="padding: 10px 15px; background: var(--muted-text); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            🔄 Refresh Status
+                        </button>
+                    </div>
+                </div>
+                <p><strong>Price:</strong> Approximately $80-$150 USD (varies by retailer - Best Buy: $149.99, Bstock: $79.99)</p>
+                <p><strong>Key Advantages Over Current Setup:</strong></p>
+                <ul style="margin: 8px 0; padding-left: 20px; color: var(--muted-text);">
+                    <li><strong>✅ Temperature Control:</strong> Adjustable 68°F to 212°F - Perfect for green tea (typically 160-180°F, not boiling)</li>
+                    <li><strong>✅ Water Level Monitoring:</strong> See filling state/water level remotely</li>
+                    <li><strong>✅ Precise Control:</strong> Set exact temperature for different tea types</li>
+                </ul>
+                <p><strong>Features:</strong></p>
+                <ul style="margin: 8px 0; padding-left: 20px; color: var(--muted-text);">
+                    <li>WiFi connectivity with smartphone app</li>
+                    <li>Adjustable temperature: 68°F to 212°F (20°C to 100°C)</li>
+                    <li>1.8L capacity</li>
+                    <li>Wake Up mode, Home mode, Formula mode</li>
+                    <li>Schedule boil times</li>
+                    <li>Notifications when water reaches set temperature</li>
+                    <li>Voice control via Alexa/Google Assistant</li>
+                    <li>Water level monitoring</li>
+                </ul>
+                <div class="warning-box" style="margin-top: 12px;">
+                    <h4>WARNING Reliability Concerns</h4>
+                    <p>Recent user reviews report connectivity issues, loss of smart features, and unresponsive customer support. Research thoroughly before purchasing.</p>
+                </div>
+                <p><strong>API Status:</strong> App-based control, potential for integration if API is available</p>
+            </div>
+            <div class="appliance-controls">
+                <button class="btn btn-primary" onclick="ikettleRefreshStatus()">Check iKettle Status</button>
+                <button class="btn btn-success" onclick="ikettleMorningCoffee()">Setup Morning Coffee</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// iKettle control functions
+async function ikettleRefreshStatus() {
+    try {
+        const response = await fetch('/api/ikettle/status');
+        const result = await response.json();
+
+        if (result.success) {
+            const status = result.status;
+            const statusDiv = document.getElementById('ikettle-status');
+            const indicator = document.getElementById('ikettle-status-indicator');
+            const statusText = document.getElementById('ikettle-status-text');
+
+            statusDiv.style.display = 'block';
+
+            if (status.connected) {
+                indicator.style.background = 'var(--success-green)'; // green
+                statusText.textContent = `Connected - ${status.state || 'Ready'}`;
+
+                // Update displays
+                document.getElementById('ikettle-temp-display').textContent =
+                    status.current_temperature_c ? `Temperature: ${status.current_temperature_c}°C` : 'Temperature: --°C';
+                document.getElementById('ikettle-water-display').textContent =
+                    `Water Level: ${status.water_level || 'Unknown'}`;
+                document.getElementById('ikettle-mode-display').textContent =
+                    `Mode: ${status.mode || 'Unknown'}`;
+
+                if (status.state === 'boiling') {
+                    indicator.style.background = 'var(--warning-yellow)'; // orange
+                    statusText.textContent = 'Boiling...';
+                }
+            } else {
+                indicator.style.background = '#dc2626'; // red
+                statusText.textContent = 'Disconnected';
+            }
+        } else {
+            showToast('Failed to get iKettle status');
+        }
+    } catch (error) {
+        console.error('Error refreshing iKettle status:', error);
+        showToast('Error connecting to iKettle');
+    }
+}
+
+async function ikettleBoilCoffee() {
+    try {
+        const response = await fetch('/api/ikettle/boil', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ temperature_c: 95 })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(`☕ Heating water for coffee (${result.temperature_c}°C)`);
+            setTimeout(ikettleRefreshStatus, 1000);
+        } else {
+            showToast('Failed to start coffee heating');
+        }
+    } catch (error) {
+        console.error('Error boiling for coffee:', error);
+        showToast('Error starting coffee heating');
+    }
+}
+
+async function ikettleBoilTea() {
+    try {
+        const response = await fetch('/api/ikettle/boil', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ temperature_c: 100 })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(`🍵 Heating water for tea (${result.temperature_c}°C)`);
+            setTimeout(ikettleRefreshStatus, 1000);
+        } else {
+            showToast('Failed to start tea heating');
+        }
+    } catch (error) {
+        console.error('Error boiling for tea:', error);
+        showToast('Error starting tea heating');
+    }
+}
+
+async function ikettleKeepWarm() {
+    const temperature = prompt('Keep warm temperature (°C):', '95');
+    const duration = prompt('Duration in minutes:', '30');
+
+    if (!temperature || !duration) return;
+
+    try {
+        const response = await fetch('/api/ikettle/keep-warm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                temperature_c: parseInt(temperature),
+                duration_minutes: parseInt(duration)
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(`🌡️ Keep warm set to ${result.temperature_c}°C for ${result.duration_minutes} minutes`);
+            setTimeout(ikettleRefreshStatus, 1000);
+        } else {
+            showToast('Failed to set keep warm');
+        }
+    } catch (error) {
+        console.error('Error setting keep warm:', error);
+        showToast('Error setting keep warm');
+    }
+}
+
+async function ikettleStop() {
+    try {
+        const response = await fetch('/api/ikettle/stop', {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('⏹️ Kettle stopped');
+            setTimeout(ikettleRefreshStatus, 1000);
+        } else {
+            showToast('Failed to stop kettle');
+        }
+    } catch (error) {
+        console.error('Error stopping kettle:', error);
+        showToast('Error stopping kettle');
+    }
+}
+
+async function ikettleMorningCoffee() {
+    const wakeTime = prompt('Wake up time (HH:MM):', '07:00');
+    const coffeeTemp = prompt('Coffee temperature (°C):', '95');
+
+    if (!wakeTime || !coffeeTemp) return;
+
+    try {
+        const response = await fetch('/api/ikettle/morning-routine', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                wake_time: wakeTime,
+                coffee_temperature: parseInt(coffeeTemp)
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(`🌅 Morning coffee scheduled for ${result.wake_time} (${result.delay_minutes} minutes from now)`);
+        } else {
+            showToast('Failed to schedule morning coffee');
+        }
+    } catch (error) {
+        console.error('Error setting morning routine:', error);
+        showToast('Error setting morning routine');
+    }
+}
+
+// Toast notification function
+function showToast(message) {
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success-green);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        font-size: 0.875rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    `;
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Load appliance data
+async function loadAppliances() {
+    try {
+        // TODO: Load actual appliance data from API
+        // For now, just update overview
+        document.getElementById('total-appliances').textContent = '2';
+        document.getElementById('active-appliances').textContent = '0';
+        document.getElementById('power-usage').textContent = '-';
+    } catch (error) {
+        console.error('Error loading appliances:', error);
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadAppliances();
+    ikettleRefreshStatus(); // Check iKettle status on load
+
+    // Refresh every 30 seconds
+    setInterval(loadAppliances, 30000);
+    setInterval(ikettleRefreshStatus, 15000); // Refresh iKettle status every 15 seconds
+});
+</script>
+{% endblock %}

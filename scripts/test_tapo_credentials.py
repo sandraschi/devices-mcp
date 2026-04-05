@@ -1,17 +1,22 @@
 """Test different Tapo credential combinations to find working method."""
 
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
 # Fix Windows console encoding
-if sys.platform == 'win32':
+if sys.platform == "win32":
     import codecs
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
+    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, "strict")
+    sys.stderr = codecs.getwriter("utf-8")(sys.stderr.buffer, "strict")
 
 import yaml
 from pytapo import Tapo
@@ -26,11 +31,11 @@ host = kitchen_cfg.get("host", "192.168.0.164")
 camera_username = kitchen_cfg.get("username", "")
 camera_password = kitchen_cfg.get("password", "")
 
-print("=" * 70)
-print("Testing Tapo Camera Credentials - Multiple Combinations")
-print("=" * 70)
-print(f"Camera IP: {host}")
-print()
+logger.info("=" * 70)
+logger.info("Testing Tapo Camera Credentials - Multiple Combinations")
+logger.info("=" * 70)
+logger.info(f"Camera IP: {host}")
+logger.info()
 
 # Test different credential combinations
 test_combinations = [
@@ -60,72 +65,71 @@ successful = None
 
 for i, combo in enumerate(test_combinations, 1):
     if not combo["username"] or not combo["password"]:
-        print(f"[SKIP] Test {i}: {combo['name']} - Missing credentials")
+        logger.info(f"[SKIP] Test {i}: {combo['name']} - Missing credentials")
         continue
 
-    print(f"[TEST {i}] {combo['name']}")
-    print(f"   Username: {combo['username']}")
-    print(f"   Password: {'*' * len(combo['password'])}")
+    logger.info(f"[TEST {i}] {combo['name']}")
+    logger.info(f"   Username: {combo['username']}")
+    logger.info(f"   Password: {'*' * len(combo['password'])}")
 
     try:
         camera = Tapo(host, combo["username"], combo["password"])
         info = camera.getBasicInfo()
 
         device_info = info.get("device_info", {})
-        print("   [SUCCESS] Connection successful!")
-        print(f"   Model: {device_info.get('device_model', 'Unknown')}")
-        print(f"   Firmware: {device_info.get('firmware_version', 'Unknown')}")
-        print(f"   Serial: {device_info.get('serial_number', 'Unknown')}")
+        logger.info("   [SUCCESS] Connection successful!")
+        logger.info(f"   Model: {device_info.get('device_model', 'Unknown')}")
+        logger.info(f"   Firmware: {device_info.get('firmware_version', 'Unknown')}")
+        logger.info(f"   Serial: {device_info.get('serial_number', 'Unknown')}")
 
         successful = combo
         break
 
     except Exception as e:
         error_msg = str(e)
-        print(f"   [FAILED] {error_msg}")
+        logger.info(f"   [FAILED] {error_msg}")
 
         if "Temporary Suspension" in error_msg or "1800 seconds" in error_msg:
-            print("   [WARNING] Camera is locked out - wait 30 minutes")
-            print("   [STOP] Stopping tests to prevent further lockouts")
+            logger.info("   [WARNING] Camera is locked out - wait 30 minutes")
+            logger.info("   [STOP] Stopping tests to prevent further lockouts")
             break
         elif "Invalid authentication" in error_msg or "Invalid auth" in error_msg:
-            print("   [INFO] Authentication failed - trying next combination")
+            logger.info("   [INFO] Authentication failed - trying next combination")
         else:
-            print("   [INFO] Connection error - trying next combination")
+            logger.info("   [INFO] Connection error - trying next combination")
 
-    print()
+    logger.info()
 
-print()
-print("=" * 70)
-print("RESULTS")
-print("=" * 70)
+logger.info()
+logger.info("=" * 70)
+logger.info("RESULTS")
+logger.info("=" * 70)
 
 if successful:
-    print("[SUCCESS] Working credentials found!")
-    print(f"   Method: {successful['name']}")
-    print(f"   Username: {successful['username']}")
-    print(f"   Password: {'*' * len(successful['password'])}")
-    print()
-    print("Update config.yaml with these credentials:")
-    print(f"   username: \"{successful['username']}\"")
-    print(f"   password: \"{successful['password']}\"")
+    logger.info("[SUCCESS] Working credentials found!")
+    logger.info(f"   Method: {successful['name']}")
+    logger.info(f"   Username: {successful['username']}")
+    logger.info(f"   Password: {'*' * len(successful['password'])}")
+    logger.info()
+    logger.info("Update config.yaml with these credentials:")
+    logger.info(f'   username: "{successful["username"]}"')
+    logger.info(f'   password: "{successful["password"]}"')
 else:
-    print("[FAILED] No working credentials found")
-    print()
-    print("Troubleshooting:")
-    print("  1. Verify Third-Party Compatibility is enabled:")
-    print("     Tapo App -> Me -> Tapo Lab -> Third-Party Compatibility -> On")
-    print()
-    print("  2. Verify Camera Account is set up:")
-    print("     Tapo App -> Camera -> Settings -> Advanced -> Camera Account")
-    print("     Create a username and password specifically for API access")
-    print()
-    print("  3. Check if camera is locked out:")
-    print("     Wait 30 minutes if you see 'Temporary Suspension' errors")
-    print()
-    print("  4. Verify camera firmware is up to date")
-    print("  5. Check network connectivity to camera")
+    logger.info("[FAILED] No working credentials found")
+    logger.info()
+    logger.info("Troubleshooting:")
+    logger.info("  1. Verify Third-Party Compatibility is enabled:")
+    logger.info("     Tapo App -> Me -> Tapo Lab -> Third-Party Compatibility -> On")
+    logger.info()
+    logger.info("  2. Verify Camera Account is set up:")
+    logger.info("     Tapo App -> Camera -> Settings -> Advanced -> Camera Account")
+    logger.info("     Create a username and password specifically for API access")
+    logger.info()
+    logger.info("  3. Check if camera is locked out:")
+    logger.info("     Wait 30 minutes if you see 'Temporary Suspension' errors")
+    logger.info()
+    logger.info("  4. Verify camera firmware is up to date")
+    logger.info("  5. Check network connectivity to camera")
 
-print()
-print("=" * 70)
-
+logger.info()
+logger.info("=" * 70)

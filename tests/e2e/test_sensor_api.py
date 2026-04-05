@@ -3,12 +3,12 @@ from datetime import datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 
-from tapo_camera_mcp.tools.energy.tapo_plug_tools import (
+from devices_mcp.tools.energy.tapo_plug_tools import (
     EnergyUsageData,
     TapoSmartPlug,
     tapo_plug_manager,
 )
-from tapo_camera_mcp.web.server import WebServer
+from backend.server import WebServer
 
 
 @pytest.fixture
@@ -89,3 +89,4 @@ def test_get_tapo_p115_history(client: TestClient) -> None:
     datapoint = payload["data_points"][0]
     assert datapoint["power_consumption"] == 40.0
     assert datapoint["energy_consumption"] == 0.04
+

@@ -1,39 +1,43 @@
 """Test if camera requires 'admin' as username for API access."""
 
+import logging
 import sys
 
 from pytapo import Tapo
 
+logger = logging.getLogger(__name__)
+
 
 def test_with_admin(ip, password):
     """Test with 'admin' as username (common for Tapo API)."""
-    print("Testing with 'admin' as username (Camera Account password)...")
-    print(f"IP: {ip}")
-    print("Username: admin")
-    print(f"Password: {'*' * len(password)}")
-    print()
+    logger.info("Testing with 'admin' as username (Camera Account password)...")
+    logger.info(f"IP: {ip}")
+    logger.info("Username: admin")
+    logger.info(f"Password: {'*' * len(password)}")
+    logger.info()
 
     try:
         camera = Tapo(ip, "admin", password)
         info = camera.getBasicInfo()
 
         device_info = info.get("device_info", {})
-        print("[SUCCESS] Connection successful with 'admin' username!")
-        print(f"Model: {device_info.get('device_model', 'Unknown')}")
-        print(f"Firmware: {device_info.get('firmware_version', 'Unknown')}")
-        print(f"Serial: {device_info.get('serial_number', 'Unknown')}")
-        print(f"MAC: {device_info.get('mac', 'Unknown')}")
+        logger.info("[SUCCESS] Connection successful with 'admin' username!")
+        logger.info(f"Model: {device_info.get('device_model', 'Unknown')}")
+        logger.info(f"Firmware: {device_info.get('firmware_version', 'Unknown')}")
+        logger.info(f"Serial: {device_info.get('serial_number', 'Unknown')}")
+        logger.info(f"MAC: {device_info.get('mac', 'Unknown')}")
         return True
     except Exception as e:
         error_msg = str(e)
         if "Invalid authentication" in error_msg:
-            print("[FAILED] 'admin' username didn't work")
+            logger.info("[FAILED] 'admin' username didn't work")
             return False
         if "Temporary Suspension" in error_msg:
-            print("[LOCKOUT] Camera is locked out")
+            logger.info("[LOCKOUT] Camera is locked out")
             return "locked"
-        print(f"[ERROR] {error_msg}")
+        logger.info(f"[ERROR] {error_msg}")
         return False
+
 
 if __name__ == "__main__":
     import yaml
@@ -50,28 +54,27 @@ if __name__ == "__main__":
     except:
         pass
 
-    print("=" * 60)
-    print("Testing Tapo Camera with 'admin' username")
-    print("=" * 60)
-    print("\nNote: Some Tapo cameras require 'admin' as username")
-    print("for API access, even if Camera Account has different username")
-    print()
+    logger.info("=" * 60)
+    logger.info("Testing Tapo Camera with 'admin' username")
+    logger.info("=" * 60)
+    logger.info("\nNote: Some Tapo cameras require 'admin' as username")
+    logger.info("for API access, even if Camera Account has different username")
+    logger.info()
 
     result = test_with_admin(ip, password)
 
     if result is True:
-        print("\n[SUCCESS] Use 'admin' as username for API access!")
-        print("Update config.yaml:")
-        print("  username: \"admin\"")
-        print(f"  password: \"{password}\"")
+        logger.info("\n[SUCCESS] Use 'admin' as username for API access!")
+        logger.info("Update config.yaml:")
+        logger.info('  username: "admin"')
+        logger.info(f'  password: "{password}"')
     elif result == "locked":
-        print("\n[LOCKOUT] Power cycle camera and try again")
+        logger.info("\n[LOCKOUT] Power cycle camera and try again")
     else:
-        print("\n[FAILED] Both 'sandraschi' and 'admin' usernames failed")
-        print("Check:")
-        print("1. Camera Account password is correct in app")
-        print("2. Camera Account is enabled for API access")
-        print("3. Camera firmware is up to date")
+        logger.info("\n[FAILED] Both 'sandraschi' and 'admin' usernames failed")
+        logger.info("Check:")
+        logger.info("1. Camera Account password is correct in app")
+        logger.info("2. Camera Account is enabled for API access")
+        logger.info("3. Camera firmware is up to date")
 
     sys.exit(0 if result is True else 1)
-

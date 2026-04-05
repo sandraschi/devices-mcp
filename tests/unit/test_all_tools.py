@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 def test_list_cameras_tool():
     """Test ListCamerasTool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import ListCamerasTool
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import ListCamerasTool
 
         # Create tool instance
         tool = ListCamerasTool()
@@ -33,7 +33,7 @@ def test_list_cameras_tool():
 
         # Mock server and camera manager
         with mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.TapoCameraServer"
+            "devices_mcp.tools.camera.camera_tools.TapoCameraServer"
         ) as mock_server_class:
             mock_server_instance = mock.AsyncMock()
             mock_camera_manager = mock.AsyncMock()
@@ -66,8 +66,8 @@ def test_list_cameras_tool():
 def test_add_camera_tool():
     """Test AddCameraTool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import AddCameraTool
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import AddCameraTool
 
         # Create tool instance
         tool = AddCameraTool(
@@ -85,13 +85,13 @@ def test_add_camera_tool():
 
         # Mock server and validation functions
         with mock.patch(
-            "tapo_camera_mcp.core.server.TapoCameraServer"
+            "devices_mcp.core.server.TapoCameraServer"
         ) as mock_server_class, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_camera_name"
+            "devices_mcp.tools.camera.camera_tools.validate_camera_name"
         ) as mock_validate_name, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_ip_address"
+            "devices_mcp.tools.camera.camera_tools.validate_ip_address"
         ) as mock_validate_ip, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_credentials"
+            "devices_mcp.tools.camera.camera_tools.validate_credentials"
         ) as mock_validate_creds:
             mock_validate_name.return_value = "test_camera"
             mock_validate_ip.return_value = "192.168.1.100"
@@ -120,8 +120,8 @@ def test_add_camera_tool():
 def test_connect_camera_tool():
     """Test ConnectCameraTool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import ConnectCameraTool
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import ConnectCameraTool
 
         # Create tool instance
         tool = ConnectCameraTool(
@@ -138,11 +138,11 @@ def test_connect_camera_tool():
 
         # Mock server and validation functions
         with mock.patch(
-            "tapo_camera_mcp.core.server.TapoCameraServer"
+            "devices_mcp.core.server.TapoCameraServer"
         ) as mock_server_class, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_ip_address"
+            "devices_mcp.tools.camera.camera_tools.validate_ip_address"
         ) as mock_validate_ip, mock.patch(
-            "tapo_camera_mcp.tools.camera.camera_tools.validate_credentials"
+            "devices_mcp.tools.camera.camera_tools.validate_credentials"
         ) as mock_validate_creds:
             mock_validate_ip.return_value = "192.168.1.100"
             mock_validate_creds.return_value = ("test_user", "test_pass")
@@ -170,8 +170,8 @@ def test_connect_camera_tool():
 def test_disconnect_camera_tool():
     """Test DisconnectCameraTool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import DisconnectCameraTool
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import DisconnectCameraTool
 
         # Create tool instance
         tool = DisconnectCameraTool()
@@ -182,7 +182,7 @@ def test_disconnect_camera_tool():
         assert tool.Meta.name == "disconnect_camera"
 
         # Mock server
-        with mock.patch("tapo_camera_mcp.core.server.TapoCameraServer") as mock_server_class:
+        with mock.patch("devices_mcp.core.server.TapoCameraServer") as mock_server_class:
             mock_server_instance = mock.AsyncMock()
             mock_server_instance.disconnect_camera.return_value = {"success": True}
             mock_server_class.get_instance = mock.AsyncMock(return_value=mock_server_instance)
@@ -206,8 +206,8 @@ def test_disconnect_camera_tool():
 def test_get_camera_status_tool():
     """Test GetCameraStatusTool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import GetCameraStatusTool
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import GetCameraStatusTool
 
         # Create tool instance
         tool = GetCameraStatusTool(camera_id="test_camera")
@@ -218,7 +218,7 @@ def test_get_camera_status_tool():
         assert tool.Meta.name == "get_camera_status"
 
         # Mock server
-        with mock.patch("tapo_camera_mcp.core.server.TapoCameraServer") as mock_server_class:
+        with mock.patch("devices_mcp.core.server.TapoCameraServer") as mock_server_class:
             mock_server_instance = mock.AsyncMock()
             mock_server_instance.get_camera_status.return_value = {
                 "online": True,
@@ -245,8 +245,8 @@ def test_get_camera_status_tool():
 def test_capture_snapshot_tool():
     """Test CaptureSnapshotTool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import CaptureSnapshotTool
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import CaptureSnapshotTool
 
         # Create tool instance
         tool = CaptureSnapshotTool(camera_id="test_camera")
@@ -257,7 +257,7 @@ def test_capture_snapshot_tool():
         assert tool.Meta.name == "capture_snapshot"
 
         # Mock server and camera
-        with mock.patch("tapo_camera_mcp.core.server.TapoCameraServer") as mock_server_class:
+        with mock.patch("devices_mcp.core.server.TapoCameraServer") as mock_server_class:
             mock_server_instance = mock.AsyncMock()
             mock_server_instance.capture_still.return_value = {
                 "status": "success",
@@ -288,8 +288,8 @@ def test_capture_snapshot_tool():
 def test_get_stream_url_tool():
     """Test GetStreamUrlTool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
-        from tapo_camera_mcp.tools.camera.camera_tools import GetStreamUrlTool
+        from devices_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.camera.camera_tools import GetStreamUrlTool
 
         # Create tool instance
         tool = GetStreamUrlTool(camera_id="test_camera")
@@ -300,7 +300,7 @@ def test_get_stream_url_tool():
         assert tool.Meta.name == "get_stream_url"
 
         # Mock server and camera
-        with mock.patch("tapo_camera_mcp.core.server.TapoCameraServer") as mock_server_class:
+        with mock.patch("devices_mcp.core.server.TapoCameraServer") as mock_server_class:
             mock_server_instance = mock.AsyncMock()
             mock_server_instance.get_camera_info.return_value = {
                 "success": True,
@@ -333,7 +333,7 @@ def test_ptz_tools():
     try:
         # Check if PTZ tools exist
         try:
-            from tapo_camera_mcp.tools.ptz.ptz_tools import (
+            from devices_mcp.tools.ptz.ptz_tools import (
                 GetPTZPresetsTool,
                 PTZControlTool,
                 SavePTZPresetTool,
@@ -370,8 +370,8 @@ def test_ptz_tools():
 def test_system_tools():
     """Test system tools functionality."""
     try:
-        from tapo_camera_mcp.tools.system.help_tool import HelpTool
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.system.help_tool import HelpTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Test StatusTool
         tool = StatusTool(section="system")
@@ -395,10 +395,10 @@ def test_system_tools():
 def test_all_tools_metadata():
     """Test that all tools have proper metadata."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover all tools
-        all_tools = discover_tools("tapo_camera_mcp.tools")
+        all_tools = discover_tools("devices_mcp.tools")
 
         # Test that all tools have proper metadata
         for tool_cls in all_tools:
@@ -414,7 +414,7 @@ def test_all_tools_metadata():
             assert len(meta.name) > 0, f"Tool {tool_cls.__name__} name should not be empty"
 
             # Category should be valid
-            from tapo_camera_mcp.tools.base_tool import ToolCategory
+            from devices_mcp.tools.base_tool import ToolCategory
 
             assert isinstance(meta.category, ToolCategory), (
                 f"Tool {tool_cls.__name__} category should be ToolCategory"

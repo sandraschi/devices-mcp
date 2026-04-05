@@ -1,0 +1,30 @@
+# Mock configuration for testing
+server:
+  host: 127.0.0.1
+  port: 7777
+  debug: false
+  log_level: WARNING
+
+cameras:
+  mock_camera_1:
+    type: tapo
+    params:
+      host: 192.168.1.100
+      username: test_user
+      password: test_pass
+
+energy:
+  tapo_p115:
+    account:
+      email: test@example.com
+      password: test_password
+    devices:
+    - host: 192.168.1.200
+      device_id: mock_plug
+      name: Mock Plug
+      location: Test Room
+
+lighting:
+  philips_hue:
+    bridge_ip: 192.168.1.50
+    username: mock_hue_username

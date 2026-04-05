@@ -80,5 +80,3 @@ From roadmap and user directives:
 - Outline data model expectations for each dashboard to inform `sensor-api` and `edge-agents`.
 
 _Prepared on 2025-11-12 to support the ongoing observability rollout._
-
-

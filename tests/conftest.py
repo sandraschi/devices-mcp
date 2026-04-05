@@ -1,6 +1,6 @@
 """
 Comprehensive test configuration for pytest.
-This file provides extensive fixtures and mocks for testing the Tapo Camera MCP platform.
+This file provides extensive fixtures and mocks for testing the Devices MCP platform.
 
 Features:
 - Comprehensive fixtures for all components
@@ -28,12 +28,13 @@ from pydantic import BaseModel
 # Add the project root to the Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Also add src directory for MCP imports and webapp directory for webapp imports
+# Also add src directory for MCP imports and web-sota directory for web dashboard imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "web-sota"))
 
-from tapo_camera_mcp import TapoCameraMCP
-from tapo_camera_mcp.core.models import TapoCameraConfig
-from tapo_camera_mcp.mcp_client import MCPClient, MCPClientManager
+from devices_mcp import TapoCameraMCP
+from devices_mcp.core.models import TapoCameraConfig
+from devices_mcp.mcp_client import MCPClient, MCPClientManager
 
 # Test configuration constants
 TEST_CONFIG = {
@@ -84,11 +85,17 @@ def sample_config_data():
         "tapo": {
             "cameras": [
                 {
-                    "name": "Test Camera",
-                    "host": "192.168.1.100",
-                    "username": "testuser",
+                    "name": "Kitchen Camera",
+                    "host": "192.168.0.164",
+                    "username": "sandraschi",
                     "password": "testpass",
-                }
+                },
+                {
+                    "name": "Living Room Camera",
+                    "host": "192.168.0.206",
+                    "username": "sandraschi",
+                    "password": "testpass",
+                },
             ]
         },
         "energy": {
@@ -139,7 +146,7 @@ def mock_mcp_client():
 @pytest.fixture
 def mock_mcp_client_manager(mock_mcp_client):
     """Return a mock MCP client manager."""
-    with patch("tapo_camera_mcp.mcp_client.mcp_clients", MCPClientManager()) as manager:
+    with patch("devices_mcp.mcp_client.mcp_clients", MCPClientManager()) as manager:
         manager.add_client("test", mock_mcp_client, set_default=True)
         manager.get_client.return_value = mock_mcp_client
         yield manager
@@ -148,7 +155,7 @@ def mock_mcp_client_manager(mock_mcp_client):
 @pytest.fixture
 def mock_tapo_plug_manager():
     """Return a mock Tapo plug manager."""
-    with patch("tapo_camera_mcp.tools.energy.tapo_plug_tools.tapo_plug_manager") as mock_manager:
+    with patch("devices_mcp.tools.energy.tapo_plug_tools.tapo_plug_manager") as mock_manager:
         mock_manager.get_all_devices.return_value = []
         mock_manager.get_device_status.return_value = Mock()
         mock_manager.toggle_device.return_value = True
@@ -159,9 +166,7 @@ def mock_tapo_plug_manager():
 @pytest.fixture
 def mock_energy_management_tool():
     """Return a mock energy management tool."""
-    with patch(
-        "tapo_camera_mcp.tools.energy.energy_management_tool.EnergyManagementTool"
-    ) as mock_tool:
+    with patch("devices_mcp.tools.energy.energy_management_tool.EnergyManagementTool") as mock_tool:
         mock_tool.return_value.execute.return_value = {"success": True, "data": {}}
         yield mock_tool
 
@@ -169,7 +174,7 @@ def mock_energy_management_tool():
 @pytest.fixture
 def mock_motion_management_tool():
     """Return a mock motion management tool."""
-    with patch("tapo_camera_mcp.tools.portmanteau.motion_management") as mock_tool:
+    with patch("devices_mcp.tools.portmanteau.motion_management") as mock_tool:
         mock_tool.return_value = {"success": True, "data": {}}
         yield mock_tool
 
@@ -177,7 +182,7 @@ def mock_motion_management_tool():
 @pytest.fixture
 def mock_camera_management_tool():
     """Return a mock camera management tool."""
-    with patch("tapo_camera_mcp.tools.portmanteau.camera_management") as mock_tool:
+    with patch("devices_mcp.tools.portmanteau.camera_management") as mock_tool:
         mock_tool.return_value = {"success": True, "data": {}}
         yield mock_tool
 
@@ -185,7 +190,7 @@ def mock_camera_management_tool():
 @pytest.fixture
 def mock_media_management_tool():
     """Return a mock media management tool."""
-    with patch("tapo_camera_mcp.tools.portmanteau.media_management") as mock_tool:
+    with patch("devices_mcp.tools.portmanteau.media_management") as mock_tool:
         mock_tool.return_value = {"success": True, "data": {}}
         yield mock_tool
 
@@ -193,7 +198,7 @@ def mock_media_management_tool():
 @pytest.fixture
 def mock_system_management_tool():
     """Return a mock system management tool."""
-    with patch("tapo_camera_mcp.tools.portmanteau.system_management") as mock_tool:
+    with patch("devices_mcp.tools.portmanteau.system_management") as mock_tool:
         mock_tool.return_value = {"success": True, "data": {}}
         yield mock_tool
 
@@ -221,7 +226,7 @@ async def tapo_camera(config, mock_session) -> AsyncGenerator[TapoCameraMCP, Non
 @pytest.fixture
 def test_client():
     """Return a FastAPI test client."""
-    from webapp.web.server import create_app
+    from backend.server import create_app
 
     app = create_app()
     return TestClient(app)
@@ -404,8 +409,8 @@ def mock_database():
 @pytest_asyncio.fixture
 async def hardware_initializer():
     """Return a HardwareInitializer instance for testing."""
-    from tapo_camera_mcp.core.hardware_init import HardwareInitializer
-    from tapo_camera_mcp.camera.manager import CameraManager
+    from devices_mcp.camera.manager import CameraManager
+    from devices_mcp.core.hardware_init import HardwareInitializer
 
     camera_manager = CameraManager()
     initializer = HardwareInitializer(camera_manager=camera_manager)
@@ -426,7 +431,7 @@ def mock_hardware_responses():
         "tapo_plugs": {"success": True, "devices_count": 3},
         "netatmo": {"success": True, "stations_count": 1, "modules_count": 3},
         "ring": {"success": True, "doorbells_count": 1, "cameras_count": 1},
-        "home_assistant": {"success": True, "devices_count": 0}
+        "home_assistant": {"success": True, "devices_count": 0},
     }
 
 
@@ -474,44 +479,44 @@ def patch_json_dump():
 def patch_mcp_call_tool(return_value: Dict[str, Any] = None):
     """Patch the MCP call_mcp_tool function."""
     return patch(
-        "tapo_camera_mcp.mcp_client.call_mcp_tool",
+        "devices_mcp.mcp_client.call_mcp_tool",
         return_value=return_value or {"success": True, "data": {}},
     )
 
 
 def patch_tapo_plug_manager():
     """Patch the Tapo plug manager."""
-    return patch("tapo_camera_mcp.tools.energy.tapo_plug_tools.tapo_plug_manager")
+    return patch("devices_mcp.tools.energy.tapo_plug_tools.tapo_plug_manager")
 
 
 def patch_energy_management():
     """Patch the energy management tool."""
-    return patch("tapo_camera_mcp.tools.portmanteau.energy_management")
+    return patch("devices_mcp.tools.portmanteau.energy_management")
 
 
 def patch_motion_management():
     """Patch the motion management tool."""
-    return patch("tapo_camera_mcp.tools.portmanteau.motion_management")
+    return patch("devices_mcp.tools.portmanteau.motion_management")
 
 
 def patch_camera_management():
     """Patch the camera management tool."""
-    return patch("tapo_camera_mcp.tools.portmanteau.camera_management")
+    return patch("devices_mcp.tools.portmanteau.camera_management")
 
 
 def patch_media_management():
     """Patch the media management tool."""
-    return patch("tapo_camera_mcp.tools.portmanteau.media_management")
+    return patch("devices_mcp.tools.portmanteau.media_management")
 
 
 def patch_system_management():
     """Patch the system management tool."""
-    return patch("tapo_camera_mcp.tools.portmanteau.system_management")
+    return patch("devices_mcp.tools.portmanteau.system_management")
 
 
 def patch_medical_management():
     """Patch the medical management tool."""
-    return patch("tapo_camera_mcp.tools.portmanteau.medical_management")
+    return patch("devices_mcp.tools.portmanteau.medical_management")
 
 
 # ============================================================================

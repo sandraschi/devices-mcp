@@ -16,8 +16,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 def test_camera_models():
     """Test camera model definitions."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.core.models import TapoCameraConfig
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.core.models import TapoCameraConfig
 
         # Test CameraType enum
 
@@ -42,7 +42,7 @@ def test_camera_models():
 def test_camera_manager():
     """Test camera manager functionality."""
     try:
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
 
         manager = CameraManager()
 
@@ -63,7 +63,7 @@ def test_camera_manager():
 def test_exceptions():
     """Test exception classes."""
     try:
-        from tapo_camera_mcp.exceptions import (
+        from devices_mcp.exceptions import (
             AuthenticationError,
             ConnectionError,
             TapoCameraError,

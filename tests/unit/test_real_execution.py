@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def test_real_server_initialization():
     """Test real server initialization and setup."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         # Test server class structure
         assert hasattr(TapoCameraServer, "get_instance")
@@ -52,7 +52,7 @@ def test_real_server_initialization():
 def test_real_camera_manager():
     """Test real camera manager functionality."""
     try:
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
 
         # Create camera manager instance
         manager = CameraManager()
@@ -81,11 +81,11 @@ def test_real_camera_manager():
 def test_real_tools_discovery():
     """Test real tools discovery and registration."""
     try:
-        from tapo_camera_mcp.tools.base_tool import get_all_tools
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.base_tool import get_all_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover all tools (this actually imports and registers them)
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
 
         # Should find multiple tools
         assert len(tools) > 0, f"Should discover tools, found {len(tools)}"
@@ -98,7 +98,7 @@ def test_real_tools_discovery():
         for tool_cls in tools[:3]:  # Test first 3 tools
             if hasattr(tool_cls.Meta, "name"):
                 tool_name = tool_cls.Meta.name
-                from tapo_camera_mcp.tools.base_tool import get_tool
+                from devices_mcp.tools.base_tool import get_tool
 
                 retrieved_tool = get_tool(tool_name)
                 assert retrieved_tool is not None, f"Tool {tool_name} should be retrievable"
@@ -118,7 +118,7 @@ def test_real_tools_discovery():
 def test_real_validation_module():
     """Test real validation module functionality."""
     try:
-        from tapo_camera_mcp.validation import (
+        from devices_mcp.validation import (
             ToolValidationError,
             validate_camera_name,
             validate_credentials,
@@ -171,8 +171,8 @@ def test_real_validation_module():
 def test_real_webcam_detection():
     """Test webcam detection and connection."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.webcam import WebCamera
 
         # Create webcam config
         webcam_config = CameraConfig(
@@ -207,7 +207,7 @@ def test_real_webcam_detection():
 def test_real_camera_factory():
     """Test real camera factory functionality."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraFactory, CameraType
+        from devices_mcp.camera.base import CameraConfig, CameraFactory, CameraType
 
         # Test camera type registration
         assert CameraType.TAPO in CameraFactory._camera_classes
@@ -252,10 +252,10 @@ def test_real_camera_factory():
 def test_real_tool_structure():
     """Test real tool structure and metadata."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover all tools
-        all_tools = discover_tools("tapo_camera_mcp.tools")
+        all_tools = discover_tools("devices_mcp.tools")
 
         # Test each tool's real structure
         for tool_cls in all_tools:
@@ -300,10 +300,10 @@ def test_real_system_tools():
     """Test real system tools functionality."""
     try:
         # Test importing real system tools
-        from tapo_camera_mcp.tools.system import help_tool, status_tool
+        from devices_mcp.tools.system import help_tool, status_tool
 
         # Test StatusTool
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         status_tool = StatusTool(section="system")
 
@@ -312,7 +312,7 @@ def test_real_system_tools():
         assert status_tool.Meta.name == "status"
 
         # Test HelpTool
-        from tapo_camera_mcp.tools.system.help_tool import HelpTool
+        from devices_mcp.tools.system.help_tool import HelpTool
 
         help_tool = HelpTool(section="tools")
 
@@ -345,7 +345,7 @@ def test_real_camera_tools():
         # Test importing real camera tools
 
         # Test ListCamerasTool
-        from tapo_camera_mcp.tools.camera.camera_tools import ListCamerasTool
+        from devices_mcp.tools.camera.camera_tools import ListCamerasTool
 
         list_tool = ListCamerasTool()
 
@@ -354,7 +354,7 @@ def test_real_camera_tools():
         assert list_tool.Meta.name == "list_cameras"
 
         # Test AddCameraTool
-        from tapo_camera_mcp.tools.camera.camera_tools import AddCameraTool
+        from devices_mcp.tools.camera.camera_tools import AddCameraTool
 
         add_tool = AddCameraTool(
             camera_name="test_camera",
@@ -386,7 +386,7 @@ def test_real_camera_tools():
 def test_real_web_server():
     """Test real web server setup."""
     try:
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Test web server class structure
         assert hasattr(WebServer, "__init__")
@@ -420,31 +420,31 @@ def test_real_core_models():
     """Test real core models functionality."""
     try:
         # Test CameraModel enum
-        from tapo_camera_mcp.core.models import CameraModel
+        from devices_mcp.core.models import CameraModel
 
         assert CameraModel.C100.value == "Tapo C100"
         assert CameraModel.C200.value == "Tapo C200"
 
         # Test StreamType enum
-        from tapo_camera_mcp.core.models import StreamType
+        from devices_mcp.core.models import StreamType
 
         assert StreamType.RTSP.value == "rtsp"
         assert StreamType.HLS.value == "hls"
 
         # Test VideoQuality enum
-        from tapo_camera_mcp.core.models import VideoQuality
+        from devices_mcp.core.models import VideoQuality
 
         assert VideoQuality.HIGH.value == "high"
         assert VideoQuality.LOW.value == "low"
 
         # Test PTZDirection enum
-        from tapo_camera_mcp.core.models import PTZDirection
+        from devices_mcp.core.models import PTZDirection
 
         assert PTZDirection.UP.value == "up"
         assert PTZDirection.STOP.value == "stop"
 
         # Test Pydantic models
-        from tapo_camera_mcp.core.models import (
+        from devices_mcp.core.models import (
             CameraStatus,
             PTZPosition,
             TapoCameraConfig,
@@ -491,10 +491,10 @@ def test_real_core_models():
 def test_webcam_server_integration():
     """Test webcam integration with server."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.manager import CameraManager
-        from tapo_camera_mcp.camera.webcam import WebCamera
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.webcam import WebCamera
+        from devices_mcp.core.server import TapoCameraServer
 
         # Test that webcam can be created and integrated
         webcam_config = CameraConfig(
@@ -563,3 +563,4 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         sys.exit(1)
+

@@ -1,50 +1,54 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
-Verification script for Tapo Camera MCP v1.10.0 features.
+Verification script for Devices MCP v1.10.0 features.
 
 This script verifies that all the key v1.10.0 features are working correctly.
 Run this after deployment to ensure everything is functioning.
 """
 
-import sys
 import os
-import json
+import sys
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+
 def check_imports():
     """Check that all required imports work."""
-    print("=== CHECKING IMPORTS ===")
+    logger.info("=== CHECKING IMPORTS ===")
 
     try:
-        from tapo_camera_mcp.web.server import WebServer
-        print("OK - WebServer import")
+        logger.info("OK - WebServer import")
     except Exception as e:
-        print(f"FAIL - WebServer import: {e}")
+        logger.info(f"FAIL - WebServer import: {e}")
         return False
 
     try:
-        from tapo_camera_mcp.web.api.plex import router as plex_router
-        print("OK - Plex router import")
+        logger.info("OK - Plex router import")
     except Exception as e:
-        print(f"FAIL - Plex router import: {e}")
+        logger.info(f"FAIL - Plex router import: {e}")
         return False
 
     try:
-        from tapo_camera_mcp.core.messaging_service import MessageCategory
-        assert hasattr(MessageCategory, 'MEDIA_EVENT')
-        print("OK - MEDIA_EVENT category exists")
+        from devices_mcp.core.messaging_service import MessageCategory
+
+        assert hasattr(MessageCategory, "MEDIA_EVENT")
+        logger.info("OK - MEDIA_EVENT category exists")
     except Exception as e:
-        print(f"FAIL - MEDIA_EVENT category missing: {e}")
+        logger.info(f"FAIL - MEDIA_EVENT category missing: {e}")
         return False
 
     return True
 
+
 def check_files():
     """Check that all required files exist."""
-    print("\n=== CHECKING FILES ===")
+    logger.info("\n=== CHECKING FILES ===")
 
     files_to_check = [
         "webapp/web/templates/plex.html",
@@ -55,23 +59,24 @@ def check_files():
 
     for file_path in files_to_check:
         if os.path.exists(file_path):
-            print(f"OK - {file_path} exists")
+            logger.info(f"OK - {file_path} exists")
         else:
-            print(f"FAIL - {file_path} missing")
+            logger.info(f"FAIL - {file_path} missing")
             return False
 
     return True
 
+
 def check_navigation():
     """Check that navigation includes new links."""
-    print("\n=== CHECKING NAVIGATION ===")
+    logger.info("\n=== CHECKING NAVIGATION ===")
 
-    nav_file = "src/tapo_camera_mcp/web/templates/base.html"
+    nav_file = "src/devices_mcp/web/templates/base.html"
     if not os.path.exists(nav_file):
-        print(f"FAIL - Navigation file missing: {nav_file}")
+        logger.info(f"FAIL - Navigation file missing: {nav_file}")
         return False
 
-    with open(nav_file, 'r', encoding='utf-8') as f:
+    with open(nav_file, encoding="utf-8") as f:
         content = f.read()
 
     nav_checks = [
@@ -81,23 +86,24 @@ def check_navigation():
 
     for check, description in nav_checks:
         if check in content:
-            print(f"OK - {description} present")
+            logger.info(f"OK - {description} present")
         else:
-            print(f"FAIL - {description} missing")
+            logger.info(f"FAIL - {description} missing")
             return False
 
     return True
 
+
 def check_theme_variables():
     """Check that theme variables are defined."""
-    print("\n=== CHECKING THEME VARIABLES ===")
+    logger.info("\n=== CHECKING THEME VARIABLES ===")
 
-    theme_file = "src/tapo_camera_mcp/web/templates/base.html"
+    theme_file = "src/devices_mcp/web/templates/base.html"
     if not os.path.exists(theme_file):
-        print(f"FAIL - Theme file missing: {theme_file}")
+        logger.info(f"FAIL - Theme file missing: {theme_file}")
         return False
 
-    with open(theme_file, 'r', encoding='utf-8') as f:
+    with open(theme_file, encoding="utf-8") as f:
         content = f.read()
 
     theme_vars = [
@@ -110,44 +116,46 @@ def check_theme_variables():
 
     for var in theme_vars:
         if var in content:
-            print(f"OK - Theme variable {var} defined")
+            logger.info(f"OK - Theme variable {var} defined")
         else:
-            print(f"FAIL - Theme variable {var} missing")
+            logger.info(f"FAIL - Theme variable {var} missing")
             return False
 
     return True
 
+
 def check_api_endpoints():
     """Check that API endpoints are defined."""
-    print("\n=== CHECKING API ENDPOINTS ===")
+    logger.info("\n=== CHECKING API ENDPOINTS ===")
 
-    server_file = "src/tapo_camera_mcp/web/server.py"
+    server_file = "src/devices_mcp/web/server.py"
     if not os.path.exists(server_file):
-        print(f"FAIL - Server file missing: {server_file}")
+        logger.info(f"FAIL - Server file missing: {server_file}")
         return False
 
-    with open(server_file, 'r', encoding='utf-8') as f:
+    with open(server_file, encoding="utf-8") as f:
         content = f.read()
 
     api_checks = [
-        ('/plex', "Plex page route"),
-        ('/logs', "Logs page route"),
-        ('plex_router', "Plex router inclusion"),
+        ("/plex", "Plex page route"),
+        ("/logs", "Logs page route"),
+        ("plex_router", "Plex router inclusion"),
     ]
 
     for route, description in api_checks:
         if route in content:
-            print(f"OK - {description} defined")
+            logger.info(f"OK - {description} defined")
         else:
-            print(f"FAIL - {description} missing")
+            logger.info(f"FAIL - {description} missing")
             return False
 
     return True
 
+
 def main():
     """Run all verification checks."""
-    print("Tapo Camera MCP v1.10.0 Feature Verification")
-    print("=" * 50)
+    logger.info("Devices MCP v1.10.0 Feature Verification")
+    logger.info("=" * 50)
 
     all_passed = True
 
@@ -164,19 +172,19 @@ def main():
         if not check_func():
             all_passed = False
 
-    print("\n" + "=" * 50)
+    logger.info("\n" + "=" * 50)
     if all_passed:
-        print("SUCCESS: ALL V1.10.0 FEATURES VERIFIED SUCCESSFULLY!")
-        print("\n- Plex Media Integration: OK")
-        print("- Log Management Interface: OK")
-        print("- Enhanced Theme System: OK")
-        print("- Complete API Endpoints: OK")
-        print("- Navigation Updates: OK")
+        logger.info("SUCCESS: ALL V1.10.0 FEATURES VERIFIED SUCCESSFULLY!")
+        logger.info("\n- Plex Media Integration: OK")
+        logger.info("- Log Management Interface: OK")
+        logger.info("- Enhanced Theme System: OK")
+        logger.info("- Complete API Endpoints: OK")
+        logger.info("- Navigation Updates: OK")
         return 0
-    else:
-        print("FAILURE: SOME V1.10.0 FEATURES FAILED VERIFICATION")
-        print("Please check the errors above and fix any missing components.")
-        return 1
+    logger.info("FAILURE: SOME V1.10.0 FEATURES FAILED VERIFICATION")
+    logger.info("Please check the errors above and fix any missing components.")
+    return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

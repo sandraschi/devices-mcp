@@ -21,6 +21,3 @@ uvicorn[standard]>=0.20.0,<1.0.0
 jinja2>=3.1.0,<4.0.0
 python-multipart>=0.0.5,<1.0.0
 aiofiles>=23.0.0,<24.0.0
-
-
-

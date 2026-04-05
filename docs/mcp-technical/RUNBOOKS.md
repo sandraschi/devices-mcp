@@ -2,7 +2,7 @@
 
 ## 1. Service Overview
 
-- **tapo-camera-mcp**: FastAPI + MCP control plane (`systemctl status tapo-camera-mcp`).
+- **devices-mcp**: FastAPI + MCP control plane (`systemctl status devices-mcp`).
 - **Observability stack**: Prometheus (9090), Loki (3100), Alertmanager (9093), Promtail (9080).
 - **Edge agents**: Collectors running per site, exposing metrics on 9400 and logs under `/var/log/edge-agent`.
 
@@ -14,7 +14,7 @@
    ```
 2. Restart core services:
    ```bash
-   sudo systemctl restart tapo-camera-mcp prometheus loki promtail alertmanager
+   sudo systemctl restart devices-mcp prometheus loki promtail alertmanager
    ```
 3. Verify health via CI observability checks or Grafana dashboards.
 
@@ -50,4 +50,3 @@
 - `docs/mcp-technical/PROMETHEUS_FEDERATION_PLAN.md`
 - `docs/mcp-technical/ALERTING_PLAN.md`
 - `docs/mcp-technical/CHAOS_TEST_PLAN.md`
-

@@ -35,4 +35,3 @@
   imported.
 - Document mobile-specific screenshots for QA.
 - Gather feedback from pilot mobile users and iterate.
-

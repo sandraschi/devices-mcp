@@ -181,10 +181,10 @@ client.on('message', (topic, message) => {
 3. **Language Support**: Python, JavaScript, and other popular development languages
 4. **Integration Libraries**: Ready-to-use libraries for major automation platforms
 
-## Tapo-Camera-MCP Integration Potential
+## devices-mcp Integration Potential
 
 ### Current Robotics Integration
-The Tapo-Camera-MCP system already supports Moorebot Scout and Unitree robots. These Chinese vacuum manufacturers could be integrated via:
+The devices-mcp system already supports Moorebot Scout and Unitree robots. These Chinese vacuum manufacturers could be integrated via:
 
 1. **Home Assistant Bridge**: Use existing Home Assistant integrations as middleware
 2. **Direct API Integration**: Implement native MCP tools for vacuum control
@@ -193,7 +193,7 @@ The Tapo-Camera-MCP system already supports Moorebot Scout and Unitree robots. T
 
 ### Proposed Integration Architecture
 ```
-Tapo-Camera-MCP Dashboard
+devices-mcp Dashboard
 ├── Existing: Moorebot Scout Control
 ├── Existing: Unitree Go2/G1 Control
 └── Proposed: Chinese Vacuum Integration

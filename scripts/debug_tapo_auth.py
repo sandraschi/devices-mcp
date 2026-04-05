@@ -1,61 +1,66 @@
 """Debug Tapo camera authentication to see exact error."""
 
+import logging
 import sys
 
 from pytapo import Tapo
 
+logger = logging.getLogger(__name__)
+
 
 def debug_auth(ip, username, password):
     """Test authentication with detailed error info."""
-    print(f"Testing authentication to {ip}")
-    print(f"Username: {username}")
-    print(f"Password: {'*' * len(password)}")
-    print()
+    logger.info(f"Testing authentication to {ip}")
+    logger.info(f"Username: {username}")
+    logger.info(f"Password: {'*' * len(password)}")
+    logger.info()
 
     try:
-        print("Creating Tapo instance...")
+        logger.info("Creating Tapo instance...")
         camera = Tapo(ip, username, password)
-        print("✅ Tapo instance created")
+        logger.info("✅ Tapo instance created")
 
-        print("\nCalling getBasicInfo()...")
+        logger.info("\nCalling getBasicInfo()...")
         info = camera.getBasicInfo()
-        print("✅ getBasicInfo() successful!")
+        logger.info("✅ getBasicInfo() successful!")
 
         device_info = info.get("device_info", {})
-        print("\n[SUCCESS] Camera connected!")
-        print(f"Model: {device_info.get('device_model', 'Unknown')}")
-        print(f"Firmware: {device_info.get('firmware_version', 'Unknown')}")
-        print(f"Serial: {device_info.get('serial_number', 'Unknown')}")
-        print(f"MAC: {device_info.get('mac', 'Unknown')}")
-        print(f"Hostname: {device_info.get('device_alias', 'Unknown')}")
+        logger.info("\n[SUCCESS] Camera connected!")
+        logger.info(f"Model: {device_info.get('device_model', 'Unknown')}")
+        logger.info(f"Firmware: {device_info.get('firmware_version', 'Unknown')}")
+        logger.info(f"Serial: {device_info.get('serial_number', 'Unknown')}")
+        logger.info(f"MAC: {device_info.get('mac', 'Unknown')}")
+        logger.info(f"Hostname: {device_info.get('device_alias', 'Unknown')}")
         return True
 
     except Exception as e:
         error_type = type(e).__name__
         error_msg = str(e)
-        print(f"\n[ERROR] {error_type}: {error_msg}")
-        print("\nFull error details:")
+        logger.info(f"\n[ERROR] {error_type}: {error_msg}")
+        logger.info("\nFull error details:")
         import traceback
+
         traceback.print_exc()
 
         # Check for specific error patterns
         if "Temporary Suspension" in error_msg or "1800 seconds" in error_msg:
-            print("\n❌ Camera is LOCKED OUT")
-            print("   Wait 30 minutes or power cycle camera")
+            logger.info("\n❌ Camera is LOCKED OUT")
+            logger.info("   Wait 30 minutes or power cycle camera")
         elif "Invalid authentication" in error_msg or "Invalid auth" in error_msg:
-            print("\n❌ Authentication failed")
-            print("   Possible issues:")
-            print("   1. Wrong username/password")
-            print("   2. Camera Account not enabled")
-            print("   3. Camera Account type mismatch")
-            print("   4. Camera needs to be re-authenticated in app")
+            logger.info("\n❌ Authentication failed")
+            logger.info("   Possible issues:")
+            logger.info("   1. Wrong username/password")
+            logger.info("   2. Camera Account not enabled")
+            logger.info("   3. Camera Account type mismatch")
+            logger.info("   4. Camera needs to be re-authenticated in app")
         elif "Connection" in error_msg or "timeout" in error_msg.lower():
-            print("\n❌ Connection failed")
-            print("   Check camera is online and IP is correct")
+            logger.info("\n❌ Connection failed")
+            logger.info("   Check camera is online and IP is correct")
         else:
-            print(f"\n❌ Unknown error: {error_type}")
+            logger.info(f"\n❌ Unknown error: {error_type}")
 
         return False
+
 
 if __name__ == "__main__":
     import os
@@ -76,25 +81,24 @@ if __name__ == "__main__":
             username = kitchen_cfg.get("username", username)
             password = kitchen_cfg.get("password", password)
         except Exception as e:
-            print(f"[WARNING] Could not load config: {e}")
+            logger.info(f"[WARNING] Could not load config: {e}")
 
-    print("=" * 60)
-    print("Tapo Camera Authentication Debug")
-    print("=" * 60)
-    print()
+    logger.info("=" * 60)
+    logger.info("Tapo Camera Authentication Debug")
+    logger.info("=" * 60)
+    logger.info()
 
     success = debug_auth(ip, username, password)
 
     if not success:
-        print("\n" + "=" * 60)
-        print("Troubleshooting Steps:")
-        print("=" * 60)
-        print("1. Verify Camera Account is enabled in Tapo app")
-        print("2. Try changing Camera Account password in app")
-        print("3. Make sure you're using Camera Account (not cloud account)")
-        print("4. Some cameras require 'admin' as username for API access")
-        print("5. Check if Camera Account has API access enabled")
-        print("=" * 60)
+        logger.info("\n" + "=" * 60)
+        logger.info("Troubleshooting Steps:")
+        logger.info("=" * 60)
+        logger.info("1. Verify Camera Account is enabled in Tapo app")
+        logger.info("2. Try changing Camera Account password in app")
+        logger.info("3. Make sure you're using Camera Account (not cloud account)")
+        logger.info("4. Some cameras require 'admin' as username for API access")
+        logger.info("5. Check if Camera Account has API access enabled")
+        logger.info("=" * 60)
 
     sys.exit(0 if success else 1)
-

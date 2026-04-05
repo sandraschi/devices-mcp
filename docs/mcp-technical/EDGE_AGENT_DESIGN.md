@@ -39,7 +39,7 @@
 
 ## Implementation Notes
 
-- Located in `src/tapo_camera_mcp/edge/agents.py`.
+- Located in `src/devices_mcp/edge/agents.py`.
 - Collectors are intentionally abstract; upcoming work (`edge-agents` follow-up)
   will supply concrete implementations:
   - **System collector**: wraps Node Exporter or psutil for CPU/Disk/Memory.
@@ -56,5 +56,3 @@
 2. Package the agent as a service template (systemd/PM2/Docker).
 3. Add Prometheus HTTP exporter endpoint that calls `scrape_once()`.
 4. Integrate credentials handling (per-node secret injection).
-
-

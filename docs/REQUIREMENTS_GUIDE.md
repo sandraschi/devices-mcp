@@ -200,6 +200,3 @@ Once installed, you'll have:
 - ✅ **Complete camera management** system
 
 **Ready to start**: `python start.py dashboard` 🎥✨
-
-
-

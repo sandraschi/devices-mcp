@@ -24,12 +24,14 @@ cp config.example.yaml config.yaml
 # Linux/Mac: nano config.yaml
 ```
 
-### **3. Start Dashboard**
+### **3. Start Dashboard & Servers**
 ```bash
-# Start web dashboard
-python start.py dashboard
+# Start everything (Dashboard, USB Camera Server, MCP)
+./start.ps1  # Windows
+./start.sh   # Linux/Mac
 
-# Access at: http://localhost:7777
+# Access Dashboard at: http://localhost:7777
+# USB Camera Server at: http://localhost:10705
 ```
 
 ## 📷 **Camera Configuration Examples**
@@ -120,7 +122,7 @@ python start.py test
 # Test all cameras
 python -c "
 import asyncio
-from tapo_camera_mcp.core.server import TapoCameraServer
+from devices_mcp.core.server import TapoCameraServer
 async def test():
     server = await TapoCameraServer.get_instance()
     cameras = await server.list_cameras()
@@ -139,6 +141,10 @@ python start.py dashboard
 ```
 
 ## 🎥 **What You'll See**
+
+### **Servers**
+- ✅ **Web Dashboard**: `localhost:7777`
+- ✅ **USB Camera Server**: `localhost:10705` (Auto-started by `start.ps1`)
 
 ### **Dashboard Features**
 - ✅ **Real-time video streams** from USB webcams
@@ -195,6 +201,3 @@ Once configured, you'll have:
 - **No more mocks** - everything is real!
 
 **Dashboard URL**: `http://localhost:7777` 🎥✨
-
-
-

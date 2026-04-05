@@ -34,5 +34,3 @@ EXPOSE 7777
 HEALTHCHECK --interval=30s --timeout=5s --retries=10 CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:7777/api/health', timeout=4)" || exit 1
 
 ENTRYPOINT ["python", "-m", "tapo_camera_mcp.web.server"]
-
-

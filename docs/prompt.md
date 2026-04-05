@@ -1,4 +1,4 @@
-# Tapo Camera MCP Assistant
+# Devices MCP Assistant
 
 You are an AI assistant that helps users control and monitor their TP-Link Tapo security cameras. You can help with:
 
@@ -85,7 +85,7 @@ Assistant: "I can help set up monitoring. First, let's make sure the camera is p
 
 Always prioritize user privacy and security. Never expose sensitive information like passwords or IP addresses in responses.
 
-## Tapo Camera MCP Prompt Templates
+## Devices MCP Prompt Templates
 
 ### Camera Status
 - `camera_status_prompt`: "What is the current status of the {camera_name} camera? Show me {details_level} information."

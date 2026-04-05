@@ -4,9 +4,9 @@ A collection of humorous tech-related rants, complaints, and satires written in 
 
 ## Baroque German Sermon on Cryptocurrency
 
-**Title:** Von der Kryptowährung und dem Tanz ums Digitale Goldene Kalb  
-**Author:** Pater Blockchainius von Sancta Cryptographia  
-**Style:** Oration  
+**Title:** Von der Kryptowährung und dem Tanz ums Digitale Goldene Kalb
+**Author:** Pater Blockchainius von Sancta Cryptographia
+**Style:** Oration
 **Context:** A baroque-style sermon about the sins of cryptocurrency speculation
 
 ### Latin
@@ -111,9 +111,9 @@ AMEN and HASH VERIFIED.
 
 ## Baroque German Sermon on Influencers
 
-**Title:** Von den Influencern und ihrer Eitlen Selbstdarstellung  
-**Author:** Pater Influencius von Sancta Trending  
-**Style:** Oration  
+**Title:** Von den Influencern und ihrer Eitlen Selbstdarstellung
+**Author:** Pater Influencius von Sancta Trending
+**Style:** Oration
 **Context:** A baroque-style sermon about the vanity of social media influencers
 
 ### Latin
@@ -238,9 +238,9 @@ AMEN and UNSUBSCRIBE.
 
 ## Baroque German Sermon on Technology's Sins
 
-**Title:** Von der Verderblichkeit des Internetus und seiner Teuflischen Machination  
-**Author:** Pater Digitalis von Sancta Silica  
-**Style:** Oration  
+**Title:** Von der Verderblichkeit des Internetus und seiner Teuflischen Machination
+**Author:** Pater Digitalis von Sancta Silica
+**Style:** Oration
 **Context:** A baroque-style sermon about the sins of modern technology, in the style of Abraham a Sancta Clara
 
 ### Latin
@@ -419,9 +419,9 @@ Leave us in peace with your "progress"!
 
 ## Medieval Stack Overflow Discussion
 
-**Title:** Accumulatio Superfluxus: De Algorithmo Daemonico  
-**Author:** Scriptores Accumulationis Superfluxus  
-**Style:** Complaint  
+**Title:** Accumulatio Superfluxus: De Algorithmo Daemonico
+**Author:** Scriptores Accumulationis Superfluxus
+**Style:** Complaint
 **Context:** A medieval Stack Overflow discussion about a sorting algorithm gone wrong
 
 ### Latin
@@ -632,9 +632,9 @@ CLOSED: Resolved through exorcism and optimization.
 
 ## The Great Roman Numeral Crisis of MMMCMXCIX
 
-**Title:** Proclamatio: Crisis Numerorum Romanorum  
-**Author:** Numerius Maximus, Custos Numerorum Imperialis  
-**Style:** Decree  
+**Title:** Proclamatio: Crisis Numerorum Romanorum
+**Author:** Numerius Maximus, Custos Numerorum Imperialis
+**Style:** Decree
 **Context:** A medieval Y2K-style crisis about running out of Roman numerals
 
 ### Latin
@@ -695,7 +695,7 @@ Numerius Maximus
 Custos Numerorum Imperialis
 SPQR
 
-P.S. Si calculator tuus post MMMCMXCIX 
+P.S. Si calculator tuus post MMMCMXCIX
 functinare desinit, proba Rituale Sacrum
 Redintegrationis (vide: Scrollus Supportus
 Technicus).
@@ -768,9 +768,9 @@ Support Scroll).
 
 ## Medieval Tech Support Scroll
 
-**Title:** Scrollus Supportus Technicus  
-**Author:** Maximus Restartus, Tech Support Imperialis  
-**Style:** Decree  
+**Title:** Scrollus Supportus Technicus
+**Author:** Maximus Restartus, Tech Support Imperialis
+**Style:** Decree
 **Context:** A medieval tech support scroll explaining the sacred art of turning it off and on again
 
 ### Latin
@@ -791,7 +791,7 @@ Guardian of the Power Button, et Domitor Chaos Computatri.
 Per standardem protocolum nostrum, sequentia debes tentare:
 
 I. VERIFICATIO SIMPLICIMUS
-- Estne machina in murum connecta? 
+- Estne machina in murum connecta?
   (Multi sapientes hoc negligunt)
 - Estne button potentiae illuminata?
   (Vide symbolum sanctum circularis cum linea verticalis)
@@ -897,9 +897,9 @@ on Trustus Pilotus. If not, remember: Mercury is in retrograde.
 
 ## Medieval Monk's CSS Struggles
 
-**Title:** Manuscriptum CSS Centralis  
-**Author:** Monacus Flexboxius  
-**Style:** Lament  
+**Title:** Manuscriptum CSS Centralis
+**Author:** Monacus Flexboxius
+**Style:** Lament
 **Context:** A medieval monk's desperate attempts to center a div
 
 ### Latin
@@ -956,15 +956,15 @@ Thanks be to God! Now it's time for wine.
 
 ## The Bug Exorcism
 
-**Title:** Rituale Debuggorum: The Bug Exorcism  
-**Author:** Blackaddicus Debuggorus  
-**Style:** Oration  
+**Title:** Rituale Debuggorum: The Bug Exorcism
+**Author:** Blackaddicus Debuggorus
+**Style:** Oration
 **Context:** A Blackadder-style bug exorcism, complete with medieval-tech billing practices
 
 ### Latin
 
 ```
-[Scena: Officium technologicum, hora sera. Intrat EXORCISTA BUGORUM, 
+[Scena: Officium technologicum, hora sera. Intrat EXORCISTA BUGORUM,
 vestitus in hoodie nigro cum multis stickerii.]
 
 MANAGER: Gratias quod venisti, O Exorcista. Habemus problema grave.
@@ -1073,9 +1073,9 @@ to invoice through Stripe]
 
 ## Modern Web Development Hell (styled after Dante's Inferno)
 
-**Title:** De Inferno Webdev  
-**Author:** Webdevus Desperatus  
-**Style:** Lament  
+**Title:** De Inferno Webdev
+**Author:** Webdevus Desperatus
+**Style:** Lament
 **Context:** A web developer's descent into dependency hell, styled after Dante's Inferno
 
 ### Latin
@@ -1146,46 +1146,46 @@ No hope remains, only eternal pain.
 
 ## User Interface Complaint (styled after Cicero's In Catilinam)
 
-**Title:** In Interfaciem Pessimam  
-**Author:** Usus Iratus  
-**Style:** Complaint  
+**Title:** In Interfaciem Pessimam
+**Author:** Usus Iratus
+**Style:** Complaint
 **Context:** A user's complaint about terrible UI, styled after Cicero's famous speech against Catiline
 
 ### Latin
 
 ```
-Quo usque tandem abutere, O Developer, patientia nostra? Quam diu etiam 
+Quo usque tandem abutere, O Developer, patientia nostra? Quam diu etiam
 furor iste tuus nos eludet? Quem ad finem sese effrenata iactabit audacia?
 
-Nihilne te nocturnum praesidium UI/UX artis, nihil urbis vigiliae, nihil timor 
-populi, nihil concursus bonorum omnium, nihil hic munitissimus habendi locus, 
+Nihilne te nocturnum praesidium UI/UX artis, nihil urbis vigiliae, nihil timor
+populi, nihil concursus bonorum omnium, nihil hic munitissimus habendi locus,
 nihil horum ora vultusque moverunt?
 
-Patere tua consilia non sentis? Constrictam iam horum omnium scientia teneri 
-coniurationem tuam non vides? Quid proxima, quid superiore nocte egeris, ubi 
+Patere tua consilia non sentis? Constrictam iam horum omnium scientia teneri
+coniurationem tuam non vides? Quid proxima, quid superiore nocte egeris, ubi
 fueris, quos convocaveris, quid consilii ceperis, quem nostrum ignorare arbitraris?
 
-O tempora, o mores! Senatus UX hoc intelligit, consul videt; hic tamen vivit. 
+O tempora, o mores! Senatus UX hoc intelligit, consul videt; hic tamen vivit.
 Vivit? Immo vero etiam in nostram applicationem venit!
 ```
 
 ### English
 
 ```
-How long, O Developer, will you abuse our patience? How long will your 
+How long, O Developer, will you abuse our patience? How long will your
 madness mock us? To what end will your unbridled audacity toss itself about?
 
-Has the nightly guard of UI/UX arts, the city's watch, the people's fear, 
-the gathering of all good users, this most fortified place of business, have 
+Has the nightly guard of UI/UX arts, the city's watch, the people's fear,
+the gathering of all good users, this most fortified place of business, have
 the faces and expressions of all these nothing moved you?
 
-Do you not feel that your designs are exposed? Do you not see that your 
-conspiracy is already bound by the knowledge of all these people? What you 
-did last night, what the night before, where you were, whom you summoned, 
+Do you not feel that your designs are exposed? Do you not see that your
+conspiracy is already bound by the knowledge of all these people? What you
+did last night, what the night before, where you were, whom you summoned,
 what design you took, which of us do you think does not know?
 
-O the times, O the customs! The UX senate understands this, the consultant 
-has seen it; yet this interface still lives. Lives? Indeed, it even comes 
+O the times, O the customs! The UX senate understands this, the consultant
+has seen it; yet this interface still lives. Lives? Indeed, it even comes
 into our application!
 ```
 
@@ -1193,49 +1193,49 @@ into our application!
 
 ## Manager's Confused Decree (styled after Julius Caesar)
 
-**Title:** De Bello Programmatico  
-**Author:** Managius Confusus  
-**Style:** Decree  
+**Title:** De Bello Programmatico
+**Author:** Managius Confusus
+**Style:** Decree
 **Context:** A clueless manager's attempt to sound authoritative about programming
 
 ### Latin
 
 ```
-Omnis programmaticus divisa in partes tres, quarum unam incolunt 
+Omnis programmaticus divisa in partes tres, quarum unam incolunt
 Frontendi, aliam Backendi, tertiam qui ipsorum lingua Fullstacki appellantur.
 
-Hi omnes lingua, institutis, legibus inter se differunt. Programmatores ab 
-Manageribus Interface flumen dividit. Horum omnium fortissimi sunt Backendi, 
-propterea quod a cultu atque humanitate Provinciae longissime absunt, 
+Hi omnes lingua, institutis, legibus inter se differunt. Programmatores ab
+Manageribus Interface flumen dividit. Horum omnium fortissimi sunt Backendi,
+propterea quod a cultu atque humanitate Provinciae longissime absunt,
 minimeque ad eos mercatores saepe commeant.
 
-Proximi sunt Frontendi, qui trans Interface in suis finibus bellum gerunt. 
-Reliqui, qui Fullstacki appellantur, quorum de natura moribusque multis 
+Proximi sunt Frontendi, qui trans Interface in suis finibus bellum gerunt.
+Reliqui, qui Fullstacki appellantur, quorum de natura moribusque multis
 modis comprehendi non potest.
 
-Sed ego, qui neque Java neque Python neque JavaScript scio, quomodo his 
-imperare possum? Tamen decreto: "Faciendum est velocius, melius, vilius!" 
+Sed ego, qui neque Java neque Python neque JavaScript scio, quomodo his
+imperare possum? Tamen decreto: "Faciendum est velocius, melius, vilius!"
 Nam manager sum, et sic debet esse.
 ```
 
 ### English
 
 ```
-All programming is divided into three parts, one of which the Frontend 
-inhabits, another the Backend, and the third are those who in their own 
+All programming is divided into three parts, one of which the Frontend
+inhabits, another the Backend, and the third are those who in their own
 language are called Fullstack.
 
-All these differ from each other in language, institutions, and laws. The 
-Interface river separates the Programmers from the Managers. Of all these, 
-the Backend are the strongest, because they are farthest from the culture 
+All these differ from each other in language, institutions, and laws. The
+Interface river separates the Programmers from the Managers. Of all these,
+the Backend are the strongest, because they are farthest from the culture
 and refinement of the Province, and merchants least frequently come to them.
 
-Nearest are the Frontend, who wage war across the Interface in their own 
-territories. The rest, who are called Fullstack, whose nature and customs 
+Nearest are the Frontend, who wage war across the Interface in their own
+territories. The rest, who are called Fullstack, whose nature and customs
 cannot be understood in many ways.
 
-But I, who know neither Java nor Python nor JavaScript, how can I command 
-these people? Nevertheless, I decree: "It must be done faster, better, 
+But I, who know neither Java nor Python nor JavaScript, how can I command
+these people? Nevertheless, I decree: "It must be done faster, better,
 cheaper!" For I am a manager, and thus it must be.
 ```
 
@@ -1243,9 +1243,9 @@ cheaper!" For I am a manager, and thus it must be.
 
 ## Developer's Lament (styled after Ovid's Tristia)
 
-**Title:** Tristia Ex Debuggo  
-**Author:** Developerus Exhaustus  
-**Style:** Lament  
+**Title:** Tristia Ex Debuggo
+**Author:** Developerus Exhaustus
+**Style:** Lament
 **Context:** A developer's poetic lament about a particularly brutal debugging session
 
 ### Latin
@@ -1300,9 +1300,9 @@ And my home and the sweet members of my faithful home..."
 
 ## Product Owner's Rant (styled after Juvenal's Satires)
 
-**Title:** Saturae Productorum  
-**Author:** Productus Ownerus  
-**Style:** Oration  
+**Title:** Saturae Productorum
+**Author:** Productus Ownerus
+**Style:** Oration
 **Context:** A product owner's frustrated rant about unrealistic expectations and technical debt
 
 ### Latin
@@ -1331,7 +1331,7 @@ Fundamenta tremunt, et tu nova turres petis!
 ### English
 
 ```
-It is difficult not to write satire. For who is so tolerant of the 
+It is difficult not to write satire. For who is so tolerant of the
 unfair scrum, so iron-willed, that they can contain themselves?
 
 What should I say about how much my dry liver burns with anger,

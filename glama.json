@@ -1,7 +1,7 @@
 {
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "maintainers": ["sandraschi"],
-  "name": "tapo-camera-mcp",
+  "name": "devices-mcp",
   "description": "Home security platform with unified surveillance dashboard. Dual-architecture: individual device MCP servers and security monitoring ecosystem. Supports Tapo, Ring, Nest, USB cameras. Beta status.",
   "type": "mcp_server",
   "status": "beta",
@@ -41,4 +41,3 @@
     }
   }
 }
-

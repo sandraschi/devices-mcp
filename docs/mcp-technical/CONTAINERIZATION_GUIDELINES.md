@@ -309,7 +309,7 @@ async def health_check() -> str:
         "status": "healthy",
         "checks": {}
     }
-    
+
     # Check database connectivity
     try:
         # Add your database check here
@@ -317,7 +317,7 @@ async def health_check() -> str:
     except Exception as e:
         health_status["checks"]["database"] = f"error: {e}"
         health_status["status"] = "unhealthy"
-    
+
     # Check external API
     try:
         async with aiohttp.ClientSession() as session:
@@ -330,7 +330,7 @@ async def health_check() -> str:
     except Exception as e:
         health_status["checks"]["external_api"] = f"error: {e}"
         health_status["status"] = "unhealthy"
-    
+
     return json.dumps(health_status)
 ```
 
@@ -433,14 +433,14 @@ def setup_metrics(port=8000):
 def monitored_tool(param: str) -> str:
     """Tool with Prometheus metrics"""
     start_time = time.time()
-    
+
     try:
         REQUEST_COUNT.labels(method='tool', endpoint='monitored_tool').inc()
         result = process_param(param)
-        
+
         REQUEST_DURATION.observe(time.time() - start_time)
         return result
-        
+
     except Exception as e:
         REQUEST_COUNT.labels(method='tool', endpoint='monitored_tool').inc()
         REQUEST_DURATION.observe(time.time() - start_time)

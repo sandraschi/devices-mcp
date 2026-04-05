@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Appliance Monitor - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .appliance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .appliance-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .appliance-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .appliance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .appliance-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-healthy {
+        background-color: var(--success-light);
+        color: #166534;
+    }
+
+    .status-warning {
+        background-color: var(--warning-bg);
+        color: #92400e;
+    }
+
+    .status-critical {
+        background-color: var(--error-bg);
+        color: #991b1b;
+    }
+
+    .status-monitoring {
+        background-color: var(--info-bg);
+        color: #1e40af;
+    }
+
+    .status-error {
+        background-color: var(--gray-100);
+        color: var(--text-color);
+    }
+
+    .appliance-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--muted-text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        font-size: 0.875rem;
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    .power-display {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        text-align: center;
+        margin: 1rem 0;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f8fafc 0%, var(--dark-text-secondary) 100%);
+        border-radius: 0.5rem;
+        border: 2px solid #cbd5e1;
+    }
+
+    .alert-section {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 0.5rem;
+    }
+
+    .alert-title {
+        font-weight: 600;
+        color: #991b1b;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-message {
+        color: #7f1d1d;
+        font-size: 0.875rem;
+    }
+
+    .action-button {
+        padding: 0.4rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid var(--gray-300);
+        background-color: white;
+        color: var(--text-color);
+        cursor: pointer;
+    }
+
+    .action-button:hover {
+        background-color: var(--card-bg);
+        border-color: var(--gray-400);
+    }
+
+    .action-button-primary {
+        background-color: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+    }
+
+    .action-button-primary:hover {
+        background-color: var(--primary-blue-dark);
+        border-color: var(--primary-blue-dark);
+    }
+
+    .preset-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .preset-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .preset-card:hover {
+        border-color: var(--primary-blue);
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+    }
+
+    .preset-name {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .preset-description {
+        font-size: 0.875rem;
+        color: var(--muted-text);
+        margin-bottom: 0.5rem;
+    }
+
+    .preset-range {
+        font-size: 0.75rem;
+        color: var(--text-color);
+        font-family: monospace;
+    }
+
+    .alert-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .alert-item {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .alert-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-type {
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .alert-time {
+        font-size: 0.75rem;
+        color: var(--muted-text);
+    }
+
+    @media (max-width: 768px) {
+        .appliance-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .appliance-details {
+            grid-template-columns: 1fr;
+        }
+
+        .preset-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Appliance Monitor</h1>
+        <p class="text-gray-600">Monitor appliance health through power consumption patterns</p>
+    </div>
+
+    <!-- Quick Setup -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Quick Setup</h2>
+        <p class="text-gray-600 mb-4">Choose from common appliance presets:</p>
+
+        <div class="preset-grid" id="preset-grid">
+            <!-- Presets will be loaded here -->
+        </div>
+
+        <button onclick="startBackgroundMonitoring()" class="action-button action-button-primary">
+            Start Background Monitoring
+        </button>
+    </div>
+
+    <!-- Appliance Grid -->
+    <div id="appliance-grid" class="appliance-grid">
+        <!-- Appliances will be loaded here -->
+    </div>
+
+    <!-- Alerts Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">Recent Alerts</h2>
+            <button onclick="clearAlerts()" class="action-button">Clear All</button>
+        </div>
+
+        <div id="alert-list" class="alert-list">
+            <!-- Alerts will be loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Global variables
+let applianceStatus = {};
+let applianceAlerts = [];
+
+// Load presets
+async function loadPresets() {
+    try {
+        const response = await fetch('/api/appliance-monitor/presets');
+        const data = await response.json();
+
+        if (data.success) {
+            const presetGrid = document.getElementById('preset-grid');
+            presetGrid.innerHTML = '';
+
+            for (const [key, preset] of Object.entries(data.presets)) {
+                const card = document.createElement('div');
+                card.className = 'preset-card';
+                card.onclick = () => createApplianceMonitor(key, preset);
+
+                card.innerHTML = `
+                    <div class="preset-name">${key.charAt(0).toUpperCase() + key.slice(1)}</div>
+                    <div class="preset-description">${preset.description}</div>
+                    <div class="preset-range">${preset.expected_power_range.min}-${preset.expected_power_range.max}W</div>
+                `;
+
+                presetGrid.appendChild(card);
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load presets:', error);
+    }
+}
+
+// Create appliance monitor
+async function createApplianceMonitor(applianceType, preset) {
+    const deviceId = prompt(`Enter Tapo plug device ID for ${applianceType}:`);
+    if (!deviceId) return;
+
+    try {
+        const response = await fetch('/api/appliance-monitor/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                device_id: deviceId,
+                appliance_type: applianceType,
+                expected_power_range: preset.expected_power_range,
+                monitoring_period: preset.monitoring_period,
+                alert_threshold: preset.alert_threshold
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(`Monitor created for ${applianceType}`);
+            loadAppliances();
+        } else {
+            alert('Failed to create monitor: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Failed to create appliance monitor:', error);
+        alert('Failed to create monitor');
+    }
+}
+
+// Load appliances
+async function loadAppliances() {
+    try {
+        const response = await fetch('/api/appliance-monitor/status');
+        const data = await response.json();
+
+        if (data.success) {
+            applianceStatus = data.appliances;
+            updateApplianceGrid();
+        }
+    } catch (error) {
+        console.error('Failed to load appliances:', error);
+    }
+}
+
+// Update appliance grid
+function updateApplianceGrid() {
+    const grid = document.getElementById('appliance-grid');
+    grid.innerHTML = '';
+
+    if (Object.keys(applianceStatus).length === 0) {
+        grid.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <div class="text-4xl mb-4">🏠</div>
+                <div class="text-lg font-medium mb-2">No Appliances Monitored</div>
+                <div class="text-sm">Choose a preset above to start monitoring an appliance</div>
+            </div>
+        `;
+        return;
+    }
+
+    for (const [deviceId, status] of Object.entries(applianceStatus)) {
+        const card = document.createElement('div');
+        card.className = 'appliance-card';
+
+        let statusClass = 'status-monitoring';
+        switch (status.status) {
+            case 'healthy': statusClass = 'status-healthy'; break;
+            case 'warning': statusClass = 'status-warning'; break;
+            case 'critical': statusClass = 'status-critical'; break;
+            case 'error': statusClass = 'status-error'; break;
+        }
+
+        const lastActive = status.last_active ? new Date(status.last_active).toLocaleString() : 'Never';
+        const monitoringSince = new Date(status.monitoring_since).toLocaleString();
+
+        card.innerHTML = `
+            <div class="appliance-header">
+                <h3 class="appliance-name">${status.appliance_type.charAt(0).toUpperCase() + status.appliance_type.slice(1)}</h3>
+                <span class="status-badge ${statusClass}">${status.status}</span>
+            </div>
+
+            <div class="power-display">
+                ${status.current_power.toFixed(1)} W
+            </div>
+
+            <div class="appliance-details">
+                <div class="detail-item">
+                    <span class="detail-label">Device ID</span>
+                    <span class="detail-value">${deviceId}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Active</span>
+                    <span class="detail-value">${lastActive}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Monitoring Since</span>
+                    <span class="detail-value">${monitoringSince}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Alerts</span>
+                    <span class="detail-value">${status.alerts_triggered}</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button onclick="checkApplianceHealth('${deviceId}')" class="action-button action-button-primary">
+                    Check Now
+                </button>
+                <button onclick="removeAppliance('${deviceId}')" class="action-button">
+                    Remove
+                </button>
+            </div>
+        `;
+
+        grid.appendChild(card);
+    }
+}
+
+// Check appliance health manually
+async function checkApplianceHealth(deviceId) {
+    try {
+        const response = await fetch(`/api/appliance-monitor/check/${deviceId}`, {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast(`Health check completed for ${deviceId}`);
+            loadAppliances();
+        } else {
+            alert('Health check failed: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Failed to check appliance health:', error);
+        alert('Failed to check health');
+    }
+}
+
+// Remove appliance monitor
+async function removeAppliance(deviceId) {
+    if (!confirm(`Remove monitoring for ${deviceId}?`)) return;
+
+    // In a real implementation, you'd have a delete endpoint
+    delete applianceStatus[deviceId];
+    updateApplianceGrid();
+    showToast(`Removed monitoring for ${deviceId}`);
+}
+
+// Load alerts
+async function loadAlerts() {
+    try {
+        const response = await fetch('/api/appliance-monitor/alerts');
+        const data = await response.json();
+
+        if (data.success) {
+            applianceAlerts = data.alerts;
+            updateAlertList();
+        }
+    } catch (error) {
+        console.error('Failed to load alerts:', error);
+    }
+}
+
+// Update alert list
+function updateAlertList() {
+    const alertList = document.getElementById('alert-list');
+
+    if (applianceAlerts.length === 0) {
+        alertList.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <div class="text-4xl mb-4">✅</div>
+                <div class="text-lg font-medium mb-2">No Alerts</div>
+                <div class="text-sm">All appliances are running normally</div>
+            </div>
+        `;
+        return;
+    }
+
+    alertList.innerHTML = '';
+
+    for (const alert of applianceAlerts) {
+        const alertItem = document.createElement('div');
+        alertItem.className = 'alert-item';
+
+        const triggeredAt = new Date(alert.triggered_at).toLocaleString();
+
+        alertItem.innerHTML = `
+            <div class="alert-header">
+                <span class="alert-type">${alert.alert_type.replace('_', ' ').toUpperCase()}</span>
+                <span class="alert-time">${triggeredAt}</span>
+            </div>
+            <div class="alert-message">${alert.message}</div>
+            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--muted-text);">
+                Device: ${alert.device_id} | Current Power: ${alert.current_power}W
+            </div>
+        `;
+
+        alertList.appendChild(alertItem);
+    }
+}
+
+// Clear all alerts
+async function clearAlerts() {
+    if (!confirm('Clear all appliance alerts?')) return;
+
+    try {
+        const response = await fetch('/api/appliance-monitor/alerts', {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            applianceAlerts = [];
+            updateAlertList();
+            showToast('All alerts cleared');
+        } else {
+            alert('Failed to clear alerts');
+        }
+    } catch (error) {
+        console.error('Failed to clear alerts:', error);
+        alert('Failed to clear alerts');
+    }
+}
+
+// Start background monitoring
+async function startBackgroundMonitoring() {
+    try {
+        const response = await fetch('/api/appliance-monitor/start-background-monitoring', {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('Background monitoring started');
+        } else {
+            alert('Failed to start background monitoring');
+        }
+    } catch (error) {
+        console.error('Failed to start background monitoring:', error);
+        alert('Failed to start background monitoring');
+    }
+}
+
+// Toast notification
+function showToast(message) {
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success-green);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        font-size: 0.875rem;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    `;
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    loadPresets();
+    loadAppliances();
+    loadAlerts();
+
+    // Refresh data every 30 seconds
+    setInterval(() => {
+        loadAppliances();
+        loadAlerts();
+    }, 30000);
+});
+</script>
+{% endblock %}

@@ -1,9 +1,9 @@
 # 📚 Complete Documentation Index
 
-**Central hub for all tapo-camera-mcp documentation**
+**Central hub for all devices-mcp documentation**
 
-**Current Version**: v1.9.0 (CSS Cleanup & Theme Support)
-**Last Updated**: January 9, 2026
+**Current Version**: v1.18.0 (Speakerphone & Doorbell Integration)
+**Last Updated**: January 16, 2026
 **Status**: 🚀 Production-Ready Platform
 
 ---
@@ -34,7 +34,7 @@
 ### **Setting Up Devices?**
 1. Read [Device Onboarding System](DEVICE_ONBOARDING_SYSTEM.md) - Complete setup guide
 2. Check [Home Security Energy Plan](HOME_SECURITY_ENERGY_PLAN.md) - Integration strategies
-3. Review [FastMCP 2.12 Compliance](FASTMCP_2.12_COMPLIANCE_GUIDE.md) - Technical standards
+3. Review [FastMCP 3.1 Compliance](FASTMCP_2.12_COMPLIANCE_GUIDE.md) - Technical standards
 
 ---
 
@@ -66,7 +66,7 @@ docs/
 │                           → Smart configuration wizard and cross-device integration
 │                           → Beautiful progressive UI with real-time progress tracking
 │
-├── FASTMCP_2.12_COMPLIANCE_GUIDE.md 🔧 **NEW**: FastMCP 2.12 compliance standards
+├── FASTMCP_2.12_COMPLIANCE_GUIDE.md 🔧 FastMCP 3.1 compliance standards
 │                                      → Tool registration patterns and decorators
 │                                      → Meta class structure and Parameters
 │                                      → Multiline docstring formatting
@@ -145,7 +145,7 @@ docs/
 │   ├── README.md              → MCP technical documentation hub
 │   ├── CLAUDE_DESKTOP_DEBUGGING.md → Claude Desktop debugging
 │   ├── MCP_PRODUCTION_CHECKLIST.md → Production readiness
-│   ├── TROUBLESHOOTING_FASTMCP_2.12.md → FastMCP issues
+│   ├── TROUBLESHOOTING_FASTMCP_2.12.md → FastMCP 3.1 issues
 │   ├── CONTAINERIZATION_GUIDELINES.md → Docker deployment
 │   └── MONITORING_STACK_DEPLOYMENT.md → Observability
 │
@@ -180,7 +180,7 @@ Complete strategy for protecting your repository while allowing AI to experiment
 
 ### **Documents**
 
-#### **1. Protection Hub** 
+#### **1. Protection Hub**
 📄 [README.md](repository-protection/README.md)
 
 **Central index for all protection documentation**
@@ -434,7 +434,7 @@ Debug MCP servers in Claude Desktop - log files, common errors, stdio issues.
 
 Comprehensive production readiness checklist for MCP servers.
 
-#### **3. FastMCP 2.12 Troubleshooting**
+#### **3. FastMCP 3.1 Troubleshooting**
 📄 [TROUBLESHOOTING_FASTMCP_2.12.md](mcp-technical/TROUBLESHOOTING_FASTMCP_2.12.md)
 
 FastMCP-specific issues, version compatibility, and solutions.
@@ -646,7 +646,7 @@ If you find errors or missing information:
 ### **Technical Issues**
 
 1. **Check**: Relevant troubleshooting section
-2. **Search**: GitHub issues for similar problems  
+2. **Search**: GitHub issues for similar problems
 3. **Debug**: Enable verbose logging
 4. **Report**: Create detailed issue
 
@@ -676,34 +676,33 @@ If you find errors or missing information:
 Based on what you need:
 
 ### **I'm New Here**
-→ Read [README.md](../README.md)  
-→ Setup [Branch Protection](repository-protection/BRANCH_PROTECTION_SETTINGS.md)  
+→ Read [README.md](../README.md)
+→ Setup [Branch Protection](repository-protection/BRANCH_PROTECTION_SETTINGS.md)
 → Run [Backup Script](../scripts/README.md)
 
 ### **I Want to Develop**
-→ Read [CONTRIBUTING.md](../CONTRIBUTING.md)  
-→ Review [Branch Strategy](repository-protection/BRANCH_STRATEGY_AND_AI_WORKFLOW.md)  
+→ Read [CONTRIBUTING.md](../CONTRIBUTING.md)
+→ Review [Branch Strategy](repository-protection/BRANCH_STRATEGY_AND_AI_WORKFLOW.md)
 → Check [API Docs](../src/notepadpp_mcp/docs/README.md)
 
 ### **I Want to Release**
-→ Read [MCPB Guide](MCPB_BUILDING_GUIDE.md)  
-→ Run [Build Script](../scripts/README.md)  
+→ Read [MCPB Guide](MCPB_BUILDING_GUIDE.md)
+→ Run [Build Script](../scripts/README.md)
 → Follow [CI/CD Guide](CI_CD_GLAMA_OPTIMIZATION_GUIDE.md)
 
 ### **I Need Help**
-→ Check [Repository Protection](repository-protection/README.md)  
-→ See [Backup Guide](repository-protection/BACKUP_AND_RECOVERY_GUIDE.md)  
+→ Check [Repository Protection](repository-protection/README.md)
+→ See [Backup Guide](repository-protection/BACKUP_AND_RECOVERY_GUIDE.md)
 → Create [GitHub Issue](https://github.com/sandraschi/notepadpp-mcp/issues)
 
 ---
 
-*Documentation Index*  
-*Created: October 8, 2025*  
-*Last Updated: October 10, 2025*  
-*Total Pages: 420+*  
-*Total Documents: 18*  
-*Status: Complete*  
+*Documentation Index*
+*Created: October 8, 2025*
+*Last Updated: October 10, 2025*
+*Total Pages: 420+*
+*Total Documents: 18*
+*Status: Complete*
 *Coverage: 100%*
 
 **Everything you need to know about notepadpp-mcp!** 📚✨
-

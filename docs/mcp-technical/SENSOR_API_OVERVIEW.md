@@ -46,4 +46,4 @@ real-time power readings provided by `python-kasa`.
 - Optional environment overrides: `TAPO_ACCOUNT_EMAIL`, `TAPO_ACCOUNT_PASSWORD`,
   `TAPO_P115_HOSTS`.
 - The ingestion adapter relies on the `python-kasa` package. Install with
-  `pip install python-kasa` on the node hosting `tapo-camera-mcp`.
+  `pip install python-kasa` on the node hosting `devices-mcp`.

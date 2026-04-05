@@ -37,17 +37,17 @@ def test_imports():
         sys.path.insert(0, project_root)
 
     # Test importing main package
-    tapo_pkg = import_module_safe("tapo_camera_mcp")
+    tapo_pkg = import_module_safe("devices_mcp")
     if not tapo_pkg:
         assert False
 
     # List of core modules to test
     core_modules = [
-        "tapo_camera_mcp.core.server",
-        "tapo_camera_mcp.tools.base_tool",
-        "tapo_camera_mcp.camera.manager",
-        "tapo_camera_mcp.api.v1.endpoints.cameras",
-        "tapo_camera_mcp.config.models",
+        "devices_mcp.core.server",
+        "devices_mcp.tools.base_tool",
+        "devices_mcp.camera.manager",
+        "devices_mcp.api.v1.endpoints.cameras",
+        "devices_mcp.config.models",
     ]
 
     all_imports_ok = True
@@ -57,11 +57,11 @@ def test_imports():
             all_imports_ok = False
 
     # Test tool imports
-    tools_dir = os.path.join(os.path.dirname(__file__), "src", "tapo_camera_mcp", "tools")
+    tools_dir = os.path.join(os.path.dirname(__file__), "src", "devices_mcp", "tools")
     if os.path.exists(tools_dir):
         for filename in os.listdir(tools_dir):
             if filename.endswith(".py") and not filename.startswith("_"):
-                module_name = f"tapo_camera_mcp.tools.{filename[:-3]}"
+                module_name = f"devices_mcp.tools.{filename[:-3]}"
                 if module_name.endswith(".py"):
                     module_name = module_name[:-3]
                 if not import_module_safe(module_name):
@@ -81,10 +81,10 @@ def main():
 
     # Test specific modules that might have issues
     test_modules = [
-        "tapo_camera_mcp.core.server",
-        "tapo_camera_mcp.cli_v2",
-        "tapo_camera_mcp.web.server",
-        "tapo_camera_mcp.api.v1.endpoints.cameras",
+        "devices_mcp.core.server",
+        "devices_mcp.cli_v2",
+        "backend.server",
+        "devices_mcp.api.v1.endpoints.cameras",
     ]
 
     for module_name in test_modules:
@@ -103,3 +103,4 @@ if __name__ == "__main__":
     import sys
 
     sys.exit(main())
+

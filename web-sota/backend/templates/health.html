@@ -1,0 +1,655 @@
+{% extends "base.html" %}
+
+{% block title %}Server Health - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .health-section {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-color);
+    }
+
+    [data-theme="dark"] .health-section {
+        background: var(--text-color);
+        border-color: var(--gray-600);
+    }
+
+    .health-section h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    [data-theme="dark"] .health-section h3 {
+        color: var(--card-bg);
+    }
+
+    .health-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+
+    .health-card {
+        background: var(--card-bg);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+    }
+
+    [data-theme="dark"] .health-card {
+        background: var(--gray-600);
+        border-color: var(--muted-text);
+    }
+
+    .health-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .health-card-title {
+        font-weight: 500;
+        color: var(--text-color);
+        font-size: 0.875rem;
+    }
+
+    [data-theme="dark"] .health-card-title {
+        color: var(--gray-300);
+    }
+
+    .health-status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-healthy {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-warning {
+        background: var(--warning-bg);
+        color: #92400e;
+    }
+
+    .status-critical {
+        background: var(--error-bg);
+        color: #991b1b;
+    }
+
+    .health-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+
+    [data-theme="dark"] .health-value {
+        color: var(--card-bg);
+    }
+
+    .health-label {
+        font-size: 0.75rem;
+        color: var(--muted-text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    [data-theme="dark"] .health-label {
+        color: var(--gray-400);
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: var(--border-color);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+
+    [data-theme="dark"] .progress-bar {
+        background: var(--gray-600);
+    }
+
+    .progress-fill {
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+
+    .progress-healthy {
+        background: var(--success-green);
+    }
+
+    .progress-warning {
+        background: var(--warning-yellow);
+    }
+
+    .progress-critical {
+        background: var(--error-red);
+    }
+
+    .metric-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    [data-theme="dark"] .metric-row {
+        border-bottom-color: var(--gray-600);
+    }
+
+    .metric-row:last-child {
+        border-bottom: none;
+    }
+
+    .metric-label {
+        color: var(--muted-text);
+        font-size: 0.875rem;
+    }
+
+    [data-theme="dark"] .metric-label {
+        color: var(--gray-400);
+    }
+
+    .metric-value {
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    [data-theme="dark"] .metric-value {
+        color: var(--card-bg);
+    }
+
+    .issues-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .issue-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid;
+    }
+
+    .issue-critical {
+        background: var(--error-bg);
+        border-color: var(--error-red);
+        color: #991b1b;
+    }
+
+    .issue-warning {
+        background: var(--warning-bg);
+        border-color: var(--warning-yellow);
+        color: #92400e;
+    }
+
+    [data-theme="dark"] .issue-critical {
+        background: rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+    }
+
+    [data-theme="dark"] .issue-warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fcd34d;
+    }
+
+    .overall-status {
+        text-align: center;
+        padding: 2rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .overall-status.healthy {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .overall-status.warning {
+        background: var(--warning-bg);
+        color: #92400e;
+    }
+
+    .overall-status.critical {
+        background: var(--error-bg);
+        color: #991b1b;
+    }
+
+    [data-theme="dark"] .overall-status.healthy {
+        background: rgba(16, 185, 129, 0.2);
+        color: #6ee7b7;
+    }
+
+    [data-theme="dark"] .overall-status.warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fcd34d;
+    }
+
+    [data-theme="dark"] .overall-status.critical {
+        background: rgba(239, 68, 68, 0.2);
+        color: #fca5a5;
+    }
+
+    .overall-status-icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .overall-status-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .overall-status-subtext {
+        font-size: 0.875rem;
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="content-header">
+        <h1>
+            <i class="fas fa-heartbeat text-red-500"></i>
+            Server Health Monitor
+        </h1>
+        <p class="text-gray-600">Real-time system metrics and health status</p>
+    </div>
+
+    <!-- Overall Status -->
+    <div id="overall-status" class="overall-status healthy">
+        <div class="overall-status-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="overall-status-text">System Healthy</div>
+        <div class="overall-status-subtext">All systems operational</div>
+    </div>
+
+    <!-- System Resources -->
+    <div class="health-section">
+        <h3>
+            <i class="fas fa-server text-blue-500"></i>
+            System Resources
+        </h3>
+        <div class="health-grid">
+            <!-- CPU -->
+            <div class="health-card">
+                <div class="health-card-header">
+                    <div class="health-card-title">CPU Usage</div>
+                    <span id="cpu-status" class="health-status-badge status-healthy">Healthy</span>
+                </div>
+                <div class="health-value" id="cpu-value">0%</div>
+                <div class="health-label">System CPU</div>
+                <div class="progress-bar">
+                    <div id="cpu-progress" class="progress-fill progress-healthy" style="width: 0%"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Cores:</span>
+                    <span class="metric-value" id="cpu-cores">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Process CPU:</span>
+                    <span class="metric-value" id="cpu-process">-</span>
+                </div>
+            </div>
+
+            <!-- Memory -->
+            <div class="health-card">
+                <div class="health-card-header">
+                    <div class="health-card-title">Memory Usage</div>
+                    <span id="memory-status" class="health-status-badge status-healthy">Healthy</span>
+                </div>
+                <div class="health-value" id="memory-value">0%</div>
+                <div class="health-label">System Memory</div>
+                <div class="progress-bar">
+                    <div id="memory-progress" class="progress-fill progress-healthy" style="width: 0%"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total:</span>
+                    <span class="metric-value" id="memory-total">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Available:</span>
+                    <span class="metric-value" id="memory-available">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Process:</span>
+                    <span class="metric-value" id="memory-process">-</span>
+                </div>
+            </div>
+
+            <!-- Disk -->
+            <div class="health-card">
+                <div class="health-card-header">
+                    <div class="health-card-title">Disk Usage</div>
+                    <span id="disk-status" class="health-status-badge status-healthy">Healthy</span>
+                </div>
+                <div class="health-value" id="disk-value">0%</div>
+                <div class="health-label">Root Filesystem</div>
+                <div class="progress-bar">
+                    <div id="disk-progress" class="progress-fill progress-healthy" style="width: 0%"></div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total:</span>
+                    <span class="metric-value" id="disk-total">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Used:</span>
+                    <span class="metric-value" id="disk-used">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Free:</span>
+                    <span class="metric-value" id="disk-free">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Info -->
+    <div class="health-section">
+        <h3>
+            <i class="fas fa-info-circle text-green-500"></i>
+            System Information
+        </h3>
+        <div class="health-grid">
+            <div class="health-card">
+                <div class="health-card-title">Uptime</div>
+                <div class="health-value" id="uptime-value">-</div>
+                <div class="health-label">System Uptime</div>
+            </div>
+            <div class="health-card">
+                <div class="health-card-title">Last Update</div>
+                <div class="health-value" id="last-update" style="font-size: 1rem;">-</div>
+                <div class="health-label">Health Check Timestamp</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services -->
+    <div class="health-section">
+        <h3>
+            <i class="fas fa-cogs text-purple-500"></i>
+            Services & Databases
+        </h3>
+        <div class="health-grid">
+            <!-- PostgreSQL -->
+            <div class="health-card">
+                <div class="health-card-header">
+                    <div class="health-card-title">PostgreSQL</div>
+                    <span id="postgres-status" class="health-status-badge status-healthy">OK</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Status:</span>
+                    <span class="metric-value" id="postgres-status-text">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Host:</span>
+                    <span class="metric-value" id="postgres-host">-</span>
+                </div>
+            </div>
+
+            <!-- SQLite -->
+            <div class="health-card">
+                <div class="health-card-header">
+                    <div class="health-card-title">SQLite (Time Series)</div>
+                    <span id="sqlite-status" class="health-status-badge status-healthy">OK</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Status:</span>
+                    <span class="metric-value" id="sqlite-status-text">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Size:</span>
+                    <span class="metric-value" id="sqlite-size">-</span>
+                </div>
+            </div>
+
+            <!-- Cameras -->
+            <div class="health-card">
+                <div class="health-card-header">
+                    <div class="health-card-title">Cameras</div>
+                    <span id="cameras-status" class="health-status-badge status-healthy">OK</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total:</span>
+                    <span class="metric-value" id="cameras-total">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Online:</span>
+                    <span class="metric-value" id="cameras-online">-</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Offline:</span>
+                    <span class="metric-value" id="cameras-offline">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network -->
+    <div class="health-section" id="network-section" style="display: none;">
+        <h3>
+            <i class="fas fa-network-wired text-indigo-500"></i>
+            Network Statistics
+        </h3>
+        <div class="health-grid">
+            <div class="health-card">
+                <div class="health-card-title">Bytes Sent</div>
+                <div class="health-value" id="network-sent">-</div>
+                <div class="health-label">Total Bytes Sent</div>
+            </div>
+            <div class="health-card">
+                <div class="health-card-title">Bytes Received</div>
+                <div class="health-value" id="network-recv">-</div>
+                <div class="health-label">Total Bytes Received</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issues -->
+    <div class="health-section" id="issues-section" style="display: none;">
+        <h3>
+            <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+            Active Issues
+        </h3>
+        <ul id="issues-list" class="issues-list"></ul>
+    </div>
+</div>
+
+<script>
+    let healthData = null;
+
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function formatUptime(uptime) {
+        if (uptime.days > 0) {
+            return `${uptime.days}d ${uptime.hours}h ${uptime.minutes}m`;
+        } else if (uptime.hours > 0) {
+            return `${uptime.hours}h ${uptime.minutes}m`;
+        } else {
+            return `${uptime.minutes}m`;
+        }
+    }
+
+    function updateStatusBadge(elementId, status) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        element.className = 'health-status-badge';
+        if (status === 'healthy' || status === 'ok' || status === 'reachable') {
+            element.className += ' status-healthy';
+            element.textContent = 'Healthy';
+        } else if (status === 'warning' || status === 'low') {
+            element.className += ' status-warning';
+            element.textContent = 'Warning';
+        } else {
+            element.className += ' status-critical';
+            element.textContent = 'Critical';
+        }
+    }
+
+    function updateProgressBar(elementId, percent, status) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        element.style.width = percent + '%';
+        element.className = 'progress-fill';
+        if (percent > 95 || status === 'critical') {
+            element.className += ' progress-critical';
+        } else if (percent > 90 || percent > 80 || status === 'warning') {
+            element.className += ' progress-warning';
+        } else {
+            element.className += ' progress-healthy';
+        }
+    }
+
+    function updateOverallStatus(status, issues) {
+        const overallDiv = document.getElementById('overall-status');
+        if (!overallDiv) return;
+
+        overallDiv.className = 'overall-status ' + status;
+        const icon = overallDiv.querySelector('.overall-status-icon i');
+        const text = overallDiv.querySelector('.overall-status-text');
+        const subtext = overallDiv.querySelector('.overall-status-subtext');
+
+        if (status === 'healthy') {
+            icon.className = 'fas fa-check-circle';
+            text.textContent = 'System Healthy';
+            subtext.textContent = 'All systems operational';
+        } else if (status === 'warning') {
+            icon.className = 'fas fa-exclamation-triangle';
+            text.textContent = 'System Warning';
+            subtext.textContent = `${issues.length} issue(s) detected`;
+        } else {
+            icon.className = 'fas fa-times-circle';
+            text.textContent = 'System Critical';
+            subtext.textContent = `${issues.length} critical issue(s) detected`;
+        }
+    }
+
+    function updateHealthData(data) {
+        healthData = data;
+
+        // Overall status
+        updateOverallStatus(data.status, data.issues || []);
+
+        // CPU
+        const cpu = data.system.cpu;
+        document.getElementById('cpu-value').textContent = cpu.percent + '%';
+        document.getElementById('cpu-cores').textContent = cpu.count;
+        document.getElementById('cpu-process').textContent = cpu.process_percent + '%';
+        updateProgressBar('cpu-progress', cpu.percent, cpu.percent > 90 ? 'critical' : cpu.percent > 80 ? 'warning' : 'healthy');
+        updateStatusBadge('cpu-status', cpu.percent > 90 ? 'critical' : cpu.percent > 80 ? 'warning' : 'healthy');
+
+        // Memory
+        const memory = data.system.memory;
+        document.getElementById('memory-value').textContent = memory.percent + '%';
+        document.getElementById('memory-total').textContent = memory.total_gb + ' GB';
+        document.getElementById('memory-available').textContent = memory.available_gb + ' GB';
+        document.getElementById('memory-process').textContent = memory.process_mb + ' MB';
+        updateProgressBar('memory-progress', memory.percent, memory.percent > 95 ? 'critical' : memory.percent > 85 ? 'warning' : 'healthy');
+        updateStatusBadge('memory-status', memory.percent > 95 ? 'critical' : memory.percent > 85 ? 'warning' : 'healthy');
+
+        // Disk
+        const disk = data.system.disk;
+        document.getElementById('disk-value').textContent = disk.percent + '%';
+        document.getElementById('disk-total').textContent = disk.total_gb + ' GB';
+        document.getElementById('disk-used').textContent = disk.used_gb + ' GB';
+        document.getElementById('disk-free').textContent = disk.free_gb + ' GB';
+        updateProgressBar('disk-progress', disk.percent, disk.percent > 95 ? 'critical' : disk.percent > 90 ? 'warning' : 'healthy');
+        updateStatusBadge('disk-status', disk.percent > 95 ? 'critical' : disk.percent > 90 ? 'warning' : 'healthy');
+
+        // Uptime
+        document.getElementById('uptime-value').textContent = formatUptime(data.system.uptime);
+
+        // Last update
+        const lastUpdate = new Date(data.timestamp);
+        document.getElementById('last-update').textContent = lastUpdate.toLocaleString();
+
+        // PostgreSQL
+        const postgres = data.databases.postgres;
+        document.getElementById('postgres-status-text').textContent = postgres.status;
+        document.getElementById('postgres-host').textContent = postgres.host || 'N/A';
+        updateStatusBadge('postgres-status', postgres.status);
+
+        // SQLite
+        const sqlite = data.databases.timeseries;
+        document.getElementById('sqlite-status-text').textContent = sqlite.status;
+        document.getElementById('sqlite-size').textContent = sqlite.size_mb ? sqlite.size_mb + ' MB' : 'N/A';
+        updateStatusBadge('sqlite-status', sqlite.status);
+
+        // Cameras
+        const cameras = data.cameras;
+        document.getElementById('cameras-total').textContent = cameras.total;
+        document.getElementById('cameras-online').textContent = cameras.online;
+        document.getElementById('cameras-offline').textContent = cameras.offline;
+        updateStatusBadge('cameras-status', cameras.total > 0 && cameras.online === 0 ? 'critical' : cameras.offline > 0 ? 'warning' : 'healthy');
+
+        // Network
+        if (data.network) {
+            document.getElementById('network-section').style.display = 'block';
+            document.getElementById('network-sent').textContent = formatBytes(data.network.bytes_sent);
+            document.getElementById('network-recv').textContent = formatBytes(data.network.bytes_recv);
+        }
+
+        // Issues
+        if (data.issues && data.issues.length > 0) {
+            document.getElementById('issues-section').style.display = 'block';
+            const issuesList = document.getElementById('issues-list');
+            issuesList.innerHTML = data.issues.map(issue => {
+                const isCritical = issue.includes('critical');
+                return `<li class="issue-item ${isCritical ? 'issue-critical' : 'issue-warning'}">
+                    <i class="fas ${isCritical ? 'fa-exclamation-circle' : 'fa-exclamation-triangle'}"></i>
+                    ${issue.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                </li>`;
+            }).join('');
+        } else {
+            document.getElementById('issues-section').style.display = 'none';
+        }
+    }
+
+    async function loadHealthData() {
+        try {
+            const response = await fetch('/api/health');
+            const data = await response.json();
+            updateHealthData(data);
+        } catch (error) {
+            console.error('Error loading health data:', error);
+            document.getElementById('overall-status').className = 'overall-status critical';
+            document.getElementById('overall-status').querySelector('.overall-status-text').textContent = 'Error Loading Health Data';
+        }
+    }
+
+    // Load health data on page load and refresh every 10 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        loadHealthData();
+        setInterval(loadHealthData, 10000);
+    });
+</script>
+{% endblock %}

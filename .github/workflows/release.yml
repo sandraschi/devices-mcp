@@ -9,46 +9,46 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         cache: 'pip'
-    
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install build twine
-    
+
     - name: Build Python package
       run: python -m build
-    
+
     - name: Verify built Python package
       run: twine check dist/*.whl dist/*.tar.gz
-    
+
     - name: Install MCPB CLI
       if: exists('mcpb/manifest.json')
       run: |
         npm install -g @anthropic-ai/mcpb
         mcpb --version
-    
+
     - name: Validate and build MCPB package
       if: exists('mcpb/manifest.json')
       run: |
         mcpb validate mcpb/manifest.json
         mcpb pack . dist/tapo-camera-mcp.mcpb
-    
+
     - name: Create GitHub Release
       id: create_release
       uses: softprops/action-gh-release@v2
@@ -61,7 +61,7 @@ jobs:
           dist/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
+
     - name: Publish to PyPI
       if: github.event_name == 'push' && !contains(github.ref, 'alpha') && !contains(github.ref, 'beta') && !contains(github.ref, 'rc')
       uses: pypa/gh-action-pypi-publish@release/v1

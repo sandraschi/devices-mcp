@@ -1,4 +1,4 @@
-# Tapo Camera MCP - User Guide
+# Devices MCP - User Guide
 
 ## Table of Contents
 - [1. Introduction](#1-introduction)
@@ -11,6 +11,7 @@
   - [4.1 Adding Cameras](#41-adding-cameras)
   - [4.2 Camera Groups](#42-camera-groups)
   - [4.3 Multiple Camera Types](#43-multiple-camera-types)
+  - [4.4 Speakerphone & Audio Features](#44-speakerphone--audio-features)
 - [5. Streaming](#5-streaming)
   - [5.1 Web Streaming](#51-web-streaming)
   - [5.2 VLC Streaming](#52-vlc-streaming)
@@ -24,7 +25,7 @@
 
 ## 1. Introduction
 
-Tapo Camera MCP is a powerful server for managing multiple IP cameras with support for various brands including TP-Link Tapo, Ring, and Petcube. This guide covers all aspects of setting up and using the server.
+Devices MCP is a powerful server for managing multiple IP cameras with support for various brands including TP-Link Tapo, Ring, and Petcube. This guide covers all aspects of setting up and using the server.
 
 **Note:** Furbo cameras are not supported due to their intentional API restrictions. Use Petcube cameras instead for API-accessible pet monitoring.
 
@@ -39,8 +40,8 @@ Tapo Camera MCP is a powerful server for managing multiple IP cameras with suppo
 ### 2.2 Installation
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/tapo-camera-mcp.git
-cd tapo-camera-mcp
+git clone https://github.com/yourusername/devices-mcp.git
+cd devices-mcp
 
 # Create and activate virtual environment
 python -m venv venv
@@ -95,11 +96,13 @@ The web interface features a modern, responsive design with full light/dark them
 - **Modular CSS**: External stylesheets for maintainability and performance
 - **Accessibility**: High contrast ratios and keyboard navigation support
 
-**Recent Improvements (v1.9.0):**
-- **CSS Cleanup**: Migrated all inline styles to external CSS files for better maintainability
-- **Theme Variables**: Replaced hardcoded colors with CSS custom properties for consistent theming
-- **Readability Fixes**: Resolved "white on white" text issues across all dashboard pages
-- **Performance**: Reduced page load times by externalizing stylesheets
+**Recent Improvements (v1.19.0):**
+- **USB Camera Server**: Integrated a dedicated local capture server on port 10705.
+- **CSS Cleanup**: Migrated all inline styles to external CSS files for better maintainability.
+- **Theme Variables**: Replaced hardcoded colors with CSS custom properties for consistent theming.
+- **Readability Fixes**: Resolved "white on white" text issues across all dashboard pages.
+- **Linting Cleanup**: Massive 160+ file cleanup for industrial-grade code quality.
+- **Hardware Research**: Added support and research docs for Insta360 X5 and Pavo35 platforms.
 
 ### 3.2 Security Dashboards
 
@@ -189,7 +192,37 @@ Supported camera types and their requirements:
 
 **Note:** Furbo cameras are not supported due to API restrictions. Use Petcube instead.
 
-### 4.4 Petcube Camera Setup
+### 4.4 Speakerphone & Audio Features
+
+**Speakerphone support varies by camera type:**
+
+| Camera Type | Speakerphone | Microphone | Doorbell Detection | Notes |
+|-------------|--------------|------------|-------------------|-------|
+| **Ring Video Doorbell** | ✅ Yes | ✅ Yes | ✅ Yes | WebRTC two-way audio |
+| **Tapo C200/C210** | ✅ Yes | ✅ Yes | ❌ No | Tinny speaker quality |
+| **USB Webcams (Logitech)** | ❌ No | ✅ Yes | ❌ No | Microphone only |
+| **USB Microscopes** | ❌ No | ✅ Yes | ❌ No | Specialized camera |
+| **Petcube** | ✅ Yes | ✅ Yes | ❌ No | Treat dispensing audio |
+
+#### **🔔 Ring Doorbell Integration**
+- **Real-time doorbell detection** from Ring's event history
+- **Event notifications** with timestamps and answered status
+- **Recording links** to Ring cloud storage when available
+- **Doorbell events panel** in web interface for recent activity
+
+#### **📢 Speakerphone Controls**
+- **Two-way audio** for compatible cameras (Ring, Tapo)
+- **Enable/disable controls** in camera interface
+- **Status indicators** showing speakerphone state
+- **Quality notes** for different camera types
+
+#### **🎤 Audio Capabilities**
+- **Microphone input** for all cameras with audio hardware
+- **Speaker output** only for cameras with built-in speakers
+- **WebRTC streaming** for Ring cameras
+- **RTSP audio** for Tapo cameras
+
+### 4.5 Petcube Camera Setup
 
 **Petcube Bites 2 Lite** is the recommended pet camera for MCP integration.
 
@@ -325,12 +358,12 @@ Track media activity from your Plex server in the security dashboard.
    - Check server resources
 
 ### Viewing Logs
-Server logs are stored in `logs/tapo_camera_mcp.log` by default. Enable debug logging for more detailed information:
+Server logs are stored in `logs/devices_mcp.log` by default. Enable debug logging for more detailed information:
 
 ```yaml
 log_level: "DEBUG"
-log_file: "/path/to/logs/tapo_camera_mcp.log"
+log_file: "/path/to/logs/devices_mcp.log"
 ```
 
 ## Support
-For additional help, please open an issue on [GitHub](https://github.com/yourusername/tapo-camera-mcp/issues).
+For additional help, please open an issue on [GitHub](https://github.com/yourusername/devices-mcp/issues).

@@ -2,41 +2,49 @@
 """Test the unified tapo tool."""
 
 import asyncio
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
 # Import the actual function
-from tapo_camera_mcp.tools.portmanteau.tapo_control import tapo
+from devices_mcp.tools.portmanteau.tapo_control import tapo
 
-print("Testing tapo tool...\n")
+logger.info("Testing tapo tool...\n")
 
 
 async def test_action(action: str, **kwargs):
     """Test a tapo action."""
-    print(f"Testing: tapo(action='{action}', {kwargs})")
+    logger.info(f"Testing: tapo(action='{action}', {kwargs})")
     try:
         result = await tapo(action=action, **kwargs)
         if result.get("success"):
             data = result.get("data", {})
             if "lights" in data:
-                print(f"  [OK] Found {data.get('count', 0)} lights")
+                logger.info(f"  [OK] Found {data.get('count', 0)} lights")
                 for light in data.get("lights", [])[:3]:
-                    print(f"    - {light.get('name')} (ID: {light.get('light_id')}) - {'ON' if light.get('on') else 'OFF'}")
+                    logger.info(
+                        f"    - {light.get('name')} (ID: {light.get('light_id')}) - {'ON' if light.get('on') else 'OFF'}"
+                    )
             elif "devices" in data:
-                print(f"  [OK] Found {data.get('count', 0)} devices")
+                logger.info(f"  [OK] Found {data.get('count', 0)} devices")
                 for device in data.get("devices", [])[:3]:
-                    print(f"    - {device.get('name')} (ID: {device.get('device_id')}) - {'ON' if device.get('power_state') else 'OFF'}")
+                    logger.info(
+                        f"    - {device.get('name')} (ID: {device.get('device_id')}) - {'ON' if device.get('power_state') else 'OFF'}"
+                    )
             else:
-                print(f"  [OK] Success: {result}")
+                logger.info(f"  [OK] Success: {result}")
         else:
-            print(f"  [ERROR] Error: {result.get('error')}")
+            logger.info(f"  [ERROR] Error: {result.get('error')}")
     except Exception as e:
-        print(f"  [EXCEPTION] Exception: {e}")
-    print()
+        logger.info(f"  [EXCEPTION] Exception: {e}")
+    logger.info()
 
 
 async def main():
@@ -49,4 +57,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

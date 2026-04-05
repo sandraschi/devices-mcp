@@ -19,15 +19,14 @@ def mock_get_model():
     return Mock()
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_web_server_initialization - currently has assert False")
 def test_web_server_initialization():
     """Test web server initialization and setup."""
     try:
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock the config functions
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
         ) as mock_get_model:
             mock_config = {"debug": False, "log_level": "info"}
             mock_web_config = Mock()
@@ -52,7 +51,7 @@ def test_web_server_initialization():
 
             # Test that FastAPI app is created
             assert hasattr(server, "app")
-            assert server.app.title == "Tapo Camera MCP"
+            assert "devices mcp" in server.app.title.lower()
 
             # Test that middleware is set up
             assert len(server.app.user_middleware) > 0
@@ -68,17 +67,16 @@ def test_web_server_initialization():
         assert False
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_api_status_endpoint - currently has assert False")
 def test_api_status_endpoint():
     """Test the /api/status endpoint."""
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
         ):
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = Mock()
@@ -103,24 +101,26 @@ def test_api_status_endpoint():
         assert False
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_api_cameras_endpoint - currently has assert False")
 def test_api_cameras_endpoint():
     """Test the /api/cameras endpoint."""
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config and server
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
-        ), patch("tapo_camera_mcp.web.server.TapoCameraServer") as mock_server_class:
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
+        ), patch("backend.server.DevicesMCPServer") as mock_server_class:
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = Mock()
 
             # Mock server instance
             mock_server_instance = AsyncMock()
-            mock_server_instance.list_cameras.return_value = {"cameras": ["camera1", "camera2"]}
+            mock_server_instance.list_cameras.return_value = [
+                {"name": "camera1"},
+                {"name": "camera2"},
+            ]
             mock_server_class.get_instance.return_value = mock_server_instance
 
             server = WebServer()
@@ -141,18 +141,17 @@ def test_api_cameras_endpoint():
         assert False
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_api_camera_stream_endpoint - currently has assert False")
 def test_api_camera_stream_endpoint():
     """Test the /api/cameras/{camera_id}/stream endpoint."""
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config and server
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
-        ), patch("tapo_camera_mcp.web.server.TapoCameraServer") as mock_server_class:
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
+        ), patch("backend.server.DevicesMCPServer") as mock_server_class:
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = Mock()
 
@@ -193,12 +192,12 @@ def test_api_camera_snapshot_endpoint():
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config and server
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
-        ), patch("tapo_camera_mcp.web.server.TapoCameraServer") as mock_server_class:
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
+        ), patch("backend.server.DevicesMCPServer") as mock_server_class:
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = Mock()
 
@@ -228,17 +227,16 @@ def test_api_camera_snapshot_endpoint():
         assert False
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_dashboard_pages - currently has assert False")
 def test_dashboard_pages():
     """Test dashboard page routes."""
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
         ):
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = Mock()
@@ -271,17 +269,16 @@ def test_dashboard_pages():
         assert False
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_error_handling - currently has assert False")
 def test_error_handling():
     """Test error handling for API and web routes."""
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
         ):
             mock_get_config.return_value = {"debug": False}
             mock_get_model.return_value = Mock()
@@ -307,17 +304,16 @@ def test_error_handling():
         assert False
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_middleware_functionality - currently has assert False")
 def test_middleware_functionality():
     """Test middleware functionality (CORS, security headers, etc.)."""
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config with CORS enabled
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
         ) as mock_get_model:
             mock_config = {"debug": False}
             mock_web_config = Mock()
@@ -360,17 +356,16 @@ def test_middleware_functionality():
         assert False
 
 
-@pytest.mark.skip(reason="# TODO: Fix test_template_rendering - currently has assert False")
 def test_template_rendering():
     """Test template rendering with context variables."""
     try:
         from fastapi.testclient import TestClient
 
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Mock config
-        with patch("tapo_camera_mcp.web.server.get_config") as mock_get_config, patch(
-            "tapo_camera_mcp.web.server.get_model"
+        with patch("backend.server.get_config") as mock_get_config, patch(
+            "backend.server.get_model"
         ) as mock_get_model:
             mock_config = {"debug": False}
             mock_web_config = Mock()
@@ -393,7 +388,7 @@ def test_template_rendering():
             # Check that template globals are available (this is harder to test directly,
             # but we can check that the response contains expected content)
             content = response.text.lower()
-            assert "test camera mcp" in content or "tapo camera mcp" in content
+            assert "devices mcp" in content
 
             assert True
     except Exception:

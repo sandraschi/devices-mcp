@@ -4,21 +4,22 @@ Cross-platform launcher for Tapo LLMs CLI
 This replaces the .exe file and works on Windows, macOS, and Linux
 """
 
-import sys
 import os
+import sys
 
 # Add src to path so we can import the module
 script_dir = os.path.dirname(__file__)
-src_path = os.path.join(script_dir, '..', 'src')
+src_path = os.path.join(script_dir, "..", "src")
 sys.path.insert(0, os.path.abspath(src_path))
 
 # Import and run the CLI
 try:
     from tapo_camera_mcp.cli import main
-    if __name__ == '__main__':
+
+    if __name__ == "__main__":
         main()
 except ImportError as e:
-    print(f"Error: Could not import tapo_camera_mcp.cli")
-    print(f"Make sure dependencies are installed: pip install -e .")
+    print("Error: Could not import tapo_camera_mcp.cli")
+    print("Make sure dependencies are installed: pip install -e .")
     print(f"Original error: {e}")
     sys.exit(1)

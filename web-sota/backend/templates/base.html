@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Devices MCP{% endblock %}</title>
+    <link rel="stylesheet" href="{{ request.url_for('static', path='/css/styles.css') }}?v=20260315">
+    <link rel="stylesheet" href="{{ request.url_for('static', path='/css/chatbot.css') }}?v=20260315">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🏠 Devices MCP</h2>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item {% if request.url.path == '/' %}active{% endif %}">
+                    <a href="{{ request.url_for('dashboard') }}">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/cameras' %}active{% endif %}">
+                    <a href="{{ request.url_for('cameras') }}">
+                        <i class="fas fa-video"></i>
+                        <span>Cameras</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/plex' %}active{% endif %}">
+                    <a href="/plex">
+                        <i class="fas fa-play"></i>
+                        <span>Plex Media</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path.startswith('/recordings') %}
+                active{% endif %}">
+                    <a href="{{ request.url_for('recordings') }}">
+                        <i class="fas fa-film"></i>
+                        <span>Recordings</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/energy' %}active{% endif %}">
+                    <a href="/energy">
+                        <i class="fas fa-bolt"></i>
+                        <span>Energy</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/logs' %}active{% endif %}">
+                    <a href="/logs">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Log Management</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/lighting' %}active{% endif %}">
+                    <a href="/lighting">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Lighting</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/robots' %}active{% endif %}">
+                    <a href="/robots">
+                        <i class="fas fa-robot"></i>
+                        <span>Robots</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/kitchen' %}active{% endif %}">
+                    <a href="/kitchen">
+                        <i class="fas fa-utensils"></i>
+                        <span>Kitchen</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/alarms' %}active{% endif %}">
+                    <a href="/alarms">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Alarms</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/ring' %}active{% endif %}">
+                    <a href="/ring">
+                        <i class="fas fa-door-open"></i>
+                        <span>Ring Doorbell</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/nest' %}active{% endif %}">
+                    <a href="/nest">
+                        <i class="fas fa-fire-extinguisher"></i>
+                        <span>Nest Protect</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/weather' %}active{% endif %}">
+                    <a href="/weather">
+                        <i class="fas fa-thermometer-half"></i>
+                        <span>Weather</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/health' %}active{% endif %}">
+                    <a href="/health">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>PC Health</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/human-health' %}active{% endif %}">
+                    <a href="/human-health">
+                        <i class="fas fa-user-md"></i>
+                        <span>Human Health</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/health-dashboard' %}active{% endif %}">
+                    <a href="/health-dashboard">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>Connection Health</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/alerts' %}active{% endif %}">
+                    <a href="/alerts">
+                        <i class="fas fa-bell"></i>
+                        <span>Alerts</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/onboarding' %}active{% endif %}">
+                    <a href="/onboarding">
+                        <i class="fas fa-magic"></i>
+                        <span>Device Setup</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path == '/settings' %}active{% endif %}">
+                    <a href="{{ request.url_for('settings') }}">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item {% if request.url.path.startswith('/help') %}
+                active{% endif %}">
+                    <a href="{{ request.url_for('help') }}">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Help</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="app-version">v1.0.0</div>
+        </nav>
+
+        <!-- Sidebar overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <button class="hamburger-btn" id="hamburger-btn" title="Toggle sidebar" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Search cameras, recordings..."
+                        aria-label="Search devices" title="Search for devices or recordings">
+                    <button type="button" id="search-button" class="search-button" title="Perform Search"
+                        aria-label="Search">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="user-menu">
+                    <button id="logger-button" class="icon-button" title="Open intelligent logger"
+                        aria-label="Open logger">
+                        <i class="fas fa-file-alt"></i>
+                    </button>
+                    <button id="help-button" class="icon-button" title="Open structured help assistant"
+                        aria-label="Open help">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                    <button id="theme-toggle" class="icon-button theme-toggle" title="Toggle theme"
+                        aria-label="Toggle dark/light theme">
+                        <i class="fas fa-sun theme-icon theme-icon-sun"></i>
+                        <i class="fas fa-moon theme-icon theme-icon-moon"></i>
+                    </button>
+                    <div class="user-profile-wrapper">
+                        <button class="user-profile" id="user-menu-trigger" aria-haspopup="true" aria-expanded="false"
+                            title="User Menu">
+                            <img src="{{ request.url_for('static', path='/img/placeholder.svg') }}" alt="User" class="avatar">
+                            <span id="username-display">Admin</span>
+                            <i class="fas fa-chevron-down profile-chevron"></i>
+                        </button>
+
+                        <!-- User dropdown menu -->
+                        <div class="user-dropdown" id="user-dropdown">
+                            <div class="user-dropdown-header">
+                                <strong id="dropdown-username">Admin</strong>
+                                <span class="user-role">Administrator</span>
+                            </div>
+                            <div class="user-dropdown-divider"></div>
+                            <a href="/settings" class="user-dropdown-item">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                            <button class="user-dropdown-item" onclick="handleLogout()">
+                                <i class="fas fa-sign-out-alt"></i> Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Logger Modal -->
+    <div id="logger-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="logger-modal-title">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="logger-modal-title">Live Logger Control Center</div>
+                    <p class="text-sm text-gray-500">AI-assisted triage, semantic filters, and streaming context for
+                        rapid incident response.</p>
+                </div>
+                <button class="modal-close" data-modal-close="logger-modal" aria-label="Close logger dialog">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="logger-layout">
+                    <aside class="logger-tools">
+                        <!-- Stats -->
+                        <div>
+                            <h4><i class="fas fa-chart-bar"></i> STATISTICS</h4>
+                            <div class="logger-stats">
+                                <div class="logger-stat">
+                                    <div class="logger-stat-value total" id="stat-total">0</div>
+                                    <div class="logger-stat-label">Total</div>
+                                </div>
+                                <div class="logger-stat">
+                                    <div class="logger-stat-value error" id="stat-errors">0</div>
+                                    <div class="logger-stat-label">Errors</div>
+                                </div>
+                                <div class="logger-stat">
+                                    <div class="logger-stat-value warn" id="stat-warnings">0</div>
+                                    <div class="logger-stat-label">Warnings</div>
+                                </div>
+                                <div class="logger-stat">
+                                    <div class="logger-stat-value info" id="stat-info">0</div>
+                                    <div class="logger-stat-label">Info</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Controls -->
+                        <div>
+                            <h4><i class="fas fa-sliders-h"></i> CONTROLS</h4>
+                            <div class="flex flex-col gap-2 text-sm text-slate-400">
+                                <label class="logger-tool-label">
+                                    <input type="checkbox" id="logger-ai-summary" checked class="accent-indigo">
+                                    <span>AI Synopsis (60s)</span>
+                                </label>
+                                <label class="logger-tool-label">
+                                    <input type="checkbox" id="logger-semantic-groups" checked class="accent-indigo">
+                                    <span>Cluster Events</span>
+                                </label>
+                                <label class="logger-tool-label">
+                                    <input type="checkbox" id="logger-anomaly-detector" class="accent-indigo">
+                                    <span>Anomaly Detection</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Filters -->
+                        <div>
+                            <h4><i class="fas fa-filter"></i> FILTERS</h4>
+                            <label for="logger-level-filter" class="sr-only">Filter by Level</label>
+                            <select id="logger-level-filter" title="Filter logs by level" class="logger-select">
+                                <option value="all">All Levels</option>
+                                <option value="debug">Debug</option>
+                                <option value="info">Info</option>
+                                <option value="warn">Warning</option>
+                                <option value="error">Error</option>
+                            </select>
+                            <input id="logger-query" type="text" class="logger-query-input"
+                                placeholder="Search logs...">
+                        </div>
+                        <!-- Actions -->
+                        <div>
+                            <h4><i class="fas fa-bolt"></i> ACTIONS</h4>
+                            <div class="logger-actions">
+                                <button id="logger-refresh" class="icon-button logger-button-secondary">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>Refresh</span>
+                                </button>
+                                <button id="logger-export" class="icon-button logger-button-success">
+                                    <i class="fas fa-download"></i>
+                                    <span>Export JSON</span>
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                    <section class="logger-panel">
+                        <!-- AI Synopsis (Dynamic) -->
+                        <div id="logger-synopsis" class="logger-synopsis">
+                            <div class="synopsis-header">
+                                <i class="fas fa-robot"></i> AI INSIGHTS
+                                <span class="synopsis-timestamp synopsis-meta"></span>
+                            </div>
+                            <div class="synopsis-content synopsis-body">
+                                Analyzing recent traffic for patterns...
+                            </div>
+                        </div>
+
+                        <!-- Anomalies (Dynamic) -->
+                        <div id="logger-anomalies" class="logger-anomalies"></div>
+                        <div class="logger-live-feed" id="logger-live-feed" aria-live="polite">
+                            <div class="logger-toolbar">
+                                <div class="logger-toolbar-status">
+                                    <span class="logger-feed-title">REAL-TIME FEED</span>
+                                    <div class="live-indicator ml-2"></div>
+                                    <span>LIVE</span>
+                                </div>
+                                <div class="logger-toolbar-status">
+                                    <div class="live-indicator"></div>
+                                    <span>Live</span>
+                                    <span class="ml-2" id="logger-last-update">--:--:--</span>
+                                </div>
+                            </div>
+                            <div class="logger-entries" id="logger-entries">
+                                <!-- Log entries injected via JS -->
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="help-modal-title">Guided Help & Knowledge Navigator</div>
+                    <p class="text-sm text-gray-500">Structured documentation, quick recipes, and cross-linking into
+                        Grafana, MCP, and edge orchestration.</p>
+                </div>
+                <button class="modal-close" data-modal-close="help-modal" aria-label="Close help dialog">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="help-layout">
+                    <aside class="help-nav">
+                        <button class="active" data-help-section="overview">
+                            <i class="fas fa-compass mr-2"></i> Overview
+                        </button>
+                        <button data-help-section="cameras">
+                            <i class="fas fa-video mr-2"></i> Cameras & Streams
+                        </button>
+                        <button data-help-section="sensors">
+                            <i class="fas fa-bolt mr-2"></i> Sensors & Energy
+                        </button>
+                        <button data-help-section="observability">
+                            <i class="fas fa-chart-line mr-2"></i> Observability
+                        </button>
+                        <button data-help-section="automation">
+                            <i class="fas fa-robot mr-2"></i> Automation & AI
+                        </button>
+                    </aside>
+                    <section class="help-content">
+                        <article class="help-section active" data-help-section="overview">
+                            <h4>Platform Overview</h4>
+                            <p>The Devices MCP unifies camera control, sensor telemetry, and observability in a
+                                single orchestration plane.</p>
+                            <ul>
+                                <li>Use <strong>Dashboard</strong> for real-time situational awareness.</li>
+                                <li>Edge agents forward metrics and logs for every node.</li>
+                                <li>Grafana dashboards and Alertmanager fast-track incident triage.</li>
+                            </ul>
+                            <h4>Quick Start</h4>
+                            <ul>
+                                <li>🎥 Add camera via MCP tool <code>add_camera</code>.</li>
+                                <li>🔌 Configure Tapo P115 credentials in <code>config.yaml</code>.</li>
+                                <li>DATA Import Grafana provisioning bundle for dashboards.</li>
+                            </ul>
+                        </article>
+                        <article class="help-section" data-help-section="cameras">
+                            <h4>Camera Operations</h4>
+                            <ul>
+                                <li>Start stream: <em>Dashboard → Start Stream</em> or API
+                                    <code>/api/cameras/{id}/stream</code>.
+                                </li>
+                                <li>Snapshots: <code>/api/cameras/{id}/snapshot</code> (returns JPEG).</li>
+                                <li>PTZ capabilities exposed via MCP tools <code>move_ptz</code>,
+                                    <code>save_ptz_preset</code>.
+                                </li>
+                                <li>Status metrics: Prometheus series <code>tapo_camera_status</code>,
+                                    <code>tapo_camera_stream_bitrate</code>.
+                                </li>
+                            </ul>
+                            <h4>Troubleshooting</h4>
+                            <ul>
+                                <li>Verify credentials in <code>config.yaml</code> and secrets backend.</li>
+                                <li>Check live logs for <em>stream pipeline</em> entries.</li>
+                                <li>Run chaos scenario CT-02 to validate auto-recovery.</li>
+                            </ul>
+                        </article>
+                        <article class="help-section" data-help-section="sensors">
+                            <h4>Sensor & Energy Telemetry</h4>
+                            <ul>
+                                <li>Tapo P115 ingestion via <code>tapo_p115</code> adapter using
+                                    <code>python-kasa</code>.
+                                </li>
+                                <li>REST endpoints: <code>/api/sensors/tapo-p115</code>, history with
+                                    <code>/history?hours=</code>.
+                                </li>
+                                <li>Grafana dashboard: <strong>Sensor Overview</strong> (power, costs, energy).</li>
+                                <li>Add Netatmo / Nest Protect ingestion through edge collectors.</li>
+                            </ul>
+                            <h4>Data Hygiene</h4>
+                            <ul>
+                                <li>Validate metrics in Prometheus: <code>tapo_p115_power_watts</code>,
+                                    <code>tapo_p115_daily_cost</code>.
+                                </li>
+                                <li>Rotate secrets using plan in <code>SECRETS_HARDENING_PLAN.md</code>.</li>
+                            </ul>
+                        </article>
+                        <article class="help-section" data-help-section="observability">
+                            <h4>Observability Stack</h4>
+                            <ul>
+                                <li>Prometheus federation config: <code>deploy/prometheus/prometheus.yaml</code>.</li>
+                                <li>Loki & Promtail shipping structured logs with semantic labels.</li>
+                                <li>CI validates configs via <code>observability</code> workflow job.</li>
+                                <li>Dashboards: Camera Overview, Sensor Overview, Logging Overview.</li>
+                                <li>Alerts: <code>CameraOffline</code>, <code>EdgeAgentMissedScrape</code> routed
+                                    through Alertmanager.</li>
+                            </ul>
+                            <h4>Runbooks</h4>
+                            <p>Refer to <code>RUNBOOKS.md</code> for restart procedures, scaling guidance, and
+                                escalation paths.</p>
+                        </article>
+                        <article class="help-section" data-help-section="automation">
+                            <h4>Automation & AI Assist</h4>
+                            <ul>
+                                <li>LLM summarization of logs and camera events via logger control center.</li>
+                                <li>Use chatbot personalities for specialized advice (Home Automation Expert, etc.).
+                                </li>
+                                <li>Refine prompts and responses with the Refine buttons.</li>
+                                <li>Document templates available under <code>docs/mcp-technical/</code>.</li>
+                            </ul>
+                            <h4>Integrations</h4>
+                            <ul>
+                                <li>Philips Hue lighting (18 bulbs, scenes)</li>
+                                <li>Netatmo weather station + Vienna external weather</li>
+                                <li>Ring doorbell & alarm (when authenticated)</li>
+                                <li>Vienna public alerts (GeoSphere, Meteoalarm)</li>
+                            </ul>
+                        </article>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ request.url_for('static', path='/js/main.js') }}?v=20260315"></script>
+    <script>
+        // Hamburger menu toggle
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const appContainer = document.querySelector('.app-container');
+
+        // Load sidebar state from localStorage
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (sidebarCollapsed && window.innerWidth > 768) {
+            appContainer.classList.add('sidebar-collapsed');
+        }
+
+        hamburgerBtn.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                // Mobile: toggle sidebar-open class
+                appContainer.classList.toggle('sidebar-open');
+            } else {
+                // Desktop: toggle sidebar-collapsed class
+                appContainer.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('sidebarCollapsed', appContainer.classList.contains('sidebar-collapsed'));
+            }
+        });
+
+        // Close sidebar on overlay click (mobile)
+        sidebarOverlay.addEventListener('click', () => {
+            appContainer.classList.remove('sidebar-open');
+        });
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                appContainer.classList.remove('sidebar-open');
+            }
+        });
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            const themeIcons = {
+                sun: themeToggle.querySelector('.theme-icon-sun'),
+                moon: themeToggle.querySelector('.theme-icon-moon')
+            };
+
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+            };
+
+            // Check for system preference on first load (if no stored preference)
+            const getSystemTheme = () => {
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    return 'dark';
+                }
+                return 'light';
+            };
+
+            // Load theme: stored preference > system preference > light
+            const storedTheme = localStorage.getItem('theme');
+            const initialTheme = storedTheme || getSystemTheme();
+            if (initialTheme === 'dark') {
+                applyTheme('dark');
+            }
+
+            // Listen for system theme changes (if no stored preference)
+            if (!storedTheme && window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                    if (!localStorage.getItem('theme')) {
+                        applyTheme(e.matches ? 'dark' : 'light');
+                    }
+                });
+            }
+
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                if (currentTheme === 'dark') {
+                    applyTheme('light');
+                } else {
+                    applyTheme('dark');
+                }
+            });
+        }
+
+        // Modal helpers
+        const body = document.body;
+        const openModal = (modal) => {
+            modal.classList.add('open');
+            body.classList.add('modal-open');
+        };
+
+        const closeModal = (modal) => {
+            modal.classList.remove('open');
+            if (!document.querySelector('.modal.open')) {
+                body.classList.remove('modal-open');
+            }
+        };
+
+        const registerModal = (id, triggerId) => {
+            const modal = document.getElementById(id);
+            const trigger = document.getElementById(triggerId);
+
+            if (!modal || !trigger) {
+                return null;
+            }
+
+            const closeButtons = modal.querySelectorAll('[data-modal-close]');
+
+            // Emit custom events
+            const openHandler = () => {
+                openModal(modal);
+                modal.dispatchEvent(new CustomEvent('modal:opened'));
+            };
+            const closeHandler = () => {
+                closeModal(modal);
+                modal.dispatchEvent(new CustomEvent('modal:closed'));
+            };
+
+            trigger.addEventListener('click', openHandler);
+            closeButtons.forEach(btn => btn.addEventListener('click', closeHandler));
+
+            modal.addEventListener('click', (evt) => {
+                if (evt.target === modal) {
+                    closeHandler();
+                }
+            });
+
+            return modal;
+        };
+
+        const loggerModal = registerModal('logger-modal', 'logger-button');
+        const helpModal = registerModal('help-modal', 'help-button');
+
+        window.addEventListener('keydown', (evt) => {
+            if (evt.key === 'Escape') {
+                document.querySelectorAll('.modal.open').forEach(modal => closeModal(modal));
+            }
+        });
+
+        // Utility function
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Logger modal data
+        const loggerFeed = document.getElementById('logger-live-feed');
+        const levelFilter = document.getElementById('logger-level-filter');
+        const loggerQuery = document.getElementById('logger-query');
+        const loggerRefresh = document.getElementById('logger-refresh');
+        const loggerExport = document.getElementById('logger-export');
+        const loggerAiSummary = document.getElementById('logger-ai-summary');
+        const loggerSemanticGroups = document.getElementById('logger-semantic-groups');
+        const loggerAnomalyDetector = document.getElementById('logger-anomaly-detector');
+        const loggerSynopsis = document.getElementById('logger-synopsis');
+        const loggerAnomalies = document.getElementById('logger-anomalies');
+
+        let currentLogs = [];
+        let aiSynopsisInterval = null;
+        let lastSynopsisTime = null;
+
+        const fetchLogs = async () => {
+            try {
+                const level = levelFilter.value === 'all' ? null : levelFilter.value;
+                const search = loggerQuery.value.trim() || null;
+                const params = new URLSearchParams();
+                if (level) params.append('level', level.toUpperCase());
+                if (search) params.append('search', search);
+                params.append('lines', '200');
+
+                const response = await fetch(`/api/logs?${params.toString()}`);
+                const data = await response.json();
+
+                if (data.logs && Array.isArray(data.logs)) {
+                    currentLogs = data.logs;
+                } else {
+                    currentLogs = [];
+                }
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+                currentLogs = [];
+            }
+        };
+
+        const renderLogs = async () => {
+            const entriesContainer = document.getElementById('logger-entries') || loggerFeed;
+            entriesContainer.innerHTML = '';
+
+            // Update stats
+            const stats = { total: currentLogs.length, info: 0, warn: 0, error: 0 };
+            currentLogs.forEach(log => {
+                const lvl = (log.level || '').toLowerCase();
+                if (lvl === 'info') stats.info++;
+                else if (lvl === 'warning' || lvl === 'warn') stats.warn++;
+                else if (lvl === 'error' || lvl === 'critical') stats.error++;
+            });
+            document.getElementById('stat-total').textContent = stats.total;
+            document.getElementById('stat-info').textContent = stats.info;
+            document.getElementById('stat-warnings').textContent = stats.warn;
+            document.getElementById('stat-errors').textContent = stats.error;
+
+            // Update timestamp
+            const lastUpdate = document.getElementById('logger-last-update');
+            if (lastUpdate) {
+                lastUpdate.textContent = new Date().toLocaleTimeString('de-AT');
+            }
+
+            if (currentLogs.length === 0) {
+                entriesContainer.innerHTML = `
+                    <div id="logger-empty-state" class="logger-empty-state">
+                        <i class="fas fa-terminal logger-empty-icon"></i>
+                        No logs found matching current filters.
+                    </div>
+                `;
+                return;
+            }
+
+            let logsToRender = currentLogs;
+
+            // Apply clustering if enabled
+            if (loggerSemanticGroups && loggerSemanticGroups.checked) {
+                try {
+                    const response = await fetch('/api/logs/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            logs: currentLogs,
+                            enable_clustering: true,
+                            enable_anomaly_detection: false,
+                            enable_ai_synopsis: false,
+                        }),
+                    });
+                    const data = await response.json();
+                    if (data.clustered) {
+                        logsToRender = data.clustered;
+                    }
+                } catch (error) {
+                    console.error('Error clustering logs:', error);
+                }
+            }
+
+            // Render logs (clustered or normal)
+            let lineNum = 1;
+            logsToRender.forEach(entry => {
+                const row = document.createElement('div');
+
+                if (entry.type === 'cluster') {
+                    // Render cluster header
+                    row.className = 'logger-entry clustered';
+                    row.innerHTML = `
+                        <span class="line-num"></span>
+                        <div class="cluster-info">
+                            <div class="cluster-header">
+                                <i class="fas fa-layer-group"></i> Pattern: ${entry.pattern.substring(0, 60)}${entry.pattern.length > 60 ? '...' : ''}
+                                <span class="cluster-count">(${entry.count}×)</span>
+                            </div>
+                        </div>
+                    `;
+                    entriesContainer.appendChild(row);
+
+                    // Render first few entries from cluster
+                    entry.entries.slice(0, 3).forEach(clusterEntry => {
+                        const clusterRow = document.createElement('div');
+                        clusterRow.className = 'logger-entry';
+                        const timestamp = (clusterEntry.timestamp || '').split(' ')[1] || clusterEntry.timestamp || '';
+                        const level = (clusterEntry.level || 'INFO').toLowerCase();
+                        const message = clusterEntry.message || '';
+                        const loggerName = (clusterEntry.logger || '').split('.').pop() || '';
+                        clusterRow.innerHTML = `
+                            <span class="line-num">${lineNum++}</span>
+                            <span class="timestamp">${timestamp}</span>
+                            <span class="level ${level}">${level}</span>
+                            <div class="message"><span class="logger-name">[${loggerName}]</span>${escapeHtml(message)}</div>
+                        `;
+                        entriesContainer.appendChild(clusterRow);
+                    });
+
+                    if (entry.entries.length > 3) {
+                        const moreRow = document.createElement('div');
+                        moreRow.className = 'cluster-more';
+                        moreRow.textContent = `↳ ${entry.entries.length - 3} more similar entries...`;
+                        entriesContainer.appendChild(moreRow);
+                    }
+                } else {
+                    // Render normal log entry
+                    const timestamp = (entry.timestamp || '').split(' ')[1] || entry.timestamp || '';
+                    const level = (entry.level || 'INFO').toLowerCase();
+                    const message = entry.message || '';
+                    const loggerName = (entry.logger || '').split('.').pop() || '';
+
+                    // Add level class for color coding
+                    row.className = `logger-entry level-${level}`;
+
+                    row.innerHTML = `
+                        <span class="line-num">${lineNum++}</span>
+                        <span class="timestamp">${timestamp}</span>
+                        <span class="level ${level}">${level}</span>
+                        <div class="message"><span class="logger-name">[${loggerName}]</span>${escapeHtml(message)}</div>
+                    `;
+                    entriesContainer.appendChild(row);
+                }
+            });
+
+            // Scroll to bottom
+            entriesContainer.scrollTop = entriesContainer.scrollHeight;
+
+            // Render anomalies if enabled
+            if (loggerAnomalyDetector && loggerAnomalyDetector.checked) {
+                try {
+                    const response = await fetch('/api/logs/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            logs: currentLogs,
+                            enable_clustering: false,
+                            enable_anomaly_detection: true,
+                            enable_ai_synopsis: false,
+                        }),
+                    });
+                    const data = await response.json();
+                    if (data.anomalies && data.anomalies.length > 0) {
+                        loggerAnomalies.style.display = 'block';
+                        loggerAnomalies.innerHTML = '<div class="anomalies-header"><i class="fas fa-exclamation-triangle"></i> Detected Anomalies</div>';
+                        data.anomalies.forEach(anomaly => {
+                            const anomalyDiv = document.createElement('div');
+                            anomalyDiv.className = `anomaly-item ${anomaly.severity || 'high'}`;
+                            anomalyDiv.innerHTML = `
+                                <div class="anomaly-header">
+                                    <i class="fas fa-${anomaly.severity === 'high' ? 'exclamation-circle' : anomaly.severity === 'medium' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                                    ${anomaly.type.replace(/_/g, ' ').toUpperCase()}
+                                    ${anomaly.count ? `(${anomaly.count})` : ''}
+                                </div>
+                                <div class="anomaly-message">${anomaly.message}</div>
+                            `;
+                            loggerAnomalies.appendChild(anomalyDiv);
+                        });
+                    } else {
+                        loggerAnomalies.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error detecting anomalies:', error);
+                    loggerAnomalies.style.display = 'none';
+                }
+            } else {
+                loggerAnomalies.style.display = 'none';
+            }
+        };
+
+        const loadAndRenderLogs = async () => {
+            loggerRefresh.classList.add('spin');
+            await fetchLogs();
+            await renderLogs();
+            setTimeout(() => loggerRefresh.classList.remove('spin'), 300);
+        };
+
+        const generateAiSynopsis = async () => {
+            if (!loggerAiSummary || !loggerAiSummary.checked) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/logs/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        logs: currentLogs,
+                        enable_clustering: false,
+                        enable_anomaly_detection: false,
+                        enable_ai_synopsis: true,
+                    }),
+                });
+                const data = await response.json();
+                if (data.synopsis) {
+                    loggerSynopsis.style.display = 'block';
+                    loggerSynopsis.querySelector('.synopsis-content').textContent = data.synopsis;
+                    const now = new Date();
+                    loggerSynopsis.querySelector('.synopsis-timestamp').textContent =
+                        `Updated ${now.toLocaleTimeString()}`;
+                    lastSynopsisTime = now;
+                } else {
+                    loggerSynopsis.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error generating AI synopsis:', error);
+                loggerSynopsis.style.display = 'none';
+            }
+        };
+
+        // Initial load
+        loadAndRenderLogs();
+
+        // Auto-refresh every 5 seconds when modal is open
+        let logRefreshInterval = null;
+        loggerModal.addEventListener('modal:opened', () => {
+            logRefreshInterval = setInterval(loadAndRenderLogs, 5000);
+
+            // Generate initial AI synopsis if enabled
+            if (loggerAiSummary && loggerAiSummary.checked) {
+                generateAiSynopsis();
+                // Generate synopsis every 60 seconds
+                aiSynopsisInterval = setInterval(generateAiSynopsis, 60000);
+            }
+        });
+        loggerModal.addEventListener('modal:closed', () => {
+            if (logRefreshInterval) {
+                clearInterval(logRefreshInterval);
+                logRefreshInterval = null;
+            }
+            if (aiSynopsisInterval) {
+                clearInterval(aiSynopsisInterval);
+                aiSynopsisInterval = null;
+            }
+        });
+
+        // Handle checkbox changes
+        if (loggerAiSummary) {
+            loggerAiSummary.addEventListener('change', () => {
+                if (loggerAiSummary.checked) {
+                    generateAiSynopsis();
+                    if (aiSynopsisInterval) {
+                        clearInterval(aiSynopsisInterval);
+                    }
+                    aiSynopsisInterval = setInterval(generateAiSynopsis, 60000);
+                } else {
+                    loggerSynopsis.style.display = 'none';
+                    if (aiSynopsisInterval) {
+                        clearInterval(aiSynopsisInterval);
+                        aiSynopsisInterval = null;
+                    }
+                }
+            });
+        }
+
+        if (loggerSemanticGroups) {
+            loggerSemanticGroups.addEventListener('change', () => {
+                renderLogs();
+            });
+        }
+
+        if (loggerAnomalyDetector) {
+            loggerAnomalyDetector.addEventListener('change', () => {
+                renderLogs();
+            });
+        }
+
+
+        levelFilter.addEventListener('change', loadAndRenderLogs);
+
+        // Debounce search input
+        let searchTimeout = null;
+        loggerQuery.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadAndRenderLogs, 500);
+        });
+
+        loggerRefresh.addEventListener('click', loadAndRenderLogs);
+
+        loggerExport.addEventListener('click', () => {
+            if (currentLogs.length === 0) {
+                alert('No logs to export');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(currentLogs, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `tapo-logger-export-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Help modal navigation
+        const helpNavButtons = document.querySelectorAll('.help-nav button');
+        const helpSections = document.querySelectorAll('.help-section');
+
+        helpNavButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                helpNavButtons.forEach(btn => btn.classList.remove('active'));
+                helpSections.forEach(section => section.classList.remove('active'));
+
+                const sectionId = button.getAttribute('data-help-section');
+                button.classList.add('active');
+                const section = document.querySelector(`.help-section[data-help-section="${sectionId}"]`);
+                if (section) section.classList.add('active');
+            });
+        });
+
+        // User dropdown menu
+        const userMenuTrigger = document.getElementById('user-menu-trigger');
+        const userDropdown = document.getElementById('user-dropdown');
+
+        if (userMenuTrigger && userDropdown) {
+            userMenuTrigger.addEventListener('click', function (e) {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!userMenuTrigger.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // Load auth status and update UI
+        async function loadAuthStatus() {
+            try {
+                const response = await fetch('/api/auth/status');
+                const data = await response.json();
+
+                const usernameDisplay = document.getElementById('username-display');
+                const dropdownUsername = document.getElementById('dropdown-username');
+
+                if (usernameDisplay && data.user) {
+                    usernameDisplay.textContent = data.user;
+                }
+                if (dropdownUsername && data.user) {
+                    dropdownUsername.textContent = data.user;
+                }
+            } catch (e) {
+                console.warn('Failed to load auth status:', e);
+            }
+        }
+
+        // Logout handler
+        async function handleLogout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (e) {
+                console.error('Logout error:', e);
+                window.location.href = '/login';
+            }
+        }
+
+        // Load auth status on page load
+        loadAuthStatus();
+    </script>
+    <script src="{{ request.url_for('static', path='/js/chatbot.js') }}?v=20260315"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

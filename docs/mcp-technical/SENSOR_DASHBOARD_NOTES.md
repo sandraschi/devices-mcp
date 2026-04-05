@@ -14,4 +14,3 @@ Action items:
    names.
 2. Add Nest Protect and Netatmo panels once ingestion adapters are wired.
 3. Surface Promtail/Loki log count panels for anomaly detection.
-

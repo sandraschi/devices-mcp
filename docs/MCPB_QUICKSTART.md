@@ -1,6 +1,6 @@
 # MCPB Quick Start Guide
 
-**Tapo Camera MCP Server - MCPB Packaging**
+**Devices MCP Server - MCPB Packaging**
 
 ---
 
@@ -19,7 +19,7 @@
 
 ### Install from MCPB Package
 
-1. **Download** the latest `.mcpb` package from [GitHub Releases](https://github.com/sandraschi/tapo-camera-mcp/releases)
+1. **Download** the latest `.mcpb` package from [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases)
 2. **Drag** the file to Claude Desktop
 3. **Configure** when prompted:
    - Tapo Camera IP Address (optional)
@@ -62,7 +62,7 @@ mcpb validate manifest.json
 .\scripts\build-mcpb-package.ps1 -NoSign
 
 # 3. Verify output
-# Package created: dist/tapo-camera-mcp.mcpb (~280KB)
+# Package created: dist/devices-mcp.mcpb (~280KB)
 ```
 
 ---
@@ -75,13 +75,13 @@ Located in project root. Defines build settings:
 
 ```json
 {
-  "name": "tapo-camera-mcp",
+  "name": "devices-mcp",
   "version": "1.0.0",
   "mcp": {
-    "version": "2.12.0",
+    "version": "3.1.0",
     "server": {
       "command": "python",
-      "args": ["-m", "tapo_camera_mcp.server_v2", "--direct"]
+      "args": ["-m", "devices_mcp.server_v2", "--direct"]
     }
   }
 }
@@ -94,11 +94,11 @@ Located in project root. Defines runtime behavior:
 ```json
 {
   "manifest_version": "0.2",
-  "name": "tapo-camera-mcp",
+  "name": "devices-mcp",
   "version": "1.0.0",
   "server": {
     "type": "python",
-    "entry_point": "src/tapo_camera_mcp/server_v2.py"
+    "entry_point": "src/devices_mcp/server_v2.py"
   },
   "user_config": {
     "tapo_camera_host": { ... },
@@ -157,7 +157,7 @@ Located at `.github/workflows/build-mcpb.yml`:
 
 | Property | Value |
 |----------|-------|
-| **Name** | tapo-camera-mcp |
+| **Name** | devices-mcp |
 | **Version** | 1.0.0 |
 | **Size** | ~280KB |
 | **Files** | 134 source files |
@@ -209,13 +209,13 @@ mcpb pack . dist/test.mcpb --verbose
 
 Check logs:
 ```
-%APPDATA%\Claude\logs\mcp-server-tapo-camera-mcp.log
+%APPDATA%\Claude\logs\mcp-server-devices-mcp.log
 ```
 
 Common fixes:
 1. Ensure Python 3.10+ is installed
 2. Check PYTHONPATH in manifest.json
-3. Verify FastMCP >= 2.12.0
+3. Verify FastMCP >= 3.1.0
 4. Check camera configuration
 
 ---
@@ -278,12 +278,3 @@ Our MCPB implementation:
 ---
 
 *For detailed MCPB documentation, see [docs/mcpb-packaging/](docs/mcpb-packaging/)*
-
-
-
-
-
-
-
-
-

@@ -1,5 +1,5 @@
 """
-Test module imports for the Tapo Camera MCP server.
+Test module imports for the Devices MCP server.
 """
 
 import os
@@ -16,10 +16,10 @@ def test_imports():
     """Test that all modules can be imported successfully."""
     try:
         # Test core imports
-        from tapo_camera_mcp import TapoCameraMCP
-        from tapo_camera_mcp.core.models import TapoCameraConfig
-        from tapo_camera_mcp.core.server import TapoCameraServer
-        from tapo_camera_mcp.exceptions import TapoCameraError
+        from devices_mcp import TapoCameraMCP
+        from devices_mcp.core.models import TapoCameraConfig
+        from devices_mcp.core.server import TapoCameraServer
+        from devices_mcp.exceptions import TapoCameraError
 
         # Test that imports work
         assert TapoCameraMCP is not None

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from tapo_camera_mcp.llm.providers import (
+from devices_mcp.llm.providers import (
     LMStudioProvider,
     OllamaProvider,
     OpenAIProvider,

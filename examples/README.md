@@ -1,6 +1,6 @@
 # DINOv3 Integration Examples
 
-This directory contains examples for using the DINOv3 integration with the Tapo Camera MCP server.
+This directory contains examples for using the DINOv3 integration with the Devices MCP server.
 
 ## Prerequisites
 
@@ -16,13 +16,13 @@ This directory contains examples for using the DINOv3 integration with the Tapo 
 ### 1. Basic Feature Extraction
 
 ```python
-from tapo_camera_mcp.vision import DINOv3Processor
+from devices_mcp.vision import DINOv3Processor
 import asyncio
 
 async def main():
     # Initialize the processor
     processor = DINOv3Processor()
-    
+
     # Extract features from an image
     features = await processor.extract_features("path/to/your/image.jpg")
     print(f"Feature vector shape: {features.shape}")
@@ -33,21 +33,21 @@ asyncio.run(main())
 ### 2. Find Similar Images
 
 ```python
-from tapo_camera_mcp.vision import DINOv3Processor
+from devices_mcp.vision import DINOv3Processor
 import asyncio
 from pathlib import Path
 
 async def main():
     # Initialize the processor
     processor = DINOv3Processor()
-    
+
     # Find similar images
     similar = await processor.find_similar(
         query_image="path/to/query.jpg",
         image_paths=list(Path("path/to/search/dir").glob("*.jpg")),
         top_k=5
     )
-    
+
     # Print results
     for i, item in enumerate(similar, 1):
         print(f"{i}. {item['path']} (similarity: {item['similarity']:.4f})")
@@ -58,7 +58,7 @@ asyncio.run(main())
 ### 3. Using with TapoCameraServer
 
 ```python
-from tapo_camera_mcp import TapoCameraServer
+from devices_mcp import TapoCameraServer
 import asyncio
 
 async def main():
@@ -68,13 +68,13 @@ async def main():
         "username": "your_username",
         "password": "your_password"
     })
-    
+
     # Capture and analyze an image with DINOv3
     result = await server.capture_still({
         "analyze": True,
         "advanced_analysis": True  # Enable DINOv3 analysis
     })
-    
+
     print("Analysis results:", result)
 
 asyncio.run(main())

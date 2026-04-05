@@ -20,7 +20,7 @@ A production-ready security monitoring platform with dual MCP architecture: serv
 **This platform serves two complementary roles:**
 
 #### **🎥 Role 1: Individual MCP Servers**
-- **Tapo Camera MCP**: Standalone TP-Link camera control
+- **Devices MCP**: Standalone TP-Link camera control
 - **USB Webcam MCP**: Direct webcam management
 - **Ring MCP**: Doorbell/camera security integration
 - **Nest Protect MCP**: Smoke/CO detector monitoring
@@ -33,22 +33,28 @@ A production-ready security monitoring platform with dual MCP architecture: serv
 - **Real-time Monitoring**: Live status from cameras + sensors + alarms
 
 ### **🏆 MAJOR ACHIEVEMENT - PRODUCTION READY!**
+- **✅ Robotics Integration**: Dreame D20 Pro (Cloud) and Yahboom ROS 2 (Mock) (WORKING)
+- **✅ Fleet Expansion**: Multi-camera Tapo support (Kitchen + Living Room) (WORKING)
+- **✅ Windows USB Camera Server**: Integrated local USB camera server on port 10715 (WORKING)
 - **✅ Live Web Dashboard**: Working at `localhost:7777`
 - **✅ USB Webcam Support**: Auto-detection and monitoring (WORKING)
 - **✅ Claude Desktop Integration**: MCP server loads successfully (WORKING)
-- **🔄 Tapo Cameras**: Authentication resolution needed (HIGH PRIORITY)
+- **✅ Repository Cleanup**: Massive 270+ linting cleanup across 160+ files (WORKING)
+- **✅ Hardware Research**: Added BETAFPV Pavo35 and Insta360 X5 documentation (WORKING)
 
 ## 🎯 **CORE REQUIREMENTS - CURRENT STATUS**
 
 ### **1. Camera Support**
-- **🔄 Tapo Cameras**: TP-Link Tapo series (authentication pending)
+- **✅ Tapo Cameras**: Multi-camera support with ONVIF bypass (WORKING)
 - **✅ USB Webcams**: Auto-detected and monitored (WORKING)
-- **📋 Ring Cameras**: Experimental Ring device integration (planned)
+- **✅ Robotics**: Dreame D20 Pro and Yahboom ROS 2 (WORKING)
 - **📋 Furbo Cameras**: Pet camera support (planned)
 
 ### **2. MCP Integration**
-- **✅ FastMCP 2.12.0 Compliance**: Full protocol compatibility (WORKING)
-- **✅ Tool Discovery**: 52 tools registered and working (WORKING)
+- **✅ FastMCP 3.1 Compliance**: Full protocol compatibility, sampling, skills, prompts (WORKING)
+- **✅ Tool Discovery**: 52+ tools registered and working (WORKING)
+- **✅ Skills provider**: Cursor/Codex skills directories exposed as MCP resources (WORKING)
+- **✅ Prompts**: device_status, list_cameras registered for LLM use (WORKING)
 - **✅ Claude Desktop Integration**: Server loads successfully (WORKING)
 - **✅ Real-time Communication**: Live camera data through MCP (WORKING)
 
@@ -84,14 +90,14 @@ python start.py dashboard
 # Required Software (Already Working)
 ✅ Python 3.8+ (installed)
 ✅ OpenCV (for webcam support) (working)
-✅ FastMCP 2.12.0 (working)
+✅ FastMCP 3.1 (working)
 ✅ USB webcam (auto-detected)
 🔄 Tapo cameras (pending auth resolution)
 ```
 
 ### **Installation** (Already Done)
-git clone https://github.com/yourusername/tapo-camera-mcp.git
-cd tapo-camera-mcp
+git clone https://github.com/yourusername/devices-mcp.git
+cd devices-mcp
 
 # 2. Install dependencies
 pip install -e .
@@ -107,16 +113,16 @@ cp config.example.yaml config.yaml
 #### **Option 1: MCP Server Only (for Claude Desktop)**
 ```bash
 # Start MCP server
-python -m tapo_camera_mcp.server_v2 --direct
+python -m devices_mcp.server_v2 --direct
 
 # With debug logging
-python -m tapo_camera_mcp.server_v2 --direct --debug
+python -m devices_mcp.server_v2 --direct --debug
 ```
 
 #### **Option 2: Web Dashboard Only**
 ```bash
 # Start web dashboard
-python -m tapo_camera_mcp.web.server
+python -m devices_mcp.web.server
 
 # Dashboard available at: http://localhost:7777
 ```
@@ -124,10 +130,10 @@ python -m tapo_camera_mcp.web.server
 #### **Option 3: Both Services (Recommended)**
 ```bash
 # Terminal 1: Start MCP server
-python -m tapo_camera_mcp.server_v2 --direct
+python -m devices_mcp.server_v2 --direct
 
 # Terminal 2: Start web dashboard
-python -m tapo_camera_mcp.web.server
+python -m devices_mcp.web.server
 ```
 
 ### **Quick Test with USB Webcam**
@@ -136,7 +142,7 @@ python -m tapo_camera_mcp.web.server
 python test_webcam_streaming.py
 
 # Then start dashboard
-python -m tapo_camera_mcp.web.server
+python -m devices_mcp.web.server
 ```
 
 ## 📺 **VIDEO STREAMING FEATURES**
@@ -170,10 +176,9 @@ python -m tapo_camera_mcp.web.server
 - **Tool System**: Modular MCP tool architecture
 
 ### **Frontend Architecture**
-- **Template Engine**: Jinja2 for server-side rendering
-- **JavaScript**: Vanilla JS for dynamic functionality
-- **CSS Framework**: Custom responsive design
-- **Real-time Updates**: AJAX for live data
+- **Target stack (web-sota standard):** React + Vite + Tailwind CSS + shadcn/ui. See [Web SOTA Frontend Standards](standards/WEB_SOTA_FRONTEND_STANDARDS.md).
+- **Current/legacy:** Jinja2 SSR + vanilla JS + custom CSS (to be migrated to the target stack).
+- **Real-time updates:** Prefer React state + fetch/SSE/WebSocket; AJAX acceptable in legacy pages.
 
 ### **API Endpoints**
 ```
@@ -189,6 +194,18 @@ GET  /api/status                # Server status
 - **PTZ Controls**: 7 tools (move, position, presets, home, stop)
 - **Media Operations**: 4 tools (capture, recording, status)
 - **System Management**: 8 tools (info, reboot, logs, settings)
+
+## 🔄 **STABILITY & RELIABILITY STANDARDS (v1.18.1)**
+
+### **Zero Stdout Pollution**
+- **CRITICAL**: No plain-text `print()` or `sys.stdout.write()` allowed in production code.
+- **Protocol Integrity**: All JSON-RPC communication MUST be the only data on `stdout`.
+- **Diagnostic Redirection**: All startup banners, progress bars, and debug logs MUST go to `stderr`.
+
+### **Asyncio Context Safety**
+- **Loop Management**: Use `@mcp.run()` or similar context managers that handle loop creation safely.
+- **Thread Safety**: Ensure no conflicting event loops are started in the same thread.
+- **Graceful Shutdown**: All async resources must be closed properly on exit.
 
 ## 📊 **PERFORMANCE REQUIREMENTS**
 
@@ -221,13 +238,13 @@ GET  /api/status                # Server status
 ### **Development Mode**
 ```bash
 # Local development with hot reload
-python -m tapo_camera_mcp.web.server --reload
+python -m devices_mcp.web.server --reload
 ```
 
 ### **Production Mode**
 ```bash
 # Production deployment with uvicorn
-uvicorn tapo_camera_mcp.web.server:app --host 0.0.0.0 --port 7777
+uvicorn devices_mcp.web.server:app --host 0.0.0.0 --port 7777
 ```
 
 ### **Docker Deployment**
@@ -238,14 +255,14 @@ COPY . /app
 WORKDIR /app
 RUN pip install -e .
 EXPOSE 7777
-CMD ["python", "-m", "tapo_camera_mcp.web.server"]
+CMD ["python", "-m", "devices_mcp.web.server"]
 ```
 
 ## 📱 **BROWSER COMPATIBILITY**
 
 ### **Supported Browsers**
 - ✅ **Chrome/Chromium**: Full support
-- ✅ **Firefox**: Full support  
+- ✅ **Firefox**: Full support
 - ✅ **Safari**: Full support
 - ✅ **Edge**: Full support
 - ✅ **Mobile Browsers**: Responsive design
@@ -273,6 +290,10 @@ CMD ["python", "-m", "tapo_camera_mcp.web.server"]
 ## 🔮 **FUTURE ROADMAP**
 
 ### **Phase 1 (Current)**
+- ✅ Windows USB camera server integration (Port 10715)
+- ✅ Massive repository linting cleanup (270+ lints, 160+ files)
+- ✅ Drone Research: BETAFPV Pavo35 documented
+- ✅ Camera Research: Insta360 X5 connectivity guide added
 - ✅ Real video streaming implementation
 - ✅ USB webcam support
 - ✅ Tapo camera integration
@@ -311,9 +332,6 @@ docs/
 
 ---
 
-**Last Updated**: December 2024  
-**Version**: 1.0.0  
+**Last Updated**: March 2026
+**Version**: 1.20.0
 **Status**: Production Ready ✅
-
-
-

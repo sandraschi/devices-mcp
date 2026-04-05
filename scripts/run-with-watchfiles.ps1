@@ -1,5 +1,5 @@
-# Run Tapo Camera MCP WebApp with Watchfiles Crashproofing
-# This script starts the Tapo Camera MCP WebApp with automatic crash recovery
+# Run Devices MCP WebApp with Watchfiles Crashproofing
+# This script starts the Devices MCP WebApp with automatic crash recovery
 
 param(
     [int]$MaxRestarts = 10,
@@ -11,7 +11,7 @@ param(
     [switch]$Test
 )
 
-Write-Host "STARTING Tapo Camera MCP WebApp with Watchfiles Crashproofing" -ForegroundColor Green
+Write-Host "STARTING Devices MCP WebApp with Watchfiles Crashproofing" -ForegroundColor Green
 Write-Host "=================================================================" -ForegroundColor Cyan
 
 # Set environment variables
@@ -48,4 +48,4 @@ if ($Test) {
 }
 
 Write-Host ""
-Write-Host "👋 Tapo Camera MCP WebApp watchfiles runner stopped" -ForegroundColor Green
+Write-Host "👋 Devices MCP WebApp watchfiles runner stopped" -ForegroundColor Green

@@ -24,7 +24,7 @@ def force_execute_server_code():
         logger.info("🔥 FORCING SERVER CODE EXECUTION...")
 
         # Import and execute server initialization code
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         # Execute the server class methods that aren't normally called
         logger.info("Testing server class structure...")
@@ -64,9 +64,9 @@ def force_execute_camera_code():
     try:
         logger.info("📷 FORCING CAMERA CODE EXECUTION...")
 
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraFactory, CameraType
-        from tapo_camera_mcp.camera.manager import CameraManager
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraFactory, CameraType
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.webcam import WebCamera
 
         # Execute camera manager code
         CameraManager()
@@ -106,12 +106,12 @@ def force_execute_tools_code():
     try:
         logger.info("🔧 FORCING TOOLS CODE EXECUTION...")
 
-        from tapo_camera_mcp.tools.discovery import discover_tools
-        from tapo_camera_mcp.tools.system.help_tool import HelpTool
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.system.help_tool import HelpTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Execute tools discovery code
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
         logger.info(f"✅ Tools discovery executed: {len(tools)} tools")
 
         # Execute StatusTool code
@@ -145,7 +145,7 @@ def force_execute_validation_code():
     try:
         logger.info("✅ FORCING VALIDATION CODE EXECUTION...")
 
-        from tapo_camera_mcp.validation import (
+        from devices_mcp.validation import (
             ToolValidationError,
             validate_camera_name,
             validate_credentials,
@@ -182,7 +182,7 @@ def force_execute_models_code():
     try:
         logger.info("📊 FORCING MODELS CODE EXECUTION...")
 
-        from tapo_camera_mcp.core.models import (
+        from devices_mcp.core.models import (
             CameraModel,
             CameraStatus,
             PTZPosition,
@@ -226,10 +226,10 @@ def test_webcam_connected_to_server():
     try:
         logger.info("🔗 TESTING WEBCAM-SERVER CONNECTION...")
 
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.manager import CameraManager
-        from tapo_camera_mcp.camera.webcam import WebCamera
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.webcam import WebCamera
+        from devices_mcp.core.server import TapoCameraServer
 
         # Create camera manager
         CameraManager()

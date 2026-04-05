@@ -1,0 +1,263 @@
+/* Plex Media Page Styles */
+
+.plex-dashboard {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.plex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.plex-title h1 {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.plex-icon {
+    font-size: 2.5rem;
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px var(--card-shadow);
+}
+
+.status-pill {
+    background: linear-gradient(135deg, var(--success-green), var(--success-dark));
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px var(--card-shadow);
+}
+
+.status-pill i {
+    font-size: 1rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.section-title i {
+    color: var(--primary-blue);
+    font-size: 1.25rem;
+}
+
+.media-scroller {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted-text) transparent;
+}
+
+.media-scroller::-webkit-scrollbar {
+    height: 6px;
+}
+
+.media-scroller::-webkit-scrollbar-track {
+    background: var(--card-bg);
+    border-radius: 3px;
+}
+
+.media-scroller::-webkit-scrollbar-thumb {
+    background: var(--muted-text);
+    border-radius: 3px;
+}
+
+.media-scroller::-webkit-scrollbar-thumb:hover {
+    background: var(--text-color);
+}
+
+.media-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px var(--card-shadow);
+    transition: all 0.3s ease;
+    min-width: 160px;
+    cursor: pointer;
+}
+
+.media-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px var(--card-shadow);
+    border-color: var(--primary-blue);
+}
+
+.poster-wrapper {
+    position: relative;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+}
+
+.poster-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.media-card:hover .poster-image {
+    transform: scale(1.05);
+}
+
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-blue), var(--primary-blue-dark));
+    transition: width 0.3s ease;
+}
+
+.playing-indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: var(--success-green);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    box-shadow: 0 2px 8px var(--card-shadow);
+}
+
+.playing-indicator i {
+    font-size: 0.875rem;
+}
+
+.media-info {
+    padding: 1rem;
+}
+
+.media-title {
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.media-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted-text);
+    margin: 0;
+}
+
+.media-meta span {
+    white-space: nowrap;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .plex-dashboard {
+        padding: 1rem;
+    }
+
+    .plex-header {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: flex-start;
+    }
+
+    .plex-title h1 {
+        font-size: 2rem;
+    }
+
+    .plex-icon {
+        font-size: 2rem;
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .media-scroller {
+        gap: 1rem;
+    }
+
+    .media-card {
+        min-width: 140px;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .plex-dashboard {
+        padding: 0.75rem;
+    }
+
+    .plex-title h1 {
+        font-size: 1.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .plex-icon {
+        align-self: flex-start;
+    }
+
+    .media-card {
+        min-width: 120px;
+    }
+
+    .media-info {
+        padding: 0.75rem;
+    }
+
+    .media-title {
+        font-size: 0.8rem;
+    }
+
+    .media-meta {
+        font-size: 0.7rem;
+    }
+}

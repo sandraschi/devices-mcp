@@ -1,5 +1,5 @@
-# Tapo Camera MCP Portmanteau Tools Provision Script
-# Verifies and sets up all portmanteau tools for the tapo-camera-mcp server
+# Devices MCP Portmanteau Tools Provision Script
+# Verifies and sets up all portmanteau tools for the devices-mcp server
 
 param(
     [switch]$Force,
@@ -10,7 +10,7 @@ param(
 # Configuration
 $PROJECT_ROOT = Split-Path -Parent $PSScriptRoot  # scripts -> project root
 $SRC_DIR = Join-Path $PROJECT_ROOT "src"
-$PORTMANTEAU_DIR = Join-Path $SRC_DIR "tapo_camera_mcp/tools/portmanteau"
+$PORTMANTEAU_DIR = Join-Path $SRC_DIR "devices_mcp/tools/portmanteau"
 
 # Tool categories and their files
 $PORTMANTEAU_TOOLS = @{
@@ -140,7 +140,7 @@ function Test-PortmanteauRegistration {
 }
 
 function Test-ToolRegistration {
-    $registerFile = Join-Path $SRC_DIR "tapo_camera_mcp/tools/register_tools.py"
+    $registerFile = Join-Path $SRC_DIR "devices_mcp/tools/register_tools.py"
 
     if (-not (Test-Path $registerFile)) {
         Write-Log "CRITICAL: Tool registration file missing" "ERROR"
@@ -160,7 +160,7 @@ function Test-ToolRegistration {
 }
 
 function Test-ServerIntegration {
-    $serverFile = Join-Path $SRC_DIR "tapo_camera_mcp/core/server.py"
+    $serverFile = Join-Path $SRC_DIR "devices_mcp/core/server.py"
 
     if (-not (Test-Path $serverFile)) {
         Write-Log "CRITICAL: Server file missing" "ERROR"
@@ -267,7 +267,7 @@ function Repair-ToolImports {
 }
 
 # Main execution
-Write-Log "=== TAPO CAMERA MCP PORTMANTEAU TOOLS PROVISION ===" "INFO"
+Write-Log "=== Devices MCP PORTMANTEAU TOOLS PROVISION ===" "INFO"
 Write-Log "Project root: $PROJECT_ROOT" "INFO"
 Write-Log "Portmanteau directory: $PORTMANTEAU_DIR" "INFO"
 Write-Log "Force mode: $($Force.ToString().ToUpper())" "INFO"

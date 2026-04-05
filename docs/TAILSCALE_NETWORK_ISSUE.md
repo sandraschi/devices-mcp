@@ -72,4 +72,3 @@ Since P115 works, **Tailscale is probably NOT the problem**. The camera authenti
 - ✅ Port 443 is reachable on cameras
 
 The issue is likely **pytapo authentication**, not network/routing.
-

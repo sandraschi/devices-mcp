@@ -14,24 +14,24 @@ all hardware devices can connect successfully.
 """
 
 import asyncio
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
 async def test_tapo_cameras():
     """Test Tapo camera connectivity."""
-    print("Testing Tapo Cameras...")
+    logger.info("Testing Tapo Cameras...")
     try:
-        from tapo_camera_mcp.core.hardware_init import HardwareInitializer
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.hardware_init import HardwareInitializer
 
         camera_manager = CameraManager()
         initializer = HardwareInitializer(camera_manager=camera_manager)
@@ -40,24 +40,23 @@ async def test_tapo_cameras():
 
         if result["success"]:
             count = result.get("count", 0)
-            print(f"OK - {count} Tapo cameras connected")
+            logger.info(f"OK - {count} Tapo cameras connected")
             return True
-        else:
-            error = result.get("error", "Unknown error")
-            print(f"FAIL - Tapo cameras: {error}")
-            return False
+        error = result.get("error", "Unknown error")
+        logger.info(f"FAIL - Tapo cameras: {error}")
+        return False
 
     except Exception as e:
-        print(f"FAIL - Tapo cameras exception: {e}")
+        logger.info(f"FAIL - Tapo cameras exception: {e}")
         return False
 
 
 async def test_hue_lighting():
     """Test Philips Hue connectivity."""
-    print("Testing Philips Hue Lighting...")
+    logger.info("Testing Philips Hue Lighting...")
     try:
-        from tapo_camera_mcp.core.hardware_init import HardwareInitializer
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.hardware_init import HardwareInitializer
 
         camera_manager = CameraManager()
         initializer = HardwareInitializer(camera_manager=camera_manager)
@@ -68,28 +67,26 @@ async def test_hue_lighting():
             lights = result.get("lights_count", 0)
             groups = result.get("groups_count", 0)
             scenes = result.get("scenes_count", 0)
-            print(f"OK - Hue: {lights} lights, {groups} groups, {scenes} scenes")
+            logger.info(f"OK - Hue: {lights} lights, {groups} groups, {scenes} scenes")
             return True
-        else:
-            error = result.get("error", "Unknown error")
-            if "not configured" in error.lower():
-                print("SKIP - Philips Hue not configured")
-                return True  # Not a failure, just not configured
-            else:
-                print(f"FAIL - Philips Hue: {error}")
-                return False
+        error = result.get("error", "Unknown error")
+        if "not configured" in error.lower():
+            logger.info("SKIP - Philips Hue not configured")
+            return True  # Not a failure, just not configured
+        logger.info(f"FAIL - Philips Hue: {error}")
+        return False
 
     except Exception as e:
-        print(f"FAIL - Philips Hue exception: {e}")
+        logger.info(f"FAIL - Philips Hue exception: {e}")
         return False
 
 
 async def test_tapo_lighting():
     """Test Tapo smart lighting connectivity."""
-    print("Testing Tapo Smart Lighting...")
+    logger.info("Testing Tapo Smart Lighting...")
     try:
-        from tapo_camera_mcp.core.hardware_init import HardwareInitializer
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.hardware_init import HardwareInitializer
 
         camera_manager = CameraManager()
         initializer = HardwareInitializer(camera_manager=camera_manager)
@@ -98,28 +95,26 @@ async def test_tapo_lighting():
 
         if result["success"]:
             devices = result.get("devices_count", 0)
-            print(f"OK - {devices} Tapo lights connected")
+            logger.info(f"OK - {devices} Tapo lights connected")
             return True
-        else:
-            error = result.get("error", "Unknown error")
-            if "not configured" in error.lower():
-                print("SKIP - Tapo lighting not configured")
-                return True  # Not a failure, just not configured
-            else:
-                print(f"FAIL - Tapo lighting: {error}")
-                return False
+        error = result.get("error", "Unknown error")
+        if "not configured" in error.lower():
+            logger.info("SKIP - Tapo lighting not configured")
+            return True  # Not a failure, just not configured
+        logger.info(f"FAIL - Tapo lighting: {error}")
+        return False
 
     except Exception as e:
-        print(f"FAIL - Tapo lighting exception: {e}")
+        logger.info(f"FAIL - Tapo lighting exception: {e}")
         return False
 
 
 async def test_tapo_plugs():
     """Test Tapo smart plug connectivity."""
-    print("Testing Tapo Smart Plugs...")
+    logger.info("Testing Tapo Smart Plugs...")
     try:
-        from tapo_camera_mcp.core.hardware_init import HardwareInitializer
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.hardware_init import HardwareInitializer
 
         camera_manager = CameraManager()
         initializer = HardwareInitializer(camera_manager=camera_manager)
@@ -128,28 +123,26 @@ async def test_tapo_plugs():
 
         if result["success"]:
             devices = result.get("devices_count", 0)
-            print(f"OK - {devices} Tapo plugs connected")
+            logger.info(f"OK - {devices} Tapo plugs connected")
             return True
-        else:
-            error = result.get("error", "Unknown error")
-            if "not configured" in error.lower():
-                print("SKIP - Tapo plugs not configured")
-                return True  # Not a failure, just not configured
-            else:
-                print(f"FAIL - Tapo plugs: {error}")
-                return False
+        error = result.get("error", "Unknown error")
+        if "not configured" in error.lower():
+            logger.info("SKIP - Tapo plugs not configured")
+            return True  # Not a failure, just not configured
+        logger.info(f"FAIL - Tapo plugs: {error}")
+        return False
 
     except Exception as e:
-        print(f"FAIL - Tapo plugs exception: {e}")
+        logger.info(f"FAIL - Tapo plugs exception: {e}")
         return False
 
 
 async def test_netatmo_weather():
     """Test Netatmo weather station connectivity."""
-    print("Testing Netatmo Weather Station...")
+    logger.info("Testing Netatmo Weather Station...")
     try:
-        from tapo_camera_mcp.core.hardware_init import HardwareInitializer
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.hardware_init import HardwareInitializer
 
         camera_manager = CameraManager()
         initializer = HardwareInitializer(camera_manager=camera_manager)
@@ -159,28 +152,26 @@ async def test_netatmo_weather():
         if result["success"]:
             stations = result.get("stations_count", 0)
             modules = result.get("modules_count", 0)
-            print(f"OK - Netatmo: {stations} stations, {modules} modules")
+            logger.info(f"OK - Netatmo: {stations} stations, {modules} modules")
             return True
-        else:
-            error = result.get("error", "Unknown error")
-            if "not configured" in error.lower() or "not enabled" in error.lower():
-                print("SKIP - Netatmo not configured/enabled")
-                return True  # Not a failure, just not configured
-            else:
-                print(f"FAIL - Netatmo: {error}")
-                return False
+        error = result.get("error", "Unknown error")
+        if "not configured" in error.lower() or "not enabled" in error.lower():
+            logger.info("SKIP - Netatmo not configured/enabled")
+            return True  # Not a failure, just not configured
+        logger.info(f"FAIL - Netatmo: {error}")
+        return False
 
     except Exception as e:
-        print(f"FAIL - Netatmo exception: {e}")
+        logger.info(f"FAIL - Netatmo exception: {e}")
         return False
 
 
 async def test_ring_doorbell():
     """Test Ring doorbell/camera connectivity."""
-    print("Testing Ring Doorbell...")
+    logger.info("Testing Ring Doorbell...")
     try:
-        from tapo_camera_mcp.core.hardware_init import HardwareInitializer
-        from tapo_camera_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.hardware_init import HardwareInitializer
 
         camera_manager = CameraManager()
         initializer = HardwareInitializer(camera_manager=camera_manager)
@@ -190,95 +181,94 @@ async def test_ring_doorbell():
         if result["success"]:
             doorbells = result.get("doorbells_count", 0)
             cameras = result.get("cameras_count", 0)
-            print(f"OK - Ring: {doorbells} doorbells, {cameras} cameras")
+            logger.info(f"OK - Ring: {doorbells} doorbells, {cameras} cameras")
             return True
-        else:
-            error = result.get("error", "Unknown error")
-            if "not configured" in error.lower() or "not enabled" in error.lower():
-                print("SKIP - Ring not configured/enabled")
-                return True  # Not a failure, just not configured
-            else:
-                print(f"FAIL - Ring: {error}")
-                return False
+        error = result.get("error", "Unknown error")
+        if "not configured" in error.lower() or "not enabled" in error.lower():
+            logger.info("SKIP - Ring not configured/enabled")
+            return True  # Not a failure, just not configured
+        logger.info(f"FAIL - Ring: {error}")
+        return False
 
     except Exception as e:
-        print(f"FAIL - Ring exception: {e}")
+        logger.info(f"FAIL - Ring exception: {e}")
         return False
 
 
 def test_usb_camera_server():
     """Test USB camera server connectivity."""
-    print("Testing USB Camera Server...")
+    logger.info("Testing USB Camera Server...")
     try:
-        import socket
         import platform
+        import socket
 
         if platform.system() != "Windows":
-            print("SKIP - USB camera server (Windows only)")
+            logger.info("SKIP - USB camera server (Windows only)")
             return True
 
         # Check if camera server is running
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex(('127.0.0.1', 7778))
+        result = sock.connect_ex(("127.0.0.1", 10715))
         sock.close()
 
         if result == 0:
-            print("OK - USB camera server running on port 7778")
+            logger.info("OK - USB camera server running on port 10715")
             return True
-        else:
-            print("FAIL - USB camera server not running on port 7778")
-            print("      Run: python windows_camera_server.py")
-            return False
+        logger.info("FAIL - USB camera server not running on port 10715")
+        logger.info("      Run: python windows_camera_server.py")
+        return False
 
     except Exception as e:
-        print(f"FAIL - USB camera server test exception: {e}")
+        logger.info(f"FAIL - USB camera server test exception: {e}")
         return False
 
 
 def test_configuration():
     """Test hardware configuration validity."""
-    print("Testing Hardware Configuration...")
+    logger.info("Testing Hardware Configuration...")
     try:
-        from tapo_camera_mcp.config import get_config
+        from devices_mcp.config import get_config
 
         config = get_config()
 
         # Check cameras
         cameras = config.get("cameras", {})
         camera_count = len(cameras)
-        print(f"OK - Configuration loaded: {camera_count} cameras configured")
+        logger.info(f"OK - Configuration loaded: {camera_count} cameras configured")
 
         # Check optional systems
         lighting = config.get("lighting", {})
         hue_configured = bool(lighting.get("philips_hue", {}).get("bridge_ip"))
         tapo_lights = len(lighting.get("tapo_lighting", {}).get("devices", []))
-        print(f"OK - Lighting: Hue {'configured' if hue_configured else 'not configured'}, {tapo_lights} Tapo lights")
+        logger.info(
+            f"OK - Lighting: Hue {'configured' if hue_configured else 'not configured'}, {tapo_lights} Tapo lights"
+        )
 
         energy = config.get("energy", {})
         tapo_plugs = len(energy.get("tapo_p115", {}).get("devices", []))
-        print(f"OK - Energy: {tapo_plugs} Tapo plugs configured")
+        logger.info(f"OK - Energy: {tapo_plugs} Tapo plugs configured")
 
         weather = config.get("weather", {})
         netatmo_enabled = weather.get("integrations", {}).get("netatmo", {}).get("enabled", False)
-        print(f"OK - Weather: Netatmo {'enabled' if netatmo_enabled else 'disabled'}")
+        logger.info(f"OK - Weather: Netatmo {'enabled' if netatmo_enabled else 'disabled'}")
 
         ring_enabled = config.get("ring", {}).get("enabled", False)
-        print(f"OK - Ring: {'enabled' if ring_enabled else 'disabled'}")
+        logger.info(f"OK - Ring: {'enabled' if ring_enabled else 'disabled'}")
 
         return True
 
     except Exception as e:
-        print(f"FAIL - Configuration test exception: {e}")
+        logger.info(f"FAIL - Configuration test exception: {e}")
         return False
 
 
 async def main():
     """Run all hardware connectivity tests."""
-    print("=" * 60)
-    print("HARDWARE CONNECTIVITY VERIFICATION")
-    print("=" * 60)
-    print("Testing connectivity to ALL hardware devices...")
-    print("This ensures the webapp will be functional.\n")
+    logger.info("=" * 60)
+    logger.info("HARDWARE CONNECTIVITY VERIFICATION")
+    logger.info("=" * 60)
+    logger.info("Testing connectivity to ALL hardware devices...")
+    logger.info("This ensures the webapp will be functional.\n")
 
     # Run tests
     tests = [
@@ -301,12 +291,12 @@ async def main():
                 result = test_func()
             results.append((test_name, result))
         except Exception as e:
-            print(f"FAIL - {test_name} test crashed: {e}")
+            logger.info(f"FAIL - {test_name} test crashed: {e}")
             results.append((test_name, False))
 
-    print("\n" + "=" * 60)
-    print("HARDWARE CONNECTIVITY RESULTS")
-    print("=" * 60)
+    logger.info("\n" + "=" * 60)
+    logger.info("HARDWARE CONNECTIVITY RESULTS")
+    logger.info("=" * 60)
 
     # Count results
     passed = sum(1 for _, result in results if result)
@@ -318,7 +308,13 @@ async def main():
     critical_total = len(critical_systems)
 
     # Optional systems
-    optional_systems = ["Philips Hue", "Tapo Lighting", "Tapo Plugs", "Netatmo Weather", "Ring Doorbell"]
+    optional_systems = [
+        "Philips Hue",
+        "Tapo Lighting",
+        "Tapo Plugs",
+        "Netatmo Weather",
+        "Ring Doorbell",
+    ]
     optional_passed = sum(1 for name, result in results if name in optional_systems and result)
     optional_total = len(optional_systems)
 
@@ -327,32 +323,30 @@ async def main():
         status = "PASS" if result else "FAIL"
         marker = "PASS" if result else "FAIL"
         criticality = "(CRITICAL)" if test_name in critical_systems else "(OPTIONAL)"
-        print(f"{marker} {test_name:20} {status:4} {criticality}")
+        logger.info(f"{marker} {test_name:20} {status:4} {criticality}")
 
-    print(f"\nSUMMARY:")
-    print(f"- Critical Systems: {critical_passed}/{critical_total} working")
-    print(f"- Optional Systems: {optional_passed}/{optional_total} working")
-    print(f"- Total Systems:    {passed}/{total} working")
+    logger.info("\nSUMMARY:")
+    logger.info(f"- Critical Systems: {critical_passed}/{critical_total} working")
+    logger.info(f"- Optional Systems: {optional_passed}/{optional_total} working")
+    logger.info(f"- Total Systems:    {passed}/{total} working")
 
     # Determine overall status
-    print("\n" + "=" * 60)
+    logger.info("\n" + "=" * 60)
     if critical_passed == critical_total:
         if passed == total:
-            print("SUCCESS: ALL SYSTEMS OPERATIONAL")
-            print("   Webapp will be fully functional.")
+            logger.info("SUCCESS: ALL SYSTEMS OPERATIONAL")
+            logger.info("   Webapp will be fully functional.")
             return 0
-        else:
-            print("WARNING: CORE SYSTEMS WORKING - LIMITED FUNCTIONALITY")
-            print("   Webapp will work but some features unavailable.")
-            return 0
-    else:
-        print("FAILURE: CRITICAL SYSTEMS FAILURE")
-        print("   Webapp will NOT be functional - fix critical issues first.")
-        print("\nCritical failures:")
-        for name, result in results:
-            if name in critical_systems and not result:
-                print(f"   - {name} failed")
-        return 1
+        logger.info("WARNING: CORE SYSTEMS WORKING - LIMITED FUNCTIONALITY")
+        logger.info("   Webapp will work but some features unavailable.")
+        return 0
+    logger.info("FAILURE: CRITICAL SYSTEMS FAILURE")
+    logger.info("   Webapp will NOT be functional - fix critical issues first.")
+    logger.info("\nCritical failures:")
+    for name, result in results:
+        if name in critical_systems and not result:
+            logger.info(f"   - {name} failed")
+    return 1
 
 
 if __name__ == "__main__":
@@ -360,8 +354,8 @@ if __name__ == "__main__":
         exit_code = asyncio.run(main())
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        print("\nTest interrupted by user")
+        logger.info("\nTest interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\nTest suite crashed: {e}")
+        logger.info(f"\nTest suite crashed: {e}")
         sys.exit(1)

@@ -1,7 +1,7 @@
 # Tapo Camera Connection Fix Plan
 
-**Timestamp**: 2025-01-17  
-**Status**: IN PROGRESS - Camera Locked Out  
+**Timestamp**: 2025-01-17
+**Status**: IN PROGRESS - Camera Locked Out
 **Priority**: HIGH
 
 ## Current Status
@@ -181,7 +181,6 @@ rtsp://sandraschi:Sec1000kitchen@192.168.0.164:554/stream1
 
 ---
 
-**Last Updated**: 2025-01-17  
-**Lockout Expires**: ~30 minutes from last attempt  
+**Last Updated**: 2025-01-17
+**Lockout Expires**: ~30 minutes from last attempt
 **Status**: Waiting for lockout to expire
-

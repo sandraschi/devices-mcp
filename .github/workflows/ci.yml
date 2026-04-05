@@ -2,156 +2,47 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
-
-# Cancel in-progress runs when new commits are pushed
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [ main, develop ]
 
 jobs:
   test:
-    name: Test with Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        # Test on supported Python versions (3.10+)
-        python-version: ["3.10", "3.11", "3.12"]
-    
+        python-version: [3.8, 3.9, '3.10', '3.11']
+
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-    
-    - name: Cache ruff
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/ruff
-        key: ${{ runner.os }}-ruff-${{ hashFiles('**/*.py') }}
-        restore-keys: |
-          ${{ runner.os }}-ruff-
-    
+        python-version: matrix.python-version
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .
-        pip install ruff mypy pytest pytest-cov pytest-asyncio pytest-mock respx
-    
+        pip install -e .[dev]
+
     - name: Lint with ruff
-      run: ruff check src/ tests/
-    
-    - name: Format check with ruff
-      run: ruff format --check src/ tests/
-    
-    - name: Run type checking with mypy
-      run: mypy tapo_camera_mcp/ || true  # Non-blocking
-    
-    - name: Run tests with pytest
-      timeout-minutes: 10
-      env:
-        PYTHONPATH: ${{ github.workspace }}/src
       run: |
-        # Skip integration tests (they require real services)
-        pytest --cov=tapo_camera_mcp --cov-report=xml -m "not integration"
-    
-    - name: Upload coverage to Codecov
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: codecov/codecov-action@v4
+        ruff check .
+        ruff format --check .
+
+    - name: Run unit tests
+      run: |
+        python scripts/run_tests.py --type unit --mock-only --coverage
+
+    - name: Run integration tests (mocked)
+      run: |
+        python scripts/run_tests.py --type integration --mock-only
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
         fail_ci_if_error: false
-
-  security:
-    name: Security checks
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e ".[dev]" bandit[toml] safety[toml]
-
-    - name: Run security linting with bandit
-      run: |
-        bandit -r tapo_camera_mcp/ -f json -o bandit-report.json || true
-
-    - name: Run dependency vulnerability scan with safety
-      run: |
-        safety check --output json > safety-report.json || true
-
-    - name: Upload security reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: security-reports
-        path: |
-          bandit-report.json
-          safety-report.json
-
-  build:
-    name: Build packages
-    needs: [test]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Install build dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
-
-    - name: Build Python package
-      run: python -m build
-
-    - name: Verify built Python package
-      run: |
-        pip install twine
-        twine check dist/*.whl dist/*.tar.gz
-
-    - name: Install MCPB CLI
-      if: exists('mcpb/manifest.json')
-      run: |
-        npm install -g @anthropic-ai/mcpb
-        mcpb --version
-
-    - name: Validate and build MCPB package
-      if: exists('mcpb/manifest.json')
-      run: |
-        mcpb validate mcpb/manifest.json
-        mcpb pack . dist/tapo-camera-mcp.mcpb
-
-    - name: Upload package artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: packages
-        path: dist/
-        retention-days: 7

@@ -1,15 +1,18 @@
-import sys
-import os
 import json
 import logging
+import os
+import sys
+
+logger = logging.getLogger(__name__)
+
 
 # Add src to path so we can import the module
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../src")))
 
 try:
-    from tapo_camera_mcp.web.api.plex import _condense_metadata
+    from devices_mcp.web.api.plex import _condense_metadata
 except ImportError as e:
-    print(f"Import Error: {e}")
+    logger.info(f"Import Error: {e}")
 
     # Fallback for testing purely the logic if imports fail due to fastAPI dependencies not being installed in this env
     def _condense_metadata(metadata: dict) -> dict:
@@ -48,8 +51,8 @@ def test_condense_logic():
     assert "Director" not in condensed
     assert "Media" not in condensed
 
-    print("SUCCESS: _condense_metadata logic passed!")
-    print(f" condensed output: {json.dumps(condensed, indent=2)}")
+    logger.info("SUCCESS: _condense_metadata logic passed!")
+    logger.info(f" condensed output: {json.dumps(condensed, indent=2)}")
 
 
 if __name__ == "__main__":

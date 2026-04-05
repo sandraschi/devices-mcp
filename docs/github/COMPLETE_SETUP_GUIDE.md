@@ -1,8 +1,8 @@
-# Complete GitHub Setup Guide - Tapo Camera MCP Edition
+# Complete GitHub Setup Guide - Devices MCP Edition
 
-> **Production-ready setup for Tapo Camera MCP**
+> **Production-ready setup for Devices MCP**
 >
-> Everything you need to get the Tapo Camera MCP project running smoothly.
+> Everything you need to get the Devices MCP project running smoothly.
 
 ---
 
@@ -81,7 +81,7 @@
 ### Step 1: Copy Files (5 min)
 
 ```bash
-# From tapo-camera-mcp repo:
+# From devices-mcp repo:
 NEW_REPO=/path/to/new-repo
 
 # Copy workflow files
@@ -109,25 +109,25 @@ dev-dependencies = [
     "pytest-mock>=3.12.0",
     "pytest-asyncio>=0.24.0",
     "pytest-xdist>=3.0.0",
-    
+
     # Linting & Formatting
     "ruff>=0.1.6",
     "mypy>=1.8.0",
     "black>=24.0.0",
     "isort>=5.13.0",
-    
+
     # Type Checking
     "pyright>=1.1.390",
     "types-setuptools>=69.0.0",
-    
+
     # Security
     "bandit>=1.7.0",
     "safety>=3.0.0",
-    
+
     # Building & Publishing
     "build>=1.0.0",
     "twine>=5.0.0",
-    
+
     # Pre-commit
     "pre-commit>=3.6.0",
 ]
@@ -150,7 +150,7 @@ Search and replace in `.github/workflows/*.yml`:
 
 1. **Project name**:
    - Replace `tapo-camera` → `your-project`
-   - Replace `sandraschi/tapo-camera-mcp` → `your-org/your-repo`
+   - Replace `sandraschi/devices-mcp` → `your-org/your-repo`
 
 2. **Python version** (if different):
    - Replace `PYTHON_VERSION: "3.12"` → Your version
@@ -220,26 +220,26 @@ Watch GitHub Actions - should all pass! ✅
 - **FunctionTool callable** (40 files)
   - Used `.fn()` method for all MCP tool calls
   - Imported with `as mcp_toolname`
-  
+
 - **SearchQuery parameters** (15 files)
   - Removed non-existent `page`/`page_size` from constructor
   - Moved to API `params` parameter
-  
+
 - **Missing client parameter** (20 files)
   - Added `client` as first arg to `call_post`/`call_get`
-  
+
 - **Path vs str** (15 files)
   - Changed type hints to `str | Path`
-  
+
 - **Repository project_id** (12 files)
   - Added `hasattr` checks or `type: ignore[attr-defined]`
-  
+
 - **Template helpers** (8 files)
   - Return `pybars.strlist` instead of `str`
-  
+
 - **Logger keywords** (6 files)
   - Changed to positional formatting
-  
+
 - **Optional module imports** (4 files)
   - Assigned `None` on import failure
   - Added runtime checks
@@ -265,7 +265,7 @@ Watch GitHub Actions - should all pass! ✅
 - **Fix**: `softprops/action-gh-release@v1`
 - **Impact**: Simplified from 4 steps to 1
 
-#### 2. Build Dependencies  
+#### 2. Build Dependencies
 - **Problem**: `uv pip install build twine` failed
 - **Fix**: Added to `dev-dependencies`, use `uv sync --dev`
 - **Impact**: Reliable, reproducible builds
@@ -330,15 +330,15 @@ dev-dependencies = [
     "pytest>=8.3.4",
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.24.0",
-    
+
     # Linting
     "ruff>=0.1.6",
     "pyright>=1.1.390",
-    
+
     # Security
     "bandit>=1.7.0",
     "safety>=3.0.0",
-    
+
     # Building
     "build>=1.0.0",
     "twine>=5.0.0",
@@ -418,7 +418,7 @@ uv run twine check dist/*
 # Update dependencies
 uv lock --upgrade
 
-# Check for vulnerabilities  
+# Check for vulnerabilities
 uv run safety scan
 
 # Run tests
@@ -532,7 +532,7 @@ All guides in `docs/github/`:
 #!/bin/bash
 # copy-github-setup.sh
 
-SOURCE="/path/to/tapo-camera-mcp"
+SOURCE="/path/to/devices-mcp"
 TARGET="/path/to/new-repo"
 
 # Copy workflows
@@ -558,9 +558,9 @@ Search and replace in copied files:
 | Find | Replace With |
 |------|-------------|
 | `tapo-camera` | `your-project` |
-| `sandraschi/tapo-camera-mcp` | `your-org/your-repo` |
-| `tapo_camera_mcp` | `your_package` |
-| `Tapo Camera MCP` | `Your Project Name` |
+| `sandraschi/devices-mcp` | `your-org/your-repo` |
+| `devices_mcp` | `your_package` |
+| `Devices MCP` | `Your Project Name` |
 
 ---
 
@@ -639,7 +639,7 @@ Our issues that had to be fixed:
 - 3 HIGH severity (MD5, shell injection, XML)
 - 2 vulnerabilities (starlette, regex)
 
-**Time to fix**: 1.5 hours  
+**Time to fix**: 1.5 hours
 **Time wasted delaying**: None (we fixed immediately)
 
 ---
@@ -659,7 +659,7 @@ Our issues that had to be fixed:
 
 ### Complexity Reduction:
 
-**Without guide**: Complexity = 10/10, Time = 6+ hours  
+**Without guide**: Complexity = 10/10, Time = 6+ hours
 **With guide**: Complexity = 2/10, Time = 30 min
 
 **90% complexity reduction!** 🎉
@@ -772,12 +772,11 @@ Your repo can have:
 
 ## 📝 Credits
 
-**Created**: October 15, 2025  
-**Based on**: tapo-camera-mcp production setup  
-**By**: Claude AI & Sandra (Human-AI collaboration)  
-**Time Investment**: 6 hours debugging → 8,000 words documentation  
-**Goal**: Save everyone else 5+ hours per project  
+**Created**: October 15, 2025
+**Based on**: devices-mcp production setup
+**By**: Claude AI & Sandra (Human-AI collaboration)
+**Time Investment**: 6 hours debugging → 8,000 words documentation
+**Goal**: Save everyone else 5+ hours per project
 
-**License**: MIT  
+**License**: MIT
 **Status**: Battle-tested and production-proven! ✅
-

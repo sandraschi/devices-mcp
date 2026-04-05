@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick start script for Tapo Camera MCP Dashboard
+Quick start script for Devices MCP Dashboard
 
 This script provides easy commands to start different components of the system.
 """
@@ -14,6 +14,14 @@ import subprocess
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+# Detect virtual environment python
+VENV_PYTHON = (
+    os.path.join("venv", "Scripts", "python.exe")
+    if os.name == "nt"
+    else os.path.join("venv", "bin", "python")
+)
+PYTHON_CMD = VENV_PYTHON if os.path.exists(VENV_PYTHON) else "python"
+
 
 def run_command(cmd, description):
     """Run a command and handle errors."""
@@ -23,16 +31,17 @@ def run_command(cmd, description):
         logger.info(f"SUCCESS: {description} completed successfully")
         return True
     except subprocess.CalledProcessError as e:
-        logger.error(f"ERROR: {description} failed: {e}")
-        logger.error(f"Error output: {e.stderr}")
+        logger.exception(f"ERROR: {description} failed: {e}")
+        logger.exception(f"Error output: {e.stderr}")
         return False
 
 
 def start_mcp_server(debug=False):
     """Start the MCP server."""
-    # Use python -c to ensure proper PyO3 initialization for Rust libraries
-    import_cmd = "import sys; sys.path.insert(0, 'src'); from tapo_camera_mcp.server_v2 import main; main()"
-    cmd = f'python -c "{import_cmd}" --direct'
+    import_cmd = (
+        "import sys; sys.path.insert(0, 'src'); from devices_mcp.server_v2 import main; main()"
+    )
+    cmd = f'{PYTHON_CMD} -c "{import_cmd}" --direct'
     if debug:
         cmd += " --debug"
 
@@ -62,7 +71,7 @@ def start_dual_server():
     logger.info("📺 Dashboard: Available at http://localhost:7777")
     logger.info("🛑 Press Ctrl+C to stop the server")
 
-    cmd = 'python -c "import asyncio; from src.tapo_camera_mcp.dual_server import start_dual_server; asyncio.run(start_dual_server())"'
+    cmd = f'{PYTHON_CMD} -c "import asyncio; from src.devices_mcp.dual_server import start_dual_server; asyncio.run(start_dual_server())"'
 
     try:
         subprocess.run(cmd, check=False, shell=True)
@@ -84,7 +93,12 @@ def start_web_dashboard(port: int = 7777):
             port = int(env_port)
             logger.info(f"Using port from PORT environment variable: {port}")
 
-        cmd = f"python -m tapo_camera_mcp.web.server --port {port}"
+        # The unified webapp is now in the project root under webapp/
+        # We need to add the project root to PYTHONPATH so it can find the 'webapp' package
+        # and the 'webapp' package adds 'src' to its sys.path.
+
+        # On Windows, we use SET to set environment variables for the command
+        cmd = f"set PYTHONPATH=%PYTHONPATH%;.&& {PYTHON_CMD} -m webapp.web.server --port {port}"
         subprocess.run(cmd, check=False, shell=True)
     except KeyboardInterrupt:
         logger.info("Web Dashboard stopped")
@@ -111,7 +125,7 @@ def check_dependencies():
 
         logger.info("SUCCESS: OpenCV installed")
     except ImportError:
-        logger.error("ERROR: OpenCV not installed. Run: pip install opencv-python")
+        logger.exception("ERROR: OpenCV not installed. Run: pip install opencv-python")
         return False
 
     try:
@@ -119,7 +133,7 @@ def check_dependencies():
 
         logger.info("SUCCESS: FastAPI installed")
     except ImportError:
-        logger.error("ERROR: FastAPI not installed. Run: pip install fastapi")
+        logger.exception("ERROR: FastAPI not installed. Run: pip install fastapi")
         return False
 
     try:
@@ -127,7 +141,7 @@ def check_dependencies():
 
         logger.info("SUCCESS: Uvicorn installed")
     except ImportError:
-        logger.error("ERROR: Uvicorn not installed. Run: pip install uvicorn")
+        logger.exception("ERROR: Uvicorn not installed. Run: pip install uvicorn")
         return False
 
     logger.info("SUCCESS: All dependencies are installed!")
@@ -136,7 +150,7 @@ def check_dependencies():
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Tapo Camera MCP Quick Start")
+    parser = argparse.ArgumentParser(description="Devices MCP Quick Start")
     parser.add_argument(
         "command",
         choices=["mcp", "dashboard", "dual", "webcam", "test", "check", "both"],
@@ -146,8 +160,8 @@ def main():
 
     args = parser.parse_args()
 
-    print("Tapo Camera MCP - Quick Start")
-    print("=" * 40)
+    logger.info("Devices MCP - Quick Start")
+    logger.info("=" * 40)
 
     if args.command == "check":
         check_dependencies()
@@ -161,14 +175,14 @@ def main():
         start_web_dashboard()
     elif args.command == "webcam":
         test_webcam()
-        print("\n" + "=" * 40)
+        logger.info("\n" + "=" * 40)
         start_web_dashboard()
     elif args.command == "both":
-        print("START: Starting both MCP server and web dashboard...")
-        print("SERVER: MCP Server: Available for Claude Desktop")
-        print("WEB: Web Dashboard: http://localhost:7777")
-        print("STOP: Press Ctrl+C to stop both services")
-        print("\n" + "=" * 40)
+        logger.info("START: Starting both MCP server and web dashboard...")
+        logger.info("SERVER: MCP Server: Available for Claude Desktop")
+        logger.info("WEB: Web Dashboard: http://localhost:7777")
+        logger.info("STOP: Press Ctrl+C to stop both services")
+        logger.info("\n" + "=" * 40)
 
         # Start both services
         import threading

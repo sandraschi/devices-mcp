@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Tapo Camera MCP system monitors many hardware components (cameras, energy meters, weather stations, etc.). To prevent aggressive polling that causes high CPU usage, a centralized **Polling Manager** has been implemented.
+The Devices MCP system monitors many hardware components (cameras, energy meters, weather stations, etc.). To prevent aggressive polling that causes high CPU usage, a centralized **Polling Manager** has been implemented.
 
 ## Problem
 
@@ -14,7 +14,7 @@ Previously, each monitoring component had its own polling loop with hardcoded in
 
 ## Solution: Centralized Polling Manager
 
-The `PollingManager` class (`src/tapo_camera_mcp/polling_manager.py`) provides:
+The `PollingManager` class (`src/devices_mcp/polling_manager.py`) provides:
 
 1. **Unified Configuration**: All polling tasks registered in one place
 2. **Minimum Interval Enforcement**: Prevents aggressive polling based on priority
@@ -36,13 +36,13 @@ The `PollingManager` class (`src/tapo_camera_mcp/polling_manager.py`) provides:
 ### 1. Camera Capture Loops ✅ FIXED
 
 **Files:**
-- `src/tapo_camera_mcp/camera/laptop.py`
-- `src/tapo_camera_mcp/camera/webcam.py`
-- `src/tapo_camera_mcp/web/server.py`
+- `src/devices_mcp/camera/laptop.py`
+- `src/devices_mcp/camera/webcam.py`
+- `src/devices_mcp/web/server.py`
 
 **Issue:** Polling at 30 FPS (0.03s intervals) for frame capture
 
-**Fix:** 
+**Fix:**
 - Increased sleep interval from 0.03s to 0.1s (10 FPS)
 - Added error handling to ensure sleep always executes
 - Added retry logic for failed reads
@@ -51,7 +51,7 @@ The `PollingManager` class (`src/tapo_camera_mcp/polling_manager.py`) provides:
 
 ### 2. Metrics Collection Service ✅ MIGRATED
 
-**File:** `src/tapo_camera_mcp/metrics_service.py`
+**File:** `src/devices_mcp/metrics_service.py`
 
 **Issue:** Manual `while True` loop with 30-second intervals
 
@@ -64,7 +64,7 @@ The `PollingManager` class (`src/tapo_camera_mcp/polling_manager.py`) provides:
 
 ### 3. Edge Collectors ✅ MIGRATED
 
-**File:** `src/tapo_camera_mcp/edge/agents.py`
+**File:** `src/devices_mcp/edge/agents.py`
 
 **Issue:** Manual `while True` loop with configurable scrape intervals
 
@@ -77,7 +77,7 @@ The `PollingManager` class (`src/tapo_camera_mcp/polling_manager.py`) provides:
 
 ### 4. Wien Energie Smart Meter ⚠️ NO ACTIVE LOOP
 
-**File:** `src/tapo_camera_mcp/ingest/wien_energie.py`
+**File:** `src/devices_mcp/ingest/wien_energie.py`
 
 **Status:** Configuration exists for polling (default 60s), but no active polling loop found. Methods are called on-demand.
 
@@ -85,7 +85,7 @@ The `PollingManager` class (`src/tapo_camera_mcp/polling_manager.py`) provides:
 
 ### 5. Tapo P115 Smart Plugs ⚠️ NO ACTIVE LOOP
 
-**File:** `src/tapo_camera_mcp/ingest/tapo_p115.py`
+**File:** `src/devices_mcp/ingest/tapo_p115.py`
 
 **Status:** No active polling loop. Methods are called on-demand.
 
@@ -96,7 +96,7 @@ The `PollingManager` class (`src/tapo_camera_mcp/polling_manager.py`) provides:
 ### Registering a New Polling Task
 
 ```python
-from tapo_camera_mcp.polling_manager import get_polling_manager, PollingPriority
+from devices_mcp.polling_manager import get_polling_manager, PollingPriority
 
 manager = get_polling_manager()
 
@@ -149,7 +149,7 @@ if not health['healthy']:
 The polling manager enforces minimum intervals based on priority:
 
 - **CRITICAL**: 1 second minimum
-- **HIGH**: 5 seconds minimum  
+- **HIGH**: 5 seconds minimum
 - **NORMAL**: 15 seconds minimum
 - **LOW**: 60 seconds minimum
 
@@ -189,4 +189,3 @@ When adding new monitoring code:
 - [ ] Metrics export for Prometheus
 - [ ] Alerting on high error rates
 - [ ] Dynamic interval adjustment based on load
-

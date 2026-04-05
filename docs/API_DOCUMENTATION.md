@@ -1,6 +1,6 @@
-# API Documentation - Tapo Camera MCP
+# API Documentation - Devices MCP
 
-Complete API reference for the Tapo Camera MCP platform including device onboarding, energy management, security integration, and camera control.
+Complete API reference for the Devices MCP platform including device onboarding, energy management, security integration, and camera control.
 
 ## 🏗️ **Architecture Overview**
 
@@ -563,6 +563,123 @@ Control camera actions.
 }
 ```
 
+#### **Speakerphone Control** (v1.18.0)
+
+##### `POST /api/cameras/speakerphone/enable`
+Enable speakerphone mode for two-way audio.
+
+**Request Body:**
+```json
+{
+  "camera_id": "ring_doorbell_001"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Speakerphone enabled successfully",
+  "details": {
+    "speakerphone_capable": true,
+    "manufacturer": "Ring (Amazon)"
+  }
+}
+```
+
+##### `POST /api/cameras/speakerphone/disable`
+Disable speakerphone mode.
+
+**Request Body:**
+```json
+{
+  "camera_id": "ring_doorbell_001"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Speakerphone disabled successfully"
+}
+```
+
+##### `GET /api/cameras/speakerphone/status/{camera_id}`
+Get speakerphone status and capabilities.
+
+**Response:**
+```json
+{
+  "success": true,
+  "speakerphone_status": {
+    "speakerphone_capable": true,
+    "speakerphone_enabled": false,
+    "device_supports_speakers": true,
+    "audio_output_available": true,
+    "manufacturer": "Ring (Amazon)",
+    "note": "Ring cameras support two-way audio with built-in speakers via WebRTC"
+  }
+}
+```
+
+#### **Doorbell Events** (v1.18.0)
+
+##### `GET /api/cameras/doorbell/events/{camera_id}`
+Get recent doorbell events for Ring cameras.
+
+**Query Parameters:**
+- `limit` (optional): Number of events to return (default: 10)
+
+**Response:**
+```json
+{
+  "success": true,
+  "events": [
+    {
+      "event_id": "ding_123456",
+      "timestamp": "2026-01-16T10:30:00Z",
+      "event_type": "doorbell_press",
+      "answered": false,
+      "recording_available": true,
+      "recording_id": "rec_789012",
+      "device_id": "ring_doorbell_001",
+      "device_name": "Front Door"
+    }
+  ]
+}
+```
+
+##### `GET /api/cameras/doorbell/status/{camera_id}`
+Get doorbell status for Ring cameras.
+
+**Response:**
+```json
+{
+  "success": true,
+  "has_unanswered_doorbell": false,
+  "last_doorbell_event": {
+    "event_id": "ding_123456",
+    "timestamp": "2026-01-16T10:30:00Z",
+    "event_type": "doorbell_press",
+    "answered": true,
+    "recording_available": true
+  }
+}
+```
+
+#### **Camera Capability Notes**
+
+**Speakerphone Support by Camera Type:**
+- **Ring Video Doorbell**: ✅ Full WebRTC speakerphone + doorbell detection
+- **Tapo C200/C210**: ✅ Speakerphone with tinny speakers
+- **USB Webcams (Logitech)**: ❌ Microphone-only (no speakers)
+- **USB Microscopes**: ❌ Specialized cameras (no speakers)
+
+**Doorbell Detection:**
+- **Ring Cameras**: ✅ Real-time doorbell press events
+- **Other Cameras**: ❌ No doorbell hardware
+
 ## 🔧 **System Management API**
 
 ### **Server Status**
@@ -755,4 +872,4 @@ Configure webhooks for real-time notifications:
 }
 ```
 
-This comprehensive API documentation covers all aspects of the Tapo Camera MCP platform, from device onboarding to advanced analytics and automation.
+This comprehensive API documentation covers all aspects of the Devices MCP platform, from device onboarding to advanced analytics and automation.

@@ -91,4 +91,3 @@ RELATED FILES
 - src/tapo_camera_mcp/web/server.py - Web server implementation
 - config.yaml - Configuration file
 - src/tapo_camera_mcp/config/models.py - Configuration models
-

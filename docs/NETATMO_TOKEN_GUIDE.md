@@ -1,6 +1,6 @@
 # How to Get a New Netatmo Refresh Token
 
-**Date:** 2025-12-10  
+**Date:** 2025-12-10
 **Status:** ✅ Complete Guide
 
 ## Overview
@@ -20,7 +20,7 @@ Netatmo uses OAuth2 authentication. You need a **refresh token** to access your 
 Run the helper script to generate the authorization URL:
 
 ```powershell
-cd D:\Dev\repos\tapo-camera-mcp
+cd D:\Dev\repos\devices-mcp
 .\venv\Scripts\Activate.ps1
 python scripts\netatmo_oauth_helper.py auth-url <CLIENT_ID> <REDIRECT_URI>
 ```
@@ -45,7 +45,7 @@ The redirect URL will look like:
 https://localhost/callback?code=AUTHORIZATION_CODE_HERE&state=xyz
 ```
 
-**Important:** 
+**Important:**
 - Copy the `code` parameter value (everything after `code=` and before `&state`)
 - **⚠️ Authorization codes expire quickly (usually within 10 minutes)**
 - **⚠️ Codes can only be used once** - if you get "invalid_grant" error, get a fresh code
@@ -214,15 +214,13 @@ After updating the refresh token:
 
 **Problem**: After refreshing Netatmo tokens, the system was still getting 403 "Invalid access token" errors because pyatmo was using cached/stale access tokens.
 
-**Solution**: 
+**Solution**:
 - Modified token refresh logic to clear both `_access_token` and `_token_expiry` when 403 errors occur
 - Added proper 403 error handling in both `list_stations()` and `current_data()` methods
 - System now forces a complete token refresh instead of using stale cached tokens
 
 **Files Changed**:
-- `src/tapo_camera_mcp/integrations/netatmo_client.py`
-- `src/tapo_camera_mcp/web/server.py` (added missing `active_page` parameter to weather route)
+- `src/devices_mcp/integrations/netatmo_client.py`
+- `src/devices_mcp/web/server.py` (added missing `active_page` parameter to weather route)
 
 **Result**: Token refresh now works reliably. If you refresh a token and see 403 errors, the system will automatically detect and fix it on the next API call.
-
-

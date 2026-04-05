@@ -12,8 +12,8 @@ tags:
 ---
 
 # The LLMs.txt Standard - Revolutionary LLM-Optimized Documentation
-**Timestamp: 2025-08-06 21:35 CET**  
-**Status: NEW HOTNESS - COMPREHENSIVE GUIDE** 🔥  
+**Timestamp: 2025-08-06 21:35 CET**
+**Status: NEW HOTNESS - COMPREHENSIVE GUIDE** 🔥
 **Tags: llms-txt, anthropic, jeremy-howard, documentation-standard, ai-optimization**
 
 ## 🚀 **WHAT IS LLMs.TXT?**
@@ -22,7 +22,7 @@ tags:
 
 ### **📋 The Problem It Solves:**
 - **Context window limitations**: LLMs can't process entire websites
-- **HTML complexity**: CSS, JavaScript, and markup clutter confuse AI models  
+- **HTML complexity**: CSS, JavaScript, and markup clutter confuse AI models
 - **Poor discoverability**: Traditional SEO optimizes for search crawlers, not reasoning engines
 - **Inconsistent parsing**: Different sites require different parsing strategies
 
@@ -43,7 +43,7 @@ tags:
 - [Quick Start](url): Description of the resource
 - [API Reference](url): API documentation details
 
-## Optional  
+## Optional
 - [Additional Resources](url): Supplementary information
 ```
 
@@ -57,7 +57,7 @@ Contains ALL documentation content in single markdown file for easy LLM ingestio
 - **Perplexity**: https://docs.perplexity.ai/llms.txt
 
 ### **Developer Platforms:**
-- **Stripe**: https://docs.stripe.com/llms.txt  
+- **Stripe**: https://docs.stripe.com/llms.txt
 - **Cursor**: Full integration across documentation
 - **Hugging Face**: https://huggingface-projects-docs-llms-txt.hf.space/
 - **Mintlify**: Auto-generates for ALL hosted docs
@@ -89,7 +89,7 @@ Unlike robots.txt or sitemaps (designed for crawlers), llms.txt is built specifi
 
 ### **✅ What We've Built:**
 1. **Complete llms.txt generator** in our MCP template
-2. **Auto-discovery integration** with tool registry  
+2. **Auto-discovery integration** with tool registry
 3. **Validation tools** for format compliance
 4. **Preview capabilities** without file generation
 
@@ -117,7 +117,7 @@ Unlike robots.txt or sitemaps (designed for crawlers), llms.txt is built specifi
 
 ### **Required Elements:**
 1. **H1 project name**: `# Project Name` (only required element)
-2. **Blockquote summary**: `> Brief description` 
+2. **Blockquote summary**: `> Brief description`
 3. **Markdown structure**: Clean, parseable format
 
 ### **Recommended Sections:**
@@ -159,7 +159,7 @@ Unlike robots.txt or sitemaps (designed for crawlers), llms.txt is built specifi
 
 ### **For Our MCP Template:**
 1. **✅ Auto-generate llms.txt** from tool metadata (DONE)
-2. **✅ Validation and preview tools** (DONE) 
+2. **✅ Validation and preview tools** (DONE)
 3. **Next**: Add to CI/CD pipeline for automatic updates
 4. **Future**: Integration with DXT packaging
 
@@ -170,7 +170,7 @@ Unlike robots.txt or sitemaps (designed for crawlers), llms.txt is built specifi
 4. **Measure impact**: Track AI-generated mentions and accuracy
 
 ---
-**Status: REVOLUTIONARY STANDARD** 🚀  
-**Adoption: RAPID & ACCELERATING** ⚡  
-**Strategic Value: CRITICAL FOR AI-FIRST FUTURE** 🎯  
+**Status: REVOLUTIONARY STANDARD** 🚀
+**Adoption: RAPID & ACCELERATING** ⚡
+**Strategic Value: CRITICAL FOR AI-FIRST FUTURE** 🎯
 **Implementation: COMPLETE IN OUR MCP TEMPLATE** ✅

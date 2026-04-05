@@ -1,10 +1,10 @@
 # Robotics Integration: Technical Architecture
 
 **Timestamp**: 2026-01-07
-**Component**: `tapo-camera-mcp` -> `robots.py`
+**Component**: `devices-mcp` -> `robots.py`
 
 ## Overview
-The robotics module (`src/tapo_camera_mcp/web/api/robots.py`) provides a unified REST API and WebSocket interface for controlling both physical units (Unitree, Moorebot) and virtual digital twins (Unity3D/VRChat).
+The robotics module (`src/devices_mcp/web/api/robots.py`) provides a unified REST API and WebSocket interface for controlling both physical units (Unitree, Moorebot) and virtual digital twins (Unity3D/VRChat).
 
 ## Core Logic: `robots.py`
 This module serves as the **Robotics Gateway**. It maintains an in-memory registry (`_robots`) of all known entities and routes commands to the appropriate integration client.
@@ -17,7 +17,7 @@ This module serves as the **Robotics Gateway**. It maintains an in-memory regist
     - **Virtual**: Routes to `VbotClient` (see below).
 
 ## Orchestration: `robotics-mcp` & `vbot_client.py`
-Virtual robots are managed via the `VbotClient` (`src/tapo_camera_mcp/integrations/vbot_client.py`), which acts as an HTTP client for the **Robotics MCP Server**.
+Virtual robots are managed via the `VbotClient` (`src/devices_mcp/integrations/vbot_client.py`), which acts as an HTTP client for the **Robotics MCP Server**.
 
 ### Communication Protocol
 - **Transport**: HTTP POST
@@ -41,4 +41,4 @@ The `robotics-mcp` server acts as the bridge to 3D environments.
 - **Unity3D**: Connected via `unity3d-mcp` (C# scripts listening for MCP commands).
 - **VRChat**: Connected via `vrchat-mcp` (OSC protocol for avatar parameter control).
 
-This architecture ensures `tapo-camera-mcp` remains decoupled from specific 3D engines, communicating only via standardized MCP tool calls.
+This architecture ensures `devices-mcp` remains decoupled from specific 3D engines, communicating only via standardized MCP tool calls.

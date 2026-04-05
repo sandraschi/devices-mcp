@@ -1,15 +1,15 @@
 # Grafana Integration - Detailed Implementation Guide
 
-**Project**: tapo-camera-mcp  
-**Target**: Grafana 10.x+ integration  
-**Timeline**: 2-3 days  
-**Created**: 2025-09-03  
+**Project**: devices-mcp
+**Target**: Grafana 10.x+ integration
+**Timeline**: 2-3 days
+**Created**: 2025-09-03
 
 ## Architecture Overview
 
 ### Data Flow Design
 ```
-Tapo Cameras → tapo-camera-mcp → HTTP Metrics Endpoint → Grafana JSON Data Source → Dashboards → Alerts
+Tapo Cameras → devices-mcp → HTTP Metrics Endpoint → Grafana JSON Data Source → Dashboards → Alerts
 ```
 
 ### Core Components
@@ -22,7 +22,7 @@ Tapo Cameras → tapo-camera-mcp → HTTP Metrics Endpoint → Grafana JSON Data
 
 ### 1.1 Add Metrics Service to MCP Server
 
-**File**: `src/tapo_camera_mcp/metrics_service.py`
+**File**: `src/devices_mcp/metrics_service.py`
 
 ```python
 from datetime import datetime, timedelta
@@ -57,24 +57,24 @@ class CameraMetrics:
 
 class MetricsCollector:
     """Collect and aggregate camera metrics"""
-    
+
     def __init__(self, tapo_client):
         self.tapo_client = tapo_client
         self.metrics_history: Dict[str, List[CameraMetrics]] = {}
         self.current_metrics: Dict[str, CameraMetrics] = {}
         self.collection_interval = 30  # seconds
         self.history_retention_hours = 24
-        
+
     async def start_collection(self):
         """Start periodic metrics collection"""
         while True:
             await self.collect_all_cameras()
             await asyncio.sleep(self.collection_interval)
-    
+
     async def collect_all_cameras(self):
         """Collect metrics from all configured cameras"""
         cameras = await self.tapo_client.get_all_cameras()
-        
+
         for camera in cameras:
             try:
                 metrics = await self.collect_camera_metrics(camera)
@@ -82,20 +82,20 @@ class MetricsCollector:
                 self.store_historical_metrics(camera.id, metrics)
             except Exception as e:
                 print(f"Error collecting metrics for {camera.id}: {e}")
-    
+
     async def collect_camera_metrics(self, camera) -> CameraMetrics:
         """Collect metrics for a single camera"""
         # Get device info
         device_info = await camera.get_device_info()
-        
+
         # Get motion detection status
         motion_detection = await camera.get_motion_detection()
-        
+
         # Network performance test
         start_time = datetime.now()
         await camera.get_device_info()  # Simple ping test
         latency = (datetime.now() - start_time).total_seconds() * 1000
-        
+
         # Storage info (if available)
         try:
             storage_info = await camera.get_storage_info()
@@ -103,7 +103,7 @@ class MetricsCollector:
             storage_total = storage_info.get('total_mb', 0)
         except:
             storage_used = storage_total = 0
-        
+
         return CameraMetrics(
             camera_id=camera.id,
             name=device_info.get('device_alias', 'Unknown'),
@@ -123,30 +123,30 @@ class MetricsCollector:
             storage_used_mb=storage_used,
             storage_total_mb=storage_total
         )
-    
+
     def store_historical_metrics(self, camera_id: str, metrics: CameraMetrics):
         """Store metrics in history with retention"""
         if camera_id not in self.metrics_history:
             self.metrics_history[camera_id] = []
-        
+
         self.metrics_history[camera_id].append(metrics)
-        
+
         # Clean old data
         cutoff_time = datetime.now() - timedelta(hours=self.history_retention_hours)
         self.metrics_history[camera_id] = [
-            m for m in self.metrics_history[camera_id] 
+            m for m in self.metrics_history[camera_id]
             if m.last_seen > cutoff_time
         ]
-    
+
     def get_grafana_metrics(self) -> Dict[str, Any]:
         """Format metrics for Grafana consumption"""
         timestamp = datetime.now().isoformat()
-        
+
         metrics = {
             "timestamp": timestamp,
             "cameras": {}
         }
-        
+
         for camera_id, camera_metrics in self.current_metrics.items():
             metrics["cameras"][camera_id] = {
                 "name": camera_metrics.name,
@@ -166,11 +166,11 @@ class MetricsCollector:
                 "ip_address": camera_metrics.ip_address,
                 "firmware": camera_metrics.firmware
             }
-        
+
         # Add aggregate metrics
         total_cameras = len(self.current_metrics)
         online_cameras = sum(1 for m in self.current_metrics.values() if m.status == 'online')
-        
+
         metrics["summary"] = {
             "total_cameras": total_cameras,
             "online_cameras": online_cameras,
@@ -178,18 +178,18 @@ class MetricsCollector:
             "motion_active_count": sum(1 for m in self.current_metrics.values() if m.motion_detected),
             "average_latency_ms": sum(m.network_latency_ms for m in self.current_metrics.values()) / max(total_cameras, 1)
         }
-        
+
         return metrics
 
 # FastAPI HTTP Server for Grafana
 class GrafanaMetricsServer:
     """HTTP server providing metrics endpoint for Grafana"""
-    
+
     def __init__(self, metrics_collector: MetricsCollector, port: int = 8080):
         self.metrics_collector = metrics_collector
         self.port = port
         self.app = FastAPI(title="Tapo Camera Metrics API")
-        
+
         # Enable CORS for Grafana
         self.app.add_middleware(
             CORSMiddleware,
@@ -198,16 +198,16 @@ class GrafanaMetricsServer:
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        
+
         self.setup_routes()
-    
+
     def setup_routes(self):
         """Setup API routes"""
-        
+
         @self.app.get("/")
         async def health_check():
             return {"status": "healthy", "service": "tapo-camera-metrics"}
-        
+
         @self.app.get("/metrics")
         async def get_metrics():
             """Main metrics endpoint for Grafana"""
@@ -215,30 +215,30 @@ class GrafanaMetricsServer:
                 return self.metrics_collector.get_grafana_metrics()
             except Exception as e:
                 raise HTTPException(status_code=500, detail=str(e))
-        
+
         @self.app.get("/metrics/cameras")
         async def get_camera_list():
             """Get list of all cameras"""
             metrics = self.metrics_collector.get_grafana_metrics()
             return list(metrics.get("cameras", {}).keys())
-        
+
         @self.app.get("/metrics/cameras/{camera_id}")
         async def get_camera_metrics(camera_id: str):
             """Get metrics for specific camera"""
             metrics = self.metrics_collector.get_grafana_metrics()
             cameras = metrics.get("cameras", {})
-            
+
             if camera_id not in cameras:
                 raise HTTPException(status_code=404, detail="Camera not found")
-            
+
             return cameras[camera_id]
-        
+
         @self.app.get("/metrics/history/{camera_id}")
         async def get_camera_history(camera_id: str, hours: int = 1):
             """Get historical metrics for camera"""
             if camera_id not in self.metrics_collector.metrics_history:
                 raise HTTPException(status_code=404, detail="Camera not found")
-            
+
             cutoff_time = datetime.now() - timedelta(hours=hours)
             history = [
                 {
@@ -252,15 +252,15 @@ class GrafanaMetricsServer:
                 for m in self.metrics_collector.metrics_history[camera_id]
                 if m.last_seen > cutoff_time
             ]
-            
+
             return {"camera_id": camera_id, "history": history}
-    
+
     async def start_server(self):
         """Start the HTTP server"""
         config = uvicorn.Config(
-            self.app, 
-            host="0.0.0.0", 
-            port=self.port, 
+            self.app,
+            host="0.0.0.0",
+            port=self.port,
             log_level="info"
         )
         server = uvicorn.Server(config)
@@ -269,7 +269,7 @@ class GrafanaMetricsServer:
 
 ### 1.2 Integration with Existing MCP Server
 
-**File**: `src/tapo_camera_mcp/server.py` (modifications)
+**File**: `src/devices_mcp/server.py` (modifications)
 
 ```python
 # Add to existing imports
@@ -280,23 +280,23 @@ import threading
 class TapoCameraMCPServer:
     def __init__(self):
         # ... existing initialization ...
-        
+
         # Add metrics collection
         self.metrics_collector = MetricsCollector(self.tapo_client)
         self.metrics_server = GrafanaMetricsServer(self.metrics_collector)
-        
+
         # Start background tasks
         self.start_background_services()
-    
+
     def start_background_services(self):
         """Start metrics collection and HTTP server in background"""
         # Start metrics collection
         asyncio.create_task(self.metrics_collector.start_collection())
-        
+
         # Start HTTP server in separate thread
         def run_metrics_server():
             asyncio.run(self.metrics_server.start_server())
-        
+
         metrics_thread = threading.Thread(target=run_metrics_server, daemon=True)
         metrics_thread.start()
 ```
@@ -314,7 +314,7 @@ grafana:
   metrics_port: 8080  # Port for HTTP metrics endpoint
   collection_interval: 30  # seconds between metric collections
   history_retention_hours: 24  # How long to keep historical data
-  
+
   # Alert thresholds
   alerts:
     camera_offline_timeout: 300  # seconds
@@ -494,7 +494,7 @@ groups:
         annotations:
           summary: "Tapo camera {{ $labels.camera_name }} is offline"
           description: "Camera {{ $labels.camera_name }} has been offline for more than 5 minutes"
-      
+
       - alert: HighLatency
         expr: cameras.cameras.*.network_latency_ms > 1000
         for: 2m
@@ -504,7 +504,7 @@ groups:
         annotations:
           summary: "High network latency for camera {{ $labels.camera_name }}"
           description: "Camera {{ $labels.camera_name }} latency is {{ $value }}ms"
-      
+
       - alert: HighTemperature
         expr: cameras.cameras.*.temperature > 60
         for: 1m
@@ -514,7 +514,7 @@ groups:
         annotations:
           summary: "Camera {{ $labels.camera_name }} running hot"
           description: "Camera temperature is {{ $value }}°C"
-      
+
       - alert: MotionBurst
         expr: increase(cameras.cameras.*.motion_events_count[1m]) > 10
         for: 30s
@@ -563,15 +563,15 @@ class RealTimeMetricsService:
     def __init__(self, metrics_collector):
         self.metrics_collector = metrics_collector
         self.active_connections: List[WebSocket] = []
-    
+
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
-    
+
     def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
             self.active_connections.remove(websocket)
-    
+
     async def broadcast_motion_event(self, camera_id: str, event_data: dict):
         """Broadcast motion events to connected Grafana instances"""
         message = {
@@ -580,7 +580,7 @@ class RealTimeMetricsService:
             "timestamp": datetime.now().isoformat(),
             "data": event_data
         }
-        
+
         if self.active_connections:
             for connection in self.active_connections.copy():
                 try:
@@ -593,7 +593,7 @@ class RealTimeMetricsService:
 
 **Kitchen Monitoring Dashboard** (`kitchen-security.json`):
 - Timer integration with camera feeds
-- Cooking detection based on motion patterns  
+- Cooking detection based on motion patterns
 - Smoke/steam detection alerts
 - Energy usage correlation
 
@@ -612,12 +612,12 @@ class RealTimeMetricsService:
 class MetricsDatabase:
     def __init__(self, connection_string: str):
         self.conn = connection_string
-    
+
     async def store_metrics_batch(self, metrics_batch: List[CameraMetrics]):
         """Batch insert for efficient storage"""
         # Implementation for database storage
         pass
-    
+
     async def query_historical_data(self, camera_id: str, start_time: datetime, end_time: datetime):
         """Query historical data with time range"""
         # Implementation for historical queries
@@ -628,14 +628,14 @@ class MetricsDatabase:
 
 ### Prerequisites
 - **Grafana 10.0+** installed and running
-- **tapo-camera-mcp** server running
+- **devices-mcp** server running
 - **Python 3.11+** with required dependencies
 
 ### Step-by-Step Setup
 
-1. **Update tapo-camera-mcp server**:
+1. **Update devices-mcp server**:
 ```bash
-cd D:\Dev\repos\tapo-camera-mcp
+cd D:\Dev\repos\devices-mcp
 pip install fastapi uvicorn
 # Implement metrics service code above
 ```
@@ -685,7 +685,7 @@ curl http://localhost:8080/metrics/history/camera_001?hours=2
 
 **1. Metrics endpoint not accessible**:
 - Check port 8080 is not blocked by firewall
-- Verify tapo-camera-mcp server is running
+- Verify devices-mcp server is running
 - Check logs for HTTP server startup errors
 
 **2. Grafana shows "No data"**:
@@ -707,7 +707,7 @@ curl http://localhost:8080/metrics/history/camera_001?hours=2
 
 ```bash
 # Check server logs
-tail -f logs/tapo-camera-mcp.log
+tail -f logs/devices-mcp.log
 
 # Test camera connectivity
 curl http://localhost:8080/metrics/cameras
@@ -724,7 +724,7 @@ watch -n 5 'curl -s http://localhost:8080/metrics | jq .summary'
 - **Integration with smart home systems** (lights, alarms)
 - **Mobile app notifications** via Grafana mobile
 
-### Phase 5: Enterprise Features  
+### Phase 5: Enterprise Features
 - **Multi-tenant support** for apartment buildings
 - **Role-based access control** for different users
 - **API rate limiting and authentication**
@@ -736,7 +736,7 @@ watch -n 5 'curl -s http://localhost:8080/metrics | jq .summary'
 
 ### Development Tasks
 - [ ] Implement `MetricsCollector` class
-- [ ] Create `GrafanaMetricsServer` FastAPI app  
+- [ ] Create `GrafanaMetricsServer` FastAPI app
 - [ ] Add background service startup to main server
 - [ ] Update configuration schema
 - [ ] Create unit tests for metrics collection
@@ -750,7 +750,7 @@ watch -n 5 'curl -s http://localhost:8080/metrics | jq .summary'
 - [ ] Configure notification channels
 - [ ] Test end-to-end functionality
 
-### Documentation Tasks  
+### Documentation Tasks
 - [ ] Update main README with Grafana setup
 - [ ] Create user guide for dashboard usage
 - [ ] Document alert configuration
@@ -766,5 +766,5 @@ watch -n 5 'curl -s http://localhost:8080/metrics | jq .summary'
 
 ---
 
-**Ready for Windsurf Implementation** 🚀  
+**Ready for Windsurf Implementation** 🚀
 *All architecture decisions finalized, ready to code!*

@@ -59,8 +59,8 @@ export const initHLS = (video: HTMLVideoElement, url: string, onError: (error: s
  * Initialize WebRTC connection for camera stream
  */
 export const initWebRTC = async (
-  video: HTMLVideoElement, 
-  url: string, 
+  video: HTMLVideoElement,
+  url: string,
   onError: (error: string) => void
 ): Promise<RTCPeerConnection | null> => {
   try {
@@ -114,8 +114,8 @@ export const initWebRTC = async (
  * Get stream URL with authentication if needed
  */
 export const getAuthenticatedUrl = (
-  url: string, 
-  username?: string, 
+  url: string,
+  username?: string,
   password?: string
 ): string => {
   if (!username || !password) {
@@ -152,7 +152,7 @@ export const getSupportedStreamTypes = (): string[] => {
 
   // WebRTC is generally supported in modern browsers
   supported.push('webrtc');
-  
+
   // RTSP/RTMP typically require a proxy or conversion
   // These are included but may not work directly in all browsers
   supported.push('rtsp', 'rtmp');
@@ -165,15 +165,15 @@ export const getSupportedStreamTypes = (): string[] => {
  */
 export const getBestStreamType = (availableTypes: string[]): string | null => {
   const supportedTypes = getSupportedStreamTypes();
-  
+
   // Prefer HLS > WebRTC > MJPEG > RTSP > RTMP
   const priorityOrder = ['hls', 'webrtc', 'mjpeg', 'rtsp', 'rtmp'];
-  
+
   for (const type of priorityOrder) {
     if (availableTypes.includes(type) && supportedTypes.includes(type)) {
       return type;
     }
   }
-  
+
   return availableTypes.length > 0 ? availableTypes[0] : null;
 };

@@ -16,7 +16,7 @@ cameras:
       username: your_tapo_username
       password: your_tapo_password
       stream_quality: "hd"  # hd or sd
-      
+
   # Ring Doorbell
   - name: front_door
     type: ring
@@ -26,7 +26,7 @@ cameras:
       password: your_ring_password
       # Optional: device_id if you have multiple Ring devices
       # device_id: "abc123"
-      
+
   # Furbo Dog Camera
   - name: pet_cam
     type: furbo
@@ -36,7 +36,7 @@ cameras:
       password: your_furbo_password
       # Optional: device_id if you have multiple Furbo devices
       # device_id: "def456"
-      
+
   # Webcam
   - name: webcam1
     type: webcam
@@ -63,13 +63,13 @@ groups:
 vision:
   model: "facebook/dinov2-base"  # or "facebook/dinov2-small", "facebook/dinov2-large"
   device: "cuda"  # or "cpu" if no GPU available
-  
+
 # Storage settings
 storage:
   snapshots_dir: "./snapshots"
   recordings_dir: "./recordings"
   max_storage_mb: 10240  # 10GB max storage
-  
+
 # Security settings (optional)
 security:
   enable_auth: false

@@ -1,5 +1,5 @@
 """
-Manual import test script for Tapo Camera MCP.
+Manual import test script for Devices MCP.
 """
 
 import sys
@@ -28,15 +28,15 @@ def main():
         sys.path.insert(0, src_dir)
 
     # Test importing main package
-    test_import("tapo_camera_mcp")
+    test_import("devices_mcp")
 
     # Test importing core modules
     core_modules = [
-        "tapo_camera_mcp.core.server",
-        "tapo_camera_mcp.tools.base_tool",
-        "tapo_camera_mcp.camera.manager",
-        "tapo_camera_mcp.api.v1.endpoints.cameras",
-        "tapo_camera_mcp.config.models",
+        "devices_mcp.core.server",
+        "devices_mcp.tools.base_tool",
+        "devices_mcp.camera.manager",
+        "devices_mcp.api.v1.endpoints.cameras",
+        "devices_mcp.config.models",
     ]
 
     for module in core_modules:

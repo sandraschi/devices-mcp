@@ -42,14 +42,14 @@ def test_import(module_name):
 def main():
     """Main function to test imports."""
     # Test importing base_tool
-    test_import("tapo_camera_mcp.tools.base_tool")
+    test_import("devices_mcp.tools.base_tool")
 
     # Test importing tools/__init__.py
-    test_import("tapo_camera_mcp.tools")
+    test_import("devices_mcp.tools")
 
     # Test tool registration
     try:
-        from tapo_camera_mcp.tools import get_all_tools
+        from devices_mcp.tools import get_all_tools
 
         tools = get_all_tools()
         logger.info("\n=== Registered Tools ===")

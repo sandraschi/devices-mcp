@@ -1,6 +1,6 @@
-# Tapo Camera MCP Dashboard Troubleshooting - Export Files
+# Devices MCP Dashboard Troubleshooting - Export Files
 
-This directory contains multiple export formats of the Advanced Memory note about the Tapo Camera MCP Dashboard external access issue.
+This directory contains multiple export formats of the Advanced Memory note about the Devices MCP Dashboard external access issue.
 
 ## Files Created
 
@@ -49,10 +49,10 @@ Upload the markdown or HTML file to online PDF converters like:
 
 ## Content Summary
 
-The exported note documents a Windows Firewall issue where the Tapo Camera MCP dashboard was accessible via Tailscale but not via external IP address. It includes:
+The exported note documents a Windows Firewall issue where the Devices MCP dashboard was accessible via Tailscale but not via external IP address. It includes:
 
 - ✅ Problem diagnosis and root cause analysis
-- ✅ Technical details and configuration information  
+- ✅ Technical details and configuration information
 - ✅ Multiple solution options with PowerShell commands
 - ✅ Network architecture explanation
 - ✅ Troubleshooting commands and key learning points

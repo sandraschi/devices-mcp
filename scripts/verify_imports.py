@@ -1,20 +1,24 @@
-import sys
+import logging
 import os
+import sys
 
-print(f"Current Working Directory: {os.getcwd()}")
-print(f"Python Path: {sys.path}")
+logger = logging.getLogger(__name__)
 
-try:
-    import tapo_camera_mcp
 
-    print("Successfully imported tapo_camera_mcp")
-    print(f"Package location: {tapo_camera_mcp.__file__}")
-except ImportError as e:
-    print(f"Failed to import tapo_camera_mcp: {e}")
+logger.info(f"Current Working Directory: {os.getcwd()}")
+logger.info(f"Python Path: {sys.path}")
 
 try:
-    from tapo_camera_mcp.integrations.vbot_client import VbotClient
+    import devices_mcp
 
-    print("Successfully imported VbotClient")
+    logger.info("Successfully imported devices_mcp")
+    logger.info(f"Package location: {devices_mcp.__file__}")
 except ImportError as e:
-    print(f"Failed to import VbotClient: {e}")
+    logger.info(f"Failed to import devices_mcp: {e}")
+
+try:
+    from devices_mcp.integrations.vbot_client import VbotClient
+
+    logger.info("Successfully imported VbotClient")
+except ImportError as e:
+    logger.info(f"Failed to import VbotClient: {e}")

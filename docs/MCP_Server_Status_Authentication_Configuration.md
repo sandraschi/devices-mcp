@@ -3,7 +3,7 @@
 ## Current Status (January 2026)
 
 MCP Server: Fully operational with Cursor IDE integration
-FastMCP Version: 2.14.1 (latest)
+FastMCP Version: 3.1 (latest)
 Hardware Integration: 8 different device types configured
 Authentication: Multiple auth methods working simultaneously
 
@@ -15,7 +15,7 @@ The MCP server gets IP addresses, usernames, passwords, and authentication crede
 Location: config.yaml (highest priority)
 Search Order:
 - /app/config.yaml (Docker container)
-- ~/.config/tapo-camera-mcp/config.yaml (user home)
+- ~/.config/devices-mcp/config.yaml (user home)
 - Repository config.yaml
 - Current directory
 
@@ -76,6 +76,8 @@ lighting:
   philips_hue:
     bridge_ip: 192.168.0.83
     username: API Key configured
+    # HomeAware motion detection available with Bridge Pro (BSB002)
+    # Automatically enabled when Bridge Pro is detected
 
   tapo_lighting:
     account:

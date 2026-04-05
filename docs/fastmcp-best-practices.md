@@ -1,15 +1,15 @@
-# FastMCP 2.12+ Development Best Practices
+# FastMCP 2.14.4+ Development Best Practices
 
 **Austrian Efficiency Guide for Professional MCP Server Development**
 
-This document establishes best practices for building production-quality MCP servers using FastMCP 2.12+, optimized for rapid development with MCP Inspector integration and DXT packaging.
+This document establishes best practices for building production-quality MCP servers using FastMCP 2.14.4+, optimized for rapid development with MCP Inspector integration and MCPB packaging.
 
-## ⚠️ **Critical FastMCP 2.12+ Framework Rules**
+## ⚠️ **Critical FastMCP 2.14.4+ Framework Rules**
 
 ### 🚨 **NEVER USE THESE - FastMCP Doesn't Support**:
-- **NO "description" argument** - FastMCP framework doesn't have this parameter
-- **NO "parameters" in tool calls** - FastMCP handles this differently internally  
-- **Errors are defined in "exceptions"** - use MCPError patterns, not description fields
+- **NO "description" argument** - FastMCP framework doesn't have this parameter. Use docstrings for tool descriptions.
+- **NO "parameters" in tool calls** - FastMCP handles this differently internally.
+- **Errors are defined in "exceptions"** - Always use `MCPError(message=...)`, never `description=`.
 
 ### ✅ **Correct FastMCP Patterns**:
 ```python
@@ -34,6 +34,25 @@ except Exception as e:
 raise MCPError(description="Wrong pattern")  # NO! Use message parameter
 ```
 
+## 🚨 **CRITICAL: Stdio Transport Integrity**
+
+When using `stdio` transport (default for Claude Desktop/Antigravity), **NOTHING** except JSON-RPC messages can be written to `stdout`.
+
+- **NEVER use `print()`** in production tool code or initialization.
+- **NEVER use `sys.stdout.write()`** for diagnostics.
+- **ALWAYS use `logging`** configured to write to `stderr`.
+- **BANNER REDIRECTION**: If you have a startup banner, use `print(banner, file=sys.stderr)`.
+
+Any plain-text string on `stdout` will pollute the JSON-RPC stream and cause clients like Antigravity to disconnect or display raw strings as "pollution".
+
+## 🔄 **Asyncio Loop Management**
+
+FastMCP 2.14.4+ handles the event loop internally. Starting conflicting loops in the same thread causes `RuntimeError: Already running asyncio in this thread`.
+
+- **AVOID `asyncio.run()`** in the same thread where `mcp.run()` or `mcp.run_stdio_async()` is called.
+- **PREFER Context Managers**: Use the provided FastMCP runners to ensure safe startup/shutdown.
+- **LOOP DETECTION**: Robust entry points should check for existing loops or use `run_stdio_async()` if manually managing the loop.
+
 ## 🛠️ **PowerShell & Development Environment Rules**
 
 ### Core System Paths
@@ -53,7 +72,7 @@ Get-ChildItem -Path "C:\folder"
 
 # ❌ NEVER USE:
 mkdir folder        # Use New-Item instead
-copy file.txt       # Use Copy-Item instead  
+copy file.txt       # Use Copy-Item instead
 del file.txt        # Use Remove-Item instead
 dir                 # Use Get-ChildItem instead
 ```
@@ -98,357 +117,124 @@ where python        # WRONG - can cause issues
 $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH","User")
 ```
 
-## 📦 **DXT Packaging - Complete Guide**
+## 📦 **MCPB Packaging - SOTA 2026 Guide**
 
-### What is DXT?
+### What is MCPB?
 
-**DXT (Dynamic eXTension)** is Anthropic's standardized packaging format for Claude Desktop extensions. It enables:
-- **MCP Server Distribution**: Package MCP servers as installable extensions
-- **Prompt Template Sharing**: Include reusable prompt templates
-- **Extension Management**: Install/uninstall through Claude Desktop UI
-- **Version Control**: Semantic versioning for extension updates
-- **Dependency Management**: Automatic dependency resolution
+**MCPB (MCP Builder)** is the standardized packaging system for building and distributing MCP servers. It replaces the outdated DXT format and provides a more robust, **source-first**, cross-platform distribution model.
 
-### Anthropic DXT App
+> [!IMPORTANT]
+> **COMPLETENESS REQUIREMENT**: An `.mcpb` package **MUST** contain the **complete source code** of the MCP server. It is NOT a compiled binary format; it is a source-transparent bundle designed for auditability and seamless execution.
 
-The **Anthropic DXT App** is the official command-line tool for:
-- **Validation**: `dxt validate` - Check package structure and metadata
-- **Packaging**: `dxt pack` - Create .dxt distribution files
-- **NOT FOR**: `dxt init` or `dxt publish` (we handle these manually)
+### Essential Build Exclusions
 
-### DXT Installation & Usage in Claude Desktop
+To ensure lean, source-complete bundles, users **MUST** exclude heavy build artifacts. Create an `.mcpbignore` file in your root:
 
-#### How DXT Files Are Installed:
-1. **User Downloads**: .dxt file from GitHub releases or distribution
-2. **Claude Desktop**: Import via "Extensions" → "Install Extension" → Select .dxt file
-3. **Automatic Setup**: Claude Desktop extracts and configures the extension
-4. **MCP Integration**: Server automatically appears in Claude's MCP configuration
-
-#### Claude Desktop Extensions Directory Structure:
-```
-C:\Users\sandr\AppData\Roaming\Claude\Claude Extensions\
-├── extension-name-v1.0.0\           # Extracted extension folder
-│   ├── metadata.json                # Extension metadata
-│   ├── mcp-config.json              # MCP server configuration  
-│   ├── prompt-templates\             # Prompt templates directory
-│   │   ├── templates.json           # Template definitions
-│   │   ├── business-analysis.md     # Individual template files
-│   │   ├── code-review.md
-│   │   └── debug-assistant.md
-│   ├── server\                      # MCP server files
-│   │   ├── your_mcp_server.exe      # Windows executable
-│   │   └── config.yaml              # Server configuration
-│   └── docs\                        # Documentation
-│       ├── README.md
-│       └── user-guide.md
+```text
+# MANDATORY EXCLUSIONS
+tests/
+.git/
+__pycache__/
+.venv/
+dist/
+build/
+target/
+target_wasm/
+coverage_html/
+*.mcpb
+.pytest_cache/
+.coverage
+Cargo.lock
 ```
 
-### DXT Project Structure for MCP Servers
+> [!CAUTION]
+> **TARGET DIRECTORY**: Failing to exclude `target/` or `build/` will result in massive, unrollable bundles. Always verify your `.mcpb` size (should be <10MB for typical servers).
 
-```
-your-mcp-server/                     # Root project directory
-├── pyproject.toml                   # ✅ Python project configuration
-├── dxt.toml                         # ✅ DXT packaging configuration
-├── README.md                        # ✅ Main documentation
-├── LICENSE                          # ✅ License file
-├── CHANGELOG.md                     # ✅ Version history
-├── .gitignore                       # ✅ Git exclusions
-│
-├── src/                             # ✅ Source code
-│   └── your_mcp_server/
-│       ├── __init__.py
-│       ├── server.py                # Main MCP server
-│       └── tools/
-│           └── ...
-│
-├── dxt-package/                     # ✅ DXT packaging files
-│   ├── metadata.json               # Extension metadata
-│   ├── mcp-config.json             # MCP configuration template
-│   ├── prompt-templates/           # Prompt templates
-│   │   ├── templates.json          # Template definitions
-│   │   ├── business-analysis.md    # Business analysis template
-│   │   ├── code-review.md          # Code review template
-│   │   ├── debug-assistant.md      # Debug helper template
-│   │   └── data-analysis.md        # Data analysis template
-│   └── docs/                       # User documentation
-│       ├── installation.md
-│       └── user-guide.md
-│
-├── tests/                           # ✅ Test suite
-└── build/                           # ✅ Build artifacts (gitignored)
-    └── your-mcp-server-v1.0.0.dxt  # Generated DXT package
-```
+### Core Configuration Files
 
-### DXT Configuration Files
-
-#### 1. **dxt.toml** - Main DXT Configuration:
-```toml
-[package]
-name = "your-mcp-server"
-version = "1.0.0"
-description = "Professional MCP Server with business tools"
-author = "Your Name <your.email@example.com>"
-license = "MIT"
-homepage = "https://github.com/yourusername/your-mcp-server"
-repository = "https://github.com/yourusername/your-mcp-server.git"
-
-[package.keywords]
-categories = ["mcp-server", "business", "productivity", "ai-assistant"]
-tags = ["fastmcp", "automation", "data-analysis", "workflow"]
-
-[build]
-# Source files to include in package
-include = [
-    "src/**/*.py",
-    "dxt-package/**/*",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-]
-
-# Files to exclude
-exclude = [
-    "tests/**/*",
-    "**/__pycache__/**/*", 
-    "**/*.pyc",
-    ".git/**/*",
-    "build/**/*"
-]
-
-# Build configuration
-output_dir = "build"
-compress = true
-
-[mcp]
-# MCP server configuration
-server_executable = "python"
-server_args = ["-m", "your_mcp_server.server"]
-server_cwd = "."
-
-# Environment variables for server
-environment = {
-    "MCP_ENVIRONMENT" = "production",
-    "LOG_LEVEL" = "INFO"
-}
-
-[prompts]
-# Prompt template configuration
-templates_dir = "dxt-package/prompt-templates"
-auto_register = true
-```
-
-#### 2. **dxt-package/metadata.json** - Extension Metadata:
+#### 1. **mcpb/manifest.json** - Package Metadata:
 ```json
 {
-  "name": "your-mcp-server",
-  "version": "1.0.0",
-  "display_name": "Your MCP Server",
-  "description": "Professional MCP server with business automation tools",
-  "author": "Your Name",
-  "email": "your.email@example.com",
-  "homepage": "https://github.com/yourusername/your-mcp-server",
-  "repository": "https://github.com/yourusername/your-mcp-server.git",
-  "license": "MIT",
-  "categories": ["mcp-server", "business", "productivity"],
-  "tags": ["fastmcp", "automation", "data-analysis"],
-  "claude_desktop_version": ">=1.0.0",
-  "supported_platforms": ["windows", "macos", "linux"],
-  "dependencies": {
-    "python": ">=3.9",
-    "fastmcp": ">=2.12.0"
-  },
-  "installation": {
-    "auto_configure_mcp": true,
-    "register_prompts": true,
-    "create_shortcuts": false
+  "manifest_version": "0.2",
+  "name": "server-name",
+  "version": "1.18.1",
+  "description": "Brief server description",
+  "author": "Sandra Schipal",
+  "license": "MIT"
+}
+```
+
+#### 2. **mcpb/mcpb.json** - Build Configuration:
+```json
+{
+  "name": "server-name",
+  "version": "1.18.1",
+  "type": "server",
+  "runtime": "python",
+  "entry_point": "src/server.py",
+  "dependencies": [
+    "fastmcp>=2.14.4,<3.0.0"
+  ],
+  "build": {
+    "include": [
+      "src/**/*",   // MUST include everything in src/
+      "README.md",
+      "LICENSE",
+      "manifest.json",
+      "assets/**/*"
+    ],
+    "exclude": [
+      "tests/",
+      ".git/",
+      "__pycache__/",
+      "*.pyc"
+    ]
   }
 }
 ```
 
-#### 3. **dxt-package/mcp-config.json** - MCP Server Configuration Template:
+### Build and Validation Workflow
+
+#### 1. **Development Build**:
+```powershell
+# Build for local development
+mcpb build --dev
+
+# Output: dist/server-name-dev.mcpb
+```
+
+#### 2. **Production Build**:
+```powershell
+# Build for distribution
+mcpb build --prod
+
+# Output: dist/server-name-v1.18.1.mcpb
+```
+
+#### 3. **Package Validation**:
+```powershell
+# Validate package structure
+mcpb validate dist/server-name-v1.18.1.mcpb
+```
+
+### Installation and Integration
+
+Once an `.mcpb` package is generated, it can be installed into the local environment or distributed via GitHub releases.
+
+#### Claude Desktop Integration:
 ```json
+// claude_desktop_config.json
 {
   "mcpServers": {
-    "your-mcp-server": {
+    "server-name": {
       "command": "python",
-      "args": ["-m", "your_mcp_server.server"],
-      "cwd": "${EXTENSION_PATH}",
+      "args": ["-m", "mcp_server_name.server"],
       "env": {
-        "MCP_ENVIRONMENT": "production",
-        "LOG_LEVEL": "INFO",
-        "PYTHONPATH": "${EXTENSION_PATH}/src"
+        "PYTHONPATH": "path/to/extracted/mcpb/src"
       }
     }
   }
 }
-```
-
-### Prompt Templates in DXT
-
-#### How Prompt Templates Work:
-1. **Template Files**: Markdown files with placeholders and instructions
-2. **Template Registry**: `templates.json` defines available templates
-3. **Claude Integration**: Templates appear in Claude's prompt library
-4. **User Access**: Users can invoke templates with `/template-name` or via UI
-
-#### 4. **dxt-package/prompt-templates/templates.json** - Template Registry:
-```json
-{
-  "templates": [
-    {
-      "id": "business-analysis",
-      "name": "Business Analysis Assistant",
-      "description": "Comprehensive business analysis with data insights",
-      "file": "business-analysis.md",
-      "category": "business",
-      "tags": ["analysis", "data", "reporting"],
-      "variables": [
-        {
-          "name": "company_name",
-          "type": "string",
-          "required": true,
-          "description": "Name of the company to analyze"
-        },
-        {
-          "name": "analysis_type",
-          "type": "select",
-          "required": true,
-          "options": ["financial", "market", "competitive", "operational"],
-          "description": "Type of business analysis to perform"
-        },
-        {
-          "name": "time_period",
-          "type": "string",
-          "required": false,
-          "default": "last 12 months",
-          "description": "Time period for analysis"
-        }
-      ]
-    },
-    {
-      "id": "code-review",
-      "name": "Code Review Assistant", 
-      "description": "Systematic code review with best practices",
-      "file": "code-review.md",
-      "category": "development",
-      "tags": ["code", "review", "quality"],
-      "variables": [
-        {
-          "name": "language",
-          "type": "select",
-          "required": true,
-          "options": ["python", "javascript", "typescript", "java", "csharp", "go"],
-          "description": "Programming language of the code"
-        },
-        {
-          "name": "review_focus",
-          "type": "select", 
-          "required": false,
-          "options": ["security", "performance", "maintainability", "style"],
-          "description": "Primary focus area for review"
-        }
-      ]
-    }
-  ],
-  "categories": [
-    {
-      "id": "business",
-      "name": "Business Analysis",
-      "description": "Templates for business intelligence and analysis"
-    },
-    {
-      "id": "development", 
-      "name": "Software Development",
-      "description": "Templates for code review, debugging, and development"
-    }
-  ]
-}
-```
-
-#### 5. **Example Prompt Template** - `dxt-package/prompt-templates/business-analysis.md`:
-```markdown
-# Business Analysis Assistant
-
-You are a professional business analyst with expertise in {{analysis_type}} analysis. Your task is to provide comprehensive analysis for {{company_name}} covering the {{time_period}}.
-
-## Analysis Framework
-
-### 1. Executive Summary
-- Provide a high-level overview of key findings
-- Highlight critical insights and recommendations
-- Summarize main risks and opportunities
-
-### 2. {{analysis_type|title}} Analysis
-
-{{#if analysis_type == "financial"}}
-#### Financial Performance Analysis:
-- Revenue trends and growth patterns
-- Profitability metrics and margins
-- Cash flow analysis
-- Financial ratios and benchmarks
-- Working capital management
-{{/if}}
-
-{{#if analysis_type == "market"}}
-#### Market Analysis:
-- Market size and growth potential
-- Competitive landscape assessment
-- Customer segmentation and behavior
-- Market trends and drivers
-- Positioning and differentiation
-{{/if}}
-
-### 3. Data Requirements
-Please provide or request the following data for analysis:
-- Financial statements (if applicable)
-- Market research data
-- Customer data and feedback
-- Operational metrics
-- Industry benchmarks
-
-### 4. Methodology
-- Quantitative analysis techniques
-- Qualitative assessment methods  
-- Benchmarking approach
-- Risk assessment framework
-
-### 5. Recommendations
-- Strategic recommendations
-- Tactical action items
-- Implementation roadmap
-- Success metrics and KPIs
-
----
-
-**Instructions**: Please provide the data you'd like analyzed for {{company_name}}, and I'll conduct a comprehensive {{analysis_type}} analysis following this framework.
-```
-
-### DXT Build and Distribution Process
-
-#### 1. **Validation and Building**:
-```powershell
-# Navigate to project directory
-Set-Location "D:\Dev\repos\your-mcp-server"
-
-# Validate DXT package structure and configuration
-dxt validate
-
-# If validation passes, build the DXT package
-dxt pack
-
-# This creates: build/your-mcp-server-v1.0.0.dxt
-```
-
-#### 2. **Distribution Methods**:
-
-##### **GitHub Releases (Recommended)**:
-```powershell
-# Tag the release
-git tag -a v1.0.0 -m "Release version 1.0.0"
-git push origin v1.0.0
-
-# Upload .dxt file to GitHub release
-# Users download and install via Claude Desktop
 ```
 
 ## 🎯 **Core Architecture Principles**
@@ -477,7 +263,7 @@ src/your_mcp_server/
 └── exceptions.py         # Custom exceptions
 ```
 
-### 2. **FastMCP 2.12+ Server Foundation**
+### 2. **FastMCP 2.14.4+ Server Foundation**
 ```python
 """Production-ready FastMCP server template."""
 import asyncio
@@ -493,11 +279,11 @@ from pydantic import BaseModel, Field
 # Server configuration
 SERVER_CONFIG = {
     "name": "Your MCP Server",
-    "version": "1.0.0", 
+    "version": "1.0.0",
     # NO description parameter - FastMCP doesn't support it
     "features": [
         "inspector_optimized",
-        "error_tracking", 
+        "error_tracking",
         "performance_monitoring",
         "type_safety"
     ]
@@ -538,15 +324,15 @@ async def example_business_tool(
 ) -> ToolResponse:
     """
     Business tool with Austrian efficiency patterns.
-    
+
     Args:
         required_param: Description of required parameter
-        optional_param: Description of optional parameter  
+        optional_param: Description of optional parameter
         config_param: Boolean configuration option
-        
+
     Returns:
         ToolResponse: Standardized response format
-        
+
     Raises:
         MCPError: When business logic validation fails
     """
@@ -554,17 +340,17 @@ async def example_business_tool(
         # Input validation
         if not required_param.strip():
             raise MCPError("Required parameter cannot be empty", code="INVALID_INPUT")
-            
+
         # Business logic
         result = await process_business_logic(
-            required_param, 
-            optional_param, 
+            required_param,
+            optional_param,
             config_param
         )
-        
+
         # Track metrics
         _server_state["request_count"] += 1
-        
+
         return ToolResponse(
             success=True,
             data=result,
@@ -574,11 +360,11 @@ async def example_business_tool(
                 "request_id": f"req_{_server_state['request_count']}"
             }
         )
-        
+
     except Exception as e:
         _server_state["error_count"] += 1
         logger.error(f"Tool {example_business_tool.__name__} failed: {e}")
-        
+
         # Convert to MCPError for proper Inspector display
         if isinstance(e, MCPError):
             raise
@@ -605,8 +391,8 @@ class MCPErrorCodes(str, Enum):
     CONFIGURATION_ERROR = "CONFIG_ERROR"
 
 def create_mcp_error(
-    message: str, 
-    code: MCPErrorCodes, 
+    message: str,
+    code: MCPErrorCodes,
     recoverable: bool = True,
     context: Optional[Dict[str, Any]] = None
 ) -> MCPError:
@@ -622,12 +408,75 @@ def create_mcp_error(
     )
 ```
 
+## 🗣️ **Dialogic Tool Return Patterns**
+
+SOTA 2026 tools should return **Dialogic Results** that combine natural language context with structured data. This pattern enables the LLM to understand the outcome while maintaining programmatic access to the result substrate.
+
+### **The Dialogic Return Schema**
+```python
+class DialogicResponse(BaseModel):
+    """SOTA 2026 standardized response format."""
+    message: str = Field(..., description="Natural language summary for the LLM/User")
+    data: Any = Field(..., description="Structured payload for programmatic consumption")
+    success: bool = True
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+@mcp.tool()
+async def smart_home_action(action: str) -> DialogicResponse:
+    """Perform action with dialogic feedback."""
+    # ... logic ...
+    return DialogicResponse(
+        message=f"I've successfully verified that the {action} was completed.",
+        data={"action": action, "timestamp": "2026-02-04T19:04:00Z"},
+        success=True
+    )
+```
+
+**Benefits**:
+- **Zero-Friction**: The LLM doesn't need to "guess" the result from a raw list.
+- **Traceability**: Structured data remains available for further tool chaining.
+- **Persona Alignment**: Matches Sandra's industrial, zero-friction communication style.
+
+## 🤖 **Advanced Sampling (Agentic Workflows)**
+
+FastMCP 2.14.1+ introduces **Sampling** (SEP-1577), allowing the server to request "thoughts" or tool executions from the client-side LLM.
+
+### **The Sampling Pattern**
+```python
+@mcp.tool()
+async def autonomous_file_cleanup(directory: str) -> str:
+    """Orchestrate a cleanup using the client's LLM to decide what to delete."""
+
+    # Request a 'thought' from the client-side LLM
+    response = await mcp.create_message(
+        messages=[
+            {
+                "role": "user",
+                "content": f"Analyze these files in {directory} and return a list of obsolete items."
+            }
+        ],
+        model_preferences={"quality": "high"}
+    )
+
+    # Use the LLM's 'decision' to drive local tool execution
+    obsolete_files = parse_llm_response(response.content)
+    for file in obsolete_files:
+        await delete_file(file)
+
+    return f"Autonomous cleanup completed based on LLM analysis: {len(obsolete_files)} files removed."
+```
+
+### **When to Use Sampling**:
+- **Complex Orchestration**: When a tool needs to make "decisions" during execution.
+- **Multi-Step Workflows**: Reducing client-server round-trips for agent-led tasks.
+- **Agentic File Workflows**: Autonomous organization/cleanup based on semantic analysis.
+
 ## 📝 **Basic Memory Tagging Discipline - CRITICAL QOL**
 
 ### ALWAYS tag notes with: [project-name, technology, status, priority]
 
 Examples:
-- **windows-operations-mcp work**: ["windows-operations-mcp", "powershell", "mcp", "fix", "critical"]  
+- **windows-operations-mcp work**: ["windows-operations-mcp", "powershell", "mcp", "fix", "critical"]
 - **llm-txt-mcp work**: ["llm-txt-mcp", "python", "fastmcp", "completed", "high"]
 - **Research notes**: ["research", "technology-name", "solution", "medium"]
 - **Bug fixes**: ["project-name", "bug", "fix", "technology", "priority"]
@@ -645,7 +494,7 @@ Examples:
 - **Development Speed**: 10-30x faster with Inspector + proper practices
 - **Error Detection**: Real-time vs delayed log analysis
 - **Tool Testing**: Interactive vs manual
-- **Package Management**: DXT distribution vs manual setup
+- **Package Management**: MCPB distribution vs manual setup
 - **Team Productivity**: Shared configurations and best practices
 
 ### Success Criteria:
@@ -654,10 +503,10 @@ Examples:
 - ✅ Error handling visible and clear
 - ✅ Performance monitoring active
 - ✅ Health checks operational
-- ✅ DXT packaging functional
+- ✅ MCPB packaging functional
 - ✅ Prompt templates registered
 - ✅ Production deployment ready
 
 ---
 
-*These best practices ensure your FastMCP 2.12+ servers are production-ready, developer-friendly, maintainable, and properly packaged at Austrian efficiency standards with comprehensive DXT support.*
+*These best practices ensure your FastMCP 2.14.4+ servers are production-ready, developer-friendly, maintainable, and properly packaged at Austrian efficiency standards with comprehensive MCPB support.*

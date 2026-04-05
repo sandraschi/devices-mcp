@@ -275,4 +275,3 @@ energy_management(action="control", device_id="tapo_aircon", power_state="off")
 ---
 
 *For detailed API documentation, see individual tool docstrings in the codebase.*
-

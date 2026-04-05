@@ -36,4 +36,3 @@ psycopg2-binary>=2.9.0,<3.0.0  # PostgreSQL adapter
 
 # Note: ML dependencies (torch, transformers, etc.) excluded for faster builds
 # Add them to requirements.txt if needed for AI features
-

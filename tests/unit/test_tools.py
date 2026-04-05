@@ -16,10 +16,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 def test_tools_discovery():
     """Test tools discovery system."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover all tools
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
 
         # Check that we have a reasonable number of tools
         assert len(tools) > 5, "Should discover multiple tools"
@@ -42,7 +42,7 @@ def test_tools_discovery():
 def test_base_tool():
     """Test base tool functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolResult
+        from devices_mcp.tools.base_tool import ToolResult
 
         # Test ToolCategory enum
 
@@ -61,7 +61,7 @@ def test_base_tool():
 def test_system_tools():
     """Test system tools structure."""
     try:
-        from tapo_camera_mcp.tools.system.status_tool import StatusTool
+        from devices_mcp.tools.system.status_tool import StatusTool
 
         # Test that StatusTool exists and has proper structure
         assert hasattr(StatusTool, "Meta"), "StatusTool missing Meta class"
@@ -83,7 +83,7 @@ def test_help_tool():
         # Test that the module can be imported (skip class structure test due to dependencies)
         import importlib
 
-        importlib.import_module("tapo_camera_mcp.tools.system.help_tool")
+        importlib.import_module("devices_mcp.tools.system.help_tool")
         assert True
     except Exception:
         # Don't fail the test for import issues, just warn

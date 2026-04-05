@@ -20,7 +20,7 @@ export const TapoCameraPanel: React.FC<Props> = ({ options, width, height }) => 
     }
 
     let hls: Hls | null = null;
-    
+
     const initPlayer = () => {
       if (options.streamType === 'hls') {
         if (Hls.isSupported()) {
@@ -144,7 +144,7 @@ export const TapoCameraPanel: React.FC<Props> = ({ options, width, height }) => 
   return (
     <div className={styles.container} style={{ width, height }}>
       {error && <div className={styles.error}>{error}</div>}
-      
+
       <div className={styles.videoContainer}>
         <video
           ref={videoRef}
@@ -153,7 +153,7 @@ export const TapoCameraPanel: React.FC<Props> = ({ options, width, height }) => 
           muted={options.muted}
           playsInline
         />
-        
+
         {!options.showControls && (
           <div className={styles.customControls}>
             <button onClick={handlePlayPause} className={styles.controlButton}>
@@ -237,7 +237,7 @@ const getStyles = () => ({
     padding: 10px;
     background: #2b2b2b;
     gap: 5px;
-    
+
     button {
       background: #3d3d3d;
       border: none;
@@ -250,16 +250,16 @@ const getStyles = () => ({
       display: flex;
       align-items: center;
       justify-content: center;
-      
+
       &:hover {
         background: #4a4a4a;
       }
-      
+
       &:active {
         background: #5a5a5a;
       }
     }
-    
+
     & > div {
       display: flex;
       gap: 5px;
@@ -267,7 +267,7 @@ const getStyles = () => ({
   `,
   zoomControls: css`
     margin-top: 10px;
-    
+
     button {
       width: 30px;
       height: 30px;

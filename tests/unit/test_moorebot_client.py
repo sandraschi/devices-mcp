@@ -7,12 +7,12 @@ Unit tests for Moorebot Scout client
 
 import pytest
 
-from tapo_camera_mcp.integrations.moorebot_client import (
+from devices_mcp.integrations.moorebot_client import (
     MoorebotScoutClient,
     MoorebotSensorData,
     MoorebotStatus,
 )
-from tapo_camera_mcp.utils.mock_moorebot import (
+from devices_mcp.utils.mock_moorebot import (
     MOCK_DOCK_FAILURE,
     MOCK_DOCK_SUCCESS,
     MOCK_MOVE_SUCCESS,

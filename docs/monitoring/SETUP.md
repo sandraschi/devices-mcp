@@ -1,11 +1,11 @@
 # Monitoring Stack Setup Guide
 
-**Date:** 2025-12-10  
+**Date:** 2025-12-10
 **Status:** ✅ Fully Operational
 
 ## Overview
 
-Complete monitoring stack integration for Tapo Camera MCP:
+Complete monitoring stack integration for Devices MCP:
 - **Grafana**: Visualization and dashboards
 - **Prometheus**: Metrics collection
 - **Loki**: Log aggregation
@@ -72,8 +72,8 @@ docker ps --filter "name=monitoring" --format "table {{.Names}}\t{{.Status}}\t{{
 ### Volume Mounts
 
 - **Promtail** mounts:
-  - `myhomecontrol_app_logs:/var/log/tapo-camera-mcp:ro` (Docker logs)
-  - `D:\Dev\repos\tapo-camera-mcp:/var/log/tapo-camera-mcp-host:ro` (Native logs)
+  - `myhomecontrol_app_logs:/var/log/devices-mcp:ro` (Docker logs)
+  - `D:\Dev\repos\devices-mcp:/var/log/devices-mcp-host:ro` (Native logs)
 
 ### Network Configuration
 
@@ -121,7 +121,7 @@ Expected: `Ingester not ready: waiting for 15s after being ready` (then becomes 
 
 2. **Check volume mount**:
    ```powershell
-   docker exec monitoring-promtail ls -la /var/log/tapo-camera-mcp/
+   docker exec monitoring-promtail ls -la /var/log/devices-mcp/
    ```
 
 3. **Check Loki connectivity**:
@@ -183,16 +183,16 @@ docker logs monitoring-grafana --tail 20
 
 ```logql
 # All logs
-{job="tapo-camera-mcp"}
+{job="devices-mcp"}
 
 # Docker deployment only
-{job="tapo-camera-mcp", deployment="docker"}
+{job="devices-mcp", deployment="docker"}
 
 # Errors only
-{job="tapo-camera-mcp"} | json | level="ERROR"
+{job="devices-mcp"} | json | level="ERROR"
 
 # Server startup
-{job="tapo-camera-mcp"} | json | message=~".*Starting.*"
+{job="devices-mcp"} | json | message=~".*Starting.*"
 ```
 
 ### Prometheus Queries
@@ -244,12 +244,11 @@ docker volume rm monitoring_grafana_data monitoring_prometheus_data monitoring_l
 
 ## Summary
 
-✅ **Network**: `myhomecontrol` network created  
-✅ **Volume**: `myhomecontrol_app_logs` volume created  
-✅ **Ports**: Non-conflicting ports configured (3001, 9095, 3101)  
-✅ **Configs**: All deprecated configs fixed  
-✅ **Alert Rules**: Valid time ranges configured  
-✅ **Log Shipping**: Promtail watching both Docker and native logs  
+✅ **Network**: `myhomecontrol` network created
+✅ **Volume**: `myhomecontrol_app_logs` volume created
+✅ **Ports**: Non-conflicting ports configured (3001, 9095, 3101)
+✅ **Configs**: All deprecated configs fixed
+✅ **Alert Rules**: Valid time ranges configured
+✅ **Log Shipping**: Promtail watching both Docker and native logs
 
 The monitoring stack is ready for production use! 🎉
-

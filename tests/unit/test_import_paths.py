@@ -57,8 +57,8 @@ def main():
     """Main function to test imports."""
     src_dir = add_src_to_path()
 
-    # List all Python files in the tapo_camera_mcp directory
-    tapo_dir = os.path.join(src_dir, "tapo_camera_mcp")
+    # List all Python files in the devices_mcp directory
+    tapo_dir = os.path.join(src_dir, "devices_mcp")
     logger.info(f"\n=== Contents of {tapo_dir} ===")
     for root, _dirs, files in os.walk(tapo_dir):
         level = root.replace(tapo_dir, "").count(os.sep)
@@ -70,17 +70,17 @@ def main():
                 logger.info(f"{subindent}{f}")
 
     # Test importing base_tool first
-    test_import("tapo_camera_mcp.tools.base_tool")
+    test_import("devices_mcp.tools.base_tool")
 
     # Try to import tools/__init__.py
-    test_import("tapo_camera_mcp.tools")
+    test_import("devices_mcp.tools")
 
     # Try to import a tool module directly
-    test_import("tapo_camera_mcp.tools.camera")
+    test_import("devices_mcp.tools.camera")
 
     # Try to import a tool class directly
     try:
-        from tapo_camera_mcp.tools.camera.camera_tools import ConnectCameraTool
+        from devices_mcp.tools.camera.camera_tools import ConnectCameraTool
 
         logger.info("✅ Successfully imported ConnectCameraTool")
         assert ConnectCameraTool is not None

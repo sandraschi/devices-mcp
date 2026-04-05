@@ -20,9 +20,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 def test_camera_implementations_creation():
     """Test creation of all camera implementation classes."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.tapo import TapoCamera
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.webcam import WebCamera
 
         # Test Tapo camera creation
         tapo_config = CameraConfig(
@@ -59,7 +59,7 @@ def test_camera_implementations_creation():
 def test_camera_factory_registration():
     """Test camera factory registration system."""
     try:
-        from tapo_camera_mcp.camera.base import CameraFactory, CameraType
+        from devices_mcp.camera.base import CameraFactory, CameraType
 
         # Test that camera types are registered
         assert CameraType.TAPO in CameraFactory._camera_classes
@@ -78,8 +78,8 @@ def test_camera_factory_registration():
             "params": {"device_id": 0},
         }
 
-        from tapo_camera_mcp.camera.tapo import TapoCamera
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.webcam import WebCamera
 
         tapo_camera = CameraFactory.create(tapo_config)
         webcam_camera = CameraFactory.create(webcam_config)
@@ -99,10 +99,10 @@ def test_camera_factory_registration():
 def test_camera_connection_handling():
     """Test camera connection handling with mocked dependencies."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.tapo import TapoCamera
-        from tapo_camera_mcp.camera.webcam import WebCamera
-        from tapo_camera_mcp.exceptions import ConnectionError
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.webcam import WebCamera
+        from devices_mcp.exceptions import ConnectionError
 
         # Test Tapo camera connection (mocked to fail)
         tapo_config = CameraConfig(
@@ -113,7 +113,7 @@ def test_camera_connection_handling():
         tapo_camera = TapoCamera(tapo_config)
 
         # Mock the Tapo class to raise an exception
-        with mock.patch("tapo_camera_mcp.camera.tapo.Tapo") as mock_tapo_class:
+        with mock.patch("devices_mcp.camera.tapo.Tapo") as mock_tapo_class:
             mock_tapo_instance = mock_tapo_class.return_value
             mock_tapo_instance.getBasicInfo.side_effect = Exception("Connection failed")
 
@@ -155,9 +155,9 @@ def test_camera_connection_handling():
 def test_camera_status_reporting():
     """Test camera status reporting functionality."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.tapo import TapoCamera
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.webcam import WebCamera
 
         # Test Tapo camera status when disconnected
         tapo_config = CameraConfig(
@@ -201,8 +201,8 @@ def test_camera_status_reporting():
 def test_camera_streaming_functionality():
     """Test camera streaming functionality (mocked)."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.tapo import TapoCamera
 
         # Test Tapo camera streaming URL when not connected
         tapo_config = CameraConfig(
@@ -227,8 +227,8 @@ def test_camera_streaming_functionality():
 def test_ring_camera_implementation():
     """Test Ring camera implementation (if available)."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.ring import RingCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.ring import RingCamera
 
         # Create Ring camera config
         ring_config = CameraConfig(
@@ -265,9 +265,9 @@ def test_ring_camera_implementation():
 def test_furbo_camera_implementation():
     """Test Furbo camera implementation (if available)."""
     try:
-        from tapo_camera_mcp.camera.furbo import FurboCamera
+        from devices_mcp.camera.furbo import FurboCamera
 
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.base import CameraConfig, CameraType
 
         # Create Furbo camera config
         furbo_config = CameraConfig(
@@ -298,8 +298,8 @@ def test_furbo_camera_implementation():
 def test_camera_error_handling():
     """Test camera error handling and exception raising."""
     try:
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.tapo import TapoCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.tapo import TapoCamera
 
         # Test that cameras properly handle errors
         tapo_config = CameraConfig(

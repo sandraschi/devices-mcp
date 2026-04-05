@@ -1,7 +1,7 @@
 # Moorebot Scout Integration
 
-**Timestamp**: 2025-12-02  
-**Status**: Mock implementation ready, hardware arrives XMas 2025  
+**Timestamp**: 2025-12-02
+**Status**: Mock implementation ready, hardware arrives XMas 2025
 **GitHub SDK**: https://github.com/Pilot-Labs-Dev/Scout-open-source
 
 ## Overview
@@ -56,7 +56,7 @@ robotics:
     enabled: true
     ip_address: "192.168.1.100"  # Robot IP
     mock_mode: true  # Set to false when hardware arrives
-    
+
     # Apartment map (Stroheckgasse)
     location:
       home_base: {x: 0.0, y: 0.0}
@@ -64,7 +64,7 @@ robotics:
         living_room: {x_min: 0, x_max: 5, y_min: 0, y_max: 4}
         bedroom: {x_min: 5, x_max: 8, y_min: 0, y_max: 3}
         kitchen: {x_min: 0, x_max: 3, y_min: 4, y_max: 7}
-    
+
     # Patrol routes
     patrols:
       default:
@@ -72,16 +72,16 @@ robotics:
         - {x: 6.0, y: 1.5, room: "bedroom"}
         - {x: 1.0, y: 5.0, room: "kitchen"}
         - {x: 0.0, y: 0.0, room: "home_base"}
-    
+
     # Automation
     automation:
       japan_trip_patrol:  # Oct 2025
         enabled: false
         schedule: ["08:00", "14:00", "20:00", "02:00"]
-      
+
       benny_follow:  # German Shepherd tracking
         enabled: false
-      
+
       low_battery_auto_dock: true
       battery_threshold: 20  # %
 ```
@@ -158,7 +158,7 @@ streams = await moorebot_get_camera_stream()
 ### Run Mock Tests
 
 ```powershell
-cd tapo-camera-mcp
+cd devices-mcp
 pytest tests/unit/test_moorebot_client.py -v
 ```
 
@@ -252,10 +252,9 @@ The Moorebot Scout will appear in the Robotics section of the dashboard:
 
 - **Hardware Issues**: Contact Pilot Labs support
 - **Software Issues**: Check GitHub SDK issues
-- **Integration Issues**: See `tapo-camera-mcp` project docs
+- **Integration Issues**: See `devices-mcp` project docs
 
 ---
 
-**Last Updated**: 2025-12-02  
+**Last Updated**: 2025-12-02
 **Next Review**: When hardware arrives (XMas 2025)
-

@@ -131,14 +131,14 @@ def robust_tool(param: str) -> str:
         # Validate input
         if not param:
             raise ValueError("Parameter cannot be empty")
-        
+
         # Process with detailed logging
         logger.info(f"Processing parameter: {param}")
         result = complex_processing(param)
         logger.info(f"Processing completed: {result}")
-        
+
         return result
-        
+
     except ValueError as e:
         logger.error(f"Validation error: {e}")
         return f"Error: {e}"
@@ -210,21 +210,21 @@ logger.info(f"Registered tools: {list(mcp.list_tools().keys())}")
 def debug_tool(param: str) -> str:
     """Tool with execution debugging"""
     logger.info(f"Tool execution started with: {param}")
-    
+
     try:
         # Step-by-step logging
         logger.debug("Step 1: Input validation")
         validated_param = validate_input(param)
-        
+
         logger.debug("Step 2: Processing")
         result = process_data(validated_param)
-        
+
         logger.debug("Step 3: Formatting output")
         formatted_result = format_output(result)
-        
+
         logger.info(f"Tool execution completed: {formatted_result}")
         return formatted_result
-        
+
     except Exception as e:
         logger.error(f"Tool execution failed at step: {e}")
         logger.error(f"Full traceback: {traceback.format_exc()}")
@@ -247,24 +247,24 @@ async def performance_tool(data: str) -> str:
     """Tool with performance monitoring"""
     start_time = time.time()
     logger.info(f"Tool started at {start_time}")
-    
+
     try:
         # Log each step timing
         step_start = time.time()
         processed_data = await process_data(data)
         step_time = time.time() - step_start
         logger.info(f"Data processing took {step_time:.2f}s")
-        
+
         step_start = time.time()
         result = await format_result(processed_data)
         step_time = time.time() - step_start
         logger.info(f"Result formatting took {step_time:.2f}s")
-        
+
         total_time = time.time() - start_time
         logger.info(f"Total tool execution time: {total_time:.2f}s")
-        
+
         return result
-        
+
     except asyncio.TimeoutError:
         logger.error("Tool execution timed out")
         raise
@@ -286,14 +286,14 @@ from typing import Dict, Any
 class ProtocolLogger:
     def __init__(self):
         self.request_count = 0
-    
+
     def log_request(self, request: Dict[str, Any]):
         self.request_count += 1
-        print(f"[REQ {self.request_count}] {json.dumps(request, indent=2)}", 
+        print(f"[REQ {self.request_count}] {json.dumps(request, indent=2)}",
               file=sys.stderr)
-    
+
     def log_response(self, response: Dict[str, Any]):
-        print(f"[RESP {self.request_count}] {json.dumps(response, indent=2)}", 
+        print(f"[RESP {self.request_count}] {json.dumps(response, indent=2)}",
               file=sys.stderr)
 
 protocol_logger = ProtocolLogger()
@@ -301,7 +301,7 @@ protocol_logger = ProtocolLogger()
 # Use in your MCP server
 def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
     protocol_logger.log_request(request)
-    
+
     try:
         response = process_mcp_request(request)
         protocol_logger.log_response(response)
@@ -331,21 +331,21 @@ import gc
 def resource_monitor() -> str:
     """Monitor server resources"""
     process = psutil.Process(os.getpid())
-    
+
     memory_info = {
         "rss": process.memory_info().rss / 1024 / 1024,  # MB
         "vms": process.memory_info().vms / 1024 / 1024,  # MB
         "percent": process.memory_percent()
     }
-    
+
     cpu_percent = process.cpu_percent()
-    
+
     # Force garbage collection
     gc.collect()
-    
+
     logger.info(f"Memory usage: {memory_info}")
     logger.info(f"CPU usage: {cpu_percent}%")
-    
+
     return f"Memory: {memory_info['rss']:.1f}MB, CPU: {cpu_percent:.1f}%"
 ```
 
@@ -360,18 +360,18 @@ import asyncio
 async def api_debug_tool(url: str) -> str:
     """Debug API calls"""
     logger.info(f"Making API call to: {url}")
-    
+
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 logger.info(f"Response status: {response.status}")
                 logger.info(f"Response headers: {dict(response.headers)}")
-                
+
                 content = await response.text()
                 logger.info(f"Response content length: {len(content)}")
-                
+
                 return f"Status: {response.status}, Length: {len(content)}"
-                
+
     except aiohttp.ClientError as e:
         logger.error(f"API call failed: {e}")
         raise
@@ -435,10 +435,10 @@ class StructuredFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno
         }
-        
+
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
-        
+
         return json.dumps(log_entry)
 
 # Configure structured logging

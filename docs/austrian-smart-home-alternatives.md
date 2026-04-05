@@ -39,7 +39,7 @@ Since Shelly devices are not commonly available in Austria, here are more approp
 
 ## Integration Considerations
 
-### For Tapo Camera MCP:
+### For Devices MCP:
 ```python
 # Instead of shelly_management, consider:
 # - philips_hue_management (lighting + sensors)

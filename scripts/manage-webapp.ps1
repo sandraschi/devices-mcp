@@ -1,10 +1,10 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Webapp Process Manager for Tapo Camera MCP
+    Webapp Process Manager for Devices MCP
 
 .DESCRIPTION
-    This script manages the Tapo Camera MCP webapp process, ensuring only one instance runs at a time.
+    This script manages the Devices MCP webapp process, ensuring only one instance runs at a time.
 
 .PARAMETER Action
     Action to perform: start, stop, restart, status
@@ -28,13 +28,13 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$ScriptName = "Tapo Camera MCP Webapp"
+$ScriptName = "Devices MCP Webapp"
 $ProcessName = "python"
-$ModuleName = "tapo_camera_mcp.web.server"
+$ModuleName = "devices_mcp.web.server"
 
 function Get-WebappProcesses {
     return Get-Process -Name $ProcessName -ErrorAction SilentlyContinue | Where-Object {
-        $_.CommandLine -like "*$ModuleName*" -or $_.CommandLine -like "*tapo_camera_mcp*"
+        $_.CommandLine -like "*$ModuleName*" -or $_.CommandLine -like "*devices_mcp*"
     }
 }
 

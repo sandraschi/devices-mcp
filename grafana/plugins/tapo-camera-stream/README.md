@@ -24,8 +24,8 @@ A Grafana panel plugin for viewing and controlling Tapo camera streams with PTZ 
 1. **Clone this repository** to your local machine:
 
    ```bash
-   git clone https://github.com/your-username/tapo-camera-mcp.git
-   cd tapo-camera-mcp/grafana/plugins/tapo-camera-stream
+   git clone https://github.com/your-username/devices-mcp.git
+   cd devices-mcp/grafana/plugins/tapo-camera-stream
    ```
 
 2. **Build the plugin**:

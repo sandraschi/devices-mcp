@@ -1,7 +1,7 @@
-# Glama.ai Gold Status Checklist - Tapo Camera MCP
+# Glama.ai Gold Status Checklist - Devices MCP
 
-**Target**: Gold+ Status (95+ points)  
-**Current Status**: Gold+ Ready - Advanced Features Added  
+**Target**: Gold+ Status (95+ points)
+**Current Status**: Gold+ Ready - Advanced Features Added
 **Date**: January 16, 2025
 
 ---
@@ -31,8 +31,8 @@
 - [x] **Multiple Python versions** - Testing on 3.10-3.13
 - [x] **Cross-platform** - Ubuntu and Windows testing
 
-**Test Count**: 64+ tests  
-**Pass Rate**: 100%  
+**Test Count**: 64+ tests
+**Pass Rate**: 100%
 **Coverage**: 23%+ (meets minimum)
 
 **Status**: ✅ All requirements met
@@ -52,7 +52,7 @@
 - [x] **Technical Assessment** - Detailed technical analysis
 - [x] **MCPB Documentation** - Packaging guides
 
-**Documentation Files**: 50+ comprehensive docs  
+**Documentation Files**: 50+ comprehensive docs
 **Quality**: Enterprise-grade
 
 **Status**: ✅ Exceeds requirements
@@ -70,7 +70,7 @@
 - [x] **Security scanning** - Dependabot alerts enabled
 - [x] **MCPB CI/CD** - Automated MCPB package builds
 
-**Workflows**: 3 (CI, Release, MCPB Build)  
+**Workflows**: 3 (CI, Release, MCPB Build)
 **Quality**: Professional automation
 
 **Status**: ✅ Exceeds requirements
@@ -87,7 +87,7 @@
 - [x] **Dependencies listed** - requirements.txt comprehensive
 - [x] **Entry points configured** - Proper package entry points
 
-**Formats**: PyPI wheel, Source dist, MCPB package  
+**Formats**: PyPI wheel, Source dist, MCPB package
 **Size**: 274KB (optimized)
 
 **Status**: ✅ Exceeds requirements
@@ -96,7 +96,7 @@
 
 ### ✅ MCP Compliance (10/10) - EXCELLENT
 
-- [x] **FastMCP 2.12+** - Using FastMCP 2.12.0
+- [x] **FastMCP 3.1+** - Using FastMCP 3.1
 - [x] **stdio protocol** - Proper MCP transport
 - [x] **Tool registration** - 30+ tools registered (advanced features added)
 - [x] **Proper configuration** - manifest.json validated
@@ -104,8 +104,8 @@
 - [x] **Type validation** - Pydantic parameter validation
 - [x] **Advanced tool categories** - Analytics, AI, Automation
 
-**MCP Version**: 2.12.0  
-**Tools**: 30+ (Performance Analytics, AI Scene Analysis, Smart Automation)  
+**MCP Version**: 3.1
+**Tools**: 30+ (Performance Analytics, AI Scene Analysis, Smart Automation)
 **Protocol**: stdio
 
 **Status**: ✅ Exceeds requirements
@@ -126,8 +126,8 @@
 | MCP Compliance | 10/10 | 15% | 1.5 |
 | **TOTAL** | **~95/100** | **100%** | **9.75/10** |
 
-**Estimated Score**: **95/100** (Gold+ Tier)  
-**Required for Gold+**: 95+ points  
+**Estimated Score**: **95/100** (Gold+ Tier)
+**Required for Gold+**: 95+ points
 **Status**: ✅ **GOLD+ STATUS ACHIEVED**
 
 ---
@@ -146,7 +146,7 @@
 - ✅ **Smart Automation** - Predictive maintenance & scheduling
 - ✅ **Advanced Tool Categories** - Analytics, AI, Automation
 
-**Bonus**: +8-10 points  
+**Bonus**: +8-10 points
 **Adjusted Score**: **~95/100** (Gold+)
 
 ---
@@ -157,7 +157,7 @@
 
 #### Description
 ```
-Comprehensive camera management MCP server for Tapo, Ring, Furbo, and USB webcams. Features 26+ tools, PTZ control, video streaming, web dashboard, AI vision analysis, and Grafana integration. FastMCP 2.12 compatible. Gold Status certified.
+Comprehensive camera management MCP server for Tapo, Ring, Furbo, and USB webcams. Features 26+ tools, PTZ control, video streaming, web dashboard, AI vision analysis, and Grafana integration. FastMCP 3.1 compatible. Gold Status certified.
 ```
 
 #### Topics/Tags
@@ -182,7 +182,7 @@ ai-vision
 
 #### Homepage URL
 ```
-https://github.com/sandraschi/tapo-camera-mcp
+https://github.com/sandraschi/devices-mcp
 ```
 
 ---
@@ -201,7 +201,7 @@ Glama.ai automatically scans for:
 - ✅ **Documentation** - Complete suite
 - ✅ **Security** - Policies in place
 
-**Scan Frequency**: Daily for active repos  
+**Scan Frequency**: Daily for active repos
 **Status**: ✅ All criteria met
 
 ---
@@ -223,13 +223,13 @@ After major improvements:
 
 ```
 To: support@glama.ai
-Subject: Request repository rescan - tapo-camera-mcp Gold Status
+Subject: Request repository rescan - devices-mcp Gold Status
 
 Hello Glama.ai team,
 
-I would like to request a repository rescan for our Tapo Camera MCP Server project:
+I would like to request a repository rescan for our Devices MCP Server project:
 
-Repository: https://github.com/sandraschi/tapo-camera-mcp
+Repository: https://github.com/sandraschi/devices-mcp
 Current Status: Ready for Gold Status evaluation
 
 Recent Improvements:
@@ -244,7 +244,7 @@ Recent Improvements:
 - ✅ Full CI/CD pipeline
 - ✅ 100% test pass rate
 - ✅ Zero print statements (structured logging)
-- ✅ FastMCP 2.12.0 compliant
+- ✅ FastMCP 3.1 compliant
 
 Quality Metrics:
 - Code Quality: 9/10
@@ -297,21 +297,21 @@ Sandra Schi
 
 #### 1. Update Repository Description
 
-Go to: https://github.com/sandraschi/tapo-camera-mcp/settings
+Go to: https://github.com/sandraschi/devices-mcp/settings
 
 Set description to:
 ```
-Comprehensive camera management MCP server for Tapo, Ring, Furbo, and USB webcams. 26+ tools, PTZ control, video streaming, web dashboard, AI vision. Gold Status certified. FastMCP 2.12.
+Comprehensive camera management MCP server for Tapo, Ring, Furbo, and USB webcams. 26+ tools, PTZ control, video streaming, web dashboard, AI vision. Gold Status certified. FastMCP 3.1.
 ```
 
 #### 2. Add Repository Topics
 
-Go to: https://github.com/sandraschi/tapo-camera-mcp
+Go to: https://github.com/sandraschi/devices-mcp
 
 Click "⚙️ Add topics" and add:
 ```
-mcp-server, tapo-camera, ring-doorbell, furbo-camera, webcam, 
-ptz-control, video-streaming, motion-detection, grafana, fastmcp, 
+mcp-server, tapo-camera, ring-doorbell, furbo-camera, webcam,
+ptz-control, video-streaming, motion-detection, grafana, fastmcp,
 python, gold-status, production-ready, home-automation, iot, ai-vision
 ```
 
@@ -319,7 +319,7 @@ python, gold-status, production-ready, home-automation, iot, ai-vision
 
 In repository settings, set website to:
 ```
-https://github.com/sandraschi/tapo-camera-mcp
+https://github.com/sandraschi/devices-mcp
 ```
 
 ---
@@ -369,14 +369,6 @@ https://github.com/sandraschi/tapo-camera-mcp
 
 ---
 
-**Status**: ✅ Gold+ Status Ready  
-**Estimated Score**: 95/100  
+**Status**: ✅ Gold+ Status Ready
+**Estimated Score**: 95/100
 **Last Updated**: January 16, 2025
-
-
-
-
-
-
-
-

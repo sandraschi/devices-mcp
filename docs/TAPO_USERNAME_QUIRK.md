@@ -46,4 +46,3 @@ In Tapo app:
 2. Look for "API Access" or "Local Access" settings
 3. Check if there's a toggle for API access with Camera Account
 4. Some cameras have separate API credentials
-

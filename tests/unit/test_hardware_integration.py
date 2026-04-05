@@ -70,10 +70,10 @@ def test_webcam_server_integration():
     try:
         logger.info("🔗 TESTING WEBCAM-SERVER INTEGRATION WITH REAL HARDWARE...")
 
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.manager import CameraManager
-        from tapo_camera_mcp.camera.webcam import WebCamera
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.webcam import WebCamera
+        from devices_mcp.core.server import TapoCameraServer
 
         # Create camera manager
         CameraManager()
@@ -131,14 +131,14 @@ def test_camera_tools_with_hardware():
     try:
         logger.info("🔧 TESTING CAMERA TOOLS WITH REAL HARDWARE...")
 
-        from tapo_camera_mcp.tools.camera.camera_tools import (
+        from devices_mcp.tools.camera.camera_tools import (
             CaptureSnapshotTool,
             ListCamerasTool,
         )
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover camera tools
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
         camera_tools = [t for t in tools if "camera" in t.__module__.lower()]
 
         logger.info(f"Found {len(camera_tools)} camera tools")
@@ -225,10 +225,10 @@ def test_server_with_camera_integration():
     try:
         logger.info("🖥️ TESTING SERVER WITH CAMERA INTEGRATION...")
 
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.manager import CameraManager
-        from tapo_camera_mcp.camera.webcam import WebCamera
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.camera.webcam import WebCamera
+        from devices_mcp.core.server import TapoCameraServer
 
         # Initialize server
         try:
@@ -300,7 +300,7 @@ def test_full_hardware_integration():
 
         # Step 2: Test server initialization
         logger.info("Step 2: Testing server initialization...")
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         try:
             asyncio.run(TapoCameraServer.get_instance())
@@ -310,8 +310,8 @@ def test_full_hardware_integration():
 
         # Step 3: Test camera creation
         logger.info("Step 3: Testing camera creation...")
-        from tapo_camera_mcp.camera.base import CameraConfig, CameraType
-        from tapo_camera_mcp.camera.webcam import WebCamera
+        from devices_mcp.camera.base import CameraConfig, CameraType
+        from devices_mcp.camera.webcam import WebCamera
 
         webcam_config = CameraConfig(
             name="full_integration_webcam",
@@ -324,14 +324,14 @@ def test_full_hardware_integration():
 
         # Step 4: Test tool execution
         logger.info("Step 4: Testing tool execution...")
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
         logger.info(f"✅ Tools discovered: {len(tools)}")
 
         # Step 5: Test validation
         logger.info("Step 5: Testing validation...")
-        from tapo_camera_mcp.validation import validate_camera_name, validate_ip_address
+        from devices_mcp.validation import validate_camera_name, validate_ip_address
 
         ip_valid = validate_ip_address("192.168.1.100", "test")
         name_valid = validate_camera_name("test_webcam", "test")

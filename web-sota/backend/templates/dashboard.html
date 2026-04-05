@@ -1,0 +1,594 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Devices MCP{% endblock %}
+
+
+{% block content %}
+<div class="dashboard">
+    <h1>Dashboard</h1>
+
+    <!-- Status Overview -->
+    <div class="status-overview">
+        <div class="status-card">
+            <div class="status-icon online">
+                <i class="fas fa-video"></i>
+            </div>
+            <div class="status-info">
+                <h3>Cameras Online</h3>
+                <p class="count">{{ online_cameras }}/{{ total_cameras }}</p>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-icon storage">
+                <i class="fas fa-hdd"></i>
+            </div>
+            <div class="status-info">
+                <h3>Storage Used</h3>
+                <p class="count">{{ storage_used }}%</p>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-icon alerts">
+                <i class="fas fa-bell"></i>
+            </div>
+            <div class="status-info">
+                <h3>Active Alerts</h3>
+                <p class="count">{{ active_alerts }}</p>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-icon recording">
+                <i class="fas fa-record-vinyl"></i>
+            </div>
+            <div class="status-info">
+                <h3>Active Recordings</h3>
+                <p class="count">{{ active_recordings }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vienna Public Alerts -->
+    <div class="section" id="vienna-alerts-section">
+        <div class="section-header">
+            <h2>ALERT Vienna Public Alerts</h2>
+            <button onclick="refreshAlerts()" class="btn btn-sm btn-secondary" title="Refresh alerts">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+
+        <div id="alerts-container">
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading alerts...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Events -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Recent Events</h2>
+            <a href="{{ request.url_for('events') }}" class="btn btn-link">View All</a>
+        </div>
+
+        <div class="events-list">
+            {% for event in recent_events %}
+            <div class="event-item">
+                <div class="event-icon">
+                    {% if event.type == 'motion' %}
+                    <i class="fas fa-running"></i>
+                    {% elif event.type == 'recording' %}
+                    <i class="fas fa-record-vinyl"></i>
+                    {% else %}
+                    <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                </div>
+                <div class="event-details">
+                    <h4>{{ event.title }}</h4>
+                    <p>{{ event.description }}</p>
+                    <span class="event-time">{{ event.timestamp }}</span>
+                </div>
+                {% if event.has_thumbnail %}
+                <div class="event-thumbnail">
+                    <img src="{{ event.thumbnail_url }}" alt="Event Thumbnail">
+                </div>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No recent events</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="section">
+        <div class="section-header">
+            <h2>System Status</h2>
+        </div>
+
+        <div class="system-status">
+            <div class="status-item">
+                <div class="status-label">CPU Usage</div>
+                <div class="status-bar">
+                    <div class="progress" data-value="{{ system_status.cpu_usage|default(0) }}">
+                        <span class="sr-only">{{ system_status.cpu_usage|default(0) }}%</span>
+                    </div>
+                    <span aria-hidden="true">{{ system_status.cpu_usage|default(0) }}%</span>
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">Memory Usage</div>
+                <div class="status-bar">
+                    <div class="progress" data-value="{{ system_status.memory_usage|default(0) }}">
+                        <span class="sr-only">{{ system_status.memory_usage|default(0) }}%</span>
+                    </div>
+                    <span aria-hidden="true">{{ system_status.memory_usage|default(0) }}%</span>
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">Disk Usage</div>
+                <div class="status-bar">
+                    <div class="progress" data-value="{{ system_status.disk_usage|default(0) }}">
+                        <span class="sr-only">{{ system_status.disk_usage|default(0) }}%</span>
+                    </div>
+                    <span aria-hidden="true">{{ system_status.disk_usage|default(0) }}%</span>
+                </div>
+            </div>
+
+            <div class="status-item">
+                <div class="status-label">Network</div>
+                <div class="status-details">
+                    <span>↑ {{ system_status.network.upload|default(0.0) }} MB/s</span>
+                    <span>↓ {{ system_status.network.download|default(0.0) }} MB/s</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dashboard functionality with caching, debouncing, and rate limiting
+    const ALERTS_CACHE_KEY = 'tapo_alerts_cache';
+    const ALERTS_CACHE_TTL = 2 * 60 * 1000; // 2 minutes cache TTL
+    const RATE_LIMIT_MS = 30 * 1000; // 30 seconds rate limit
+    const DEBOUNCE_MS = 500; // 500ms debounce for refresh button
+
+    let alertsInterval = null;
+    let isRefreshingAlerts = false;
+    let lastRequestTime = 0;
+    let refreshDebounceTimer = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Set progress bar widths from data attributes
+        document.querySelectorAll('.progress[data-value]').forEach(progress => {
+            const value = progress.getAttribute('data-value');
+            if (value) {
+                progress.style.width = `${value}%`;
+            }
+        });
+
+        // Load Vienna alerts (check cache first)
+        loadAlerts(true);
+
+        // Refresh alerts every 5 minutes
+        alertsInterval = setInterval(() => loadAlerts(false), 5 * 60 * 1000);
+
+        // Clean up interval on page unload to prevent memory leaks
+        window.addEventListener('beforeunload', function () {
+            if (alertsInterval) {
+                clearInterval(alertsInterval);
+                alertsInterval = null;
+            }
+            if (refreshDebounceTimer) {
+                clearTimeout(refreshDebounceTimer);
+                refreshDebounceTimer = null;
+            }
+        });
+    });
+
+    // Client-side caching utilities
+    function getCachedAlerts() {
+        try {
+            const cached = localStorage.getItem(ALERTS_CACHE_KEY);
+            if (!cached) return null;
+
+            const { data, timestamp } = JSON.parse(cached);
+            const age = Date.now() - timestamp;
+
+            if (age > ALERTS_CACHE_TTL) {
+                localStorage.removeItem(ALERTS_CACHE_KEY);
+                return null;
+            }
+
+            return data;
+        } catch (error) {
+            console.warn('Error reading alerts cache:', error);
+            localStorage.removeItem(ALERTS_CACHE_KEY);
+            return null;
+        }
+    }
+
+    function setCachedAlerts(data) {
+        try {
+            const cache = {
+                data: data,
+                timestamp: Date.now()
+            };
+            localStorage.setItem(ALERTS_CACHE_KEY, JSON.stringify(cache));
+        } catch (error) {
+            console.warn('Error writing alerts cache:', error);
+        }
+    }
+
+    // Rate limiting check
+    function canMakeRequest() {
+        const now = Date.now();
+        const timeSinceLastRequest = now - lastRequestTime;
+
+        if (timeSinceLastRequest < RATE_LIMIT_MS) {
+            const remaining = Math.ceil((RATE_LIMIT_MS - timeSinceLastRequest) / 1000);
+            console.log(`Rate limit: Please wait ${remaining} more second(s) before refreshing`);
+            return false;
+        }
+
+        lastRequestTime = now;
+        return true;
+    }
+
+    async function loadAlerts(useCache = true) {
+        const container = document.getElementById('alerts-container');
+        if (!container) {
+            console.warn('Alerts container not found in DOM');
+            return;
+        }
+
+        // Try cache first if enabled
+        if (useCache) {
+            const cached = getCachedAlerts();
+            if (cached) {
+                console.log('Loading alerts from cache');
+                renderAlerts(cached);
+                // Still fetch fresh data in background (but don't show loading)
+                fetchFreshAlerts(false);
+                return;
+            }
+        }
+
+        // Show loading state only if no cache
+        if (useCache) {
+            container.innerHTML = `
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading alerts...</p>
+                </div>
+            `;
+        }
+
+        await fetchFreshAlerts(true);
+    }
+
+    async function fetchFreshAlerts(showLoading = true) {
+        const container = document.getElementById('alerts-container');
+        if (!container) return;
+
+        try {
+            // Add timeout to prevent hanging requests
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+            const response = await fetch('/alerts/summary', {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch alerts: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            // Validate response structure
+            if (!data || typeof data !== 'object') {
+                throw new Error('Invalid response format from alerts API');
+            }
+
+            // Cache the data
+            setCachedAlerts(data);
+
+            // Render alerts
+            renderAlerts(data);
+        } catch (error) {
+            console.error('Error loading alerts:', error);
+
+            // Try to fallback to cache if available
+            const cached = getCachedAlerts();
+            if (cached) {
+                console.log('Using cached alerts due to fetch error');
+                renderAlerts(cached);
+                return;
+            }
+
+            // Show error only if no cache available
+            if (showLoading && container) {
+                const errorMessage = error.name === 'AbortError'
+                    ? 'Request timeout - please check your connection'
+                    : error.message || 'Unable to load alerts';
+
+                container.innerHTML = `
+                    <div class="alert-item-error">
+                        <p>
+                            <i class="fas fa-exclamation-triangle"></i>
+                            ${escapeHtml(errorMessage)}. <a href="#" onclick="loadAlerts(false); return false;" class="btn-link">Retry</a>
+                        </p>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    // Debounced refresh function
+    function refreshAlerts() {
+        // Clear existing debounce timer
+        if (refreshDebounceTimer) {
+            clearTimeout(refreshDebounceTimer);
+        }
+
+        // Set new debounce timer
+        refreshDebounceTimer = setTimeout(() => {
+            performRefresh();
+        }, DEBOUNCE_MS);
+    }
+
+    async function performRefresh() {
+        // Check rate limit
+        if (!canMakeRequest()) {
+            const container = document.getElementById('alerts-container');
+            if (container) {
+                const now = Date.now();
+                const remaining = Math.ceil((RATE_LIMIT_MS - (now - lastRequestTime)) / 1000);
+                const currentContent = container.innerHTML;
+                container.innerHTML = `
+                    <div class="alert-item" style="background: var(--warning-yellow); padding: 12px 16px; border-radius: 8px; text-align: center; margin-bottom: 8px;">
+                        <p style="color: var(--panel-bg); margin: 0; font-size: 13px;">
+                            <i class="fas fa-clock"></i>
+                            Please wait ${remaining} more second(s) before refreshing again
+                        </p>
+                    </div>
+                    ${currentContent}
+                `;
+                // Clear the rate limit message after the remaining time
+                setTimeout(() => {
+                    if (container.innerHTML.includes('Please wait')) {
+                        container.innerHTML = currentContent;
+                    }
+                }, remaining * 1000);
+            }
+            return;
+        }
+
+        // Prevent concurrent refresh requests
+        if (isRefreshingAlerts) {
+            console.log('Refresh already in progress, skipping...');
+            return;
+        }
+
+        const container = document.getElementById('alerts-container');
+        if (!container) {
+            console.warn('Alerts container not found in DOM');
+            return;
+        }
+
+        isRefreshingAlerts = true;
+        container.innerHTML = `
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Refreshing alerts...</p>
+            </div>
+        `;
+
+        try {
+            // Add timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+            const response = await fetch('/alerts/refresh', {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`Failed to refresh alerts: ${response.status} ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            // Validate response structure
+            if (!data || typeof data !== 'object' || !Array.isArray(data.alerts)) {
+                throw new Error('Invalid response format from refresh API');
+            }
+
+            // Convert to summary format
+            const summary = {
+                total_alerts: data.total || 0,
+                highest_severity: data.alerts.length > 0 ? (data.alerts[0].severity || 'unknown') : 'unknown',
+                highest_severity_color: data.alerts.length > 0 ? (data.alerts[0].severity_color || 'var(--gray-400)') : 'var(--gray-400)',
+                highest_severity_icon: data.alerts.length > 0 ? (data.alerts[0].severity_icon || 'OK') : 'OK',
+                alerts: data.alerts.slice(0, 5),
+                status: data.total === 0 ? 'ok' : 'warning'
+            };
+
+            // Cache the refreshed data
+            setCachedAlerts(summary);
+
+            renderAlerts(summary);
+        } catch (error) {
+            console.error('Error refreshing alerts:', error);
+            const errorMessage = error.name === 'AbortError'
+                ? 'Request timeout - please check your connection'
+                : error.message || 'Unable to refresh alerts';
+
+            // Try to fallback to cache
+            const cached = getCachedAlerts();
+            if (cached) {
+                console.log('Using cached alerts due to refresh error');
+                renderAlerts(cached);
+            } else if (container) {
+                container.innerHTML = `
+                    <div class="alert-item" style="background: var(--text-color); padding: 16px; border-radius: 8px; text-align: center;">
+                        <p style="color: var(--gray-400); margin: 0;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            ${escapeHtml(errorMessage)}. <a href="#" onclick="refreshAlerts(); return false;" style="color: #60A5FA;">Retry</a>
+                        </p>
+                    </div>
+                `;
+            }
+        } finally {
+            isRefreshingAlerts = false;
+        }
+    }
+
+    function renderAlerts(data) {
+        const container = document.getElementById('alerts-container');
+        if (!container) {
+            console.warn('Alerts container not found in DOM');
+            return;
+        }
+
+        // Validate data structure
+        if (!data || typeof data !== 'object') {
+            container.innerHTML = `
+                <div class="alert-item" style="background: var(--text-color); padding: 16px; border-radius: 8px; text-align: center;">
+                    <p style="color: var(--gray-400); margin: 0;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Invalid alert data received
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        const totalAlerts = parseInt(data.total_alerts || 0, 10);
+        if (totalAlerts === 0) {
+            container.innerHTML = `
+                <div class="alert-status-ok">
+                    <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+                    <h3>All Clear</h3>
+                    <p>No active weather or emergency alerts for Vienna</p>
+                    <p style="font-size: 0.75rem; margin-top: 12px; opacity: 0.7;">
+                        Sources: GeoSphere Austria, Meteoalarm
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        // Build alerts HTML - escape all dynamic values for XSS protection
+        const safeSeverityColor = escapeHtml(data.highest_severity_color || 'var(--gray-400)');
+        const safeSeverityIcon = escapeHtml(data.highest_severity_icon || 'OK');
+        const safeTotalAlerts = escapeHtml(String(data.total_alerts || 0));
+        let alertsHtml = `
+            <div class="alerts-summary" style="display: grid; grid-template-columns: auto 1fr; gap: 16px; margin-bottom: 16px;">
+                <div class="alert-badge" style="background: var(--error-bg); padding: 16px 24px; border-radius: 12px; text-align: center; min-width: 120px;">
+                    <div style="font-size: 32px;">${safeSeverityIcon}</div>
+                    <div style="font-size: 24px; font-weight: bold; color: white;">${safeTotalAlerts}</div>
+                    <div style="font-size: 12px; color: rgba(255,255,255,0.8); text-transform: uppercase;">Alert${data.total_alerts !== 1 ? 's' : ''}</div>
+                </div>
+                <div class="alerts-list" style="display: flex; flex-direction: column; gap: 8px;">
+        `;
+
+        // Add each alert - escape all dynamic values
+        for (const alert of (data.alerts || [])) {
+            const typeIcon = getAlertTypeIcon(alert.alert_type);
+            const safeSeverityColor = escapeHtml(alert.severity_color || 'var(--gray-400)');
+            const safeRegion = escapeHtml(alert.region || 'Unknown');
+            const safeSource = escapeHtml(alert.source === 'geosphere' ? 'GeoSphere' : 'Meteoalarm');
+            const safeSeverity = escapeHtml(alert.severity || 'unknown');
+            const safeSeverityIcon = escapeHtml(alert.severity_icon || 'WARNING');
+            alertsHtml += `
+                <div class="alert-item" style="background: var(--text-color); padding: 12px 16px; border-radius: 8px; border-left: 4px solid ${safeSeverityColor};">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 20px;">${typeIcon}</span>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: var(--gray-100); font-size: 14px;">${escapeHtml(alert.title || 'Unknown Alert')}</div>
+                            <div style="color: var(--gray-400); font-size: 12px; margin-top: 2px;">
+                                ${safeRegion} • ${safeSource}
+                            </div>
+                        </div>
+                        <span style="font-size: 16px;" title="${safeSeverity}">${safeSeverityIcon}</span>
+                    </div>
+                    ${alert.description ? `<p style="color: var(--gray-300); font-size: 13px; margin: 8px 0 0 32px; line-height: 1.4;">${escapeHtml(truncate(alert.description, 150))}</p>` : ''}
+                </div>
+            `;
+        }
+
+        alertsHtml += `
+                </div>
+            </div>
+            <div style="text-align: center; color: var(--muted-text); font-size: 11px; margin-top: 8px;">
+                Last updated: ${new Date().toLocaleTimeString('de-AT')} • Sources: GeoSphere Austria, Meteoalarm
+            </div>
+        `;
+
+        container.innerHTML = alertsHtml;
+    }
+
+    // Helper to show cache status (optional visual indicator)
+    function showCacheStatus(isFromCache) {
+        if (isFromCache) {
+            const container = document.getElementById('alerts-container');
+            if (container) {
+                const statusDiv = document.createElement('div');
+                statusDiv.style.cssText = 'text-align: center; color: var(--gray-400); font-size: 10px; margin-top: 4px; font-style: italic;';
+                statusDiv.textContent = '📦 Loaded from cache';
+                container.appendChild(statusDiv);
+                // Remove after 3 seconds
+                setTimeout(() => {
+                    if (statusDiv.parentNode) {
+                        statusDiv.remove();
+                    }
+                }, 3000);
+            }
+        }
+    }
+
+    function getAlertTypeIcon(type) {
+        const icons = {
+            'weather': '🌤️',
+            'storm': '🌪️',
+            'wind': '💨',
+            'rain': '🌧️',
+            'snow': '❄️',
+            'ice': '🧊',
+            'fog': '🌫️',
+            'heat': '🌡️',
+            'cold': '🥶',
+            'thunderstorm': '⛈️',
+            'flood': '🌊',
+            'fire': '🔥',
+            'avalanche': '🏔️',
+        };
+        return icons[type] || 'WARNING';
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function truncate(text, maxLength) {
+        if (!text || text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
+    }
+</script>
+{% endblock %}

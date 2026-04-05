@@ -30,8 +30,8 @@
   "panels": [
     {
       "datasource": {
-        "type": "tapo-camera-mcp-datasource",
-        "uid": "${DS_TAPO-CAMERA-MCP}"
+        "type": "devices-mcp-datasource",
+        "uid": "${DS_devices-mcp}"
       },
       "description": "Live stream from your Tapo camera",
       "fieldConfig": {
@@ -108,8 +108,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "refId": "A"
         }
@@ -119,8 +119,8 @@
     },
     {
       "datasource": {
-        "type": "tapo-camera-mcp-datasource",
-        "uid": "${DS_TAPO-CAMERA-MCP}"
+        "type": "devices-mcp-datasource",
+        "uid": "${DS_devices-mcp}"
       },
       "fieldConfig": {
         "defaults": {
@@ -200,8 +200,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "camera_cpu_usage_percent{camera=\"$camera\"}",
           "legendFormat": "CPU Usage",
@@ -209,8 +209,8 @@
         },
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "camera_memory_usage_percent{camera=\"$camera\"}",
           "legendFormat": "Memory Usage",
@@ -222,8 +222,8 @@
     },
     {
       "datasource": {
-        "type": "tapo-camera-mcp-datasource",
-        "uid": "${DS_TAPO-CAMERA-MCP}"
+        "type": "devices-mcp-datasource",
+        "uid": "${DS_devices-mcp}"
       },
       "fieldConfig": {
         "defaults": {
@@ -303,8 +303,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "rate(camera_network_bytes_received_total{camera=\"$camera\"}[5m])",
           "legendFormat": "Network In",
@@ -312,8 +312,8 @@
         },
         {
           "datasource": {
-            "type": "tapo-camera-mcp-datasource",
-            "uid": "${DS_TAPO-CAMERA-MCP}"
+            "type": "devices-mcp-datasource",
+            "uid": "${DS_devices-mcp}"
           },
           "expr": "rate(camera_network_bytes_sent_total{camera=\"$camera\"}[5m])",
           "legendFormat": "Network Out",
@@ -365,14 +365,14 @@
         "type": "custom"
       },
       {
-        "description": "Data source for Tapo Camera MCP",
+        "description": "Data source for Devices MCP",
         "hide": 0,
         "includeAll": false,
-        "label": "Tapo Camera MCP",
+        "label": "Devices MCP",
         "multi": false,
-        "name": "DS_TAPO-CAMERA-MCP",
+        "name": "DS_devices-mcp",
         "options": [],
-        "query": "tapo-camera-mcp",
+        "query": "devices-mcp",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

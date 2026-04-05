@@ -26,7 +26,7 @@ Sandra **INSISTS** on seeing live camera feeds in Grafana dashboards:
 ## Implementation Structure
 
 ```markdown
-src/tapo_camera_mcp/
+src/devices_mcp/
 ├── tools/grafana/              # ← CREATE THIS
 │   ├── __init__.py            # ← Tool discovery
 │   ├── metrics.py             # ← Camera metrics collection
@@ -39,15 +39,15 @@ src/tapo_camera_mcp/
 
 ### **A) Create `/tools/grafana/__init__.py`**
 ```python
-"""Grafana integration tools for Tapo Camera MCP."""
+"""Grafana integration tools for Devices MCP."""
 
 from .metrics import GrafanaMetricsTool
-from .snapshots import GrafanaSnapshotsTool  
+from .snapshots import GrafanaSnapshotsTool
 from .dashboards import ViennaDashboardTool
 
 __all__ = [
     'GrafanaMetricsTool',
-    'GrafanaSnapshotsTool', 
+    'GrafanaSnapshotsTool',
     'ViennaDashboardTool'
 ]
 ```
@@ -63,16 +63,16 @@ from ..base_tool import BaseTool
 
 class GrafanaMetricsTool(BaseTool):
     """Tool for collecting camera metrics in Grafana-compatible format."""
-    
+
     name = "get_grafana_metrics"
     description = "Export comprehensive camera metrics for Grafana HTTP data source"
-    
+
     async def execute(self, **kwargs) -> Dict[str, Any]:
         """Collect all camera metrics for Grafana consumption."""
         try:
             # Get camera manager instance
             camera_manager = self.get_camera_manager()
-            
+
             metrics = {
                 "timestamp": datetime.utcnow().isoformat() + "Z",
                 "cameras": {},
@@ -89,13 +89,13 @@ class GrafanaMetricsTool(BaseTool):
                     }
                 }
             }
-            
+
             # Collect metrics for each camera
             for camera_id, camera in camera_manager.cameras.items():
                 try:
                     # Get camera status and info
                     status = await camera.get_device_info()
-                    
+
                     camera_metrics = {
                         "status": "online" if status.get("online", False) else "offline",
                         "uptime_minutes": status.get("uptime", 0) // 60,
@@ -109,15 +109,15 @@ class GrafanaMetricsTool(BaseTool):
                         "storage_used_mb": status.get("storage_used", 0),
                         "storage_total_mb": status.get("storage_total", 32000)
                     }
-                    
+
                     metrics["cameras"][camera_id] = camera_metrics
-                    
+
                     # Update system counters
                     if camera_metrics["status"] == "online":
                         metrics["system"]["active_cameras"] += 1
                     if camera_metrics["recording_active"]:
                         metrics["system"]["recordings_active"] += 1
-                        
+
                 except Exception as e:
                     # Camera offline or error - provide default metrics
                     metrics["cameras"][camera_id] = {
@@ -128,37 +128,37 @@ class GrafanaMetricsTool(BaseTool):
                         "motion_events_24h": 0,
                         "recording_active": False
                     }
-            
+
             return {
                 "success": True,
                 "data": metrics,
                 "content_type": "application/json"
             }
-            
+
         except Exception as e:
             return {
                 "success": False,
                 "error": f"Failed to collect metrics: {str(e)}",
                 "data": {"timestamp": datetime.utcnow().isoformat() + "Z", "cameras": {}}
             }
-    
+
     def _get_vienna_season(self) -> str:
         """Get current season in Vienna."""
         month = datetime.now().month
         if month in [12, 1, 2]:
             return "winter"
         elif month in [3, 4, 5]:
-            return "spring" 
+            return "spring"
         elif month in [6, 7, 8]:
             return "summer"
         else:
             return "autumn"
-    
+
     def _is_heating_period(self) -> bool:
         """Check if it's heating period in Vienna (Oct-May)."""
         month = datetime.now().month
         return month >= 10 or month <= 5
-    
+
     async def _get_motion_events(self, camera_id: str, hours: int) -> int:
         """Get motion event count for specified time period."""
         # TODO: Implement motion event counting from camera logs
@@ -168,7 +168,7 @@ class GrafanaMetricsTool(BaseTool):
             return random.randint(0, 10)
         else:
             return random.randint(5, 50)
-    
+
     async def _get_last_motion_time(self, camera_id: str) -> str:
         """Get timestamp of last motion detection."""
         # TODO: Implement from actual camera logs
@@ -189,14 +189,14 @@ from ..base_tool import BaseTool
 
 class GrafanaSnapshotsTool(BaseTool):
     """Tool for capturing live camera snapshots for Grafana image panels."""
-    
+
     name = "get_camera_snapshot"
     description = "Capture live camera snapshot for Grafana image panels - MANDATORY FOR VIDEO/IMAGES"
-    
+
     parameters = [
         {
             "name": "camera_id",
-            "type": "string", 
+            "type": "string",
             "description": "Camera ID to capture snapshot from",
             "required": True
         },
@@ -208,59 +208,59 @@ class GrafanaSnapshotsTool(BaseTool):
         },
         {
             "name": "width",
-            "type": "integer", 
+            "type": "integer",
             "description": "Image width in pixels",
             "default": 640
         },
         {
-            "name": "height", 
+            "name": "height",
             "type": "integer",
-            "description": "Image height in pixels", 
+            "description": "Image height in pixels",
             "default": 480
         }
     ]
-    
-    async def execute(self, camera_id: str, quality: str = "medium", 
+
+    async def execute(self, camera_id: str, quality: str = "medium",
                      width: int = 640, height: int = 480, **kwargs) -> Dict[str, Any]:
         """Capture live snapshot from camera for Grafana image display."""
         try:
             # Get camera manager instance
             camera_manager = self.get_camera_manager()
-            
+
             if camera_id not in camera_manager.cameras:
                 return {
                     "success": False,
                     "error": f"Camera '{camera_id}' not found",
                     "camera_id": camera_id
                 }
-            
+
             camera = camera_manager.cameras[camera_id]
-            
+
             # Capture snapshot from camera
             try:
                 # Set quality parameters based on request
                 quality_map = {
                     "low": (320, 240),
-                    "medium": (640, 480), 
+                    "medium": (640, 480),
                     "high": (1280, 720)
                 }
-                
+
                 if quality in quality_map:
                     width, height = quality_map[quality]
-                
+
                 # Capture image from camera
                 image_data = await camera.capture_image(width=width, height=height)
-                
+
                 if not image_data:
                     raise Exception("Failed to capture image from camera")
-                
+
                 # Convert to base64 for JSON transport
                 base64_image = base64.b64encode(image_data).decode('utf-8')
-                
+
                 # Generate cache-busting URL for Grafana
                 timestamp = int(time.time())
                 snapshot_url = f"http://localhost:8080/api/snapshot/{camera_id}?t={timestamp}"
-                
+
                 return {
                     "success": True,
                     "camera_id": camera_id,
@@ -272,7 +272,7 @@ class GrafanaSnapshotsTool(BaseTool):
                     "file_size_kb": len(image_data) // 1024,
                     "content_type": "image/jpeg"
                 }
-                
+
             except Exception as e:
                 return {
                     "success": False,
@@ -280,7 +280,7 @@ class GrafanaSnapshotsTool(BaseTool):
                     "camera_id": camera_id,
                     "timestamp": datetime.utcnow().isoformat() + "Z"
                 }
-                
+
         except Exception as e:
             return {
                 "success": False,
@@ -290,15 +290,15 @@ class GrafanaSnapshotsTool(BaseTool):
 
 class GrafanaStreamTool(BaseTool):
     """Tool for getting RTSP stream URLs for Grafana video panels."""
-    
+
     name = "get_camera_stream_url"
     description = "Get RTSP/HTTP stream URL for Grafana video panels"
-    
+
     parameters = [
         {
             "name": "camera_id",
             "type": "string",
-            "description": "Camera ID to get stream URL for", 
+            "description": "Camera ID to get stream URL for",
             "required": True
         },
         {
@@ -308,20 +308,20 @@ class GrafanaStreamTool(BaseTool):
             "default": "rtsp"
         }
     ]
-    
+
     async def execute(self, camera_id: str, stream_type: str = "rtsp", **kwargs) -> Dict[str, Any]:
         """Get live stream URL for camera."""
         try:
             camera_manager = self.get_camera_manager()
-            
+
             if camera_id not in camera_manager.cameras:
                 return {
                     "success": False,
                     "error": f"Camera '{camera_id}' not found"
                 }
-            
+
             camera = camera_manager.cameras[camera_id]
-            
+
             # Get stream URL based on type
             if stream_type == "rtsp":
                 stream_url = await camera.get_rtsp_url()
@@ -335,7 +335,7 @@ class GrafanaStreamTool(BaseTool):
                     "success": False,
                     "error": f"Unsupported stream type: {stream_type}"
                 }
-            
+
             return {
                 "success": True,
                 "camera_id": camera_id,
@@ -343,7 +343,7 @@ class GrafanaStreamTool(BaseTool):
                 "stream_type": stream_type,
                 "timestamp": datetime.utcnow().isoformat() + "Z"
             }
-            
+
         except Exception as e:
             return {
                 "success": False,
@@ -360,18 +360,18 @@ from ..base_tool import BaseTool
 
 class ViennaDashboardTool(BaseTool):
     """Tool for Vienna-specific security dashboard data."""
-    
+
     name = "get_vienna_security_dashboard"
     description = "Get formatted data for Vienna-specific security dashboard with German labels"
-    
+
     async def execute(self, **kwargs) -> Dict[str, Any]:
         """Get Vienna security dashboard data with Austrian context."""
         try:
             camera_manager = self.get_camera_manager()
-            
+
             # Get current Vienna time
             vienna_time = datetime.now().strftime("%H:%M")
-            
+
             dashboard_data = {
                 "haustor_monitoring": {
                     "status": "aktiv",
@@ -382,7 +382,7 @@ class ViennaDashboardTool(BaseTool):
                 },
                 "building_security": {
                     "alle_kameras": len(camera_manager.cameras),
-                    "online_kameras": sum(1 for c in camera_manager.cameras.values() 
+                    "online_kameras": sum(1 for c in camera_manager.cameras.values()
                                         if c.is_online()),
                     "bewegungsmelder": "aktiv",
                     "tuersensor_batterie": 95
@@ -396,7 +396,7 @@ class ViennaDashboardTool(BaseTool):
                 },
                 "german_labels": {
                     "status": "Status",
-                    "bewegung": "Bewegung", 
+                    "bewegung": "Bewegung",
                     "aufnahme": "Aufnahme",
                     "batterie": "Batterie",
                     "temperatur": "Temperatur",
@@ -409,19 +409,19 @@ class ViennaDashboardTool(BaseTool):
                 },
                 "timestamp": datetime.utcnow().isoformat() + "Z"
             }
-            
+
             return {
                 "success": True,
                 "data": dashboard_data,
                 "content_type": "application/json"
             }
-            
+
         except Exception as e:
             return {
                 "success": False,
                 "error": f"Failed to get Vienna dashboard data: {str(e)}"
             }
-    
+
     def _get_season_german(self) -> str:
         """Get current season in German."""
         month = datetime.now().month
@@ -433,12 +433,12 @@ class ViennaDashboardTool(BaseTool):
             return "Sommer"
         else:
             return "Herbst"
-    
+
     def _is_heating_period(self) -> bool:
         """Check if heating period in Vienna."""
         month = datetime.now().month
         return month >= 10 or month <= 5
-    
+
     def _daylight_hours_remaining(self) -> float:
         """Calculate daylight hours remaining today."""
         hour = datetime.now().hour
@@ -448,7 +448,7 @@ class ViennaDashboardTool(BaseTool):
             return (19 - hour)
         else:
             return 0.0  # After sunset
-    
+
     def _is_peak_hours(self) -> bool:
         """Check if Wien Energie peak hours (17:00-20:00)."""
         hour = datetime.now().hour
@@ -491,23 +491,23 @@ async def snapshot_endpoint(camera_id: str, t: Optional[int] = None):
             "camera_id": camera_id,
             "quality": "medium"
         })
-        
+
         if result.get("success", False):
             # Decode base64 image data
             image_data = base64.b64decode(result["base64_image"])
-            
+
             return StreamingResponse(
                 BytesIO(image_data),
                 media_type="image/jpeg",
                 headers={
                     "Cache-Control": "no-cache, no-store, must-revalidate",
-                    "Pragma": "no-cache", 
+                    "Pragma": "no-cache",
                     "Expires": "0"
                 }
             )
         else:
             raise HTTPException(status_code=500, detail=result.get("error", "Snapshot failed"))
-            
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Snapshot error: {str(e)}")
 
@@ -532,17 +532,17 @@ async def mjpeg_stream_endpoint(camera_id: str):
             "camera_id": camera_id,
             "stream_type": "rtsp"
         })
-        
+
         if not result.get("success", False):
             raise HTTPException(status_code=404, detail="Camera not found")
-        
+
         # TODO: Convert RTSP to MJPEG stream
         # This is a placeholder - implement RTSP->MJPEG conversion
         return StreamingResponse(
             self._rtsp_to_mjpeg_generator(result["stream_url"]),
             media_type="multipart/x-mixed-replace; boundary=frame"
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Stream error: {str(e)}")
 

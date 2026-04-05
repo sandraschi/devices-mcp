@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document explains how the dockerized Tapo Camera MCP platform accesses hardware devices (cameras, Hue lights, weather stations, smart plugs) on the local network.
+This document explains how the dockerized Devices MCP platform accesses hardware devices (cameras, Hue lights, weather stations, smart plugs) on the local network.
 
 ## Network Architecture
 
@@ -208,4 +208,3 @@ For cloud-based services (Netatmo, Ring, Nest via Home Assistant), see:
 - [Windows Docker Desktop Networking](https://docs.docker.com/desktop/networking/)
 - [Bridge Network Driver](https://docs.docker.com/network/drivers/bridge/)
 - [Docker Cloud Services Access](DOCKER_CLOUD_SERVICES.md) - Netatmo, Ring, Nest configuration
-

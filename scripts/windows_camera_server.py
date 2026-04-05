@@ -1,34 +1,37 @@
 #!/usr/bin/env python3
 """
-Windows USB Camera Server for Tapo Camera MCP.
+Windows USB Camera Server for Devices MCP.
 
 This server runs on Windows host and provides HTTP access to USB cameras
 that can't be accessed from Docker containers on Windows.
 """
 
 import asyncio
+import io
 import logging
 import os
+import platform
 import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse
+
 import cv2
-import numpy as np
 from PIL import Image
-import io
 
 # Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
-from tapo_camera_mcp.utils.logging import setup_logging
+from devices_mcp.utils.logging import setup_logging
 
 # Suppress OpenCV warnings
 os.environ["OPENCV_LOG_LEVEL"] = "ERROR"
-cv2.setLogLevel(0)
+# Suppress most OpenCV log messages if possible
+# cv2.setLogLevel(0) is not available in all versions
 
 logger = logging.getLogger(__name__)
+
 
 class CameraManager:
     """Manages USB cameras on Windows."""
@@ -38,6 +41,7 @@ class CameraManager:
         self.frames = {}
         self.capture_threads = {}
         self.lock = threading.Lock()
+        self._auto_discovered = False
 
     def add_camera(self, camera_id: int, name: str):
         """Add a camera by device ID."""
@@ -46,30 +50,108 @@ class CameraManager:
                 logger.warning(f"Camera {camera_id} already exists")
                 return
 
-            cap = cv2.VideoCapture(camera_id)
+            cap = (
+                cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
+                if platform.system() == "Windows"
+                else cv2.VideoCapture(camera_id, cv2.CAP_ANY)
+            )
             if not cap.isOpened():
                 logger.error(f"Failed to open camera {camera_id}")
                 return
 
             self.cameras[camera_id] = {
-                'name': name,
-                'cap': cap,
-                'last_frame': None,
-                'last_frame_time': 0,
-                'thread': None,
-                'active': True
+                "name": name,
+                "cap": cap,
+                "last_frame": None,
+                "last_frame_time": 0,
+                "thread": None,
+                "active": True,
             }
 
             # Start capture thread
-            thread = threading.Thread(
-                target=self._capture_loop,
-                args=(camera_id,),
-                daemon=True
-            )
+            thread = threading.Thread(target=self._capture_loop, args=(camera_id,), daemon=True)
             thread.start()
             self.capture_threads[camera_id] = thread
 
             logger.info(f"Added camera {camera_id}: {name}")
+
+    def auto_discover_cameras(self):
+        """Automatically discover all available USB cameras."""
+        if self._auto_discovered:
+            logger.info("Auto-discovery already performed, skipping")
+            return
+
+        logger.info("Auto-discovering USB cameras for Windows server...")
+
+        discovered_count = 0
+        max_devices = 10
+
+        for device_id in range(max_devices):
+            try:
+                cap = (
+                    cv2.VideoCapture(device_id, cv2.CAP_DSHOW)
+                    if platform.system() == "Windows"
+                    else cv2.VideoCapture(device_id, cv2.CAP_ANY)
+                )
+                if cap.isOpened():
+                    ret, frame = cap.read()
+                    if ret and frame is not None:
+                        # Get camera info
+                        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+                        # Generate friendly name
+                        camera_name = self._generate_camera_name(device_id, width, height)
+                        cap.release()
+
+                        # Add the camera
+                        self.add_camera(device_id, camera_name)
+                        discovered_count += 1
+
+                        logger.info(
+                            f"Auto-discovered camera {device_id}: {camera_name} ({width}x{height})"
+                        )
+                    else:
+                        cap.release()
+                else:
+                    # Try different backend
+                    cap.release()
+
+            except Exception as e:
+                logger.debug(f"Error checking camera device {device_id}: {e}")
+                continue
+
+        self._auto_discovered = True
+        logger.info(f"Auto-discovery complete: found {discovered_count} USB camera(s)")
+
+    def _generate_camera_name(self, device_id: int, width: int, height: int) -> str:
+        """Generate a friendly name for a camera based on its properties."""
+        resolution = f"{width}x{height}"
+
+        # Classify camera type based on resolution
+        if width >= 3840 and height >= 2160:
+            camera_type = "4K Camera"
+        elif width >= 1920 and height >= 1080:
+            camera_type = "HD Webcam"
+        elif width >= 1280 and height >= 720:
+            camera_type = "HD Camera"
+        elif width <= 640 and height <= 480:
+            camera_type = "VGA Camera"
+        else:
+            camera_type = "Webcam"
+
+        # Use common names for first few cameras
+        common_names = [
+            "Built-in Camera",
+            "USB Webcam",
+            "External Camera",
+            "Document Camera",
+            "Microscope Camera",
+        ]
+
+        if device_id < len(common_names):
+            return f"{common_names[device_id]} ({resolution})"
+        return f"{camera_type} {device_id} ({resolution})"
 
     def _capture_loop(self, camera_id: int):
         """Background capture loop for a camera."""
@@ -77,8 +159,8 @@ class CameraManager:
         if not camera:
             return
 
-        cap = camera['cap']
-        while camera['active']:
+        cap = camera["cap"]
+        while camera["active"]:
             try:
                 ret, frame = cap.read()
                 if ret:
@@ -87,12 +169,12 @@ class CameraManager:
                     pil_image = Image.fromarray(rgb_frame)
 
                     with self.lock:
-                        camera['last_frame'] = pil_image
-                        camera['last_frame_time'] = time.time()
+                        camera["last_frame"] = pil_image
+                        camera["last_frame_time"] = time.time()
                 else:
                     logger.warning(f"No frame from camera {camera_id}")
-            except Exception as e:
-                logger.error(f"Error capturing from camera {camera_id}: {e}")
+            except Exception:
+                logger.exception("Error capturing from camera {camera_id}:")
 
             time.sleep(0.1)  # 10 FPS
 
@@ -100,27 +182,28 @@ class CameraManager:
         """Get snapshot from camera."""
         with self.lock:
             camera = self.cameras.get(camera_id)
-            if not camera or not camera['last_frame']:
+            if not camera or not camera["last_frame"]:
                 return None
-            return camera['last_frame'].copy()
+            return camera["last_frame"].copy()
 
     def get_mjpeg_stream(self, camera_id: int):
         """Get MJPEG stream generator for camera."""
+
         def generate():
             while True:
                 frame = self.get_snapshot(camera_id)
                 if frame:
                     # Convert to JPEG
                     buf = io.BytesIO()
-                    frame.save(buf, format='JPEG', quality=80)
+                    frame.save(buf, format="JPEG", quality=80)
                     jpeg_data = buf.getvalue()
 
                     # MJPEG frame
-                    yield b'--frame\r\n'
-                    yield b'Content-Type: image/jpeg\r\n'
-                    yield f'Content-Length: {len(jpeg_data)}\r\n\r\n'.encode()
+                    yield b"--frame\r\n"
+                    yield b"Content-Type: image/jpeg\r\n"
+                    yield f"Content-Length: {len(jpeg_data)}\r\n\r\n".encode()
                     yield jpeg_data
-                    yield b'\r\n'
+                    yield b"\r\n"
 
                 time.sleep(0.1)  # 10 FPS
 
@@ -131,15 +214,16 @@ class CameraManager:
         with self.lock:
             camera = self.cameras.get(camera_id)
             if camera:
-                camera['active'] = False
-                if camera['cap']:
-                    camera['cap'].release()
+                camera["active"] = False
+                if camera["cap"]:
+                    camera["cap"].release()
                 logger.info(f"Closed camera {camera_id}")
 
     def close_all(self):
         """Close all cameras."""
         for camera_id in list(self.cameras.keys()):
             self.close_camera(camera_id)
+
 
 class CameraHTTPRequestHandler(BaseHTTPRequestHandler):
     """HTTP request handler for camera server."""
@@ -151,33 +235,33 @@ class CameraHTTPRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         """Handle GET requests."""
         parsed_path = urlparse(self.path)
-        path_parts = parsed_path.path.strip('/').split('/')
+        path_parts = parsed_path.path.strip("/").split("/")
 
-        if len(path_parts) >= 2 and path_parts[0] == 'camera':
+        if len(path_parts) >= 2 and path_parts[0] == "camera":
             try:
                 camera_id = int(path_parts[1])
 
-                if len(path_parts) >= 3 and path_parts[2] == 'snapshot':
+                if len(path_parts) >= 3 and path_parts[2] == "snapshot":
                     # Get snapshot
                     frame = self.camera_manager.get_snapshot(camera_id)
                     if frame:
                         buf = io.BytesIO()
-                        frame.save(buf, format='JPEG', quality=80)
+                        frame.save(buf, format="JPEG", quality=80)
                         jpeg_data = buf.getvalue()
 
                         self.send_response(200)
-                        self.send_header('Content-Type', 'image/jpeg')
-                        self.send_header('Content-Length', str(len(jpeg_data)))
+                        self.send_header("Content-Type", "image/jpeg")
+                        self.send_header("Content-Length", str(len(jpeg_data)))
                         self.end_headers()
                         self.wfile.write(jpeg_data)
                     else:
                         self.send_error(404, "No frame available")
 
-                elif len(path_parts) >= 3 and path_parts[2] == 'mjpeg':
+                elif len(path_parts) >= 3 and path_parts[2] == "mjpeg":
                     # Get MJPEG stream
                     self.send_response(200)
-                    self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
-                    self.send_header('Cache-Control', 'no-cache')
+                    self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
+                    self.send_header("Cache-Control", "no-cache")
                     self.end_headers()
 
                     try:
@@ -193,26 +277,25 @@ class CameraHTTPRequestHandler(BaseHTTPRequestHandler):
             except (ValueError, IndexError):
                 self.send_error(400, "Invalid camera ID")
 
-        elif parsed_path.path == '/status':
+        elif parsed_path.path == "/status":
             # Status endpoint
-            status = {
-                'cameras': {}
-            }
+            status = {"cameras": {}}
 
             for cam_id, camera in self.camera_manager.cameras.items():
-                status['cameras'][str(cam_id)] = {
-                    'name': camera['name'],
-                    'active': camera['active'],
-                    'has_frame': camera['last_frame'] is not None,
-                    'last_frame_time': camera['last_frame_time']
+                status["cameras"][str(cam_id)] = {
+                    "name": camera["name"],
+                    "active": camera["active"],
+                    "has_frame": camera["last_frame"] is not None,
+                    "last_frame_time": camera["last_frame_time"],
                 }
 
             import json
+
             response = json.dumps(status).encode()
 
             self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', str(len(response)))
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(response)))
             self.end_headers()
             self.wfile.write(response)
 
@@ -223,13 +306,17 @@ class CameraHTTPRequestHandler(BaseHTTPRequestHandler):
         """Override to use our logger."""
         logger.info(format % args)
 
-def run_server(camera_manager, port=7778):
+
+def run_server(camera_manager, port=10715):
     """Run the HTTP server."""
+
     def handler_class(*args, **kwargs):
         return CameraHTTPRequestHandler(*args, camera_manager=camera_manager, **kwargs)
 
-    server = HTTPServer(('localhost', port), handler_class)
-    logger.info(f"Windows Camera Server started on http://localhost:{port}")
+    # Bind 127.0.0.1 so clients using WINDOWS_CAMERA_SERVER_URL=http://127.0.0.1:... always reach us
+    # (localhost can resolve to IPv6 ::1 while the backend uses IPv4).
+    server = HTTPServer(("127.0.0.1", port), handler_class)
+    logger.info(f"Windows Camera Server started on http://127.0.0.1:{port}")
 
     try:
         server.serve_forever()
@@ -238,6 +325,7 @@ def run_server(camera_manager, port=7778):
     finally:
         camera_manager.close_all()
 
+
 async def main():
     """Main function."""
     setup_logging()
@@ -245,35 +333,50 @@ async def main():
 
     camera_manager = CameraManager()
 
-    # Add cameras (microscope on 0, webcam on 1)
-    camera_manager.add_camera(0, "Microscope Camera")
-    camera_manager.add_camera(1, "Webcam Camera")
+    # Auto-discover all available USB cameras
+    camera_manager.auto_discover_cameras()
 
     # Give cameras time to initialize
     await asyncio.sleep(2)
 
     # Check which cameras are working
+    working_cameras = 0
     for cam_id, camera in camera_manager.cameras.items():
-        if camera['last_frame']:
+        if camera["last_frame"]:
             logger.info(f"Camera {cam_id} ({camera['name']}) is working")
+            working_cameras += 1
         else:
             logger.warning(f"Camera {cam_id} ({camera['name']}) is not providing frames")
 
+    if working_cameras == 0:
+        logger.warning(
+            "No working cameras found. Make sure USB cameras are connected and not in use by other applications."
+        )
+    else:
+        logger.info(f"{working_cameras} camera(s) are working and ready for streaming")
+
     # Start HTTP server in a thread
-    server_thread = threading.Thread(
-        target=run_server,
-        args=(camera_manager, 7778),
-        daemon=True
-    )
+    server_thread = threading.Thread(target=run_server, args=(camera_manager, 10715), daemon=True)
     server_thread.start()
 
     logger.info("Windows Camera Server running. Press Ctrl+C to stop.")
     logger.info("Available endpoints:")
-    logger.info("  GET /status - Camera status")
-    logger.info("  GET /camera/0/snapshot - Microscope snapshot")
-    logger.info("  GET /camera/1/snapshot - Webcam snapshot")
-    logger.info("  GET /camera/0/mjpeg - Microscope MJPEG stream")
-    logger.info("  GET /camera/1/mjpeg - Webcam MJPEG stream")
+    logger.info("  GET /status - Camera status and list of available cameras")
+
+    if camera_manager.cameras:
+        for cam_id in camera_manager.cameras.keys():
+            logger.info(f"  GET /camera/{cam_id}/snapshot - Camera {cam_id} snapshot")
+            logger.info(f"  GET /camera/{cam_id}/mjpeg - Camera {cam_id} MJPEG stream")
+    else:
+        logger.info("  No cameras detected. Connect USB cameras and restart the server.")
+
+    logger.info("")
+    logger.info("USB Camera Features:")
+    logger.info("  ✓ Auto-detection of all connected cameras")
+    logger.info("  ✓ No manual configuration required")
+    logger.info("  ✓ Always online (no connection procedures)")
+    logger.info("  ✓ MJPEG streaming for real-time video")
+    logger.info("  ✓ Automatic fallback and error recovery")
 
     try:
         # Keep running
@@ -284,8 +387,6 @@ async def main():
     finally:
         camera_manager.close_all()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     asyncio.run(main())
-
-
-

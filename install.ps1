@@ -1,4 +1,4 @@
-# Comprehensive Installation Script for Tapo Camera MCP
+# Comprehensive Installation Script for Devices MCP
 # Run this to set up the full development environment with all executables
 
 param(
@@ -9,7 +9,7 @@ param(
 )
 
 if ($Help) {
-    Write-Host "Tapo Camera MCP Installation Script" -ForegroundColor Cyan
+    Write-Host "Devices MCP Installation Script" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "USAGE:" -ForegroundColor Yellow
     Write-Host "  .\install.ps1                    # Interactive menu"
@@ -19,7 +19,7 @@ if ($Help) {
     Write-Host ""
     Write-Host "INSTALLATION OPTIONS:" -ForegroundColor Yellow
     Write-Host "  Minimal:     pip install -e ."
-    Write-Host "               - tapo-camera-mcp.exe, tapo-llms.exe"
+    Write-Host "               - devices-mcp.exe, tapo-llms.exe"
     Write-Host ""
     Write-Host "  Dev:         pip install -e .[dev]"
     Write-Host "               - Everything above PLUS:"
@@ -34,7 +34,7 @@ if ($Help) {
     exit 0
 }
 
-Write-Host "🔧 Tapo Camera MCP Installation" -ForegroundColor Magenta
+Write-Host "🔧 Devices MCP Installation" -ForegroundColor Magenta
 Write-Host "=================================" -ForegroundColor Magenta
 
 # Check if we're in a virtual environment
@@ -62,7 +62,7 @@ if ($installType -eq "interactive") {
     Write-Host "   Includes: watchfiles.exe, pytest, ruff, mypy, sphinx, jupyter, etc." -ForegroundColor Gray
     Write-Host ""
     Write-Host "2. Minimal - pip install -e ." -ForegroundColor White
-    Write-Host "   Includes: tapo-camera-mcp.exe, tapo-llms.exe only" -ForegroundColor Gray
+    Write-Host "   Includes: devices-mcp.exe, tapo-llms.exe only" -ForegroundColor Gray
     Write-Host ""
     Write-Host "3. Watchfiles Only - pip install -r requirements-watchfiles.txt" -ForegroundColor White
     Write-Host "   Includes: watchfiles.exe for crashproofing" -ForegroundColor Gray
@@ -100,7 +100,7 @@ switch ($installType) {
             Write-Host "✅ Full development installation complete!" -ForegroundColor Green
             Write-Host ""
             Write-Host "EXECUTABLES INSTALLED:" -ForegroundColor Cyan
-            Write-Host "  Core: tapo-camera-mcp.exe, tapo-llms.exe" -ForegroundColor White
+            Write-Host "  Core: devices-mcp.exe, tapo-llms.exe" -ForegroundColor White
             Write-Host "  Dev: watchfiles.exe, pytest.exe, ruff.exe, mypy.exe" -ForegroundColor White
             Write-Host "  Docs: sphinx-build.exe, jupyter.exe" -ForegroundColor White
             Write-Host ""
@@ -120,7 +120,7 @@ switch ($installType) {
             Write-Host "✅ Minimal installation complete!" -ForegroundColor Green
             Write-Host ""
             Write-Host "EXECUTABLES INSTALLED:" -ForegroundColor Cyan
-            Write-Host "  tapo-camera-mcp.exe, tapo-llms.exe" -ForegroundColor White
+            Write-Host "  devices-mcp.exe, tapo-llms.exe" -ForegroundColor White
             Write-Host ""
             Write-Host "For crashproofing, also run: .\install-watchfiles.ps1" -ForegroundColor Yellow
         }

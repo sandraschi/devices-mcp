@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Test importing base_tool
 try:
-    from tapo_camera_mcp.tools.base_tool import register_tool  # noqa: F401
+    from devices_mcp.tools.base_tool import register_tool  # noqa: F401
 
 except ImportError:
     import traceback
@@ -23,7 +23,7 @@ except ImportError:
 
 # Test importing tools/__init__.py
 try:
-    from tapo_camera_mcp.tools import get_all_tools
+    from devices_mcp.tools import get_all_tools
 
 except ImportError:
     import traceback
@@ -32,11 +32,11 @@ except ImportError:
 
 # Test importing tool modules
 modules = [
-    "tapo_camera_mcp.tools.camera",
-    "tapo_camera_mcp.tools.system",
-    "tapo_camera_mcp.tools.ptz",
-    "tapo_camera_mcp.tools.media",
-    "tapo_camera_mcp.tools.grafana",
+    "devices_mcp.tools.camera",
+    "devices_mcp.tools.system",
+    "devices_mcp.tools.ptz",
+    "devices_mcp.tools.media",
+    "devices_mcp.tools.grafana",
 ]
 
 for module_name in modules:
@@ -49,7 +49,7 @@ for module_name in modules:
 
 # Test tool registration
 try:
-    from tapo_camera_mcp.tools import get_all_tools
+    from devices_mcp.tools import get_all_tools
 
     tools = get_all_tools()
     for _tool in tools:

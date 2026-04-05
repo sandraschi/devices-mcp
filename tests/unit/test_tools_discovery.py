@@ -22,10 +22,10 @@ def test_tool_categories():
 def test_tools_discovery():
     """Test tools discovery functionality."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Test discovering tools from the tools package
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
 
         # Should find multiple tools
         assert len(tools) > 0, "Should discover at least one tool"
@@ -47,7 +47,7 @@ def test_tools_discovery():
 def test_tool_registry():
     """Test tool registration system."""
     try:
-        from tapo_camera_mcp.tools.base_tool import (
+        from devices_mcp.tools.base_tool import (
             get_all_tools,
             get_tool,
             register_tool,
@@ -84,7 +84,7 @@ def test_tool_registry():
 def test_base_tool_structure():
     """Test base tool class structure."""
     try:
-        from tapo_camera_mcp.tools.base_tool import ToolCategory, ToolResult
+        from devices_mcp.tools.base_tool import ToolCategory, ToolResult
 
         # Test ToolCategory enum
         categories = list(ToolCategory)
@@ -119,7 +119,7 @@ def test_base_tool_structure():
 def test_tool_decorator():
     """Test tool decorator functionality."""
     try:
-        from tapo_camera_mcp.tools.base_tool import tool
+        from devices_mcp.tools.base_tool import tool
 
         # Test decorator creation
         @tool(name="test_decorator_tool")
@@ -147,7 +147,7 @@ def test_tool_decorator():
 def test_tool_definition():
     """Test tool definition generation."""
     try:
-        from tapo_camera_mcp.tools.base_tool import BaseTool
+        from devices_mcp.tools.base_tool import BaseTool
 
         # Create a test tool class
         class TestTool(BaseTool):
@@ -179,7 +179,7 @@ def test_tool_definition():
 def test_tool_discovery_error_handling():
     """Test error handling in tool discovery."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Test discovery with non-existent package
         tools = discover_tools("non.existent.package")
@@ -201,8 +201,8 @@ def test_tool_discovery_error_handling():
 def test_tool_validation_function():
     """Test the is_tool_class validation function."""
     try:
-        from tapo_camera_mcp.tools.base_tool import BaseTool
-        from tapo_camera_mcp.tools.discovery import is_tool_class
+        from devices_mcp.tools.base_tool import BaseTool
+        from devices_mcp.tools.discovery import is_tool_class
 
         # Test valid tool class
         class ValidTool(BaseTool):
@@ -237,10 +237,10 @@ def test_tool_validation_function():
 def test_tool_metadata_completeness():
     """Test that discovered tools have complete metadata."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover all tools
-        all_tools = discover_tools("tapo_camera_mcp.tools")
+        all_tools = discover_tools("devices_mcp.tools")
 
         # Test that tools have required metadata
         for tool_cls in all_tools:
@@ -269,10 +269,10 @@ def test_tool_metadata_completeness():
 def test_system_tools_structure():
     """Test system tools structure and metadata."""
     try:
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.tools.discovery import discover_tools
 
         # Discover system tools
-        all_tools = discover_tools("tapo_camera_mcp.tools")
+        all_tools = discover_tools("devices_mcp.tools")
 
         # Find system tools (those with 'system' in their module name or category)
         system_tools = [tool for tool in all_tools if "system" in tool.__module__.lower()]

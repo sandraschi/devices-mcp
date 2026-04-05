@@ -34,4 +34,3 @@
 - Engineering lead: TBD
 - Operations lead: TBD
 - Escalation channel: `#home-security-ops` Slack
-

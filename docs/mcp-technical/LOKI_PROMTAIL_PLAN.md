@@ -44,5 +44,3 @@
 - Provide systemd unit files for Loki and Promtail.
 - Harden transport with HTTPS/TLS (post-proof-of-concept).
 - Automate deployment via Ansible/Flux once config is validated (`config-mgmt`).
-
-

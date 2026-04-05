@@ -7,7 +7,7 @@ end-to-end observability plan.
 
 ## 1. Summary
 
-- **Central Application Host:** `tapo-camera-mcp` (FastAPI + MCP server) on the
+- **Central Application Host:** `devices-mcp` (FastAPI + MCP server) on the
   home lab hub. Provides REST endpoints, live dashboard, and preliminary metrics.
 - **Active Observability Components:** Application exposes `/api/status` and
   camera metrics stubs; structured logging is limited to local log files /
@@ -21,7 +21,7 @@ end-to-end observability plan.
 
 | Service / Role             | Host / Node        | Status          | Notes |
 |----------------------------|--------------------|-----------------|-------|
-| `tapo-camera-mcp` web/API  | Central hub        | Running         | FastAPI app reachable on `http://localhost:7777`; emits JSON status and camera data. |
+| `devices-mcp` web/API  | Central hub        | Running         | FastAPI app reachable on `http://localhost:7777`; emits JSON status and camera data. |
 | Metrics endpoint (`/metrics` via `metrics_service`) | Central hub | Prototype | Module available but not registered with Prometheus; needs adapter to expose OpenMetrics format. |
 | Grafana (local workstation)| Developer machine  | Available (manual) | Dashboards exist as JSON exports in `grafana/`; no automated provisioning or live datasource binding. |
 | Prometheus                 | _Not deployed_     | Missing         | Scrape targets and federation plan pending (`prometheus-setup` task). |
@@ -50,13 +50,13 @@ end-to-end observability plan.
 
 1. **Prometheus Bootstrapping**
    - Define scrape configs for:
-     - `tapo-camera-mcp` internal metrics (`/metrics` once exposed).
+     - `devices-mcp` internal metrics (`/metrics` once exposed).
      - Edge exporters (placeholders until agents exist).
      - External MCP services (Ring, Nest) via push gateway or exporters.
    - Provision Prometheus on the central hub with persistent storage.
 
 2. **Logging Pipeline**
-   - Package structured logs (JSON) from `tapo_camera_mcp` using Python logging
+   - Package structured logs (JSON) from `devices_mcp` using Python logging
      handlers; feed into Promtail.
    - Deploy Loki (single instance acceptable initially) and point Promtail agents.
    - Ensure log labels cover `device`, `site`, `severity`, and `service`.
@@ -92,5 +92,3 @@ end-to-end observability plan.
 - Iterate on alert scenarios and integrate with Alertmanager (`alerting`).
 
 _Prepared by the observability working group (automated assistant) on 2025-11-12._
-
-

@@ -1,14 +1,14 @@
-# Tapo Camera MCP Dashboard External Access Issue - Windows Firewall Blocking
+# Devices MCP Dashboard External Access Issue - Windows Firewall Blocking
 
-**Type:** Troubleshooting  
-**Date:** 2025-10-20  
-**Permalink:** troubleshooting/tapo-camera-mcp-dashboard-external-access-issue-windows-firewall-blocking
+**Type:** Troubleshooting
+**Date:** 2025-10-20
+**Permalink:** troubleshooting/devices-mcp-dashboard-external-access-issue-windows-firewall-blocking
 
-**Tags:** networking, windows-firewall, tapo-camera-mcp, dashboard, troubleshooting, external-access, tailscale, fastapi, port-7777, system-administration
+**Tags:** networking, windows-firewall, devices-mcp, dashboard, troubleshooting, external-access, tailscale, fastapi, port-7777, system-administration
 
 ## Problem Description
 
-The Tapo Camera MCP dashboard was accessible via Tailscale (`goliath:7777`) but not via external IP address (`213.47.34.131:7777`). The server was correctly configured to bind to `0.0.0.0:7777` but Windows Firewall was blocking incoming connections.
+The Devices MCP dashboard was accessible via Tailscale (`goliath:7777`) but not via external IP address (`213.47.34.131:7777`). The server was correctly configured to bind to `0.0.0.0:7777` but Windows Firewall was blocking incoming connections.
 
 ## Root Cause Analysis
 
@@ -19,7 +19,7 @@ The Tapo Camera MCP dashboard was accessible via Tailscale (`goliath:7777`) but 
 
 ## Technical Details
 
-- **Server**: Tapo Camera MCP FastAPI web server
+- **Server**: Devices MCP FastAPI web server
 - **Port**: 7777 (configurable)
 - **Host Binding**: `0.0.0.0` (correct for external access)
 - **Firewall Issue**: Windows Defender Firewall blocking TCP port 7777
@@ -28,8 +28,8 @@ The Tapo Camera MCP dashboard was accessible via Tailscale (`goliath:7777`) but 
 ## Configuration Files
 
 - **Main Config**: `config.yaml` - `web.host: "0.0.0.0"` ✅
-- **Model Config**: `src/tapo_camera_mcp/config/models.py` - `WebUISettings.host: "0.0.0.0"` ✅
-- **Server Code**: `src/tapo_camera_mcp/web/server.py` - Uses config host setting ✅
+- **Model Config**: `src/devices_mcp/config/models.py` - `WebUISettings.host: "0.0.0.0"` ✅
+- **Server Code**: `src/devices_mcp/web/server.py` - Uses config host setting ✅
 
 ## Solutions Provided
 
@@ -37,7 +37,7 @@ The Tapo Camera MCP dashboard was accessible via Tailscale (`goliath:7777`) but 
 
 ```powershell
 # Run as Administrator
-netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in action=allow protocol=TCP localport=7777
+netsh advfirewall firewall add rule name="Devices MCP Dashboard" dir=in action=allow protocol=TCP localport=7777
 ```
 
 ### Option 2: Windows Firewall GUI
@@ -45,7 +45,7 @@ netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in acti
 1. Windows Defender Firewall with Advanced Security
 2. Inbound Rules → New Rule → Port → TCP → Specific ports: 7777
 3. Allow connection → Apply to all profiles
-4. Name: "Tapo Camera MCP Dashboard"
+4. Name: "Devices MCP Dashboard"
 
 ### Option 3: Temporarily Disable Firewall
 
@@ -68,10 +68,10 @@ Try different ports that might already be open (e.g., 8080, 3000)
 netstat -an | findstr :7777
 
 # Check existing firewall rules
-netsh advfirewall firewall show rule name="Tapo Camera MCP" dir=in
+netsh advfirewall firewall show rule name="Devices MCP" dir=in
 
 # Add firewall rule (requires admin)
-netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in action=allow protocol=TCP localport=7777
+netsh advfirewall firewall add rule name="Devices MCP Dashboard" dir=in action=allow protocol=TCP localport=7777
 ```
 
 ## Key Learning Points
@@ -90,7 +90,6 @@ netsh advfirewall firewall add rule name="Tapo Camera MCP Dashboard" dir=in acti
 ## Related Files
 
 - `start.py` - Dashboard startup script
-- `src/tapo_camera_mcp/web/server.py` - Web server implementation
+- `src/devices_mcp/web/server.py` - Web server implementation
 - `config.yaml` - Configuration file
-- `src/tapo_camera_mcp/config/models.py` - Configuration models
-
+- `src/devices_mcp/config/models.py` - Configuration models

@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}Recordings - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recordings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .recording-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .recording-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .recording-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .recording-name {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .recording-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .meta-label {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--muted-text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-size: 0.875rem;
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    .recording-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .action-button {
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid var(--gray-300);
+        background-color: white;
+        color: var(--text-color);
+        flex: 1;
+        text-align: center;
+    }
+
+    .action-button:hover {
+        background-color: var(--card-bg);
+        border-color: var(--gray-400);
+    }
+
+    .action-button-primary {
+        background-color: var(--primary-blue);
+        color: white;
+        border-color: var(--primary-blue);
+    }
+
+    .action-button-primary:hover {
+        background-color: var(--primary-blue-dark);
+        border-color: var(--primary-blue-dark);
+    }
+
+    .stats-overview {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-color);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--muted-text);
+        font-weight: 500;
+        margin-top: 0.25rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted-text);
+    }
+
+    .empty-state-icon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state-title {
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state-description {
+        font-size: 0.875rem;
+        color: var(--muted-text);
+    }
+
+    .filter-bar {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid var(--border-color);
+    }
+
+    .filter-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-input {
+        padding: 0.5rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+    }
+
+    .filter-select {
+        padding: 0.5rem;
+        border: 1px solid var(--gray-300);
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        background-color: white;
+    }
+
+    /* Dark theme support */
+    [data-theme="dark"] .recording-card {
+        background: var(--text-color);
+        border-color: var(--gray-600);
+    }
+
+    [data-theme="dark"] .stats-overview,
+    [data-theme="dark"] .filter-bar {
+        background: var(--text-color);
+        border-color: var(--gray-600);
+    }
+
+    [data-theme="dark"] .recording-name,
+    [data-theme="dark"] .meta-value,
+    [data-theme="dark"] .stat-value {
+        color: var(--card-bg);
+    }
+
+    [data-theme="dark"] .meta-label,
+    [data-theme="dark"] .stat-label,
+    [data-theme="dark"] .empty-state-description {
+        color: var(--gray-300);
+    }
+
+    [data-theme="dark"] .empty-state-title {
+        color: var(--card-bg);
+    }
+
+    [data-theme="dark"] .filter-input,
+    [data-theme="dark"] .filter-select {
+        background-color: var(--gray-600);
+        color: var(--card-bg);
+        border-color: var(--muted-text);
+    }
+
+    @media (max-width: 768px) {
+        .recordings-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .recording-meta {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Recordings</h1>
+        <p class="text-gray-600">View and manage your security camera recordings</p>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value text-blue-600">{{ total_recordings or 0 }}</div>
+                <div class="stat-label">Total Recordings</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-green-600">{{ today_recordings or 0 }}</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-purple-600">{{ storage_used or '0GB' }}</div>
+                <div class="stat-label">Storage Used</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value text-orange-600">{{ storage_free or '0GB' }}</div>
+                <div class="stat-label">Storage Free</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-controls">
+            <input type="text" class="filter-input" placeholder="Search recordings..." style="flex: 1; min-width: 200px;">
+            <select class="filter-select">
+                <option>All Cameras</option>
+                <option>test_webcam</option>
+            </select>
+            <select class="filter-select">
+                <option>All Types</option>
+                <option>Motion Detected</option>
+                <option>Scheduled</option>
+                <option>Manual</option>
+            </select>
+            <select class="filter-select">
+                <option>Last 24 Hours</option>
+                <option>Last 7 Days</option>
+                <option>Last 30 Days</option>
+                <option>All Time</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Recordings Grid -->
+    <div class="recordings-grid">
+        <!-- Sample Recording Cards (will be populated dynamically) -->
+        {% for recording in recordings %}
+        <div class="recording-card">
+            <div class="recording-header">
+                <h3 class="recording-name">{{ recording.name }}</h3>
+                <span class="text-sm text-gray-500">{{ recording.timestamp }}</span>
+            </div>
+
+            <div class="recording-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Camera</div>
+                    <div class="meta-value">{{ recording.camera }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Duration</div>
+                    <div class="meta-value">{{ recording.duration }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Size</div>
+                    <div class="meta-value">{{ recording.size }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Type</div>
+                    <div class="meta-value">{{ recording.type }}</div>
+                </div>
+            </div>
+
+            <div class="recording-actions">
+                <button class="action-button action-button-primary">
+                    <i class="fas fa-play mr-1"></i>
+                    Play
+                </button>
+                <button class="action-button">
+                    <i class="fas fa-download mr-1"></i>
+                    Download
+                </button>
+                <button class="action-button">
+                    <i class="fas fa-trash mr-1"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    {% if not recordings %}
+    <div class="empty-state">
+        <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+        </svg>
+        <h3 class="empty-state-title">No Recordings Yet</h3>
+        <p class="empty-state-description">
+            Recordings will appear here when motion is detected or scheduled recording is enabled.
+            Configure your cameras to start capturing footage.
+        </p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Recordings page functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Recordings page loaded successfully');
+
+        // Add event listeners for recording actions
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('.action-button')) {
+                const action = e.target.textContent.trim().toLowerCase();
+                const recordingName = e.target.closest('.recording-card').querySelector('.recording-name').textContent;
+
+                if (action.includes('play')) {
+                    alert(`Playing recording: ${recordingName}`);
+                } else if (action.includes('download')) {
+                    alert(`Downloading recording: ${recordingName}`);
+                } else if (action.includes('delete')) {
+                    if (confirm(`Delete recording: ${recordingName}?`)) {
+                        alert('Recording deleted');
+                        // In a real implementation, this would remove the recording
+                    }
+                }
+            }
+        });
+
+        // Filter functionality
+        const searchInput = document.querySelector('.filter-input');
+        const cameraSelect = document.querySelectorAll('.filter-select')[0];
+        const typeSelect = document.querySelectorAll('.filter-select')[1];
+        const timeSelect = document.querySelectorAll('.filter-select')[2];
+
+        function filterRecordings() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const cameraFilter = cameraSelect.value;
+            const typeFilter = typeSelect.value;
+            const timeFilter = timeSelect.value;
+
+            // In a real implementation, this would filter the recordings
+            console.log('Filtering recordings:', { searchTerm, cameraFilter, typeFilter, timeFilter });
+        }
+
+        searchInput.addEventListener('input', filterRecordings);
+        cameraSelect.addEventListener('change', filterRecordings);
+        typeSelect.addEventListener('change', filterRecordings);
+        timeSelect.addEventListener('change', filterRecordings);
+    });
+</script>
+{% endblock %}

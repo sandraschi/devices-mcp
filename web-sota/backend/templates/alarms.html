@@ -1,0 +1,2179 @@
+{% extends "base.html" %}
+
+{% block title %}Security Alarms - Devices MCP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alarms-dashboard {
+        padding: 20px;
+    }
+
+    .security-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .security-card {
+        background: var(--card-bg, var(--dark-bg-secondary));
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--border-color, rgba(99, 102, 241, 0.2));
+    }
+
+    .security-card h3 {
+        margin: 0 0 12px 0;
+        color: var(--text-secondary, var(--dark-text-muted));
+        font-size: 13px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .security-value {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .security-value.secure {
+        color: var(--success-green);
+    }
+
+    .security-value.warning {
+        color: var(--warning-yellow);
+    }
+
+    .security-value.alert {
+        color: var(--error-red);
+    }
+
+    .security-value.neutral {
+        color: #a5b4fc;
+    }
+
+    .security-unit {
+        color: var(--text-muted, #64748b);
+        font-size: 13px;
+    }
+
+    .security-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+
+    .status-secure {
+        color: var(--success-green);
+    }
+
+    .status-warning {
+        color: var(--warning-yellow);
+    }
+
+    .status-alert {
+        color: var(--error-red);
+    }
+
+    .devices-section {
+        background: var(--card-bg, var(--dark-bg-secondary));
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--border-color, rgba(99, 102, 241, 0.2));
+        margin-bottom: 20px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color, rgba(99, 102, 241, 0.15));
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary, var(--dark-text-secondary));
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-subtitle {
+        color: var(--text-muted, #64748b);
+        margin: 4px 0 0 0;
+        font-size: 13px;
+    }
+
+    .section-badge {
+        background: rgba(99, 102, 241, 0.2);
+        color: #a5b4fc;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .section-badge.connected {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+    }
+
+    .section-badge.disconnected {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+    }
+
+    .section-badge.pending {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+    }
+
+    .devices-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+    }
+
+    .device-card {
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 10px;
+        padding: 16px;
+        border: 1px solid var(--border-color, rgba(99, 102, 241, 0.15));
+        transition: all 0.2s ease;
+    }
+
+    .device-card:hover {
+        border-color: rgba(99, 102, 241, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .device-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .device-icon {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+
+    .device-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary, var(--dark-text-secondary));
+    }
+
+    .device-location {
+        color: var(--text-muted, #64748b);
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    .device-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .status-online {
+        background-color: var(--success-green);
+        box-shadow: 0 0 6px var(--success-green);
+    }
+
+    .status-offline {
+        background-color: var(--error-red);
+    }
+
+    .status-warning {
+        background-color: var(--warning-yellow);
+    }
+
+    .device-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 12px 0;
+    }
+
+    .metric {
+        background: rgba(99, 102, 241, 0.05);
+        padding: 8px 10px;
+        border-radius: 6px;
+    }
+
+    .metric-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary, var(--dark-text-secondary));
+    }
+
+    .metric-label {
+        font-size: 10px;
+        color: var(--text-muted, #64748b);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .device-controls {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+
+    .btn-secondary {
+        background: rgba(99, 102, 241, 0.15);
+        color: #a5b4fc;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(99, 102, 241, 0.25);
+    }
+
+    .btn-success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-warning {
+        background: rgba(245, 158, 11, 0.2);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .alarm-modes {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .alarm-mode-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--dark-text-muted);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .alarm-mode-btn.active {
+        border-color: #6366f1;
+        background: rgba(99, 102, 241, 0.2);
+        color: #a5b4fc;
+    }
+
+    .alarm-mode-btn.disarmed.active {
+        border-color: var(--success-green);
+        background: rgba(34, 197, 94, 0.15);
+        color: #4ade80;
+    }
+
+    .alarm-mode-btn.home.active {
+        border-color: var(--primary-blue);
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+    }
+
+    .alarm-mode-btn.away.active {
+        border-color: var(--error-red);
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .events-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .event-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        background: rgba(15, 23, 42, 0.5);
+        border-left: 3px solid #6366f1;
+    }
+
+    .event-item.motion {
+        border-left-color: var(--primary-blue);
+    }
+
+    .event-item.ding {
+        border-left-color: var(--warning-yellow);
+    }
+
+    .event-item.alert {
+        border-left-color: var(--error-red);
+    }
+
+    .event-icon {
+        font-size: 20px;
+        width: 32px;
+        text-align: center;
+    }
+
+    .event-content {
+        flex: 1;
+    }
+
+    .event-title {
+        font-weight: 600;
+        color: var(--text-primary, var(--dark-text-secondary));
+        font-size: 13px;
+    }
+
+    .event-time {
+        font-size: 11px;
+        color: var(--text-muted, #64748b);
+    }
+
+    .event-device {
+        font-size: 12px;
+        color: var(--dark-text-muted);
+        margin-top: 2px;
+    }
+
+    .event-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-video {
+        background: rgba(99, 102, 241, 0.2);
+        border: 1px solid rgba(99, 102, 241, 0.4);
+        color: #818cf8;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-video:hover {
+        background: rgba(99, 102, 241, 0.4);
+        color: #c7d2fe;
+    }
+
+    .video-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    }
+
+    .video-modal-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+    }
+
+    .video-modal-close {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .video-modal-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* DING Alert Popup */
+    .ding-alert {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        animation: dingPulse 0.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes dingPulse {
+        from {
+            background: rgba(245, 158, 11, 0.9);
+        }
+
+        to {
+            background: rgba(251, 191, 36, 0.95);
+        }
+    }
+
+    .ding-alert-icon {
+        font-size: 150px;
+        animation: dingBounce 0.3s ease-in-out infinite;
+    }
+
+    @keyframes dingBounce {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .ding-alert-text {
+        font-size: 72px;
+        font-weight: bold;
+        color: var(--dark-bg-secondary);
+        margin-top: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .ding-alert-device {
+        font-size: 28px;
+        color: #334155;
+        margin-top: 10px;
+    }
+
+    .ding-alert-time {
+        font-size: 20px;
+        color: var(--dark-border);
+        margin-top: 20px;
+    }
+
+    .ding-alert-dismiss {
+        margin-top: 40px;
+        padding: 16px 48px;
+        font-size: 20px;
+        background: var(--dark-bg-secondary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .ding-alert-dismiss:hover {
+        background: #334155;
+        transform: scale(1.05);
+    }
+
+    /* Motion Alert (less intrusive) */
+    .motion-toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
+        z-index: 9999;
+        animation: slideIn 0.3s ease-out;
+        cursor: pointer;
+        max-width: 350px;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .motion-toast-title {
+        font-size: 18px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .motion-toast-device {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-top: 4px;
+    }
+
+    /* WebRTC Live View Modal */
+    .webrtc-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 50000;
+    }
+
+    .webrtc-container {
+        background: var(--dark-bg-secondary);
+        border-radius: 16px;
+        padding: 20px;
+        max-width: 800px;
+        width: 95%;
+    }
+
+    .webrtc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .webrtc-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: var(--dark-text-secondary);
+    }
+
+    .webrtc-close {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        color: #f87171;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .webrtc-video-container {
+        position: relative;
+        background: var(--dark-bg-primary);
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 16/9;
+    }
+
+    .webrtc-video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .webrtc-status {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+    }
+
+    .webrtc-status.connecting {
+        color: #fbbf24;
+    }
+
+    .webrtc-status.connected {
+        color: #34d399;
+    }
+
+    .webrtc-status.error {
+        color: #f87171;
+    }
+
+    .webrtc-controls {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .webrtc-btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .webrtc-btn-talk {
+        background: linear-gradient(135deg, var(--primary-blue), #1d4ed8);
+        color: white;
+    }
+
+    .webrtc-btn-talk:hover {
+        transform: scale(1.05);
+    }
+
+    .webrtc-btn-talk.active {
+        background: linear-gradient(135deg, var(--error-red), #dc2626);
+        animation: talkPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes talkPulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+    }
+
+    .webrtc-btn-mute {
+        background: rgba(100, 116, 139, 0.3);
+        color: var(--dark-text-muted);
+        border: 1px solid rgba(100, 116, 139, 0.4);
+    }
+
+    .webrtc-btn-mute.muted {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .live-view-btn {
+        background: linear-gradient(135deg, var(--success-green), var(--success-dark));
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .live-view-btn:hover {
+        transform: scale(1.02);
+    }
+
+    .live-view-btn:disabled {
+        background: var(--dark-border);
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-muted, #64748b);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+    }
+
+    .integration-notice {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .integration-notice h4 {
+        margin: 0 0 8px 0;
+        color: #a5b4fc;
+        font-size: 14px;
+    }
+
+    .integration-notice p {
+        margin: 0;
+        color: var(--dark-text-muted);
+        font-size: 13px;
+    }
+
+    .integration-notice a {
+        color: #818cf8;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        border-top-color: #6366f1;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="alarms-dashboard">
+    <div class="page-header">
+        <h1>🛡️ Security Alarms</h1>
+        <p>Monitor Ring doorbells, Nest Protect smoke detectors, and security devices</p>
+    </div>
+
+    <!-- Security Overview -->
+    <div class="security-overview" id="security-overview">
+        <div class="security-card">
+            <h3>🛡️ System Status</h3>
+            <div class="security-value secure" id="system-status">LOADING</div>
+            <div class="security-unit" id="system-status-detail">Checking...</div>
+            <div class="security-status status-secure" id="system-status-text">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Loading status</span>
+            </div>
+        </div>
+
+        <div class="security-card">
+            <h3>🔔 Ring Alarm</h3>
+            <div class="security-value neutral" id="ring-mode">--</div>
+            <div class="security-unit" id="ring-mode-label">Mode</div>
+            <div class="security-status" id="ring-status-text">
+                <span>Not connected</span>
+            </div>
+        </div>
+
+        <div class="security-card">
+            <h3>ALERT Active Devices</h3>
+            <div class="security-value neutral" id="devices-online">0/0</div>
+            <div class="security-unit">Online</div>
+            <div class="security-status" id="devices-status-text">
+                <span>Loading...</span>
+            </div>
+        </div>
+
+        <div class="security-card">
+            <h3>📱 Last Event</h3>
+            <div class="security-value neutral" id="last-event-time">--</div>
+            <div class="security-unit" id="last-event-type">No events</div>
+            <div class="security-status" id="last-event-text">
+                <span>--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ring Devices Section -->
+    <div class="devices-section" id="ring-section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">🔔 Ring Alarm System</h2>
+                <p class="section-subtitle">Base Station EU, doorbells, sensors, and keypads</p>
+            </div>
+            <span class="section-badge disconnected" id="ring-connection-badge">Disconnected</span>
+        </div>
+
+        <!-- Ring Alarm Mode Controls -->
+        <div id="ring-alarm-controls" style="display: none;">
+            <h4 style="color: var(--dark-text-muted); font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">
+                Alarm Mode</h4>
+            <div class="alarm-modes">
+                <button class="alarm-mode-btn disarmed" data-mode="disarmed" onclick="setRingAlarmMode('disarmed')">
+                    <i class="fas fa-unlock"></i><br>Disarmed
+                </button>
+                <button class="alarm-mode-btn home" data-mode="home" onclick="setRingAlarmMode('home')">
+                    <i class="fas fa-home"></i><br>Home
+                </button>
+                <button class="alarm-mode-btn away" data-mode="away" onclick="setRingAlarmMode('away')">
+                    <i class="fas fa-shield-alt"></i><br>Away
+                </button>
+            </div>
+        </div>
+
+        <!-- Ring Devices Grid -->
+        <div class="devices-grid" id="ring-devices">
+            <div class="empty-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading Ring devices...</p>
+            </div>
+        </div>
+
+        <!-- Ring Events -->
+        <div id="ring-events-section" style="margin-top: 20px; display: none;">
+            <h4 style="color: var(--dark-text-muted); font-size: 12px; text-transform: uppercase; margin-bottom: 10px;">
+                Recent Events</h4>
+            <div class="events-list" id="ring-events">
+                <!-- Events loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Nest Protect Section -->
+    <div class="devices-section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">ALERT Nest Protect</h2>
+                <p class="section-subtitle">Smoke and CO detectors</p>
+            </div>
+            <span class="section-badge pending" id="nest-connection-badge">Loading...</span>
+        </div>
+
+        <!-- Home Assistant Setup (shown when not connected) -->
+        <div id="nest-ha-setup" class="integration-notice" style="display: none;">
+            <h4><i class="fas fa-home"></i> Home Assistant Required for Nest Protect</h4>
+            <p>
+                Nest Protect requires Home Assistant as a bridge (Google blocked direct OAuth).
+                HA has a verified Google OAuth app that works.
+            </p>
+            <div id="nest-setup-steps" style="margin-top: 12px; font-size: 13px;">
+                <!-- Steps will be populated by JS -->
+            </div>
+            <div style="margin-top: 16px; display: flex; gap: 8px;">
+                <a href="http://localhost:8123" target="_blank" rel="noopener" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt"></i> Open Home Assistant
+                </a>
+                <button onclick="loadNestStatus()" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Retry Connection
+                </button>
+            </div>
+        </div>
+
+        <div class="devices-grid" id="nest-devices">
+            <!-- Nest devices will be loaded dynamically -->
+            <div class="empty-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading Nest Protect devices...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        loadRingStatus();
+        loadNestStatus();
+        // Refresh every 30 seconds
+        setInterval(loadRingStatus, 30000);
+        setInterval(loadNestStatus, 30000);
+    });
+
+    async function loadRingStatus() {
+        try {
+            const response = await fetch('/api/ring/summary');
+            if (!response.ok) throw new Error('Failed to fetch Ring status');
+
+            const data = await response.json();
+            renderRingStatus(data);
+        } catch (error) {
+            console.error('Error loading Ring status:', error);
+            document.getElementById('ring-connection-badge').textContent = 'Error';
+            document.getElementById('ring-connection-badge').className = 'section-badge disconnected';
+            document.getElementById('ring-devices').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to connect to Ring</p>
+                <p style="font-size: 12px;">Check your Ring credentials in <a href="/settings">Settings</a></p>
+            </div>
+        `;
+        }
+    }
+
+    function renderRingStatus(data) {
+        const badge = document.getElementById('ring-connection-badge');
+        const devicesContainer = document.getElementById('ring-devices');
+        const alarmControls = document.getElementById('ring-alarm-controls');
+        const eventsSection = document.getElementById('ring-events-section');
+
+        // Update connection badge
+        if (data.initialized) {
+            badge.textContent = 'Connected';
+            badge.className = 'section-badge connected';
+        } else if (data.two_fa_pending) {
+            badge.textContent = '2FA Required';
+            badge.className = 'section-badge pending';
+            devicesContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-key"></i>
+                <p>Two-Factor Authentication Required</p>
+                <div style="margin-top: 16px;">
+                    <input type="text" id="ring-2fa-input" placeholder="Enter 2FA code"
+                           style="padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.3); background: var(--dark-bg-secondary); color: var(--dark-text-secondary); margin-right: 8px;">
+                    <button onclick="submitRing2FA()" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        `;
+            return;
+        } else {
+            badge.textContent = 'Disconnected';
+            badge.className = 'section-badge disconnected';
+            devicesContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-plug"></i>
+                <p>Ring not connected</p>
+                <p style="font-size: 12px;">Configure Ring credentials in <a href="/settings">Settings</a></p>
+            </div>
+        `;
+            return;
+        }
+
+        // Update overview cards
+        updateOverviewCards(data);
+
+        // Show alarm controls if we have alarm data
+        if (data.alarm) {
+            alarmControls.style.display = 'block';
+            updateAlarmModeButtons(data.alarm.mode);
+        }
+
+        // Render devices
+        let devicesHtml = '';
+
+        // Render base station first (if available)
+        if (data.alarm && data.alarm.base_station) {
+            devicesHtml += renderBaseStationCard(data.alarm.base_station);
+        }
+
+        // Render doorbells
+        if (data.doorbells && data.doorbells.length > 0) {
+            data.doorbells.forEach(doorbell => {
+                devicesHtml += renderDoorbellCard(doorbell);
+            });
+        }
+
+        // Render keypads
+        if (data.alarm && data.alarm.keypads && data.alarm.keypads.length > 0) {
+            data.alarm.keypads.forEach(keypad => {
+                devicesHtml += renderKeypadCard(keypad);
+            });
+        }
+
+        // Render sensors from alarm
+        if (data.alarm && data.alarm.sensors && data.alarm.sensors.length > 0) {
+            data.alarm.sensors.forEach(sensor => {
+                devicesHtml += renderSensorCard(sensor);
+            });
+        }
+
+        if (devicesHtml === '') {
+            devicesHtml = `
+            <div class="device-card">
+                <div class="device-header">
+                    <div style="display: flex; align-items: center;">
+                        <span class="device-icon">🔔</span>
+                        <div>
+                            <div class="device-name">Ring Connected</div>
+                            <div class="device-location">No devices found</div>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #64748b; font-size: 13px; margin-top: 12px;">
+                    Your Ring account is connected but no devices were detected.
+                    Make sure devices are set up in the Ring app.
+                </p>
+            </div>
+        `;
+        }
+
+        devicesContainer.innerHTML = devicesHtml;
+
+        // Render events
+        if (data.recent_events && data.recent_events.length > 0) {
+            eventsSection.style.display = 'block';
+            renderRingEvents(data.recent_events);
+        }
+    }
+
+    function updateOverviewCards(data) {
+        // System status
+        const statusEl = document.getElementById('system-status');
+        const statusDetail = document.getElementById('system-status-detail');
+        const statusText = document.getElementById('system-status-text');
+
+        if (data.alarm && data.alarm.is_armed) {
+            statusEl.textContent = 'ARMED';
+            statusEl.className = 'security-value warning';
+            statusDetail.textContent = data.alarm.mode_name === 'away' ? 'Away Mode' : 'Home Mode';
+            statusText.innerHTML = '<i class="fas fa-shield-alt"></i> <span>System armed</span>';
+            statusText.className = 'security-status status-warning';
+        } else {
+            statusEl.textContent = 'SECURE';
+            statusEl.className = 'security-value secure';
+            statusDetail.textContent = 'All Clear';
+            statusText.innerHTML = '<i class="fas fa-check-circle"></i> <span>No active alarms</span>';
+            statusText.className = 'security-status status-secure';
+        }
+
+        // Ring mode
+        const modeEl = document.getElementById('ring-mode');
+        const modeLabelEl = document.getElementById('ring-mode-label');
+        const ringStatusText = document.getElementById('ring-status-text');
+
+        if (data.alarm) {
+            const modeNames = { 'none': 'OFF', 'some': 'HOME', 'all': 'AWAY' };
+            modeEl.textContent = modeNames[data.alarm.mode] || '--';
+            modeEl.className = 'security-value ' + (data.alarm.mode === 'none' ? 'secure' : data.alarm.mode === 'all' ? 'alert' : 'warning');
+            modeLabelEl.textContent = 'Alarm Mode';
+            ringStatusText.innerHTML = '<i class="fas fa-check-circle"></i> <span>Connected</span>';
+            ringStatusText.className = 'security-status status-secure';
+        }
+
+        // Devices count
+        const devicesOnline = document.getElementById('devices-online');
+        const devicesStatusText = document.getElementById('devices-status-text');
+        const sensorCount = data.alarm?.sensor_count || data.alarm?.sensors?.length || 0;
+        const doorbellCount = data.doorbells?.length || 0;
+        const keypadCount = data.alarm?.keypads?.length || 0;
+        const totalDevices = doorbellCount + sensorCount + keypadCount + (data.alarm?.base_station ? 1 : 0);
+        devicesOnline.textContent = `${totalDevices}`;
+        const deviceBreakdown = [];
+        if (sensorCount > 0) deviceBreakdown.push(`${sensorCount} sensors`);
+        if (doorbellCount > 0) deviceBreakdown.push(`${doorbellCount} doorbells`);
+        if (keypadCount > 0) deviceBreakdown.push(`${keypadCount} keypads`);
+        devicesStatusText.innerHTML = totalDevices > 0
+            ? `<i class="fas fa-check-circle"></i> <span>${deviceBreakdown.join(', ') || 'All online'}</span>`
+            : '<span>No devices</span>';
+        devicesStatusText.className = 'security-status ' + (totalDevices > 0 ? 'status-secure' : '');
+
+        // Last event
+        if (data.last_event) {
+            const lastEventTime = document.getElementById('last-event-time');
+            const lastEventType = document.getElementById('last-event-type');
+            const lastEventText = document.getElementById('last-event-text');
+
+            const eventTime = new Date(data.last_event.timestamp);
+            const now = new Date();
+            const diffMs = now - eventTime;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+
+            if (diffMins < 60) {
+                lastEventTime.textContent = diffMins + 'm';
+            } else if (diffHours < 24) {
+                lastEventTime.textContent = diffHours + 'h';
+            } else {
+                lastEventTime.textContent = Math.floor(diffHours / 24) + 'd';
+            }
+
+            const eventTypes = { 'ding': 'Doorbell', 'motion': 'Motion', 'on_demand': 'Live View' };
+            lastEventType.textContent = eventTypes[data.last_event.event_type] || data.last_event.event_type;
+            lastEventText.innerHTML = `<span>${data.last_event.device_name}</span>`;
+        }
+    }
+
+    function updateAlarmModeButtons(currentMode) {
+        document.querySelectorAll('.alarm-mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+            const btnMode = btn.dataset.mode;
+            if ((btnMode === 'disarmed' && currentMode === 'none') ||
+                (btnMode === 'home' && currentMode === 'some') ||
+                (btnMode === 'away' && currentMode === 'all')) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    function renderDoorbellCard(doorbell) {
+        const battery = doorbell.battery_level ? `${doorbell.battery_level}%` : 'Wired';
+        return `
+        <div class="device-card">
+            <div class="device-header">
+                <div style="display: flex; align-items: center;">
+                    <span class="device-icon">🚪</span>
+                    <div>
+                        <div class="device-name">${escapeHtml(doorbell.name)}</div>
+                        <div class="device-location">${doorbell.kind || 'Video Doorbell'}</div>
+                    </div>
+                </div>
+                <div class="device-status">
+                    <div class="status-indicator status-online"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+            <div class="device-metrics">
+                <div class="metric">
+                    <div class="metric-value">${battery}</div>
+                    <div class="metric-label">Battery</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${doorbell.has_subscription ? 'Active' : 'None'}</div>
+                    <div class="metric-label">Subscription</div>
+                </div>
+            </div>
+            <div class="device-controls">
+                <button class="live-view-btn" onclick="openLiveView('${doorbell.id}')">
+                    <i class="fas fa-video"></i> Live View & Talk
+                </button>
+            </div>
+            <p style="font-size: 11px; color: #64748b; margin-top: 8px;">
+                📱 Two-way talk available • Click above to connect
+            </p>
+        </div>
+    `;
+    }
+
+    function renderSensorCard(sensor) {
+        const sensorType = sensor.sensor_type || 'unknown';
+        let icon, statusText, statusClass, typeName;
+
+        switch (sensorType) {
+            case 'contact':
+                icon = '🚪';
+                typeName = 'Contact Sensor';
+                statusText = sensor.is_open ? 'Open' : 'Closed';
+                statusClass = sensor.is_open ? 'status-warning' : 'status-online';
+                break;
+            case 'motion':
+                icon = 'MONITOR';
+                typeName = 'Motion Sensor';
+                statusText = sensor.motion_detected ? 'Motion!' : 'Clear';
+                statusClass = sensor.motion_detected ? 'status-warning' : 'status-online';
+                break;
+            case 'flood_freeze':
+                icon = '💧';
+                typeName = 'Flood/Freeze Sensor';
+                const floodDetected = sensor.extra_data?.flood_detected;
+                const freezeDetected = sensor.extra_data?.freeze_detected;
+                statusText = floodDetected ? 'Flood!' : freezeDetected ? 'Freeze!' : 'OK';
+                statusClass = (floodDetected || freezeDetected) ? 'status-warning' : 'status-online';
+                break;
+            case 'smoke_co':
+                icon = '🔥';
+                typeName = 'Smoke/CO Listener';
+                const smokeDetected = sensor.extra_data?.smoke_detected;
+                const coDetected = sensor.extra_data?.co_detected;
+                statusText = smokeDetected ? 'Smoke!' : coDetected ? 'CO!' : 'OK';
+                statusClass = (smokeDetected || coDetected) ? 'status-warning' : 'status-online';
+                break;
+            case 'glassbreak':
+                icon = '🪟';
+                typeName = 'Glass Break Sensor';
+                statusText = sensor.fault_status ? 'Alert!' : 'OK';
+                statusClass = sensor.fault_status ? 'status-warning' : 'status-online';
+                break;
+            default:
+                icon = '📡';
+                typeName = sensorType.charAt(0).toUpperCase() + sensorType.slice(1);
+                statusText = sensor.is_online ? 'Online' : 'Offline';
+                statusClass = sensor.is_online ? 'status-online' : 'status-offline';
+        }
+
+        // Tamper check
+        const tamperWarning = sensor.tamper_status === 'tamper' ?
+            '<div style="color: var(--warning-yellow); font-size: 11px; margin-top: 4px;">WARNING Tamper detected</div>' : '';
+
+        return `
+        <div class="device-card">
+            <div class="device-header">
+                <div style="display: flex; align-items: center;">
+                    <span class="device-icon">${icon}</span>
+                    <div>
+                        <div class="device-name">${escapeHtml(sensor.name)}</div>
+                        <div class="device-location">${typeName}</div>
+                    </div>
+                </div>
+                <div class="device-status">
+                    <div class="status-indicator ${statusClass}"></div>
+                    <span>${statusText}</span>
+                </div>
+            </div>
+            ${tamperWarning}
+            <div class="device-metrics">
+                <div class="metric">
+                    <div class="metric-value">${sensor.battery_level ? sensor.battery_level + '%' : '--'}</div>
+                    <div class="metric-label">Battery</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${sensor.is_online ? 'Online' : 'Offline'}</div>
+                    <div class="metric-label">Status</div>
+                </div>
+            </div>
+        </div>
+    `;
+    }
+
+    function renderBaseStationCard(baseStation) {
+        if (!baseStation) return '';
+
+        const modeColors = {
+            'none': 'secure',
+            'some': 'warning',
+            'all': 'alert'
+        };
+        const modeNames = {
+            'none': 'Disarmed',
+            'some': 'Home',
+            'all': 'Away'
+        };
+
+        const modeColor = modeColors[baseStation.mode] || 'neutral';
+        const modeName = modeNames[baseStation.mode] || baseStation.mode;
+
+        return `
+        <div class="device-card" style="border: 2px solid rgba(99, 102, 241, 0.4); background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));">
+            <div class="device-header">
+                <div style="display: flex; align-items: center;">
+                    <span class="device-icon">🏠</span>
+                    <div>
+                        <div class="device-name">${escapeHtml(baseStation.name)}</div>
+                        <div class="device-location">Ring Alarm Base Station EU</div>
+                    </div>
+                </div>
+                <div class="device-status">
+                    <div class="status-indicator ${baseStation.is_online ? 'status-online' : 'status-offline'}"></div>
+                    <span>${baseStation.is_online ? 'Online' : 'Offline'}</span>
+                </div>
+            </div>
+            <div class="device-metrics" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="metric">
+                    <div class="metric-value security-value ${modeColor}">${modeName}</div>
+                    <div class="metric-label">Mode</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${baseStation.siren_enabled !== false ? '🔔 On' : '🔕 Off'}</div>
+                    <div class="metric-label">Siren</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${baseStation.firmware || '--'}</div>
+                    <div class="metric-label">Firmware</div>
+                </div>
+            </div>
+            <div class="device-controls" style="margin-top: 12px;">
+                <button class="btn btn-warning" onclick="testSirenWithCountdown()" title="Test siren with 5-second countdown">
+                    <i class="fas fa-bell"></i> 🔊 Test Siren
+                </button>
+                <button class="btn btn-danger" onclick="triggerSiren(true)" title="Immediate siren (3 sec)">
+                    <i class="fas fa-exclamation-triangle"></i> NOW!
+                </button>
+                <button class="btn btn-secondary" onclick="stopSiren()" title="Emergency stop">
+                    <i class="fas fa-bell-slash"></i> STOP
+                </button>
+            </div>
+        </div>
+    `;
+    }
+
+    function renderKeypadCard(keypad) {
+        return `
+        <div class="device-card">
+            <div class="device-header">
+                <div style="display: flex; align-items: center;">
+                    <span class="device-icon">🔢</span>
+                    <div>
+                        <div class="device-name">${escapeHtml(keypad.name)}</div>
+                        <div class="device-location">Keypad</div>
+                    </div>
+                </div>
+                <div class="device-status">
+                    <div class="status-indicator ${keypad.is_online ? 'status-online' : 'status-offline'}"></div>
+                    <span>${keypad.is_online ? 'Online' : 'Offline'}</span>
+                </div>
+            </div>
+            <div class="device-metrics">
+                <div class="metric">
+                    <div class="metric-value">${keypad.battery_level ? keypad.battery_level + '%' : '--'}</div>
+                    <div class="metric-label">Battery</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${keypad.is_online ? 'OK' : 'OFFLINE'}</div>
+                    <div class="metric-label">Status</div>
+                </div>
+            </div>
+        </div>
+    `;
+    }
+
+    // Countdown modal for siren test
+    let countdownInterval = null;
+
+    async function testSirenWithCountdown() {
+        const countdown = 5;
+        const duration = 3;
+
+        if (!confirm(`WARNING SIREN TEST\n\nThis will:\n1. Count down ${countdown} seconds (WARN EVERYONE!)\n2. Sound 104dB siren for ${duration} seconds\n\nProceed?`)) {
+            return;
+        }
+
+        // Show countdown overlay
+        showCountdownOverlay(countdown);
+
+        try {
+            const response = await fetch('/api/ring/alarm/siren/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ countdown: countdown, duration: duration })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Failed to test siren');
+            }
+
+            // Update overlay to show siren active
+            updateCountdownOverlay('🔊 SIREN ACTIVE!', 'danger');
+            setTimeout(hideCountdownOverlay, (duration + 1) * 1000);
+
+        } catch (error) {
+            console.error('Siren test error:', error);
+            hideCountdownOverlay();
+            alert('Failed to test siren: ' + error.message);
+        }
+    }
+
+    function showCountdownOverlay(seconds) {
+        // Create overlay if doesn't exist
+        let overlay = document.getElementById('siren-countdown-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'siren-countdown-overlay';
+            overlay.innerHTML = `
+            <div class="countdown-content">
+                <div class="countdown-icon">🔔</div>
+                <div class="countdown-text">SIREN TEST IN</div>
+                <div class="countdown-number" id="countdown-number">${seconds}</div>
+                <div class="countdown-warning">WARNING COVER YOUR EARS! WARNING</div>
+                <button class="btn btn-danger" onclick="cancelSirenTest()">CANCEL</button>
+            </div>
+        `;
+            overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            animation: pulse 0.5s infinite alternate;
+        `;
+            document.body.appendChild(overlay);
+
+            // Add CSS animation
+            if (!document.getElementById('countdown-styles')) {
+                const style = document.createElement('style');
+                style.id = 'countdown-styles';
+                style.textContent = `
+                @keyframes pulse { from { background: rgba(220,53,69,0.9); } to { background: rgba(0,0,0,0.9); } }
+                .countdown-content { text-align: center; color: white; }
+                .countdown-icon { font-size: 80px; margin-bottom: 20px; }
+                .countdown-text { font-size: 24px; margin-bottom: 10px; }
+                .countdown-number { font-size: 120px; font-weight: bold; color: #ffc107; }
+                .countdown-warning { font-size: 18px; margin: 20px 0; color: #ffc107; }
+            `;
+                document.head.appendChild(style);
+            }
+        }
+        overlay.style.display = 'flex';
+
+        // Start countdown
+        let remaining = seconds;
+        const numberEl = document.getElementById('countdown-number');
+        countdownInterval = setInterval(() => {
+            remaining--;
+            if (remaining > 0) {
+                numberEl.textContent = remaining;
+            } else {
+                clearInterval(countdownInterval);
+                updateCountdownOverlay('🔊 SIREN!', 'active');
+            }
+        }, 1000);
+    }
+
+    function updateCountdownOverlay(text, state) {
+        const overlay = document.getElementById('siren-countdown-overlay');
+        if (overlay) {
+            const content = overlay.querySelector('.countdown-content');
+            if (state === 'active') {
+                content.innerHTML = `
+                <div class="countdown-icon">🔊</div>
+                <div class="countdown-number" style="color: #dc3545;">${text}</div>
+                <div class="countdown-warning">SIREN ACTIVE - ${new Date().toLocaleTimeString()}</div>
+            `;
+            }
+        }
+    }
+
+    function hideCountdownOverlay() {
+        const overlay = document.getElementById('siren-countdown-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+    }
+
+    async function cancelSirenTest() {
+        hideCountdownOverlay();
+        await stopSiren();
+    }
+
+    async function triggerSiren(activate) {
+        if (activate && !confirm('WARNING IMMEDIATE SIREN!\n\nNo countdown - siren sounds NOW for 3 seconds.\n\nSure?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/ring/alarm/siren', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ activate: activate, duration: 3 })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Failed to control siren');
+            }
+
+            const action = activate ? '🔊 Siren activated!' : '🔕 Siren stopped';
+            alert(action);
+        } catch (error) {
+            console.error('Siren control error:', error);
+            alert('Failed to control siren: ' + error.message);
+        }
+    }
+
+    async function stopSiren() {
+        try {
+            const response = await fetch('/api/ring/alarm/siren/stop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Failed to stop siren');
+            }
+
+            hideCountdownOverlay();
+            alert('🔕 All sirens silenced');
+        } catch (error) {
+            console.error('Siren stop error:', error);
+            alert('Failed to stop siren: ' + error.message);
+        }
+    }
+
+    function renderRingEvents(events) {
+        const container = document.getElementById('ring-events');
+        let html = '';
+
+        events.slice(0, 10).forEach(event => {
+            const eventIcons = { 'ding': '🔔', 'motion': '🏃', 'on_demand': '📹' };
+            const icon = eventIcons[event.event_type] || '📋';
+            const eventClass = event.event_type === 'ding' ? 'ding' : 'motion';
+
+            const time = new Date(event.timestamp);
+            const timeStr = time.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = time.toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit' });
+
+            // Video button if URL available
+            const videoBtn = event.video_url ?
+                `<button onclick="playRingVideo('${event.video_url}')" class="btn-video" title="Play Video">
+                <i class="fas fa-play-circle"></i>
+            </button>` : '';
+
+            html += `
+            <div class="event-item ${eventClass}">
+                <div class="event-icon">${icon}</div>
+                <div class="event-content">
+                    <div class="event-title">${event.event_type === 'ding' ? 'Doorbell Ring' : event.event_type === 'motion' ? 'Motion Detected' : 'Live View'}</div>
+                    <div class="event-device">${escapeHtml(event.device_name)}</div>
+                </div>
+                <div class="event-actions">
+                    ${videoBtn}
+                    <div class="event-time">${timeStr}<br>${dateStr}</div>
+                </div>
+            </div>
+        `;
+        });
+
+        container.innerHTML = html || '<p style="color: #64748b; text-align: center;">No recent events</p>';
+    }
+
+    // Video player modal
+    function playRingVideo(url) {
+        const modal = document.createElement('div');
+        modal.className = 'video-modal';
+        modal.innerHTML = `
+        <div class="video-modal-content">
+            <button class="video-modal-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+            <video controls autoplay style="max-width: 100%; max-height: 80vh; border-radius: 8px;">
+                <source src="${url}" type="video/mp4">
+                Your browser does not support video playback.
+            </video>
+        </div>
+    `;
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        document.body.appendChild(modal);
+    }
+
+    // Load Ring events separately for refresh
+    async function loadRingEvents() {
+        try {
+            const response = await fetch('/api/ring/events?limit=10');
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data.events && data.events.length > 0) {
+                document.getElementById('ring-events-section').style.display = 'block';
+                renderRingEvents(data.events);
+            }
+        } catch (error) {
+            console.error('Error loading Ring events:', error);
+        }
+    }
+
+    // ========== RING ALERT SYSTEM ==========
+    let lastKnownEventTimestamp = null;
+    let alertSoundEnabled = true;
+
+    // Check for new Ring events every 10 seconds
+    async function checkForNewRingEvents() {
+        try {
+            const response = await fetch('/api/ring/events?limit=3');
+            if (!response.ok) return;
+            const data = await response.json();
+
+            if (!data.events || data.events.length === 0) return;
+
+            const latestEvent = data.events[0];
+            const eventTime = new Date(latestEvent.timestamp).getTime();
+
+            // Initialize on first run
+            if (lastKnownEventTimestamp === null) {
+                lastKnownEventTimestamp = eventTime;
+                return;
+            }
+
+            // Check if this is a NEW event (within last 2 minutes to account for API delay)
+            const twoMinutesAgo = Date.now() - (2 * 60 * 1000);
+            if (eventTime > lastKnownEventTimestamp && eventTime > twoMinutesAgo) {
+                lastKnownEventTimestamp = eventTime;
+
+                if (latestEvent.event_type === 'ding') {
+                    showDingAlert(latestEvent);
+                } else if (latestEvent.event_type === 'motion') {
+                    showMotionToast(latestEvent);
+                }
+
+                // Refresh the events list
+                loadRingEvents();
+            }
+        } catch (error) {
+            console.error('Error checking for new events:', error);
+        }
+    }
+
+    // Show big DING alert
+    function showDingAlert(event) {
+        // Play sound if enabled
+        if (alertSoundEnabled) {
+            playDingSound();
+        }
+
+        const time = new Date(event.timestamp);
+        const timeStr = time.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        const alert = document.createElement('div');
+        alert.className = 'ding-alert';
+        alert.innerHTML = `
+        <div class="ding-alert-icon">🔔</div>
+        <div class="ding-alert-text">DOORBELL!</div>
+        <div class="ding-alert-device">${escapeHtml(event.device_name)}</div>
+        <div class="ding-alert-time">${timeStr}</div>
+        <button class="ding-alert-dismiss" onclick="this.parentElement.remove()">
+            Dismiss
+        </button>
+    `;
+
+        document.body.appendChild(alert);
+
+        // Auto-dismiss after 30 seconds
+        setTimeout(() => {
+            if (alert.parentElement) alert.remove();
+        }, 30000);
+    }
+
+    // Show motion toast notification
+    function showMotionToast(event) {
+        const time = new Date(event.timestamp);
+        const timeStr = time.toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit' });
+
+        const toast = document.createElement('div');
+        toast.className = 'motion-toast';
+        toast.innerHTML = `
+        <div class="motion-toast-title">🏃 Motion Detected</div>
+        <div class="motion-toast-device">${escapeHtml(event.device_name)} • ${timeStr}</div>
+    `;
+        toast.onclick = () => toast.remove();
+
+        document.body.appendChild(toast);
+
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 10000);
+    }
+
+    // Play doorbell sound
+    function playDingSound() {
+        try {
+            // Create a simple doorbell-like tone using Web Audio API
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            // First tone
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.frequency.value = 830; // G#5
+            gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc1.start(audioCtx.currentTime);
+            osc1.stop(audioCtx.currentTime + 0.5);
+
+            // Second tone (lower)
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.frequency.value = 622; // D#5
+            gain2.gain.setValueAtTime(0.3, audioCtx.currentTime + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.7);
+            osc2.start(audioCtx.currentTime + 0.15);
+            osc2.stop(audioCtx.currentTime + 0.7);
+        } catch (e) {
+            console.log('Could not play sound:', e);
+        }
+    }
+
+    // Start polling for new events
+    setInterval(checkForNewRingEvents, 10000); // Check every 10 seconds
+
+    // Initial check after page load
+    setTimeout(checkForNewRingEvents, 3000);
+
+    // ========== WEBRTC LIVE VIEW ==========
+    let webrtcConnection = null;
+    let localStream = null;
+    let remoteStream = null;
+    let currentDeviceId = null;
+    let keepAliveInterval = null;
+    let isTalking = false;
+
+    async function openLiveView(deviceId) {
+        currentDeviceId = deviceId;
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'webrtc-modal';
+        modal.id = 'webrtc-modal';
+        modal.innerHTML = `
+        <div class="webrtc-container">
+            <div class="webrtc-header">
+                <span class="webrtc-title">📹 Live View - Front Door</span>
+                <button class="webrtc-close" onclick="closeLiveView()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+            <div class="webrtc-video-container">
+                <video id="webrtc-video" class="webrtc-video" autoplay playsinline></video>
+                <div id="webrtc-status" class="webrtc-status connecting">Connecting...</div>
+            </div>
+            <div class="webrtc-controls">
+                <button id="talk-btn" class="webrtc-btn webrtc-btn-talk" onclick="toggleTalk()">
+                    <i class="fas fa-microphone"></i>
+                    <span>Push to Talk</span>
+                </button>
+                <button id="mute-btn" class="webrtc-btn webrtc-btn-mute" onclick="toggleMute()">
+                    <i class="fas fa-volume-up"></i>
+                    <span>Mute</span>
+                </button>
+            </div>
+        </div>
+    `;
+        document.body.appendChild(modal);
+
+        // Start WebRTC connection
+        await startWebRTC(deviceId);
+    }
+
+    async function startWebRTC(deviceId) {
+        const statusEl = document.getElementById('webrtc-status');
+        const videoEl = document.getElementById('webrtc-video');
+
+        try {
+            // Get ICE servers from Ring
+            statusEl.textContent = 'Getting ICE servers...';
+            const iceResponse = await fetch('/api/ring/webrtc/ice-servers');
+            let iceServers = [];
+            if (iceResponse.ok) {
+                const iceData = await iceResponse.json();
+                iceServers = iceData.ice_servers || [];
+            }
+
+            // Create peer connection
+            const config = {
+                iceServers: iceServers.length > 0 ? iceServers : [
+                    { urls: 'stun:stun.l.google.com:19302' }
+                ]
+            };
+
+            webrtcConnection = new RTCPeerConnection(config);
+
+            // Handle incoming video/audio
+            webrtcConnection.ontrack = (event) => {
+                console.log('Received remote track:', event.track.kind);
+                if (event.streams && event.streams[0]) {
+                    videoEl.srcObject = event.streams[0];
+                    remoteStream = event.streams[0];
+                }
+            };
+
+            // Handle ICE candidates
+            webrtcConnection.onicecandidate = async (event) => {
+                if (event.candidate) {
+                    try {
+                        await fetch('/api/ring/webrtc/candidate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                device_id: deviceId,
+                                candidate: event.candidate.candidate
+                            })
+                        });
+                    } catch (e) {
+                        console.error('Failed to send ICE candidate:', e);
+                    }
+                }
+            };
+
+            // Connection state changes
+            webrtcConnection.onconnectionstatechange = () => {
+                console.log('Connection state:', webrtcConnection.connectionState);
+                switch (webrtcConnection.connectionState) {
+                    case 'connected':
+                        statusEl.textContent = '🟢 Connected';
+                        statusEl.className = 'webrtc-status connected';
+                        break;
+                    case 'disconnected':
+                    case 'failed':
+                        statusEl.textContent = 'CRITICAL Disconnected';
+                        statusEl.className = 'webrtc-status error';
+                        break;
+                    case 'connecting':
+                        statusEl.textContent = '🟡 Connecting...';
+                        statusEl.className = 'webrtc-status connecting';
+                        break;
+                }
+            };
+
+            // Add transceivers for audio/video
+            webrtcConnection.addTransceiver('video', { direction: 'recvonly' });
+            webrtcConnection.addTransceiver('audio', { direction: 'sendrecv' });
+
+            // Create offer
+            statusEl.textContent = 'Creating offer...';
+            const offer = await webrtcConnection.createOffer();
+            await webrtcConnection.setLocalDescription(offer);
+
+            // Wait for ICE gathering
+            await new Promise((resolve) => {
+                if (webrtcConnection.iceGatheringState === 'complete') {
+                    resolve();
+                } else {
+                    webrtcConnection.onicegatheringstatechange = () => {
+                        if (webrtcConnection.iceGatheringState === 'complete') {
+                            resolve();
+                        }
+                    };
+                    // Timeout after 5 seconds
+                    setTimeout(resolve, 5000);
+                }
+            });
+
+            // Send offer to Ring
+            statusEl.textContent = 'Connecting to Ring...';
+            const response = await fetch('/api/ring/webrtc/offer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    device_id: deviceId,
+                    sdp_offer: webrtcConnection.localDescription.sdp
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to connect');
+            }
+
+            const data = await response.json();
+
+            // Set remote description
+            await webrtcConnection.setRemoteDescription(
+                new RTCSessionDescription({ type: 'answer', sdp: data.sdp_answer })
+            );
+
+            statusEl.textContent = '🟢 Connected';
+            statusEl.className = 'webrtc-status connected';
+
+            // Start keepalive
+            keepAliveInterval = setInterval(async () => {
+                try {
+                    await fetch(`/api/ring/webrtc/keepalive/${deviceId}`, { method: 'POST' });
+                } catch (e) {
+                    console.error('Keepalive failed:', e);
+                }
+            }, 25000);
+
+        } catch (error) {
+            console.error('WebRTC error:', error);
+            statusEl.textContent = 'CRITICAL ' + error.message;
+            statusEl.className = 'webrtc-status error';
+        }
+    }
+
+    async function toggleTalk() {
+        const btn = document.getElementById('talk-btn');
+
+        if (!isTalking) {
+            // Start talking
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioTrack = localStream.getAudioTracks()[0];
+
+                // Add track to connection
+                if (webrtcConnection) {
+                    const sender = webrtcConnection.getSenders().find(s => s.track?.kind === 'audio');
+                    if (sender) {
+                        sender.replaceTrack(audioTrack);
+                    } else {
+                        webrtcConnection.addTrack(audioTrack, localStream);
+                    }
+                }
+
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fas fa-microphone"></i><span>Talking...</span>';
+                isTalking = true;
+            } catch (e) {
+                console.error('Microphone error:', e);
+                alert('Could not access microphone. Please allow microphone permission.');
+            }
+        } else {
+            // Stop talking
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="fas fa-microphone"></i><span>Push to Talk</span>';
+            isTalking = false;
+        }
+    }
+
+    function toggleMute() {
+        const btn = document.getElementById('mute-btn');
+        const video = document.getElementById('webrtc-video');
+
+        if (video) {
+            video.muted = !video.muted;
+            btn.classList.toggle('muted', video.muted);
+            btn.innerHTML = video.muted
+                ? '<i class="fas fa-volume-mute"></i><span>Unmute</span>'
+                : '<i class="fas fa-volume-up"></i><span>Mute</span>';
+        }
+    }
+
+    async function closeLiveView() {
+        // Stop keepalive
+        if (keepAliveInterval) {
+            clearInterval(keepAliveInterval);
+            keepAliveInterval = null;
+        }
+
+        // Close WebRTC
+        if (webrtcConnection) {
+            webrtcConnection.close();
+            webrtcConnection = null;
+        }
+
+        // Stop local stream
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+
+        // Close stream on server
+        if (currentDeviceId) {
+            try {
+                await fetch(`/api/ring/webrtc/close/${currentDeviceId}`, { method: 'POST' });
+            } catch (e) {
+                console.error('Failed to close stream:', e);
+            }
+        }
+
+        // Remove modal
+        const modal = document.getElementById('webrtc-modal');
+        if (modal) modal.remove();
+
+        isTalking = false;
+        currentDeviceId = null;
+    }
+
+    async function setRingAlarmMode(mode) {
+        const btn = document.querySelector(`.alarm-mode-btn[data-mode="${mode}"]`);
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<span class="loading-spinner"></span>';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/ring/alarm/mode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mode: mode })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Failed to set mode');
+            }
+
+            // Reload status
+            await loadRingStatus();
+        } catch (error) {
+            console.error('Error setting alarm mode:', error);
+            alert('Failed to set alarm mode: ' + error.message);
+        } finally {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        }
+    }
+
+    async function submitRing2FA() {
+        const input = document.getElementById('ring-2fa-input');
+        const code = input.value.trim();
+        if (!code) return;
+
+        try {
+            const response = await fetch('/api/ring/auth/2fa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Invalid code');
+            }
+
+            // Reload status
+            await loadRingStatus();
+        } catch (error) {
+            console.error('Ring 2FA error:', error);
+            alert('2FA failed: ' + error.message);
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // ===== Nest Protect Functions =====
+
+    async function loadNestStatus() {
+        try {
+            const response = await fetch('/api/nest/status');
+            if (!response.ok) throw new Error('Failed to fetch Nest status');
+
+            const data = await response.json();
+            renderNestStatus(data);
+        } catch (error) {
+            console.error('Error loading Nest status:', error);
+            document.getElementById('nest-connection-badge').textContent = 'Error';
+            document.getElementById('nest-connection-badge').className = 'section-badge disconnected';
+            document.getElementById('nest-devices').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Failed to connect to Nest</p>
+            </div>
+        `;
+        }
+    }
+
+    function renderNestStatus(data) {
+        const badge = document.getElementById('nest-connection-badge');
+        const devicesContainer = document.getElementById('nest-devices');
+        const haSetup = document.getElementById('nest-ha-setup');
+        const setupSteps = document.getElementById('nest-setup-steps');
+
+        if (!data.initialized) {
+            // Show Home Assistant setup
+            badge.textContent = 'Setup Required';
+            badge.className = 'section-badge pending';
+            haSetup.style.display = 'block';
+
+            // Show setup instructions
+            if (data.setup_instructions) {
+                setupSteps.innerHTML = '<ol style="margin: 0; padding-left: 20px; color: var(--dark-text-muted);">' +
+                    data.setup_instructions.map(step => `<li style="margin-bottom: 6px;">${escapeHtml(step)}</li>`).join('') +
+                    '</ol>';
+            } else if (data.error) {
+                setupSteps.innerHTML = `<p style="color: #f87171;">${escapeHtml(data.error)}</p>`;
+            }
+
+            devicesContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-home"></i>
+                <p>Connect Home Assistant to view Nest Protect devices</p>
+            </div>
+        `;
+            return;
+        }
+
+        // Hide setup, show devices
+        haSetup.style.display = 'none';
+        badge.textContent = data.all_ok ? 'All Clear' : 'Alert';
+        badge.className = data.all_ok ? 'section-badge connected' : 'section-badge disconnected';
+
+        if (!data.devices || data.devices.length === 0) {
+            devicesContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-info-circle"></i>
+                <p>No Nest Protect devices found in Home Assistant</p>
+                <p style="font-size: 12px; margin-top: 8px;">Make sure you've added the Nest integration in HA</p>
+            </div>
+        `;
+            return;
+        }
+
+        // Render devices
+        let html = '';
+        data.devices.forEach(device => {
+            html += renderNestDeviceCard(device);
+        });
+        devicesContainer.innerHTML = html;
+    }
+
+    function renderNestDeviceCard(device) {
+        // Handle both direct Nest and Home Assistant data formats
+        const smokeOk = device.smoke_status === 'ok' || device.smoke_status === 'idle';
+        const coOk = device.co_status === 'ok' || device.co_status === 'idle';
+        const batteryOk = !device.battery_level || device.battery_level > 20;
+        const allOk = smokeOk && coOk && batteryOk && device.is_online;
+
+        const statusClass = allOk ? 'status-online' : 'status-warning';
+        const statusText = !device.is_online ? 'Offline'
+            : !smokeOk ? 'Smoke Alert!'
+                : !coOk ? 'CO Alert!'
+                    : !batteryOk ? 'Battery Low'
+                        : 'OK';
+
+        const batteryDisplay = device.battery_level ? `${device.battery_level}%` : 'OK';
+
+        return `
+        <div class="device-card">
+            <div class="device-header">
+                <div style="display: flex; align-items: center;">
+                    <span class="device-icon">🔥</span>
+                    <div>
+                        <div class="device-name">${escapeHtml(device.name)}</div>
+                        <div class="device-location">${escapeHtml(device.location || 'Unknown')}</div>
+                    </div>
+                </div>
+                <div class="device-status">
+                    <div class="status-indicator ${statusClass}"></div>
+                    <span>${statusText}</span>
+                </div>
+            </div>
+            <div class="device-metrics">
+                <div class="metric">
+                    <div class="metric-value ${smokeOk ? '' : 'text-red-500'}">${smokeOk ? 'OK' : 'WARNING'}</div>
+                    <div class="metric-label">Smoke</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value ${coOk ? '' : 'text-red-500'}">${coOk ? 'OK' : 'WARNING'}</div>
+                    <div class="metric-label">CO</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value ${batteryOk ? '' : 'text-yellow-500'}">${batteryDisplay}</div>
+                    <div class="metric-label">Battery</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${device.is_online ? 'OK' : 'OFFLINE'}</div>
+                    <div class="metric-label">Online</div>
+                </div>
+            </div>
+            ${device.last_updated ? `
+            <div class="device-controls" style="font-size: 12px; color: #64748b;">
+                Last update: ${new Date(device.last_updated).toLocaleString('de-AT')}
+            </div>
+            ` : ''}
+        </div>
+    `;
+    }
+</script>
+{% endblock %}

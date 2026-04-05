@@ -1,5 +1,5 @@
 """
-Direct import test for Tapo Camera MCP tool modules.
+Direct import test for Devices MCP tool modules.
 """
 
 import sys
@@ -41,11 +41,11 @@ def main():
 
     # List of modules to test
     modules_to_test = [
-        "tapo_camera_mcp.tools.camera",
-        "tapo_camera_mcp.tools.system",
-        "tapo_camera_mcp.tools.ptz",
-        "tapo_camera_mcp.tools.media",
-        "tapo_camera_mcp.tools.grafana",
+        "devices_mcp.tools.camera",
+        "devices_mcp.tools.system",
+        "devices_mcp.tools.ptz",
+        "devices_mcp.tools.media",
+        "devices_mcp.tools.grafana",
     ]
 
     # Test each module

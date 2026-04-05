@@ -21,75 +21,81 @@ async def discover_all_plugs():
         email = "sandraschipal@hotmail.com"
         password = "Sec0860ta#"
 
-        print("="*60)
-        print("Discovering Tapo P115 Smart Plugs")
-        print("="*60)
-        print(f"Account: {email}")
-        print()
+        logger.info("=" * 60)
+        logger.info("Discovering Tapo P115 Smart Plugs")
+        logger.info("=" * 60)
+        logger.info(f"Account: {email}")
+        logger.info()
 
         # Create API client
         client = ApiClient(email, password)
 
         # Get all devices
-        print("Fetching devices from Tapo account...")
+        logger.info("Fetching devices from Tapo account...")
         devices = await client.list_devices()
 
-        print(f"\nFound {len(devices)} device(s)")
-        print()
+        logger.info(f"\nFound {len(devices)} device(s)")
+        logger.info()
 
         p115_plugs = []
         for device in devices:
-            device_type = getattr(device, 'device_type', 'Unknown')
-            device_id = getattr(device, 'device_id', 'Unknown')
-            alias = getattr(device, 'alias', 'Unknown')
+            device_type = getattr(device, "device_type", "Unknown")
+            device_id = getattr(device, "device_id", "Unknown")
+            alias = getattr(device, "alias", "Unknown")
 
             # Check if it's a P115 plug
-            if 'P115' in str(device_type) or 'P115' in str(alias) or 'P115' in str(device_id):
-                ip = getattr(device, 'ip', getattr(device, 'device_ip', 'Unknown'))
-                model = getattr(device, 'device_model', 'P115')
+            if "P115" in str(device_type) or "P115" in str(alias) or "P115" in str(device_id):
+                ip = getattr(device, "ip", getattr(device, "device_ip", "Unknown"))
+                model = getattr(device, "device_model", "P115")
 
-                p115_plugs.append({
-                    'device_id': device_id,
-                    'alias': alias,
-                    'ip': ip,
-                    'model': model,
-                    'device_type': device_type,
-                })
+                p115_plugs.append(
+                    {
+                        "device_id": device_id,
+                        "alias": alias,
+                        "ip": ip,
+                        "model": model,
+                        "device_type": device_type,
+                    }
+                )
 
-                print("✅ Found P115 Plug:")
-                print(f"   Device ID: {device_id}")
-                print(f"   Name: {alias}")
-                print(f"   IP: {ip}")
-                print(f"   Model: {model}")
-                print()
+                logger.info("✅ Found P115 Plug:")
+                logger.info(f"   Device ID: {device_id}")
+                logger.info(f"   Name: {alias}")
+                logger.info(f"   IP: {ip}")
+                logger.info(f"   Model: {model}")
+                logger.info()
 
         if not p115_plugs:
-            print("⚠️  No P115 plugs found in device list")
-            print("   Make sure plugs are registered in your Tapo app")
+            logger.info("⚠️  No P115 plugs found in device list")
+            logger.info("   Make sure plugs are registered in your Tapo app")
             return []
 
-        print(f"\n{'='*60}")
-        print(f"Summary: Found {len(p115_plugs)} P115 plug(s)")
-        print(f"{'='*60}\n")
+        logger.info(f"\n{'=' * 60}")
+        logger.info(f"Summary: Found {len(p115_plugs)} P115 plug(s)")
+        logger.info(f"{'=' * 60}\n")
 
         # Test connection to each
-        print("Testing connections...")
+        logger.info("Testing connections...")
         for plug_info in p115_plugs:
             try:
-                ip = plug_info['ip']
-                if ip == 'Unknown' or not ip:
-                    print(f"⚠️  {plug_info['alias']}: No IP address available")
+                ip = plug_info["ip"]
+                if ip == "Unknown" or not ip:
+                    logger.info(f"⚠️  {plug_info['alias']}: No IP address available")
                     continue
 
-                print(f"\nTesting {plug_info['alias']} at {ip}...")
+                logger.info(f"\nTesting {plug_info['alias']} at {ip}...")
                 plug = await client.p115(ip)
 
                 # Get device info
                 device_info = await plug.get_device_info()
-                device_name = getattr(device_info, 'nickname', getattr(device_info, 'name', plug_info['alias']))
-                model = getattr(device_info, 'model', 'P115')
-                firmware = getattr(device_info, 'fw_ver', getattr(device_info, 'firmware_version', 'Unknown'))
-                mac = getattr(device_info, 'mac', 'Unknown')
+                device_name = getattr(
+                    device_info, "nickname", getattr(device_info, "name", plug_info["alias"])
+                )
+                model = getattr(device_info, "model", "P115")
+                firmware = getattr(
+                    device_info, "fw_ver", getattr(device_info, "firmware_version", "Unknown")
+                )
+                mac = getattr(device_info, "mac", "Unknown")
 
                 # Try to get state
                 try:
@@ -101,36 +107,35 @@ async def discover_all_plugs():
                 # Try to get energy usage
                 try:
                     energy = await plug.get_energy_usage()
-                    current_power = getattr(energy, 'current_power', getattr(energy, 'power', 0))
-                    today_energy = getattr(energy, 'today_energy', getattr(energy, 'today', 0))
+                    current_power = getattr(energy, "current_power", getattr(energy, "power", 0))
+                    today_energy = getattr(energy, "today_energy", getattr(energy, "today", 0))
                 except:
                     current_power = 0
                     today_energy = 0
 
-                print("   ✅ Connected!")
-                print(f"   Name: {device_name}")
-                print(f"   Model: {model}")
-                print(f"   Firmware: {firmware}")
-                print(f"   MAC: {mac}")
-                print(f"   State: {power_state}")
-                print(f"   Current Power: {current_power} W")
-                print(f"   Today's Energy: {today_energy} kWh")
+                logger.info("   ✅ Connected!")
+                logger.info(f"   Name: {device_name}")
+                logger.info(f"   Model: {model}")
+                logger.info(f"   Firmware: {firmware}")
+                logger.info(f"   MAC: {mac}")
+                logger.info(f"   State: {power_state}")
+                logger.info(f"   Current Power: {current_power} W")
+                logger.info(f"   Today's Energy: {today_energy} kWh")
 
             except Exception as e:
-                print(f"   ❌ Failed to connect: {e}")
+                logger.info(f"   ❌ Failed to connect: {e}")
 
         return p115_plugs
 
     except ImportError:
-        print("[ERROR] 'tapo' library not installed")
-        print("Install it with: pip install tapo")
+        logger.info("[ERROR] 'tapo' library not installed")
+        logger.info("Install it with: pip install tapo")
         return []
     except Exception as e:
         logger.exception("Discovery failed")
-        print(f"\n[ERROR] Discovery failed: {e}")
+        logger.info(f"\n[ERROR] Discovery failed: {e}")
         return []
 
 
 if __name__ == "__main__":
     asyncio.run(discover_all_plugs())
-

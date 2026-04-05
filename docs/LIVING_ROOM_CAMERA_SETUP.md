@@ -30,4 +30,3 @@ Then I'll update `config.yaml` with the credentials.
 Testing both cameras carefully will help us understand if the authentication issue is:
 - **Camera-specific** (kitchen camera only) → Camera has a problem
 - **General issue** (both cameras) → Our authentication method has a problem
-

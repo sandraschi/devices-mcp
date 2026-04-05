@@ -18,7 +18,7 @@ Steps to reproduce the behavior:
 A clear and concise description of what you expected to happen.
 
 ## Environment
-- **Tapo Camera MCP Version**: [e.g. 0.1.0]
+- **Devices MCP Version**: [e.g. 0.1.0]
 - **Python Version**: [e.g. 3.9.0]
 - **Operating System**: [e.g. Windows 10, Ubuntu 20.04]
 - **Camera Model**: [e.g. Tapo C200]

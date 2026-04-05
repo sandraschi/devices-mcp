@@ -31,7 +31,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{app=\"tapo-camera-mcp\"}",
+          "expr": "{app=\"devices-mcp\"}",
           "refId": "A"
         }
       ],
@@ -99,7 +99,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum by (level) (count_over_time({app=\"tapo-camera-mcp\"}[5m]))",
+          "expr": "sum by (level) (count_over_time({app=\"devices-mcp\"}[5m]))",
           "legendFormat": "{{level}}",
           "refId": "A"
         }
@@ -122,4 +122,3 @@
   "uid": "logging-overview",
   "version": 1
 }
-

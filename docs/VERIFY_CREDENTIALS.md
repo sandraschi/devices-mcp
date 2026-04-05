@@ -52,4 +52,3 @@ python scripts/test_tapo_connection.py
 ```
 
 This will use credentials from `config.yaml` automatically.
-

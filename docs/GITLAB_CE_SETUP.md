@@ -128,13 +128,13 @@ This creates backups under `/var/opt/gitlab/backups` (mapped into `C:\gitlab\dat
 You can mirror GitHub repos into GitLab for private CI, and optionally mirror critical GitLab repos back to GitHub as an extra backup.
 
 ## 7. Integrating Existing Repos
-Example: migrate `tapo-camera-mcp` into GitLab:
+Example: migrate `devices-mcp` into GitLab:
 
-1. In GitLab UI, create a **new project** (e.g., group `home-mcp`, project `tapo-camera-mcp`).  
+1. In GitLab UI, create a **new project** (e.g., group `home-mcp`, project `devices-mcp`).
 2. In your local repo (PowerShell):
    ```powershell
-   Set-Location -Path "D:\Dev\repos\tapo-camera-mcp"
-   git remote add gitlab http://localhost:8080/home-mcp/tapo-camera-mcp.git
+   Set-Location -Path "D:\Dev\repos\devices-mcp"
+   git remote add gitlab http://localhost:8080/home-mcp/devices-mcp.git
    git push gitlab main --follow-tags
    ```
 3. Repeat for other repos (`nest-protect-mcp`, `ring-mcp`, `mcp-central-docs`, etc.).
@@ -142,5 +142,3 @@ Example: migrate `tapo-camera-mcp` into GitLab:
 ## 9. Next Steps / Tips
 - Schedule backups via Task Scheduler to run the `gitlab:backup:create` command regularly.
 - Keep GitLab CE updated by pulling newer `gitlab/gitlab-ce` images occasionally.
-
-

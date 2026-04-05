@@ -1,12 +1,12 @@
-# Grafana Integration Overview - Tapo Camera MCP
+# Grafana Integration Overview - Devices MCP
 
-**Status**: 🎯 Ready for Implementation  
-**Priority**: ✅ High - Visual monitoring critical for security  
-**Timeline**: 2-3 days implementation  
+**Status**: 🎯 Ready for Implementation
+**Priority**: ✅ High - Visual monitoring critical for security
+**Timeline**: 2-3 days implementation
 
 ## What We're Building
 
-Direct integration between **tapo-camera-mcp** and **Grafana** to create real-time security dashboards without complex middleware like MQTT or InfluxDB.
+Direct integration between **devices-mcp** and **Grafana** to create real-time security dashboards without complex middleware like MQTT or InfluxDB.
 
 ## Core Features
 
@@ -24,7 +24,7 @@ Direct integration between **tapo-camera-mcp** and **Grafana** to create real-ti
 
 ### 📈 Historical Data
 - Motion event history
-- Camera uptime statistics  
+- Camera uptime statistics
 - Performance trends over time
 - Storage usage monitoring
 
@@ -32,14 +32,14 @@ Direct integration between **tapo-camera-mcp** and **Grafana** to create real-ti
 
 ```mermaid
 graph TD
-    A[Tapo Camera MCP] --> B[HTTP Metrics Endpoint]
+    A[Devices MCP] --> B[HTTP Metrics Endpoint]
     B --> C[Grafana Data Source]
     C --> D[Custom Dashboards]
     D --> E[Alerts & Notifications]
 ```
 
 ### Implementation Strategy
-1. **Add metrics endpoint** to existing tapo-camera-mcp server
+1. **Add metrics endpoint** to existing devices-mcp server
 2. **Configure Grafana** to scrape metrics via HTTP/JSON
 3. **Create dashboard templates** for common monitoring scenarios
 4. **Set up alerting rules** for critical events
@@ -58,7 +58,7 @@ graph TD
 - Motion detection data
 - Basic Grafana connection
 
-### Phase 2: Rich Dashboards (Day 2) 
+### Phase 2: Rich Dashboards (Day 2)
 - Custom panel development
 - Alert configuration
 - Visual enhancements

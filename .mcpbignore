@@ -1,7 +1,17 @@
-# MCPB Ignore File (Root Level)
-# Required for mcpb pack command
-# This file excludes problematic directories from the package
-
-# GitLab deployment files (permission issues with sockets)
-deploy/gitlab/
-
+# MCPB Pack Exclusion List
+tests/
+.git/
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
+target/
+docs/
+scripts/
+mcpb/
+.cursor/
+.windsurf/
+.pytest_cache/
+.coverage
+Cargo.lock

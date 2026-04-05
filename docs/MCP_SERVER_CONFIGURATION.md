@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Tapo Camera MCP server supports comprehensive hardware integration with multiple authentication methods. This guide documents how the server obtains IP addresses, usernames, passwords, and authentication credentials for various devices and services.
+The Devices MCP server supports comprehensive hardware integration with multiple authentication methods. This guide documents how the server obtains IP addresses, usernames, passwords, and authentication credentials for various devices and services.
 
 ## Configuration Sources (Hierarchical Priority)
 
@@ -10,7 +10,7 @@ The Tapo Camera MCP server supports comprehensive hardware integration with mult
 **Location**: `config.yaml` (highest priority)
 **Search Order**:
 - `/app/config.yaml` (Docker container)
-- `~/.config/tapo-camera-mcp/config.yaml` (user home directory)
+- `~/.config/devices-mcp/config.yaml` (user home directory)
 - Repository root `config.yaml`
 - Current directory
 
@@ -232,14 +232,14 @@ storage: {...}
 ### Debug Commands
 ```bash
 # Check current configuration
-python -c "from tapo_camera_mcp.config import get_config; import json; print(json.dumps(get_config(), indent=2))"
+python -c "from devices_mcp.config import get_config; import json; print(json.dumps(get_config(), indent=2))"
 
 # Test MCP server startup
-python -m tapo_camera_mcp.cli_v2 --debug
+python -m devices_mcp.cli_v2 --debug
 ```
 
 ### Configuration Validation
-- Use `python -c "from tapo_camera_mcp.config import get_model; print('Config loaded successfully')"` to test
+- Use `python -c "from devices_mcp.config import get_model; print('Config loaded successfully')"` to test
 - Check logs for configuration errors during startup
 - Verify network connectivity to configured devices
 

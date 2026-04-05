@@ -11,4 +11,3 @@ datasources:
       httpMethod: POST
       timeInterval: 15s
     editable: true
-

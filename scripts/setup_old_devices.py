@@ -1,32 +1,37 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 #!/usr/bin/env python3
 """
 Setup Guide for Old Digicams and iPhones as Webcams
 ==================================================
 
 This script provides step-by-step guidance for setting up old digital cameras
-and iPhones as webcams in your Tapo Camera MCP system.
+and iPhones as webcams in your Devices MCP system.
 """
 
-import sys
 import os
-from pathlib import Path
+
 
 def print_header(title):
     """Print a formatted header."""
-    print(f"\n{'='*60}")
-    print(f"SETUP: {title}")
-    print(f"{'='*60}")
+    logger.info(f"\n{'=' * 60}")
+    logger.info(f"SETUP: {title}")
+    logger.info(f"{'=' * 60}")
+
 
 def print_section(title):
     """Print a section header."""
-    print(f"\n{title}")
-    print("-" * 40)
+    logger.info(f"\n{title}")
+    logger.info("-" * 40)
+
 
 def setup_digicam_guide():
     """Guide for setting up digital cameras."""
     print_header("DIGITAL CAMERA (DIGICAM) SETUP GUIDE")
 
-    print("""
+    logger.info("""
 OVERVIEW
 Old digital cameras (Canon, Nikon, Sony, etc.) can be repurposed as webcams
 with better image quality than built-in laptop cameras.
@@ -40,7 +45,7 @@ SETUP METHODS
 """)
 
     print_section("METHOD 1: USB Webcam Mode (Easiest)")
-    print("""
+    logger.info("""
 1. Check if your camera supports USB webcam mode:
    - Canon EOS: Use "EOS Webcam Utility Pro"
    - Nikon DSLR: Use "Nikon Webcam Utility"
@@ -58,7 +63,7 @@ SETUP METHODS
 """)
 
     print_section("METHOD 2: HDMI Capture Device")
-    print("""
+    logger.info("""
 1. Get HDMI capture device:
    - Elgato Cam Link 4K ($120)
    - AVerMedia Live Gamer Portable 2 Plus ($100)
@@ -71,7 +76,7 @@ SETUP METHODS
 """)
 
     print_section("DIGICAM CONFIGURATION EXAMPLE")
-    print("""
+    logger.info("""
 # Add to your config.yaml
 cameras:
   canon_rebel:
@@ -92,11 +97,12 @@ cameras:
 # Restart server after configuration
 """)
 
+
 def setup_iphone_guide():
     """Guide for setting up iPhones as webcams."""
     print_header("IPHONE WEBCAM SETUP GUIDE")
 
-    print("""
+    logger.info("""
 OVERVIEW
 Old iPhones make excellent webcams with superior image quality,
 multiple lenses, and computational photography features.
@@ -111,7 +117,7 @@ SETUP METHODS
 """)
 
     print_section("METHOD 1: Continuity Camera (macOS - Easiest)")
-    print("""
+    logger.info("""
 1. Ensure macOS Monterey 12.0 or later
 2. Connect iPhone and Mac to same WiFi network
 3. Sign into same iCloud account on both devices
@@ -122,7 +128,7 @@ SETUP METHODS
 """)
 
     print_section("METHOD 2: EpocCam (Cross-Platform)")
-    print("""
+    logger.info("""
 1. Download EpocCam app on iPhone:
    - https://www.elgato.com/en/epoccam
 2. Download EpocCam drivers on computer:
@@ -135,7 +141,7 @@ SETUP METHODS
 """)
 
     print_section("METHOD 3: ManyCam (Advanced Features)")
-    print("""
+    logger.info("""
 1. Download ManyCam on iPhone and computer:
    - https://manycam.com/
 2. Connect devices to same network
@@ -145,7 +151,7 @@ SETUP METHODS
 """)
 
     print_section("IPHONE CONFIGURATION EXAMPLE")
-    print("""
+    logger.info("""
 # Add to your config.yaml
 cameras:
   old_iphone_12:
@@ -166,12 +172,13 @@ cameras:
 # Restart server after configuration
 """)
 
+
 def troubleshooting_guide():
     """Common troubleshooting steps."""
     print_header("TROUBLESHOOTING GUIDE")
 
     print_section("DIGICAM ISSUES")
-    print("""
+    logger.info("""
 Camera not detected:
 - Try different USB ports
 - Update camera firmware
@@ -192,7 +199,7 @@ Connection drops:
 """)
 
     print_section("IPHONE ISSUES")
-    print("""
+    logger.info("""
 Continuity not working:
 - Ensure same WiFi network
 - Enable Bluetooth and Handoff
@@ -212,20 +219,21 @@ Poor video quality:
 - Good WiFi signal strength
 """)
 
+
 def main():
     """Main setup guide."""
-    print("OLD DEVICE WEBCAM SETUP GUIDE")
-    print("=" * 60)
-    print("Transform your old digital cameras and iPhones into high-quality webcams!")
+    logger.info("OLD DEVICE WEBCAM SETUP GUIDE")
+    logger.info("=" * 60)
+    logger.info("Transform your old digital cameras and iPhones into high-quality webcams!")
 
     # Show menu
     while True:
-        print("\nSETUP OPTIONS:")
-        print("1. Digital Camera (Digicam) Setup Guide")
-        print("2. iPhone Webcam Setup Guide")
-        print("3. Troubleshooting Guide")
-        print("4. Run Device Detection")
-        print("5. Exit")
+        logger.info("\nSETUP OPTIONS:")
+        logger.info("1. Digital Camera (Digicam) Setup Guide")
+        logger.info("2. iPhone Webcam Setup Guide")
+        logger.info("3. Troubleshooting Guide")
+        logger.info("4. Run Device Detection")
+        logger.info("5. Exit")
 
         choice = input("\nSelect option (1-5): ").strip()
 
@@ -236,32 +244,16 @@ def main():
         elif choice == "3":
             troubleshooting_guide()
         elif choice == "4":
-            print("\nRunning device detection...")
+            logger.info("\nRunning device detection...")
             os.system("python scripts/detect_usb_devices.py")
         elif choice == "5":
-            print("\nHappy webcam repurposing!")
+            logger.info("\nHappy webcam repurposing!")
             break
         else:
-            print("Invalid choice. Please select 1-5.")
+            logger.info("Invalid choice. Please select 1-5.")
 
         input("\nPress Enter to continue...")
 
+
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

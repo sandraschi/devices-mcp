@@ -30,7 +30,7 @@ def test_core_models():
 def test_ptz_models():
     """Test PTZ model definitions."""
     try:
-        from tapo_camera_mcp.core.models import PTZPosition
+        from devices_mcp.core.models import PTZPosition
 
         # Test PTZ directions
 
@@ -49,7 +49,7 @@ def test_ptz_models():
 def test_motion_models():
     """Test motion detection models."""
     try:
-        from tapo_camera_mcp.core.models import MotionEvent
+        from devices_mcp.core.models import MotionEvent
 
         # Test sensitivity levels
 

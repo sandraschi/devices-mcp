@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 def test_server_initialization():
     """Test server initialization and basic setup."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         # Test server creation (should be singleton)
         server1 = TapoCameraServer()
@@ -43,7 +43,7 @@ def test_server_initialization():
 def test_server_singleton_pattern():
     """Test server singleton pattern implementation."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         # Test singleton via class method
         server = asyncio.run(TapoCameraServer.get_instance())
@@ -64,8 +64,8 @@ def test_server_singleton_pattern():
 def test_camera_manager_integration():
     """Test camera manager integration with server."""
     try:
-        from tapo_camera_mcp.camera.manager import CameraManager
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.server import TapoCameraServer
 
         server = asyncio.run(TapoCameraServer.get_instance())
 
@@ -96,7 +96,7 @@ def test_camera_manager_integration():
 def test_mcp_server_setup():
     """Test MCP server setup and configuration."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         server = asyncio.run(TapoCameraServer.get_instance())
 
@@ -121,13 +121,13 @@ def test_mcp_server_setup():
 def test_tools_registration():
     """Test that tools are properly registered with MCP server."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
-        from tapo_camera_mcp.tools.discovery import discover_tools
+        from devices_mcp.core.server import TapoCameraServer
+        from devices_mcp.tools.discovery import discover_tools
 
         server = asyncio.run(TapoCameraServer.get_instance())
 
         # Test tools discovery
-        tools = discover_tools("tapo_camera_mcp.tools")
+        tools = discover_tools("devices_mcp.tools")
         assert len(tools) > 0, "Should discover tools"
 
         # Test that tools are registered with MCP server
@@ -157,7 +157,7 @@ def test_tools_registration():
 def test_server_error_handling():
     """Test server error handling for invalid operations."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         @pytest.mark.skip(reason="# TODO: Fix test_error_scenarios - currently has assert False")
         async def test_error_scenarios():
@@ -188,7 +188,7 @@ def test_server_error_handling():
 def test_server_configuration():
     """Test server configuration and setup."""
     try:
-        from tapo_camera_mcp.core.server import TapoCameraServer
+        from devices_mcp.core.server import TapoCameraServer
 
         server = asyncio.run(TapoCameraServer.get_instance())
 

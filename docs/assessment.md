@@ -1,12 +1,12 @@
-# Tapo Camera MCP Repository Assessment
+# Devices MCP Repository Assessment
 
 ## Executive Summary
 
-The Tapo Camera MCP repository is a comprehensive Model Context Protocol (MCP) server implementation for managing and controlling Tapo cameras (TP-Link). The project successfully integrates with FastMCP 2.12 and provides **25+ functional tools** for camera management, media operations, PTZ control, and system management. The repository includes advanced features like Grafana integration, vision analysis with DINOv3, **real-time video streaming dashboard**, and complete mock removal.
+The Devices MCP repository is a comprehensive Model Context Protocol (MCP) server implementation for managing and controlling Tapo cameras (TP-Link). The project successfully integrates with FastMCP 3.1 and provides **25+ functional tools** for camera management, media operations, PTZ control, and system management. The repository includes advanced features like Grafana integration, vision analysis with DINOv3, **real-time video streaming dashboard**, and complete mock removal.
 
 ## Current Status: ✅ PRODUCTION READY
 
-- **Server Status**: ✅ Fully functional with FastMCP 2.12
+- **Server Status**: ✅ Fully functional with FastMCP 3.1
 - **Tool Registration**: ✅ 25+ tools properly registered and visible
 - **Claude Desktop Integration**: ✅ Working with corrected configuration
 - **Video Streaming Dashboard**: ✅ Real-time MJPEG streaming from USB webcams
@@ -70,8 +70,8 @@ The Tapo Camera MCP repository is a comprehensive Model Context Protocol (MCP) s
    - Proper use of abstract base classes and factory patterns
    - Good use of Pydantic for data validation
 
-2. **FastMCP 2.12 Integration**
-   - Successfully adapted to FastMCP 2.12 API changes
+2. **FastMCP 3.1 Integration**
+   - Successfully adapted to FastMCP 3.1 API changes
    - Proper tool registration with explicit parameters
    - Correct handling of async operations
 
@@ -248,7 +248,7 @@ The Tapo Camera MCP repository is a comprehensive Model Context Protocol (MCP) s
 
 ### ✅ All Issues Fixed
 - **Claude Desktop Integration**: Fixed with correct `cwd` path
-- **Tool Registration**: Fixed FastMCP 2.12 compatibility
+- **Tool Registration**: Fixed FastMCP 3.1 compatibility
 - **Import Errors**: Fixed server startup issues
 - **Mock Implementations**: All replaced with real implementations
 - **Error Handling**: Comprehensive error handling implemented
@@ -259,7 +259,7 @@ The Tapo Camera MCP repository is a comprehensive Model Context Protocol (MCP) s
 ### ✅ Working Tests
 - Server startup and tool registration
 - All tool execution with real implementations
-- FastMCP 2.12 integration
+- FastMCP 3.1 integration
 - Claude Desktop integration
 - Video streaming dashboard
 - Real camera operations
@@ -269,7 +269,7 @@ The Tapo Camera MCP repository is a comprehensive Model Context Protocol (MCP) s
 
 ## Conclusion
 
-The Tapo Camera MCP repository is now a **production-ready, comprehensive camera management solution**. All major issues have been resolved:
+The Devices MCP repository is now a **production-ready, comprehensive camera management solution**. All major issues have been resolved:
 
 ### ✅ **COMPLETED ACHIEVEMENTS**
 
@@ -292,7 +292,7 @@ The project now provides:
 
 ### 🚀 **READY FOR PRODUCTION USE**
 
-The repository demonstrates excellent software engineering practices and provides a solid foundation for camera management. All core functionality is working correctly with FastMCP 2.12, and the advanced features like Grafana integration, vision analysis, and real-time video streaming make it a comprehensive solution.
+The repository demonstrates excellent software engineering practices and provides a solid foundation for camera management. All core functionality is working correctly with FastMCP 3.1, and the advanced features like Grafana integration, vision analysis, and real-time video streaming make it a comprehensive solution.
 
 ## Quick Start Guide
 
@@ -309,13 +309,13 @@ python start.py dashboard
 {
   "tapo": {
     "command": "python",
-    "args": ["-m", "tapo_camera_mcp.server_v2", "--direct"],
-    "cwd": "D:/Dev/repos/tapo-camera-mcp",
+    "args": ["-m", "devices_mcp.server_v2", "--direct"],
+    "cwd": "D:/Dev/repos/devices-mcp",
     "env": {
       "TAPO_CAMERA_HOST": "192.168.1.100",
       "TAPO_CAMERA_USERNAME": "your_username",
       "TAPO_CAMERA_PASSWORD": "your_password",
-      "PYTHONPATH": "D:/Dev/repos/tapo-camera-mcp/src",
+      "PYTHONPATH": "D:/Dev/repos/devices-mcp/src",
       "PYTHONUNBUFFERED": "1"
     }
   }

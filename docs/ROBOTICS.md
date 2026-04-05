@@ -70,9 +70,9 @@ Following the Roomba bankruptcy and competition from Chinese manufacturers, seve
 4. **Better Value**: Same or superior features at significantly lower prices
 5. **Modern Features**: LIDAR mapping, app control, auto-empty stations, mopping capabilities
 
-### Integration with Tapo-Camera-MCP
+### Integration with devices-mcp
 
-These robot vacuums can be integrated into the Tapo-Camera-MCP system via:
+These robot vacuums can be integrated into the devices-mcp system via:
 - **Home Assistant**: Direct integration through the above libraries
 - **MQTT**: Most support MQTT for real-time status updates
 - **REST APIs**: Full REST API access for custom integrations

@@ -35,4 +35,3 @@
 - Evaluate Terraform or Pulumi if infrastructure moves to cloud.
 - Consider GitOps with Flux once remote repository hosting is ready.
 - Hook into `runbooks` to describe operational procedures (rollbacks, upgrades).
-

@@ -1,6 +1,6 @@
 # Secrets Management Guide
 
-**Last Updated:** 2025-12-02  
+**Last Updated:** 2025-12-02
 **Status:** Current Implementation + Improvement Plan
 
 ---
@@ -11,7 +11,7 @@
 
 **Storage Method:** Plain text in `config.yaml` file
 
-**Location:** `D:\Dev\repos\tapo-camera-mcp\config.yaml`
+**Location:** `D:\Dev\repos\devices-mcp\config.yaml`
 
 **How Secrets Are Retrieved:**
 1. `ConfigManager.load_config()` reads `config.yaml` directly
@@ -50,7 +50,7 @@ security:
 
 **Code Flow:**
 ```python
-# src/tapo_camera_mcp/config/__init__.py
+# src/devices_mcp/config/__init__.py
 config_manager = ConfigManager()
 config = config_manager.load_config()  # Reads config.yaml directly
 ```
@@ -121,15 +121,15 @@ volumes:
 
 ### ✅ **Phase 1: Environment Variable Support (Quick Win)**
 
-**Priority:** High  
-**Effort:** Low  
+**Priority:** High
+**Effort:** Low
 **Impact:** High
 
 **Implementation:**
 
 1. **Update `ConfigManager` to check environment variables first:**
 ```python
-# src/tapo_camera_mcp/config/__init__.py
+# src/devices_mcp/config/__init__.py
 import os
 from dotenv import load_dotenv
 
@@ -137,41 +137,41 @@ class ConfigManager:
     def load_config(self) -> Dict[str, Any]:
         # Load .env file if present
         load_dotenv()
-        
+
         # Load config.yaml
         config = yaml.safe_load(f)
-        
+
         # Override with environment variables
         env_overrides = {
             # Ring
             "ring.email": os.getenv("RING_EMAIL"),
             "ring.password": os.getenv("RING_PASSWORD"),
-            
+
             # Tapo
             "energy.tapo_p115.account.email": os.getenv("TAPO_EMAIL"),
             "energy.tapo_p115.account.password": os.getenv("TAPO_PASSWORD"),
-            
+
             # Netatmo
             "weather.integrations.netatmo.client_id": os.getenv("NETATMO_CLIENT_ID"),
             "weather.integrations.netatmo.client_secret": os.getenv("NETATMO_CLIENT_SECRET"),
             "weather.integrations.netatmo.refresh_token": os.getenv("NETATMO_REFRESH_TOKEN"),
-            
+
             # Hue
             "lighting.philips_hue.bridge_ip": os.getenv("HUE_BRIDGE_IP"),
             "lighting.philips_hue.username": os.getenv("HUE_USERNAME"),
-            
+
             # Home Assistant
             "security.integrations.homeassistant.access_token": os.getenv("HA_ACCESS_TOKEN"),
-            
+
             # Camera credentials (per-camera)
             # Note: This requires special handling for nested camera configs
         }
-        
+
         # Apply overrides (skip None values)
         for key, value in env_overrides.items():
             if value is not None:
                 self._set_nested(config, key, value)
-        
+
         return config
 ```
 
@@ -234,8 +234,8 @@ services:
 
 ### ✅ **Phase 2: Docker Secrets Support (Production)**
 
-**Priority:** Medium  
-**Effort:** Medium  
+**Priority:** Medium
+**Effort:** Medium
 **Impact:** High (for production deployments)
 
 **Implementation:**
@@ -287,8 +287,8 @@ def get_secret_from_file(env_var_name: str) -> Optional[str]:
 
 ### ✅ **Phase 3: Encrypted Secrets (Advanced)**
 
-**Priority:** Low  
-**Effort:** High  
+**Priority:** Low
+**Effort:** High
 **Impact:** High (for enterprise/security-critical deployments)
 
 **Options:**
@@ -413,7 +413,7 @@ config.yaml  # Non-sensitive config only
 ## Related Files
 
 - `config.yaml` - Current secrets storage (plain text)
-- `src/tapo_camera_mcp/config/__init__.py` - Config loading logic
+- `src/devices_mcp/config/__init__.py` - Config loading logic
 - `docker-compose.yml` - Docker environment variables (unused)
 - `docs/mcp-technical/SECRETS_HARDENING_PLAN.md` - Original plan
 
@@ -424,4 +424,3 @@ config.yaml  # Non-sensitive config only
 2. Create `.env.example` template
 3. Update documentation
 4. Test with Docker and host deployments
-

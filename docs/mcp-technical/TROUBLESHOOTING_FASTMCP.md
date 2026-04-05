@@ -219,11 +219,11 @@ def create_test_mcp():
 def test_tool():
     """Test tool functionality"""
     mcp = create_test_mcp()
-    
+
     @mcp.tool()
     def test_tool(param: str) -> str:
         return f"Test: {param}"
-    
+
     # Test the tool
     result = test_tool("test_input")
     assert result == "Test: test_input"
@@ -314,11 +314,3 @@ pip install -r requirements.txt
 - Follow FastMCP patterns and conventions
 
 Remember: FastMCP is designed to be simple, but proper error handling and resource management are crucial for production use.
-
-
-
-
-
-
-
-

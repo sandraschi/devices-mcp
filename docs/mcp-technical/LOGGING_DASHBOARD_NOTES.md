@@ -13,4 +13,3 @@ Prerequisites:
 - Promtail must label logs with `app` and optional `site`.
 - Loki accessible at `http://10.0.0.10:3100`.
 - Ensure Grafana has permission to query Loki.
-

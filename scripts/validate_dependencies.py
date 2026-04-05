@@ -6,8 +6,8 @@ Prevents the frustrating "it worked yesterday" scenario by validating
 all dependencies on startup and providing clear error messages.
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add src to path
@@ -15,8 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Set up logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -46,7 +45,12 @@ def check_dependencies():
         ("cv2", "OpenCV (USB webcams)", "pip install opencv-python", "USB Webcams"),
         ("phue", "phue (Philips Hue)", "pip install phue", "Philips Hue Lights"),
         ("pyatmo", "pyatmo (Netatmo weather)", "pip install pyatmo", "Netatmo Weather"),
-        ("ring_doorbell", "Ring Library (Ring doorbell)", "pip install ring-doorbell", "Ring Doorbell"),
+        (
+            "ring_doorbell",
+            "Ring Library (Ring doorbell)",
+            "pip install ring-doorbell",
+            "Ring Doorbell",
+        ),
         ("onvif", "ONVIF (camera protocol)", "pip install onvif-zeep", "ONVIF Cameras"),
     ]
 
@@ -65,7 +69,7 @@ def check_dependencies():
             __import__(module)
             logger.info(f"   SUCCESS: {name}")
         except ImportError:
-            logger.error(f"   ERROR: {name} - MISSING!")
+            logger.exception(f"   ERROR: {name} - MISSING!")
             missing.append((name, install_cmd))
 
     logger.info("HARDWARE: HARDWARE DEPENDENCIES:")
@@ -85,7 +89,7 @@ def check_dependencies():
             __import__(module)
             logger.info(f"   SUCCESS: {name}")
         except ImportError:
-            logger.error(f"   ERROR: {name} - MISSING!")
+            logger.exception(f"   ERROR: {name} - MISSING!")
             missing.append((name, install_cmd))
 
     logger.info("=" * 70)
@@ -118,4 +122,3 @@ def check_dependencies():
 if __name__ == "__main__":
     success = check_dependencies()
     sys.exit(0 if success else 1)
-

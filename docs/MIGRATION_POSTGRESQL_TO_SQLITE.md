@@ -1,7 +1,7 @@
 # Migration Plan: PostgreSQL → SQLite
 
-**Last Updated:** 2025-12-02  
-**Status:** Planning Phase  
+**Last Updated:** 2025-12-02
+**Status:** Planning Phase
 **Priority:** Medium (Simplification)
 
 ---
@@ -25,14 +25,14 @@ Migrate media metadata storage from PostgreSQL to SQLite to simplify architectur
 ## Current State
 
 ### **PostgreSQL Implementation**
-- **File:** `src/tapo_camera_mcp/db/media.py`
+- **File:** `src/devices_mcp/db/media.py`
 - **Tables:** `recordings`, `snapshots`, `ai_analysis`
 - **Features:** JSONB columns, GIN indexes, connection pooling
 - **Dependencies:** `psycopg2-binary`
 - **Docker:** Separate PostgreSQL container
 
 ### **Fallback System**
-- **File:** `src/tapo_camera_mcp/utils/storage.py`
+- **File:** `src/devices_mcp/utils/storage.py`
 - **Fallback:** JSONL files if PostgreSQL unavailable
 - **Status:** Already suggests PostgreSQL is optional
 
@@ -41,7 +41,7 @@ Migrate media metadata storage from PostgreSQL to SQLite to simplify architectur
 ## Target State
 
 ### **SQLite Implementation**
-- **File:** `src/tapo_camera_mcp/db/media_sqlite.py` (new)
+- **File:** `src/devices_mcp/db/media_sqlite.py` (new)
 - **Tables:** Same schema, JSON text instead of JSONB
 - **Features:** JSON support, proper indexes, WAL mode
 - **Dependencies:** None (built-in Python)
@@ -56,7 +56,7 @@ Migrate media metadata storage from PostgreSQL to SQLite to simplify architectur
 #### **1.1 Create `media_sqlite.py`**
 
 ```python
-# src/tapo_camera_mcp/db/media_sqlite.py
+# src/devices_mcp/db/media_sqlite.py
 import sqlite3
 import json
 from pathlib import Path
@@ -69,16 +69,16 @@ logger = logging.getLogger(__name__)
 
 class MediaMetadataDBSQLite:
     """SQLite-based media metadata database with same interface as PostgreSQL version."""
-    
+
     def __init__(self, db_path: Optional[Path] = None):
         """Initialize SQLite database."""
         if db_path is None:
             db_path = Path(__file__).parent.parent.parent.parent / "data" / "media.db"
-        
+
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
-    
+
     def _init_db(self):
         """Initialize database with WAL mode and proper indexes."""
         with sqlite3.connect(self.db_path) as conn:
@@ -88,9 +88,9 @@ class MediaMetadataDBSQLite:
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-64000")  # 64MB cache
             conn.execute("PRAGMA temp_store=MEMORY")
-            
+
             cursor = conn.cursor()
-            
+
             # Recordings table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS recordings (
@@ -108,7 +108,7 @@ class MediaMetadataDBSQLite:
                     created_at INTEGER DEFAULT (strftime('%s', 'now'))
                 )
             """)
-            
+
             # Snapshots table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS snapshots (
@@ -122,7 +122,7 @@ class MediaMetadataDBSQLite:
                     created_at INTEGER DEFAULT (strftime('%s', 'now'))
                 )
             """)
-            
+
             # AI analysis table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS ai_analysis (
@@ -136,7 +136,7 @@ class MediaMetadataDBSQLite:
                     created_at INTEGER DEFAULT (strftime('%s', 'now'))
                 )
             """)
-            
+
             # Create indexes (same as PostgreSQL version)
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_recordings_camera_timestamp
@@ -151,11 +151,11 @@ class MediaMetadataDBSQLite:
                 ON recordings(is_emergency) WHERE is_emergency = 1
             """)
             # ... more indexes
-            
+
             conn.commit()
             logger.info(f"SQLite media database initialized at {self.db_path}")
-    
-    def add_recording(self, recording_id: str, camera_id: str, 
+
+    def add_recording(self, recording_id: str, camera_id: str,
                      file_path: str, file_size_bytes: int,
                      duration_seconds: Optional[float] = None,
                      recording_type: str = "automatic",
@@ -167,7 +167,7 @@ class MediaMetadataDBSQLite:
         if timestamp is None:
             timestamp = datetime.now(timezone.utc)
         ts = int(timestamp.timestamp())
-        
+
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
@@ -185,13 +185,13 @@ class MediaMetadataDBSQLite:
                 json.dumps(metadata or {})
             ))
             conn.commit()
-            
+
             cursor.execute("SELECT * FROM recordings WHERE recording_id = ?", (recording_id,))
             row = cursor.fetchone()
             if row:
                 return self._row_to_dict(row)
             return {}
-    
+
     def get_recordings(self, limit: int = 100, camera_id: Optional[str] = None,
                       recording_type: Optional[str] = None,
                       since: Optional[datetime] = None,
@@ -203,10 +203,10 @@ class MediaMetadataDBSQLite:
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            
+
             query = "SELECT * FROM recordings WHERE 1=1"
             params = []
-            
+
             if recording_id:
                 query += " AND recording_id = ?"
                 params.append(recording_id)
@@ -223,13 +223,13 @@ class MediaMetadataDBSQLite:
                 query += " AND is_emergency = 1"
             if unusual_only:
                 query += " AND is_unusual = 1"
-            
+
             query += " ORDER BY timestamp DESC LIMIT ?"
             params.append(limit)
-            
+
             cursor.execute(query, params)
             results = [self._row_to_dict(row) for row in cursor.fetchall()]
-            
+
             # Add AI analysis if requested
             if with_ai_analysis and results:
                 recording_ids = [r["recording_id"] for r in results]
@@ -244,12 +244,12 @@ class MediaMetadataDBSQLite:
                         media_id = row["media_id"]
                         if media_id in ai_results:
                             ai_results[media_id].append(self._row_to_dict(row))
-                    
+
                     for recording in results:
                         recording["ai_analysis"] = ai_results.get(recording["recording_id"], [])
-            
+
             return results
-    
+
     def _row_to_dict(self, row: sqlite3.Row) -> dict:
         """Convert SQLite row to dict, parsing JSON fields."""
         d = dict(row)
@@ -269,14 +269,14 @@ class MediaMetadataDBSQLite:
             if key in d:
                 d[key] = bool(d[key])
         return d
-    
+
     # ... implement all other methods (add_snapshot, get_snapshots, add_ai_analysis, etc.)
 ```
 
 #### **1.2 Update `db/__init__.py`**
 
 ```python
-# src/tapo_camera_mcp/db/__init__.py
+# src/devices_mcp/db/__init__.py
 from .media_sqlite import MediaMetadataDBSQLite
 from .timeseries import TimeSeriesDB
 
@@ -289,10 +289,10 @@ __all__ = ["MediaMetadataDB", "TimeSeriesDB"]
 #### **1.3 Update `storage.py`**
 
 ```python
-# src/tapo_camera_mcp/utils/storage.py
+# src/devices_mcp/utils/storage.py
 # Replace PostgreSQL with SQLite
 try:
-    from tapo_camera_mcp.db import MediaMetadataDB
+    from devices_mcp.db import MediaMetadataDB
     self.db = MediaMetadataDB()
     self.use_sqlite = True
     logger.info("Using SQLite for media metadata")
@@ -312,41 +312,44 @@ except Exception as e:
 ```python
 # scripts/migrate_postgres_to_sqlite.py
 """Migrate data from PostgreSQL to SQLite."""
+import logging
 import sqlite3
 from pathlib import Path
-from tapo_camera_mcp.db.media import MediaMetadataDB as PostgresDB
-from tapo_camera_mcp.db.media_sqlite import MediaMetadataDBSQLite
+from devices_mcp.db.media import MediaMetadataDB as PostgresDB
+from devices_mcp.db.media_sqlite import MediaMetadataDBSQLite
+
+logger = logging.getLogger(__name__)
 
 def migrate():
     """Migrate all data from PostgreSQL to SQLite."""
-    print("Starting migration from PostgreSQL to SQLite...")
-    
+    logger.info("Starting migration from PostgreSQL to SQLite...")
+
     # Connect to both databases
     postgres_db = PostgresDB()
     sqlite_db = MediaMetadataDBSQLite()
-    
+
     # Migrate recordings
-    print("Migrating recordings...")
+    logger.info("Migrating recordings...")
     recordings = postgres_db.get_recordings(limit=10000)
     for rec in recordings:
         sqlite_db.add_recording(**rec)
-    print(f"Migrated {len(recordings)} recordings")
-    
+    logger.info(f"Migrated {len(recordings)} recordings")
+
     # Migrate snapshots
-    print("Migrating snapshots...")
+    logger.info("Migrating snapshots...")
     snapshots = postgres_db.get_snapshots(limit=10000)
     for snap in snapshots:
         sqlite_db.add_snapshot(**snap)
-    print(f"Migrated {len(snapshots)} snapshots")
-    
+    logger.info(f"Migrated {len(snapshots)} snapshots")
+
     # Migrate AI analysis
-    print("Migrating AI analysis...")
+    logger.info("Migrating AI analysis...")
     ai_results = postgres_db.get_ai_analysis(limit=10000)
     for ai in ai_results:
         sqlite_db.add_ai_analysis(**ai)
-    print(f"Migrated {len(ai_results)} AI analysis records")
-    
-    print("Migration complete!")
+    logger.info(f"Migrated {len(ai_results)} AI analysis records")
+
+    logger.info("Migration complete!")
 
 if __name__ == "__main__":
     migrate()
@@ -376,7 +379,7 @@ if __name__ == "__main__":
 #### **3.3 Update Health Dashboard**
 
 ```python
-# src/tapo_camera_mcp/web/server.py
+# src/devices_mcp/web/server.py
 # Remove PostgreSQL health check
 # Update to check SQLite database file
 ```
@@ -492,5 +495,4 @@ If issues arise:
 **Related Documents:**
 - `docs/WHY_POSTGRESQL_ANALYSIS.md` - Why migrate
 - `docs/DATABASE_ARCHITECTURE.md` - Current architecture
-- `src/tapo_camera_mcp/db/media.py` - Current PostgreSQL implementation
-
+- `src/devices_mcp/db/media.py` - Current PostgreSQL implementation

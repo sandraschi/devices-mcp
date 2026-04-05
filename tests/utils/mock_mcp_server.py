@@ -2,7 +2,7 @@
 Mock MCP Server for Testing
 
 This module provides a mock MCP server that can be used for testing MCP client
-functionality. It simulates the stdio-based MCP protocol used by the Tapo Camera MCP.
+functionality. It simulates the stdio-based MCP protocol used by the Devices MCP.
 
 Features:
 - Simulates MCP protocol over stdio
@@ -258,7 +258,7 @@ class MockMCPServer:
                         "tools": {"listChanged": True},
                         "resources": {"listChanged": True},
                     },
-                    "serverInfo": {"name": "mock-tapo-camera-mcp", "version": "1.0.0"},
+                    "serverInfo": {"name": "mock-devices-mcp", "version": "1.0.0"},
                 },
             }
         elif method == "tools/list":
@@ -352,7 +352,7 @@ class MockMCPServer:
                     response = self.get_response(request["method"], request.get("params", {}))
 
                     # Write to stdout
-                    print(json.dumps(response), flush=True)
+                    logger.info(json.dumps(response), flush=True)
 
                 except json.JSONDecodeError as e:
                     # Send error response for invalid JSON
@@ -361,7 +361,7 @@ class MockMCPServer:
                         "id": None,
                         "error": {"code": -32700, "message": f"Parse error: {e}"},
                     }
-                    print(json.dumps(error_response), flush=True)
+                    logger.info(json.dumps(error_response), flush=True)
 
                 except Exception as e:
                     # Send error response for other exceptions
@@ -370,7 +370,7 @@ class MockMCPServer:
                         "id": None,
                         "error": {"code": -32603, "message": f"Internal error: {e}"},
                     }
-                    print(json.dumps(error_response), flush=True)
+                    logger.info(json.dumps(error_response), flush=True)
 
         except KeyboardInterrupt:
             pass

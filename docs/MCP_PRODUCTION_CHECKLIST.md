@@ -16,9 +16,12 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 
 ## ✨ CODE QUALITY
 
-- [ ] ALL `print()` / `console.log()` replaced with structured logging
+- [x] ALL `print()` / `console.log()` replaced with structured logging
 - [ ] Comprehensive error handling (try/catch everywhere)
 - [ ] Graceful degradation on failures
+- [ ] Circuit breaker patterns implemented (prevent spam on failing devices)
+- [ ] Timeouts on ALL network operations (prevent hangs)
+- [ ] No uncaught exceptions that crash the server
 - [ ] Type hints (Python) / TypeScript types throughout
 - [ ] Input validation on ALL tool parameters
 - [ ] Proper resource cleanup (connections, files, processes)
@@ -103,11 +106,11 @@ Use this checklist to audit any MCP server repo before marking it production-rea
 
 ---
 
-**Total Items:** 60  
-**Completed:** _____ / 60  
+**Total Items:** 60
+**Completed:** _____ / 60
 **Coverage:** _____%
 
-**Auditor:** _____________  
-**Date:** _____________  
-**Repo:** _____________  
+**Auditor:** _____________
+**Date:** _____________
+**Repo:** _____________
 **Status:** ⬜ In Progress | ⬜ Ready for Review | ⬜ Production Ready

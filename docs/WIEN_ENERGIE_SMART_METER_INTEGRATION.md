@@ -1,7 +1,7 @@
 # ⚡ Wien Energie Smart Meter Integration
 
-**Project**: Home Security MCP Platform  
-**Status**: Implementation Phase  
+**Project**: Home Security MCP Platform
+**Status**: Implementation Phase
 **Date**: November 21, 2025
 
 ---
@@ -29,7 +29,7 @@ Integration of Wien Energie smart meters (via Wiener Netze infrastructure) into 
    - USB or serial connection to computer/integration device
 
 ### **Software Requirements**
-1. **Customer Interface Activation**: 
+1. **Customer Interface Activation**:
    - Activate via [Wiener Netze Smart Meter Portal](https://www.wienernetze.at/en/smart-meter-webportal)
    - Navigate to "Anlagendaten" → Select meter → "Bearbeiten" → Enable customer interface
 2. **Security Key**: Obtain from Wiener Netze portal (required for data decryption)
@@ -61,7 +61,7 @@ Integration of Wien Energie smart meters (via Wiener Netze infrastructure) into 
 ## 📁 **FILE STRUCTURE**
 
 ```
-src/tapo_camera_mcp/
+src/devices_mcp/
 ├── ingest/
 │   ├── __init__.py                    # Export WienEnergieIngestionService
 │   └── wien_energie.py                # Smart meter ingestion service
@@ -121,7 +121,7 @@ WIEN_ENERGIE_POLLING_INTERVAL=60
 ## 🔌 **INTEGRATION POINTS**
 
 ### **1. Ingestion Service**
-- **File**: `src/tapo_camera_mcp/ingest/wien_energie.py`
+- **File**: `src/devices_mcp/ingest/wien_energie.py`
 - **Class**: `WienEnergieIngestionService`
 - **Methods**:
   - `discover_meter()`: Detect and connect to smart meter
@@ -130,7 +130,7 @@ WIEN_ENERGIE_POLLING_INTERVAL=60
   - `get_tariff_info()`: Get current tariff rates
 
 ### **2. MCP Tools**
-- **File**: `src/tapo_camera_mcp/tools/energy/smart_meter_tools.py`
+- **File**: `src/devices_mcp/tools/energy/smart_meter_tools.py`
 - **Tools**:
   - `get_smart_meter_status`: Current meter status and readings
   - `get_energy_consumption`: Energy consumption data (daily/monthly)
@@ -139,7 +139,7 @@ WIEN_ENERGIE_POLLING_INTERVAL=60
   - `get_historical_usage`: Historical usage patterns
 
 ### **3. API Endpoints**
-- **File**: `src/tapo_camera_mcp/web/api/energy.py` (extend existing)
+- **File**: `src/devices_mcp/web/api/energy.py` (extend existing)
 - **Endpoints**:
   - `GET /api/energy/smart-meter/status`: Current meter status
   - `GET /api/energy/smart-meter/current`: Real-time readings
@@ -147,7 +147,7 @@ WIEN_ENERGIE_POLLING_INTERVAL=60
   - `GET /api/energy/smart-meter/cost`: Cost analysis
 
 ### **4. Dashboard Integration**
-- **File**: `src/tapo_camera_mcp/web/templates/energy.html` (extend existing)
+- **File**: `src/devices_mcp/web/templates/energy.html` (extend existing)
 - **Features**:
   - Smart meter data display alongside Tapo P115 plugs
   - Real-time power consumption chart
@@ -229,7 +229,7 @@ WIEN_ENERGIE_POLLING_INTERVAL=60
 
 ---
 
-**Status**: ✅ Core Implementation Complete  
+**Status**: ✅ Core Implementation Complete
 **Last Updated**: November 21, 2025
 
 ---
@@ -254,4 +254,3 @@ WIEN_ENERGIE_POLLING_INTERVAL=60
 2. Implement DLMS/COSEM protocol using library or custom implementation
 3. Update energy dashboard UI to display smart meter data
 4. Add comprehensive error handling and retry logic
-

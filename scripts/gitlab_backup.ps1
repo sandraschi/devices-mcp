@@ -18,5 +18,3 @@ if ($LASTEXITCODE -ne 0) {
 
 $backupDir = Join-Path -Path (Split-Path $ComposeFilePath) -ChildPath "data\backups"
 Write-Host "Backup completed. Files should be in: $backupDir"
-
-

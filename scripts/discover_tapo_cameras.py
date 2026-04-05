@@ -31,9 +31,11 @@ def check_port(host: str, port: int, timeout: float = 1.0) -> bool:
         return False
 
 
-def discover_tapo_on_ip(ip: str, username: str, password: str, timeout: float = 3.0) -> Optional[dict]:
+def discover_tapo_on_ip(
+    ip: str, username: str, password: str, timeout: float = 3.0
+) -> Optional[dict]:
     """Attempt to connect to a Tapo camera on a specific IP.
-    
+
     Uses safe single-attempt logic to avoid triggering camera lockouts.
     """
     try:
@@ -55,9 +57,7 @@ def discover_tapo_on_ip(ip: str, username: str, password: str, timeout: float = 
                 logger.warning(
                     f"  ⚠️  Camera at {ip} is LOCKED OUT (too many failed attempts). Skipping."
                 )
-                logger.warning(
-                    "     Wait 30 minutes before retrying this camera."
-                )
+                logger.warning("     Wait 30 minutes before retrying this camera.")
                 return None
 
             # Authentication errors - wrong credentials, not a Tapo camera, or wrong IP
@@ -107,6 +107,7 @@ def get_local_network() -> Optional[IPv4Network]:
         # Get network interface info
         try:
             import netifaces
+
             gateways = netifaces.gateways()
             default_interface = gateways["default"][netifaces.AF_INET][1]
             addresses = netifaces.ifaddresses(default_interface)
@@ -117,21 +118,25 @@ def get_local_network() -> Optional[IPv4Network]:
 
             # Calculate network CIDR
             import ipaddress
+
             network = ipaddress.IPv4Network(f"{ip}/{netmask}", strict=False)
             return network
         except ImportError:
             logger.warning("netifaces not installed. Trying alternative method...")
             # Fallback: assume /24 network
             import ipaddress
+
             ip_parts = local_ip.split(".")
             network_cidr = f"{ip_parts[0]}.{ip_parts[1]}.{ip_parts[2]}.0/24"
             return ipaddress.IPv4Network(network_cidr)
-    except Exception as e:
-        logger.error(f"Error getting network info: {e}")
+    except Exception:
+        logger.exception("Error getting network info:")
         return None
 
 
-def discover_tapo_cameras(username: str, password: str, network: Optional[str] = None, scan_common: bool = True) -> List[dict]:
+def discover_tapo_cameras(
+    username: str, password: str, network: Optional[str] = None, scan_common: bool = True
+) -> List[dict]:
     """Discover Tapo cameras on the local network."""
     logger.info("🔍 Scanning network for Tapo cameras...")
 
@@ -140,10 +145,11 @@ def discover_tapo_cameras(username: str, password: str, network: Optional[str] =
 
     if network:
         import ipaddress
+
         try:
             networks_to_scan.append(ipaddress.IPv4Network(network))
-        except ValueError as e:
-            logger.error(f"Invalid network CIDR: {e}")
+        except ValueError:
+            logger.exception("Invalid network CIDR:")
             return []
     else:
         # Get local network
@@ -154,6 +160,7 @@ def discover_tapo_cameras(username: str, password: str, network: Optional[str] =
         # Also scan common network ranges if requested
         if scan_common:
             import ipaddress
+
             common_ranges = [
                 "192.168.1.0/24",
                 "192.168.0.0/24",
@@ -175,7 +182,9 @@ def discover_tapo_cameras(username: str, password: str, network: Optional[str] =
         logger.info("Example: python discover_tapo_cameras.py --network 192.168.1.0/24")
         return []
 
-    logger.info(f"Scanning {len(networks_to_scan)} network(s): {', '.join(str(n) for n in networks_to_scan[:3])}...")
+    logger.info(
+        f"Scanning {len(networks_to_scan)} network(s): {', '.join(str(n) for n in networks_to_scan[:3])}..."
+    )
 
     # Scan all networks
     all_cameras = []
@@ -189,6 +198,7 @@ def discover_tapo_cameras(username: str, password: str, network: Optional[str] =
         # Process futures as they complete
         import time
         from concurrent.futures import as_completed
+
         start_time = time.time()
         timeout = 300  # 5 minute total timeout
 
@@ -224,20 +234,19 @@ def main():
     if cameras:
         logger.info(f"\n✅ Found {len(cameras)} Tapo camera(s):\n")
         for cam in cameras:
-            print(f"  IP: {cam['ip']}")
-            print(f"  Hostname: {cam['hostname']}")
-            print(f"  Model: {cam['model']}")
-            print(f"  Firmware: {cam['firmware']}")
-            print(f"  Serial: {cam['serial']}")
-            print(f"  MAC: {cam['mac']}")
-            print()
+            logger.info(f"  IP: {cam['ip']}")
+            logger.info(f"  Hostname: {cam['hostname']}")
+            logger.info(f"  Model: {cam['model']}")
+            logger.info(f"  Firmware: {cam['firmware']}")
+            logger.info(f"  Serial: {cam['serial']}")
+            logger.info(f"  MAC: {cam['mac']}")
+            logger.info()
 
         # Generate config YAML if requested
         if args.output:
             import yaml
-            config = {
-                "cameras": {}
-            }
+
+            config = {"cameras": {}}
             for i, cam in enumerate(cameras, 1):
                 camera_name = f"tapo_camera_{i}" if len(cameras) > 1 else "tapo_camera"
                 config["cameras"][camera_name] = {
@@ -248,7 +257,7 @@ def main():
                         "password": args.password,
                         "port": 443,
                         "verify_ssl": True,
-                    }
+                    },
                 }
 
             with open(args.output, "w") as f:
@@ -269,4 +278,3 @@ if __name__ == "__main__":
         asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
     main()
-

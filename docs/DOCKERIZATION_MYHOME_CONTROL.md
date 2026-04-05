@@ -40,5 +40,3 @@ App will be available at: `http://localhost:7777`
 ```powershell
 docker compose -f .\deploy\myhomecontrol\docker-compose.yml down
 ```
-
-

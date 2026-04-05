@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "src"))
 def test_web_server_creation():
     """Test web server creation and initialization."""
     try:
-        from tapo_camera_mcp.web.server import WebServer
+        from backend.server import WebServer
 
         # Test server creation
         server = WebServer()
@@ -37,8 +37,8 @@ def test_web_server_creation():
 def test_web_routes():
     """Test web server routes and endpoints."""
     try:
-        from tapo_camera_mcp.web.server import WebServer
-        
+        from backend.server import WebServer
+
         WebServer()
 
         # Test that server has required routes
@@ -59,7 +59,7 @@ def test_api_endpoints():
     """Test API endpoints structure."""
     try:
         # Test that API modules can be imported
-        from tapo_camera_mcp.api import v1
+        from devices_mcp.api import v1
 
         # Check that API v1 module exists and has endpoints
         assert hasattr(v1, "endpoints"), "API v1 should have endpoints module"
@@ -135,8 +135,8 @@ def test_web_static_files():
     try:
         # Test that static directories exist
         static_dirs = [
-            "src/tapo_camera_mcp/web/static",
-            "src/tapo_camera_mcp/web/templates",
+            "src/devices_mcp/web/static",
+            "src/devices_mcp/web/templates",
         ]
 
         for dir_path in static_dirs:
@@ -177,3 +177,4 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         sys.exit(1)
+

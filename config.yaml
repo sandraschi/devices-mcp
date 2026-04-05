@@ -1,10 +1,10 @@
 server:
   host: 0.0.0.0
-  port: 7777
+  port: 10716
   debug: false
-  log_level: INFO
+  log_level: WARNING
 auth:
-  enabled: true
+  enabled: false  # Set to true to enable authentication (currently disabled for development)
   username: admin
   password: admin123
   users:
@@ -45,7 +45,7 @@ cameras:
 web:
   enabled: true
   host: 0.0.0.0
-  port: 7777
+  port: 10716
   theme: dark
   show_ptz_controls: true
   video_streaming:
@@ -54,13 +54,14 @@ web:
     quality: 80
     max_streams: 10
 logging:
-  file: tapo_mcp.log
+  file: devices_mcp.log
   max_size: 10
   backup_count: 5
 energy:
+  electricity_rate_eur_per_kwh: 0.30
   tapo_p115:
     account:
-      email: sandraschipal@hotmail.com
+      username: sandraschipal@hotmail.com
       password: Sec1060ta#
     devices:
     - host: 192.168.0.17
@@ -68,7 +69,7 @@ energy:
       name: Aircon
       location: Living Room
       readonly: false
-    - host: 192.168.0.137
+    - host: 192.168.0.138
       device_id: tapo_p115_kitchen
       name: Kitchen Zojirushi
       location: Kitchen
@@ -78,15 +79,7 @@ energy:
       name: Server
       location: Server Room
       readonly: true
-ikettle:
-  enabled: true
-  host: 192.168.0.50
-  name: Morning Coffee Kettle
-  morning_routine:
-    enabled: true
-    wake_time: 07:00
-    coffee_temperature: 95
-    preheat_minutes: 5
+# iKettle removed - user doesn't own this hardware
 public_webcams:
   enabled: true
   vienna_webcams:
@@ -167,15 +160,17 @@ public_webcams:
       off_peak_rate: 0.1
 lighting:
   philips_hue:
-    bridge_ip: 192.168.0.83
+    enabled: true
+    bridge_ip: 192.168.0.236
     username: J1A3OQ1OMzJDtidSNQWWGmCBuAxZC3lxEjT9qnVc
     auto_discover: true
   tapo_lighting:
+    enabled: true
     account:
       email: sandraschipal@hotmail.com
       password: Sec1060ta#
     devices:
-    - host: 192.168.0.174
+    - host: 192.168.0.172
       device_id: tapo_l900_lightstrip
       name: Lightstrip L900
       location: Living Room
@@ -204,18 +199,7 @@ shelly:
   sensors: null
   cache_ttl: 30
   devices: null
-thermal:
-  enabled: true
-  cache_ttl: 5
-  sensors:
-  - ip: 192.168.0.210
-    name: Kitchen Thermal
-    threshold_c: 150
-    location: Kitchen
-  - ip: 192.168.0.211
-    name: Server Rack
-    threshold_c: 50
-    location: Server Room
+# Thermal cameras removed - user doesn't own this hardware
 security:
   integrations:
     homeassistant:
@@ -237,12 +221,18 @@ alerts:
       enabled: true
 robotics_mcp:
   enabled: true
-  server_url: http://localhost:8080
+  server_url: http://localhost:12230
   timeout: 30
   auto_discover_robots: true
+  devices:
+    dreame_d20:
+      type: dreame
+      name: "Dreame D20 Pro"
+      host: 192.168.0.144
+      token: ${DREAME_VACUUM_TOKEN}
+    yahboom_car:
+      type: yahboom
+      name: "Yahboom ROS 2 Car"
+      host: 192.168.0.100
+      port: 5000
 
-# Authentication
-auth:
-  enabled: false  # Set to true to enable authentication (currently disabled for development)
-  username: "admin"
-  password: "admin123"  # Change this in production!

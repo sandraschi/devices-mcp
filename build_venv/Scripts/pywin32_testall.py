@@ -1,6 +1,11 @@
+
+logger = logging.getLogger(__name__)
+
 """A test runner for pywin32"""
 
-import os
+import
+import logging
+ os
 import site
 import subprocess
 import sys
@@ -23,7 +28,7 @@ def run_test(script, cmdline_extras):
     print("--- Running '%s' ---" % script)
     sys.stdout.flush()
     result = subprocess.run(cmd, check=False, cwd=dirname)
-    print(f"*** Test script '{script}' exited with {result.returncode}")
+    logger.info(f"*** Test script '{script}' exited with {result.returncode}")
     sys.stdout.flush()
     if result.returncode:
         failures.append(script)
@@ -35,9 +40,7 @@ def find_and_run(possible_locations, extras):
             run_test(maybe, extras)
             break
     else:
-        raise RuntimeError(
-            "Failed to locate a test script in one of %s" % possible_locations
-        )
+        raise RuntimeError("Failed to locate a test script in one of %s" % possible_locations)
 
 
 def main():
@@ -109,11 +112,11 @@ def main():
         find_and_run(maybes, remains)
 
     if failures:
-        print("The following scripts failed")
+        logger.info("The following scripts failed")
         for failure in failures:
             print(">", failure)
         sys.exit(1)
-    print("All tests passed \\o/")
+    logger.info("All tests passed \\o/")
 
 
 if __name__ == "__main__":
