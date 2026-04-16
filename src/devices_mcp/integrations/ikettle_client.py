@@ -1,7 +1,6 @@
 """iKettle smart kettle integration client."""
 
 import logging
-from typing import Dict, Optional
 
 import aiohttp
 
@@ -54,9 +53,7 @@ class IKettleClient:
             self.session = None
         self._connected = False
 
-    async def _make_request(
-        self, endpoint: str, method: str = "GET", data: Dict = None
-    ) -> Optional[Dict]:
+    async def _make_request(self, endpoint: str, method: str = "GET", data: dict = None) -> dict | None:
         """Make HTTP request to iKettle API."""
         if not self.session:
             await self.connect()
@@ -83,7 +80,7 @@ class IKettleClient:
             logger.exception("Error making request to iKettle:")
             return None
 
-    async def get_status(self) -> Optional[Dict]:
+    async def get_status(self) -> dict | None:
         """Get current kettle status."""
         try:
             status = await self._make_request("status")
@@ -185,9 +182,7 @@ class IKettleClient:
             result = await self._make_request("schedule", method="POST", data=data)
 
             if result is not None:
-                logger.info(
-                    f"iKettle: Scheduled boil to {temperature}°C in {delay_minutes} minutes"
-                )
+                logger.info(f"iKettle: Scheduled boil to {temperature}°C in {delay_minutes} minutes")
                 return True
             return False
 
@@ -203,7 +198,7 @@ class IKettleClient:
         """Convert Celsius to Fahrenheit."""
         return int((temp_c * 9 / 5) + 32)
 
-    async def get_water_level(self) -> Optional[str]:
+    async def get_water_level(self) -> str | None:
         """Get current water level status."""
         status = await self.get_status()
         if status and "water_level" in status:
@@ -217,14 +212,14 @@ class IKettleClient:
             return status["state"] == "boiling"
         return False
 
-    async def get_current_temperature(self) -> Optional[float]:
+    async def get_current_temperature(self) -> float | None:
         """Get current water temperature in Celsius."""
         status = await self.get_status()
         if status and "temperature" in status:
             return self.get_temperature_celsius(status["temperature"])
         return None
 
-    async def get_formatted_status(self) -> Dict:
+    async def get_formatted_status(self) -> dict:
         """Get formatted status for display."""
         status = await self.get_status()
 
@@ -254,7 +249,7 @@ class IKettleClient:
             "last_updated": status.get("timestamp"),
         }
 
-    async def setup_morning_routine(self, wake_time: str = "07:00", coffee_temp: int = 95) -> Dict:
+    async def setup_morning_routine(self, wake_time: str = "07:00", coffee_temp: int = 95) -> dict:
         """Set up morning coffee routine."""
         try:
             # Calculate delay until wake time

@@ -10,7 +10,7 @@ tool registration for Claude Desktop stdio communication.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -33,7 +33,7 @@ def register_tools(app: FastMCP) -> None:
         name="monitor_system_health",
         description="Perform comprehensive health check of entire Ring security system",
     )
-    async def monitor_system_health() -> Dict[str, Any]:
+    async def monitor_system_health() -> dict[str, Any]:
         """Perform comprehensive health check of entire Ring security system.
 
         Analyzes all Ring devices, connectivity, battery levels, signal strength,
@@ -113,13 +113,9 @@ def register_tools(app: FastMCP) -> None:
                 # Generate recommendations
                 recommendations = []
                 if offline_devices:
-                    recommendations.append(
-                        f"Check connectivity for {len(offline_devices)} offline devices"
-                    )
+                    recommendations.append(f"Check connectivity for {len(offline_devices)} offline devices")
                 if low_battery_devices:
-                    recommendations.append(
-                        f"Replace batteries in {len(low_battery_devices)} devices"
-                    )
+                    recommendations.append(f"Replace batteries in {len(low_battery_devices)} devices")
                 if not recommendations:
                     recommendations.append("All systems operational")
 
@@ -134,9 +130,7 @@ def register_tools(app: FastMCP) -> None:
                     "maintenance_alerts": maintenance_needed,
                     "performance_metrics": {
                         "api_response_time": "normal",  # Would need actual timing
-                        "connection_stability": "stable"
-                        if len(offline_devices) == 0
-                        else "unstable",
+                        "connection_stability": "stable" if len(offline_devices) == 0 else "unstable",
                     },
                     "recommendations": recommendations,
                     "health_check_timestamp": datetime.now().isoformat(),
@@ -150,7 +144,7 @@ def register_tools(app: FastMCP) -> None:
         name="get_real_time_activity",
         description="Get real-time activity feed from all Ring devices",
     )
-    async def get_real_time_activity() -> Dict[str, Any]:
+    async def get_real_time_activity() -> dict[str, Any]:
         """Get real-time activity feed from all Ring devices.
 
         Provides live activity monitoring across all Ring devices including
@@ -221,9 +215,7 @@ def register_tools(app: FastMCP) -> None:
                     system_status = "degraded"
 
                 # Check for security events
-                security_events = [
-                    e for e in live_activity if e["event_type"] in ["motion", "alarm", "doorbell"]
-                ]
+                security_events = [e for e in live_activity if e["event_type"] in ["motion", "alarm", "doorbell"]]
                 if security_events:
                     active_alerts.append(
                         {

@@ -1,7 +1,6 @@
 """Motion detection API for ONVIF cameras."""
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -26,7 +25,7 @@ async def get_motion_status():
 
 
 @router.get("/events")
-async def get_motion_events(camera_id: Optional[str] = None, limit: int = 20):
+async def get_motion_events(camera_id: str | None = None, limit: int = 20):
     """Get recent motion events."""
     from devices_mcp.integrations.onvif_events import get_recent_events
 
@@ -184,9 +183,7 @@ async def test_motion_support(camera_id: str):
         if result["onvif_events_support"]:
             result["note"] = "Camera supports ONVIF events. You can subscribe to motion events."
         else:
-            result["note"] = (
-                "Camera does not support ONVIF events. Use Tapo app for motion notifications."
-            )
+            result["note"] = "Camera does not support ONVIF events. Use Tapo app for motion notifications."
 
     except Exception as e:
         result["error"] = str(e)

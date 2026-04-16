@@ -1,7 +1,6 @@
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 from fastapi import APIRouter, Body, Query
 
@@ -18,8 +17,8 @@ router = APIRouter()
 @router.get("/api/recordings")
 async def get_recordings_api(
     limit: int = Query(100, ge=1, le=1000, description="Number of recordings to retrieve"),
-    camera_id: Optional[str] = Query(None, description="Filter by camera ID"),
-    recording_type: Optional[str] = Query(
+    camera_id: str | None = Query(None, description="Filter by camera ID"),
+    recording_type: str | None = Query(
         None,
         description="Filter by type (on_demand, automatic, motion, emergency)",
     ),
@@ -74,9 +73,7 @@ async def add_ai_analysis(
         ...,
         description="Analysis type (policeman_at_door, pet_no_movement, person_of_interest, co2_pattern, etc.)",
     ),
-    confidence: float | None = Query(
-        None, ge=0.0, le=1.0, description="Confidence score (0.0 to 1.0)"
-    ),
+    confidence: float | None = Query(None, ge=0.0, le=1.0, description="Confidence score (0.0 to 1.0)"),
     details: dict | None = Body(None, description="Additional analysis details"),
 ):
     """Add AI analysis result to a recording."""
@@ -142,13 +139,9 @@ async def get_retention_policies():
 
 @router.post("/api/settings/retention", summary="Update retention policies")
 async def update_retention_policies(
-    video_recordings: int | None = Body(
-        None, ge=1, le=3650, description="Days to keep video recordings"
-    ),
+    video_recordings: int | None = Body(None, ge=1, le=3650, description="Days to keep video recordings"),
     snapshots: int | None = Body(None, ge=1, le=3650, description="Days to keep snapshots"),
-    environment_data: int | None = Body(
-        None, ge=1, le=3650, description="Days to keep environment data"
-    ),
+    environment_data: int | None = Body(None, ge=1, le=3650, description="Days to keep environment data"),
 ):
     """Update retention policy settings."""
     try:
@@ -208,7 +201,7 @@ async def scrub_old_data(
 
         # Scrub video recordings
         db = MediaMetadataDB()
-        video_cutoff = datetime.now(timezone.utc) - timedelta(days=policies["video_recordings"])
+        video_cutoff = datetime.now(UTC) - timedelta(days=policies["video_recordings"])
         try:
             # Get all recordings older than retention period
             all_recordings = db.get_recordings(limit=10000, since=None)
@@ -226,9 +219,7 @@ async def scrub_old_data(
                             try:
                                 Path(file_path).unlink(missing_ok=True)
                                 results["files_deleted"] += 1
-                                results["space_freed_mb"] += recording.get("file_size_bytes", 0) / (
-                                    1024 * 1024
-                                )
+                                results["space_freed_mb"] += recording.get("file_size_bytes", 0) / (1024 * 1024)
                             except Exception:
                                 pass
                         db.delete_recording(recording.get("recording_id"))
@@ -238,7 +229,7 @@ async def scrub_old_data(
             results["error"] = str(e)
 
         # Scrub snapshots
-        snapshot_cutoff = datetime.now(timezone.utc) - timedelta(days=policies["snapshots"])
+        snapshot_cutoff = datetime.now(UTC) - timedelta(days=policies["snapshots"])
         try:
             # Get all snapshots older than retention period
             all_snapshots = db.get_snapshots(limit=10000, since=None)
@@ -256,9 +247,7 @@ async def scrub_old_data(
                             try:
                                 Path(file_path).unlink(missing_ok=True)
                                 results["files_deleted"] += 1
-                                results["space_freed_mb"] += snapshot.get("file_size_bytes", 0) / (
-                                    1024 * 1024
-                                )
+                                results["space_freed_mb"] += snapshot.get("file_size_bytes", 0) / (1024 * 1024)
                             except Exception:
                                 pass
                         db.delete_snapshot(snapshot.get("snapshot_id"))
@@ -267,7 +256,7 @@ async def scrub_old_data(
             logger.exception("Error scrubbing snapshots")
 
         # Scrub environment data (time series)
-        env_cutoff = datetime.now(timezone.utc) - timedelta(days=policies["environment_data"])
+        env_cutoff = datetime.now(UTC) - timedelta(days=policies["environment_data"])
         try:
             ts_db = TimeSeriesDB()
             # Placeholder for TimeSeriesDB cleanup

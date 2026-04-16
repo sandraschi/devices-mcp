@@ -3,7 +3,6 @@
 import io
 import logging
 import os
-from typing import Dict, Optional
 from urllib.parse import urljoin
 
 import aiohttp
@@ -23,9 +22,7 @@ class WindowsWebCamera(BaseCamera):
         self._device_id = int(self.config.params.get("device_id", 0))
         # Must match scripts/windows_camera_server.py (default port 10715, path /camera/{id}/mjpeg).
         # Use 127.0.0.1 to avoid IPv6 resolution issues with uvicorn.
-        self._windows_server_url = os.environ.get(
-            "WINDOWS_CAMERA_SERVER_URL", "http://127.0.0.1:10715"
-        ).rstrip("/")
+        self._windows_server_url = os.environ.get("WINDOWS_CAMERA_SERVER_URL", "http://127.0.0.1:10715").rstrip("/")
         self._mock_webcam = mock_webcam
         self._session = None
 
@@ -83,7 +80,7 @@ class WindowsWebCamera(BaseCamera):
         """Check if camera is connected."""
         return self._is_connected
 
-    async def capture_image(self) -> Optional[Image.Image]:
+    async def capture_image(self) -> Image.Image | None:
         """Capture image from camera."""
         if not self._is_connected or not self._session:
             return None
@@ -100,7 +97,7 @@ class WindowsWebCamera(BaseCamera):
             logger.exception("Error capturing image:")
             return None
 
-    async def capture_still(self, save_path: Optional[str] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image from the camera."""
         image = await self.capture_image()
         if image is None:
@@ -111,7 +108,7 @@ class WindowsWebCamera(BaseCamera):
 
         return image
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Get stream URL for camera."""
         if not self._is_connected:
             return None
@@ -119,7 +116,7 @@ class WindowsWebCamera(BaseCamera):
         # Return URL to Windows camera server MJPEG stream
         return urljoin(self._windows_server_url, f"/camera/{self._device_id}/mjpeg")
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get camera status."""
         try:
             # Always create a new session if needed, don't rely on persistent connection
@@ -160,7 +157,7 @@ class WindowsWebCamera(BaseCamera):
 class WindowsMicroscopeCamera(WindowsWebCamera):
     """Microscope camera implementation that proxies to Windows camera server."""
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get microscope camera status."""
         base_status = await super().get_status()
         if base_status.get("connected"):

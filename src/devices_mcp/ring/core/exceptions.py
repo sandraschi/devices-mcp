@@ -4,8 +4,6 @@ Custom exceptions for Ring MCP operations.
 This module provides specific exception types for different Ring API and operational errors.
 """
 
-from typing import Optional
-
 
 class RingError(Exception):
     """Base exception for Ring MCP operations."""
@@ -25,7 +23,7 @@ class AuthenticationError(RingError):
 class DeviceNotFoundError(RingError):
     """Raised when a Ring device cannot be found."""
 
-    def __init__(self, device_id: Optional[str] = None) -> None:
+    def __init__(self, device_id: str | None = None) -> None:
         message = f"Device {device_id} not found" if device_id else "Device not found"
         super().__init__(message)
 
@@ -54,7 +52,7 @@ class ApiRateLimitError(RateLimitError):
 class DeviceOfflineError(RingError):
     """Raised when attempting to operate on offline devices."""
 
-    def __init__(self, device_id: Optional[str] = None) -> None:
+    def __init__(self, device_id: str | None = None) -> None:
         message = f"Device {device_id} is offline" if device_id else "Device is offline"
         super().__init__(message)
 

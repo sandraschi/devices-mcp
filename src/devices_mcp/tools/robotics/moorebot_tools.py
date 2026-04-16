@@ -8,14 +8,13 @@ Provides MCP tool interface for Moorebot Scout robot control.
 """
 
 import logging
-from typing import Dict, Optional
 
 from devices_mcp.integrations.moorebot_client import MoorebotScoutClient
 
 logger = logging.getLogger(__name__)
 
 # Global client instance (initialized from config)
-_moorebot_client: Optional[MoorebotScoutClient] = None
+_moorebot_client: MoorebotScoutClient | None = None
 
 
 def initialize_moorebot_client(ip_address: str, mock_mode: bool = True):
@@ -31,7 +30,7 @@ def get_moorebot_client() -> MoorebotScoutClient:
     return _moorebot_client
 
 
-async def moorebot_get_status() -> Dict:
+async def moorebot_get_status() -> dict:
     """
     Get Moorebot Scout robot status.
 
@@ -80,7 +79,7 @@ async def moorebot_get_status() -> Dict:
         }
 
 
-async def moorebot_move(linear: float = 0.0, angular: float = 0.0, duration: float = 0.0) -> Dict:
+async def moorebot_move(linear: float = 0.0, angular: float = 0.0, duration: float = 0.0) -> dict:
     """
     Move Moorebot Scout with specified velocities.
 
@@ -146,7 +145,7 @@ async def moorebot_move(linear: float = 0.0, angular: float = 0.0, duration: flo
         return {"success": False, "error": str(e)}
 
 
-async def moorebot_patrol(route: str = "default") -> Dict:
+async def moorebot_patrol(route: str = "default") -> dict:
     """
     Start autonomous patrol route.
 
@@ -197,7 +196,7 @@ async def moorebot_patrol(route: str = "default") -> Dict:
         return {"success": False, "error": str(e)}
 
 
-async def moorebot_stop_patrol() -> Dict:
+async def moorebot_stop_patrol() -> dict:
     """
     Stop current patrol route.
 
@@ -212,7 +211,7 @@ async def moorebot_stop_patrol() -> Dict:
         return {"success": False, "error": str(e)}
 
 
-async def moorebot_return_to_dock() -> Dict:
+async def moorebot_return_to_dock() -> dict:
     """
     Return Moorebot Scout to charging dock.
 
@@ -253,7 +252,7 @@ async def moorebot_return_to_dock() -> Dict:
         return {"success": False, "error": str(e)}
 
 
-async def moorebot_get_sensors() -> Dict:
+async def moorebot_get_sensors() -> dict:
     """
     Get current sensor readings from Moorebot Scout.
 
@@ -324,7 +323,7 @@ async def moorebot_get_sensors() -> Dict:
         return {"success": False, "error": str(e)}
 
 
-async def moorebot_get_camera_stream() -> Dict:
+async def moorebot_get_camera_stream() -> dict:
     """
     Get Moorebot Scout camera stream URLs.
 

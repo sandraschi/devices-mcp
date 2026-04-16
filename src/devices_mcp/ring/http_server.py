@@ -11,7 +11,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import structlog
 import uvicorn
@@ -29,8 +29,8 @@ from ring_mcp.core.ring_client_modern import RingClient
 logger = structlog.get_logger(__name__)
 
 # Global Ring client instance (lazy initialization)
-ring_client: Optional[RingClient] = None
-auth_credentials: Optional[Dict[str, str]] = None
+ring_client: RingClient | None = None
+auth_credentials: dict[str, str] | None = None
 
 
 def get_ring_client() -> RingClient:
@@ -110,7 +110,7 @@ async def general_error_handler(request: Request, exc: Exception):
 
 # API Routes
 @app.post("/api/v1/auth/configure")
-async def configure_auth(credentials: Dict[str, str]):
+async def configure_auth(credentials: dict[str, str]):
     """Configure authentication credentials for Ring API."""
     global ring_client, auth_credentials
 
@@ -255,7 +255,7 @@ async def get_live_stream_url(device_id: str):
 
 
 @app.post("/api/v1/devices/{device_id}/arm")
-async def set_arm_status(device_id: str, request: Dict[str, Any]):
+async def set_arm_status(device_id: str, request: dict[str, Any]):
     """Arm or disarm a security device."""
     try:
         armed = request.get("status", False)

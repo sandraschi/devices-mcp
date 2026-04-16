@@ -3,7 +3,6 @@ Media streaming and recording API endpoints.
 """
 
 from datetime import datetime
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -29,9 +28,9 @@ async def get_live_stream(_camera_id: str, _quality: str = "hd", _stream_type: s
 
 @router.get("/recordings")
 async def list_recordings(
-    _camera_id: Optional[str] = None,
-    _start_time: Optional[datetime] = None,
-    _end_time: Optional[datetime] = None,
+    _camera_id: str | None = None,
+    _start_time: datetime | None = None,
+    _end_time: datetime | None = None,
 ):
     """List available recordings."""
     # This would typically query your recording storage

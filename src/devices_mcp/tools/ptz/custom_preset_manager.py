@@ -4,7 +4,6 @@ import json
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +34,7 @@ class CustomPTZPresetManager:
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(exist_ok=True)
         self.presets_file = self.data_dir / "custom_ptz_presets.json"
-        self._presets: Dict[
-            str, Dict[str, CustomPTZPreset]
-        ] = {}  # camera_name -> {preset_name -> preset}
+        self._presets: dict[str, dict[str, CustomPTZPreset]] = {}  # camera_name -> {preset_name -> preset}
         self._load_presets()
 
     def _load_presets(self):
@@ -49,9 +46,7 @@ class CustomPTZPresetManager:
                     for camera_name, presets_data in data.items():
                         self._presets[camera_name] = {}
                         for preset_name, preset_data in presets_data.items():
-                            self._presets[camera_name][preset_name] = CustomPTZPreset.from_dict(
-                                preset_data
-                            )
+                            self._presets[camera_name][preset_name] = CustomPTZPreset.from_dict(preset_data)
                 logger.info(f"Loaded custom PTZ presets for {len(self._presets)} cameras")
             except Exception:
                 logger.exception("Failed to load custom PTZ presets:")
@@ -103,15 +98,15 @@ class CustomPTZPresetManager:
             logger.exception("Failed to save custom PTZ preset:")
             return False
 
-    def get_preset(self, camera_name: str, preset_name: str) -> Optional[CustomPTZPreset]:
+    def get_preset(self, camera_name: str, preset_name: str) -> CustomPTZPreset | None:
         """Get a specific preset."""
         return self._presets.get(camera_name, {}).get(preset_name)
 
-    def get_camera_presets(self, camera_name: str) -> List[CustomPTZPreset]:
+    def get_camera_presets(self, camera_name: str) -> list[CustomPTZPreset]:
         """Get all presets for a camera."""
         return list(self._presets.get(camera_name, {}).values())
 
-    def get_all_presets(self) -> Dict[str, List[CustomPTZPreset]]:
+    def get_all_presets(self) -> dict[str, list[CustomPTZPreset]]:
         """Get all presets organized by camera."""
         return {camera: list(presets.values()) for camera, presets in self._presets.items()}
 
@@ -140,9 +135,7 @@ class CustomPTZPresetManager:
                 del self._presets[camera_name][old_name]
                 self._presets[camera_name][new_name] = preset
                 self._save_presets()
-                logger.info(
-                    f"Renamed custom PTZ preset '{old_name}' to '{new_name}' for camera '{camera_name}'"
-                )
+                logger.info(f"Renamed custom PTZ preset '{old_name}' to '{new_name}' for camera '{camera_name}'")
                 return True
             return False
         except Exception:

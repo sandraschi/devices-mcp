@@ -8,7 +8,8 @@ with composition and proxy capabilities using FastMCP 3.1 patterns.
 import logging
 import os
 import time
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 import structlog
 from fastapi import FastAPI
@@ -133,24 +134,14 @@ RING_MCP_PORT = get_ring_mcp_port()
 app = FastMCP(name="Ring Security", version="3.1.0")
 
 # Prometheus metrics
-ring_api_calls_total = Counter(
-    "ring_api_calls_total", "Total Ring API calls", ["endpoint", "status"]
-)
+ring_api_calls_total = Counter("ring_api_calls_total", "Total Ring API calls", ["endpoint", "status"])
 ring_api_duration = Histogram("ring_api_duration_seconds", "Ring API call duration", ["endpoint"])
-ring_device_status = Gauge(
-    "ring_device_status", "Ring device status", ["device_id", "device_type", "status"]
-)
-ring_device_battery = Gauge(
-    "ring_device_battery_percent", "Ring device battery level", ["device_id", "device_type"]
-)
-ring_device_online = Gauge(
-    "ring_device_online", "Ring device online status", ["device_id", "device_type"]
-)
+ring_device_status = Gauge("ring_device_status", "Ring device status", ["device_id", "device_type", "status"])
+ring_device_battery = Gauge("ring_device_battery_percent", "Ring device battery level", ["device_id", "device_type"])
+ring_device_online = Gauge("ring_device_online", "Ring device online status", ["device_id", "device_type"])
 ring_security_armed = Gauge("ring_security_armed", "Security system armed status", ["location"])
 ring_tool_calls_total = Counter("ring_tool_calls_total", "Total MCP tool calls", ["tool_name"])
-ring_tool_duration = Histogram(
-    "ring_tool_duration_seconds", "MCP tool execution time", ["tool_name"]
-)
+ring_tool_duration = Histogram("ring_tool_duration_seconds", "MCP tool execution time", ["tool_name"])
 ring_active_connections = Gauge("ring_active_connections", "Active MCP connections")
 
 
@@ -162,14 +153,12 @@ class DeviceInfo(BaseModel):
     name: str = Field(..., description="Device name")
     type: str = Field(..., description="Device type/family")
     model: str = Field(..., description="Device model")
-    firmware: Optional[str] = Field(None, description="Device firmware version")
-    battery_life: Optional[int] = Field(None, description="Battery percentage (0-100)")
+    firmware: str | None = Field(None, description="Device firmware version")
+    battery_life: int | None = Field(None, description="Battery percentage (0-100)")
     online: bool = Field(..., description="Whether the device is currently online")
-    address: Optional[str] = Field(None, description="Device location/address")
-    timezone: Optional[str] = Field(None, description="Device timezone")
-    has_subscription: bool = Field(
-        False, description="Whether the device has an active subscription"
-    )
+    address: str | None = Field(None, description="Device location/address")
+    timezone: str | None = Field(None, description="Device timezone")
+    has_subscription: bool = Field(False, description="Whether the device has an active subscription")
     last_update: str = Field(..., description="ISO timestamp of last update")
 
 
@@ -179,8 +168,8 @@ class EventInfo(BaseModel):
     id: str = Field(..., description="Event identifier")
     created_at: str = Field(..., description="Event timestamp in ISO format")
     answered: bool = Field(False, description="Whether the event was answered")
-    kind: Optional[str] = Field(None, description="Type of event")
-    recording_status: Optional[str] = Field(None, description="Status of recording if available")
+    kind: str | None = Field(None, description="Type of event")
+    recording_status: str | None = Field(None, description="Status of recording if available")
 
 
 class ErrorResponse(BaseModel):
@@ -188,11 +177,11 @@ class ErrorResponse(BaseModel):
 
     error: bool = Field(True, description="Indicates this is an error response")
     message: str = Field(..., description="Error message")
-    code: Optional[str] = Field(None, description="Error code if available")
+    code: str | None = Field(None, description="Error code if available")
 
 
 # Helper function to handle errors
-def handle_error(e: Exception) -> Dict[str, Any]:
+def handle_error(e: Exception) -> dict[str, Any]:
     """Convert exceptions to error responses."""
     if isinstance(e, AuthenticationError):
         status_code = 401
@@ -246,7 +235,7 @@ def track_tool_call(tool_name: str):
 
 
 # Global Ring client instance
-_ring_client: Optional[RingClient] = None
+_ring_client: RingClient | None = None
 
 
 def get_ring_client() -> RingClient:
@@ -274,17 +263,17 @@ def register_ring_tools(app: FastMCP, ring_client: RingClient) -> None:
     class DeviceListResponse(BaseModel):
         """Response model for device listing."""
 
-        devices: List[Dict[str, Any]] = Field(..., description="List of devices")
+        devices: list[dict[str, Any]] = Field(..., description="List of devices")
 
     class DeviceResponse(BaseModel):
         """Response model for device details."""
 
-        device: Dict[str, Any] = Field(..., description="Device details")
+        device: dict[str, Any] = Field(..., description="Device details")
 
     class EventListResponse(BaseModel):
         """Response model for event listing."""
 
-        events: List[Dict[str, Any]] = Field(..., description="List of events")
+        events: list[dict[str, Any]] = Field(..., description="List of events")
 
     class StreamURLResponse(BaseModel):
         """Response model for stream URLs."""
@@ -407,18 +396,14 @@ def register_ring_tools(app: FastMCP, ring_client: RingClient) -> None:
                 )
 
                 if battery is not None:
-                    ring_device_battery.labels(device_id=device_id, device_type=device_type).set(
-                        battery
-                    )
+                    ring_device_battery.labels(device_id=device_id, device_type=device_type).set(battery)
 
             return DeviceListResponse(devices=devices)
         except Exception:
             track_ring_api_call("get_devices", success=False)
             raise
 
-    @app.tool(
-        name="get_device_details", description="Get detailed information about a specific device"
-    )
+    @app.tool(name="get_device_details", description="Get detailed information about a specific device")
     @track_tool_call("get_device_details")
     @handle_ring_errors
     async def get_device_details(device_id: str) -> DeviceResponse:
@@ -500,9 +485,7 @@ def register_ring_tools(app: FastMCP, ring_client: RingClient) -> None:
             )
 
             if battery is not None:
-                ring_device_battery.labels(device_id=device_id, device_type=device_type).set(
-                    battery
-                )
+                ring_device_battery.labels(device_id=device_id, device_type=device_type).set(battery)
 
             return DeviceResponse(device=device)
         except Exception:
@@ -920,7 +903,7 @@ def register_ring_tools(app: FastMCP, ring_client: RingClient) -> None:
 
             # Check result details
             if result["success"]:
-                print(f"Devices accessible: {result['health_status']['devices_accessible']}")
+                logger.info("Devices accessible: %s", result["health_status"]["devices_accessible"])
             # Output: "Devices accessible: 5"
 
         Errors:
@@ -948,7 +931,7 @@ def register_ring_tools(app: FastMCP, ring_client: RingClient) -> None:
 
 
 # Register all tools on the global app instance
-def register_all_tools_on_app(app: FastMCP, ring_client: Optional[RingClient] = None):
+def register_all_tools_on_app(app: FastMCP, ring_client: RingClient | None = None):
     """Register all Ring MCP tools on a specific app instance."""
     try:
         from .tools import (
@@ -985,7 +968,7 @@ def register_all_tools():
     register_all_tools_on_app(app)
 
 
-def create_app(ring_client: Optional[RingClient] = None) -> FastMCP:
+def create_app(ring_client: RingClient | None = None) -> FastMCP:
     """Create and configure the FastMCP application with composition support.
 
     This function creates the main FastMCP application instance and registers
@@ -1016,9 +999,7 @@ def create_app(ring_client: Optional[RingClient] = None) -> FastMCP:
 
 if __name__ == "__main__":
     # Configure structured logging for FastMCP 3.1
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Configure structlog for JSON logging
     structlog.configure(

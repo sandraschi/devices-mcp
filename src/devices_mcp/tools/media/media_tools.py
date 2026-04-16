@@ -8,7 +8,7 @@ import base64
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import Field
 
@@ -32,18 +32,14 @@ class CaptureImageTool(BaseTool):
                 description="Image quality (high/medium/low)",
                 json_schema_extra={"enum": ["high", "medium", "low"]},
             )
-            save_to_disk: bool = Field(
-                default=True, description="Whether to save the image to disk"
-            )
-            return_base64: bool = Field(
-                default=True, description="Whether to return the image as base64"
-            )
+            save_to_disk: bool = Field(default=True, description="Whether to save the image to disk")
+            return_base64: bool = Field(default=True, description="Whether to return the image as base64")
 
     quality: str
     save_to_disk: bool
     return_base64: bool
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Capture an image from the camera.
 
         Returns:
@@ -123,18 +119,14 @@ class FindSimilarImagesTool(BaseTool):
 
         class Parameters:
             image_path: str = Field(..., description="Path to the query image")
-            threshold: float = Field(
-                default=0.7, ge=0.0, le=1.0, description="Similarity threshold (0.0 to 1.0)"
-            )
-            max_results: int = Field(
-                default=5, ge=1, description="Maximum number of similar images to return"
-            )
+            threshold: float = Field(default=0.7, ge=0.0, le=1.0, description="Similarity threshold (0.0 to 1.0)")
+            max_results: int = Field(default=5, ge=1, description="Maximum number of similar images to return")
 
     image_path: str
     threshold: float = 0.7
     max_results: int = 5
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Find images similar to the query image using DINOv3."""
         try:
             from ...core.server import TapoCameraServer
@@ -172,7 +164,7 @@ class GetStreamURLTool(BaseTool):
     quality: str = "hd"
     protocol: str = "rtsp"
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Get the RTSP stream URL for the camera."""
         try:
             from ...core.server import TapoCameraServer
@@ -194,15 +186,13 @@ class StartRecordingTool(BaseTool):
         category = ToolCategory.MEDIA
 
         class Parameters:
-            duration: int = Field(
-                default=0, ge=0, description="Duration to record in seconds (0 for unlimited)"
-            )
-            output_dir: Optional[str] = Field(None, description="Directory to save the recording")
+            duration: int = Field(default=0, ge=0, description="Duration to record in seconds (0 for unlimited)")
+            output_dir: str | None = Field(None, description="Directory to save the recording")
 
     duration: int = 0
-    output_dir: Optional[str] = None
+    output_dir: str | None = None
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Start recording video from the camera."""
         try:
             from ...core.server import TapoCameraServer
@@ -229,7 +219,7 @@ class StopRecordingTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Stop the current recording."""
         try:
             from ...core.server import TapoCameraServer
@@ -252,12 +242,8 @@ class AnalyzeImageTool(BaseTool):
 
         class Parameters:
             image_path: str = Field(..., description="Path to image file(s) or directory")
-            prompt: str = Field(
-                default="general", description="Analysis prompt or preset name (default: 'general')"
-            )
-            preset: Optional[str] = Field(
-                None, description="Use a predefined analysis preset (overrides prompt)"
-            )
+            prompt: str = Field(default="general", description="Analysis prompt or preset name (default: 'general')")
+            preset: str | None = Field(None, description="Use a predefined analysis preset (overrides prompt)")
             use_cache: bool = Field(default=True, description="Use cached results")
             batch_size: int = Field(default=4, ge=1, description="Max concurrent analyses")
             output_format: str = Field(
@@ -271,13 +257,13 @@ class AnalyzeImageTool(BaseTool):
 
     image_path: str
     prompt: str = "general"
-    preset: Optional[str] = None
+    preset: str | None = None
     use_cache: bool = True
     batch_size: int = 4
     output_format: str = "full"
     confidence_threshold: float = 0.5
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Analyze one or more images with multimodal LLM."""
         try:
             from ...core.server import TapoCameraServer
@@ -307,19 +293,19 @@ class SecurityScanTool(BaseTool):
         category = ToolCategory.SECURITY
 
         class Parameters:
-            cameras: Optional[List[Dict[str, Any]]] = Field(
+            cameras: list[dict[str, Any]] | None = Field(
                 None, description="List of camera configs (default: current camera)"
             )
-            threat_types: List[str] = Field(
+            threat_types: list[str] = Field(
                 default=["person", "unknown_person", "package"], description="Types to detect"
             )
             save_images: bool = Field(default=True, description="Save captured images")
 
-    cameras: Optional[List[Dict[str, Any]]] = None
-    threat_types: List[str] = ["person", "unknown_person", "package"]
+    cameras: list[dict[str, Any]] | None = None
+    threat_types: list[str] = ["person", "unknown_person", "package"]
     save_images: bool = True
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Perform security scan across multiple cameras."""
         try:
             from ...core.server import TapoCameraServer
@@ -353,7 +339,7 @@ class CaptureStillTool(BaseTool):
             include_timestamp: bool = Field(True, description="Include timestamp in filename")
             analyze: bool = Field(False, description="Analyze the captured image")
             prompt: str = Field("general", description="Analysis prompt or preset name")
-            group: Optional[str] = Field(None, description="Camera group name")
+            group: str | None = Field(None, description="Camera group name")
             batch_size: int = Field(4, description="Batch size for multiple cameras", ge=1)
             use_cache: bool = Field(True, description="Use cached results")
 
@@ -363,11 +349,11 @@ class CaptureStillTool(BaseTool):
     include_timestamp: bool = True
     analyze: bool = False
     prompt: str = "general"
-    group: Optional[str] = None
+    group: str | None = None
     batch_size: int = 4
     use_cache: bool = True
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Capture still images from cameras with optional analysis capabilities.
 
         Takes high-quality snapshots from specified cameras with configurable options

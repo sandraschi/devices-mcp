@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -47,14 +47,14 @@ async def plex_streaming(
         "set_volume",
         "control",
     ],
-    client_id: Optional[str] = None,
-    media_key: Optional[str] = None,
-    seek_to: Optional[int] = None,
-    offset: Optional[int] = 30,
-    action: Optional[str] = None,
-    volume: Optional[int] = None,
-    quality: Optional[str] = None,
-) -> Dict[str, Any]:
+    client_id: str | None = None,
+    media_key: str | None = None,
+    seek_to: int | None = None,
+    offset: int | None = 30,
+    action: str | None = None,
+    volume: int | None = None,
+    quality: str | None = None,
+) -> dict[str, Any]:
     """Comprehensive playback control and session management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -267,9 +267,7 @@ async def plex_streaming(
                     }
 
                 # Select best client for this media type
-                selected_client = await plex._run_in_executor(
-                    plex._select_client_for_media, media_type, all_clients
-                )
+                selected_client = await plex._run_in_executor(plex._select_client_for_media, media_type, all_clients)
                 if not selected_client:
                     return {
                         "success": False,
@@ -423,9 +421,7 @@ async def plex_streaming(
                     "error_code": "MISSING_VOLUME",
                 }
 
-            result = await plex.control_playback(
-                client_identifier=client_id, action="set_volume", volume=volume
-            )
+            result = await plex.control_playback(client_identifier=client_id, action="set_volume", volume=volume)
             return {
                 "success": result,
                 "operation": "set_volume",

@@ -8,7 +8,7 @@ Combines Netatmo weather operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -34,20 +34,18 @@ class NetatmoWeatherTool(BaseTool):
 
     class Meta:
         name = "netatmo_weather"
-        description = (
-            "Unified Netatmo weather operations including station info and current weather data"
-        )
+        description = "Unified Netatmo weather operations including station info and current weather data"
         category = ToolCategory.WEATHER
 
         class Parameters(BaseModel):
             operation: str = Field(..., description="Weather operation: 'stations', 'data'")
-            station_id: Optional[str] = Field(None, description="Station ID for data operation")
+            station_id: str | None = Field(None, description="Station ID for data operation")
 
     async def execute(
         self,
         operation: str,
-        station_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        station_id: str | None = None,
+    ) -> dict[str, Any]:
         """Execute Netatmo weather operation."""
         try:
             logger.info(f"Netatmo weather {operation} operation")
@@ -71,7 +69,7 @@ class NetatmoWeatherTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_stations(self) -> Dict[str, Any]:
+    async def _get_stations(self) -> dict[str, Any]:
         """Get Netatmo weather stations from real API if available."""
         # Try to get real Netatmo stations using singleton
         try:
@@ -135,7 +133,7 @@ class NetatmoWeatherTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _get_weather_data(self, station_id: Optional[str]) -> Dict[str, Any]:
+    async def _get_weather_data(self, station_id: str | None) -> dict[str, Any]:
         """Get Netatmo weather data from real API if available, otherwise return minimal data."""
         station_id = station_id or "netatmo_001"
 
@@ -163,9 +161,7 @@ class NetatmoWeatherTool(BaseTool):
                             "co2": data["indoor"].get("co2"),
                             "noise": data["indoor"].get("noise"),
                             "pressure": data["indoor"].get("pressure"),
-                            "health_index": "Good"
-                            if data["indoor"].get("co2", 1000) < 1000
-                            else "Fair",
+                            "health_index": "Good" if data["indoor"].get("co2", 1000) < 1000 else "Fair",
                         }
 
                     # Only add outdoor data if it actually exists (real outdoor module)

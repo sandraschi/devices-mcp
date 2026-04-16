@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -35,12 +35,12 @@ def _get_plex_service():
 @mcp.tool()
 async def plex_collections(
     operation: Literal["list", "get", "create", "update", "delete", "add_items", "remove_items"],
-    collection_id: Optional[str] = None,
-    library_id: Optional[str] = None,
-    title: Optional[str] = None,
-    summary: Optional[str] = None,
-    items: Optional[List[str]] = None,
-) -> Dict[str, Any]:
+    collection_id: str | None = None,
+    library_id: str | None = None,
+    title: str | None = None,
+    summary: str | None = None,
+    items: list[str] | None = None,
+) -> dict[str, Any]:
     """Comprehensive collections management tool for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -283,9 +283,7 @@ async def plex_collections(
             "success": False,
             "error": f"Unknown operation: {operation}",
             "error_code": "INVALID_OPERATION",
-            "suggestions": [
-                "Use one of: list, get, create, update, delete, add_items, remove_items"
-            ],
+            "suggestions": ["Use one of: list, get, create, update, delete, add_items, remove_items"],
         }
 
     except Exception as e:

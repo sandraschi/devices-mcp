@@ -5,7 +5,7 @@ FastMCP 3.1 sampling capabilities for autonomous media management workflows.
 Provides conversational tool returns and intelligent orchestration.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from ..app import mcp
 
@@ -16,9 +16,9 @@ def register_agentic_tools():
     @mcp.tool()
     async def agentic_plex_workflow(
         workflow_prompt: str,
-        available_tools: List[str],
+        available_tools: list[str],
         max_iterations: int = 5,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute agentic Plex workflows using FastMCP 3.1 sampling with tools.
 
         This tool demonstrates SEP-1577 by enabling the server's LLM to autonomously
@@ -76,11 +76,11 @@ def register_agentic_tools():
 
     @mcp.tool()
     async def intelligent_media_processing(
-        media_items: List[Dict[str, Any]],
+        media_items: list[dict[str, Any]],
         processing_goal: str,
-        available_operations: List[str],
+        available_operations: list[str],
         processing_strategy: str = "adaptive",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Intelligent batch media processing using FastMCP 3.1 sampling with tools.
 
         This tool uses the client's LLM to intelligently decide how to process batches
@@ -140,7 +140,7 @@ def register_agentic_tools():
     async def conversational_plex_assistant(
         user_query: str,
         context_level: str = "comprehensive",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Conversational Plex assistant with natural language responses.
 
         Provides human-like interaction for Plex media management with detailed
@@ -164,9 +164,7 @@ def register_agentic_tools():
             result = {
                 "success": True,
                 "operation": "conversational_assistance",
-                "message": response_templates.get(
-                    context_level, response_templates["comprehensive"]
-                ),
+                "message": response_templates.get(context_level, response_templates["comprehensive"]),
                 "user_query": user_query,
                 "context_level": context_level,
                 "suggestions": [

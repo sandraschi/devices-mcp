@@ -6,7 +6,6 @@ Handles FFT calculations, spectrum analysis, and waterfall data generation.
 
 import logging
 import time
-from typing import List, Tuple
 
 import numpy as np
 
@@ -23,7 +22,7 @@ class SDRProcessor:
         self.waterfall_history = []
         self.max_history = 100  # Keep 100 waterfall lines
 
-    def compute_spectrum(self, samples: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def compute_spectrum(self, samples: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute power spectrum from IQ samples.
 
@@ -69,11 +68,11 @@ class SDRProcessor:
             if len(self.waterfall_history) > self.max_history:
                 self.waterfall_history.pop(0)
 
-    def get_waterfall_data(self) -> List[List[float]]:
+    def get_waterfall_data(self) -> list[list[float]]:
         """Get waterfall data as list of lists for JSON serialization."""
         return [line.tolist() for line in self.waterfall_history]
 
-    def get_latest_spectrum(self) -> Tuple[List[float], List[float]]:
+    def get_latest_spectrum(self) -> tuple[list[float], list[float]]:
         """Get the latest spectrum data."""
         if self.waterfall_history:
             latest = self.waterfall_history[-1]

@@ -1,7 +1,6 @@
 """Public webcam camera implementation for external webcams."""
 
 import logging
-from typing import Dict, Optional
 
 import aiohttp
 
@@ -22,7 +21,7 @@ class PublicWebcam(WebCamera):
         self._description = self.config.params.get("description", "")
         self._update_interval = self.config.params.get("update_interval", 30)  # seconds
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get public webcam status."""
         status = await super().get_status()
         status.update(
@@ -39,23 +38,22 @@ class PublicWebcam(WebCamera):
         )
         return status
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Get the public webcam URL for streaming."""
         if self._webcam_url:
             return self._webcam_url
         return None
 
-    async def get_snapshot(self) -> Optional[bytes]:
+    async def get_snapshot(self) -> bytes | None:
         """Get a snapshot from the public webcam."""
         try:
-            async with aiohttp.ClientSession() as session, session.get(
-                self._webcam_url, timeout=aiohttp.ClientTimeout(total=10)
-            ) as response:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.get(self._webcam_url, timeout=aiohttp.ClientTimeout(total=10)) as response,
+            ):
                 if response.status == 200:
                     return await response.read()
-                logger.warning(
-                    f"Failed to get snapshot from {self._webcam_url}: HTTP {response.status}"
-                )
+                logger.warning(f"Failed to get snapshot from {self._webcam_url}: HTTP {response.status}")
                 return None
         except Exception:
             logger.exception("Error getting snapshot from public webcam {self.config.name}:")
@@ -64,9 +62,10 @@ class PublicWebcam(WebCamera):
     async def test_connection(self) -> bool:
         """Test if the public webcam is accessible."""
         try:
-            async with aiohttp.ClientSession() as session, session.head(
-                self._webcam_url, timeout=aiohttp.ClientTimeout(total=5)
-            ) as response:
+            async with (
+                aiohttp.ClientSession() as session,
+                session.head(self._webcam_url, timeout=aiohttp.ClientTimeout(total=5)) as response,
+            ):
                 return response.status == 200
         except Exception as e:
             logger.warning(f"Connection test failed for {self.config.name}: {e}")

@@ -9,7 +9,7 @@ Combines video recording operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -39,26 +39,16 @@ class VideoRecordingTool(BaseTool):
 
     class Meta:
         name = "video_recording"
-        description = (
-            "Unified video recording operations including start, stop, and stream URL management"
-        )
+        description = "Unified video recording operations including start, stop, and stream URL management"
         category = ToolCategory.MEDIA
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Video operation: 'start', 'stop', 'stream_url'"
-            )
+            operation: str = Field(..., description="Video operation: 'start', 'stop', 'stream_url'")
             camera_id: str = Field(..., description="Camera ID for video operations")
-            recording_format: Optional[str] = Field(
-                "mp4", description="Recording format: 'mp4', 'avi', 'mov'"
-            )
-            resolution: Optional[str] = Field(
-                "1080p", description="Resolution: '720p', '1080p', '4k'"
-            )
-            bitrate: Optional[int] = Field(5000, description="Recording bitrate in kbps")
-            duration: Optional[int] = Field(
-                0, description="Recording duration in minutes (0 for continuous)"
-            )
+            recording_format: str | None = Field("mp4", description="Recording format: 'mp4', 'avi', 'mov'")
+            resolution: str | None = Field("1080p", description="Resolution: '720p', '1080p', '4k'")
+            bitrate: int | None = Field(5000, description="Recording bitrate in kbps")
+            duration: int | None = Field(0, description="Recording duration in minutes (0 for continuous)")
 
     async def execute(
         self,
@@ -68,15 +58,13 @@ class VideoRecordingTool(BaseTool):
         resolution: str = "1080p",
         bitrate: int = 5000,
         duration: int = 0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute video recording operation."""
         try:
             logger.info(f"Video {operation} operation for camera {camera_id}")
 
             if operation == "start":
-                return await self._start_recording(
-                    camera_id, recording_format, resolution, bitrate, duration
-                )
+                return await self._start_recording(camera_id, recording_format, resolution, bitrate, duration)
             if operation == "stop":
                 return await self._stop_recording(camera_id)
             if operation == "stream_url":
@@ -99,7 +87,7 @@ class VideoRecordingTool(BaseTool):
 
     async def _start_recording(
         self, camera_id: str, recording_format: str, resolution: str, bitrate: int, duration: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Start video recording."""
         # Validate parameters
         if bitrate < 1000 or bitrate > 50000:
@@ -124,11 +112,7 @@ class VideoRecordingTool(BaseTool):
             "start_time": time.time(),
             "file_path": f"/recordings/{camera_id}_{recording_id}.{recording_format}",
             "status": "recording",
-            "estimated_file_size": bitrate
-            * (duration * 60 if duration > 0 else 3600)
-            / 8
-            / 1024
-            / 1024,  # MB
+            "estimated_file_size": bitrate * (duration * 60 if duration > 0 else 3600) / 8 / 1024 / 1024,  # MB
             "metadata": {
                 "codec": "H.264",
                 "audio": True,
@@ -145,7 +129,7 @@ class VideoRecordingTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _stop_recording(self, camera_id: str) -> Dict[str, Any]:
+    async def _stop_recording(self, camera_id: str) -> dict[str, Any]:
         """Stop video recording."""
         # Simulate recording stop
         import secrets
@@ -176,7 +160,7 @@ class VideoRecordingTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _get_stream_url(self, camera_id: str, resolution: str) -> Dict[str, Any]:
+    async def _get_stream_url(self, camera_id: str, resolution: str) -> dict[str, Any]:
         """Get camera stream URL."""
         # Simulate stream URL generation
         import secrets

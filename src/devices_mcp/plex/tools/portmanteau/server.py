@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -42,9 +42,9 @@ async def plex_server(
         "restart",
         "update",
     ],
-    maintenance_operation: Optional[str] = None,
-    options: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    maintenance_operation: str | None = None,
+    options: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Comprehensive server management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -202,9 +202,7 @@ async def plex_server(
             # Import admin service for maintenance
             from ...api.admin import run_server_maintenance
 
-            result = await run_server_maintenance(
-                operation=maintenance_operation, options=options or {}
-            )
+            result = await run_server_maintenance(operation=maintenance_operation, options=options or {})
             return {
                 "success": True,
                 "operation": "maintenance",

@@ -10,7 +10,7 @@ Combines system information operations:
 import logging
 import platform
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -47,20 +47,14 @@ class SystemInfoTool(BaseTool):
 
     class Meta:
         name = "system_info"
-        description = (
-            "Unified system information operations including info, logs, and health monitoring"
-        )
+        description = "Unified system information operations including info, logs, and health monitoring"
         category = ToolCategory.SYSTEM
 
         class Parameters(BaseModel):
             operation: str = Field(..., description="System operation: 'info', 'logs', 'health'")
-            log_level: Optional[str] = Field(
-                "info", description="Log level: 'debug', 'info', 'warning', 'error'"
-            )
-            log_lines: Optional[int] = Field(100, description="Number of log lines to retrieve")
-            health_check_type: Optional[str] = Field(
-                "quick", description="Health check type: 'full', 'quick', 'services'"
-            )
+            log_level: str | None = Field("info", description="Log level: 'debug', 'info', 'warning', 'error'")
+            log_lines: int | None = Field(100, description="Number of log lines to retrieve")
+            health_check_type: str | None = Field("quick", description="Health check type: 'full', 'quick', 'services'")
 
     async def execute(
         self,
@@ -68,7 +62,7 @@ class SystemInfoTool(BaseTool):
         log_level: str = "info",
         log_lines: int = 100,
         health_check_type: str = "quick",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute system info operation."""
         try:
             logger.info(f"System {operation} operation")
@@ -94,7 +88,7 @@ class SystemInfoTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_system_info(self) -> Dict[str, Any]:
+    async def _get_system_info(self) -> dict[str, Any]:
         """Get comprehensive system information."""
         try:
             # Get real system information
@@ -125,38 +119,22 @@ class SystemInfoTool(BaseTool):
                             "used": psutil.virtual_memory().used,
                         },
                         "disk": {
-                            "total": psutil.disk_usage("/").total
-                            if hasattr(psutil, "disk_usage")
-                            else 0,
-                            "used": psutil.disk_usage("/").used
-                            if hasattr(psutil, "disk_usage")
-                            else 0,
-                            "free": psutil.disk_usage("/").free
-                            if hasattr(psutil, "disk_usage")
-                            else 0,
-                            "percent": psutil.disk_usage("/").percent
-                            if hasattr(psutil, "disk_usage")
-                            else 0,
+                            "total": psutil.disk_usage("/").total if hasattr(psutil, "disk_usage") else 0,
+                            "used": psutil.disk_usage("/").used if hasattr(psutil, "disk_usage") else 0,
+                            "free": psutil.disk_usage("/").free if hasattr(psutil, "disk_usage") else 0,
+                            "percent": psutil.disk_usage("/").percent if hasattr(psutil, "disk_usage") else 0,
                         },
                         "network": {
                             "interfaces": list(psutil.net_if_addrs().keys()),
-                            "io_counters": psutil.net_io_counters()._asdict()
-                            if psutil.net_io_counters()
-                            else {},
+                            "io_counters": psutil.net_io_counters()._asdict() if psutil.net_io_counters() else {},
                         },
                         "processes": {
                             "count": len(psutil.pids()),
                             "tapo_processes": len(
-                                [
-                                    p
-                                    for p in psutil.process_iter(["name"])
-                                    if "tapo" in p.info["name"].lower()
-                                ]
+                                [p for p in psutil.process_iter(["name"]) if "tapo" in p.info["name"].lower()]
                             ),
                         },
-                        "uptime": time.time() - psutil.boot_time()
-                        if hasattr(psutil, "boot_time")
-                        else 0,
+                        "uptime": time.time() - psutil.boot_time() if hasattr(psutil, "boot_time") else 0,
                     }
                 )
             else:
@@ -234,7 +212,7 @@ class SystemInfoTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_logs(self, log_level: str, log_lines: int) -> Dict[str, Any]:
+    async def _get_logs(self, log_level: str, log_lines: int) -> dict[str, Any]:
         """Get system logs from file."""
         # Validate parameters
         valid_levels = ["debug", "info", "warning", "error", "critical"]
@@ -296,9 +274,7 @@ class SystemInfoTool(BaseTool):
         try:
             log_entries = []
             # Regex for standard python logging: YYYY-MM-DD HH:MM:SS,mmm - logger - LEVEL - message
-            log_pattern = re.compile(
-                r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - ([\w\.]+) - (\w+) - (.*)$"
-            )
+            log_pattern = re.compile(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - ([\w\.]+) - (\w+) - (.*)$")
 
             # Read file efficiently (seek to end for potential large files)
             # simplified reading for now
@@ -322,15 +298,9 @@ class SystemInfoTool(BaseTool):
                         # Basic filtering: DEBUG < INFO < WARNING < ERROR < CRITICAL
                         # If user asked for WARNING, show WARNING, ERROR, CRITICAL
                         params_level_idx = (
-                            valid_levels.index(log_level.lower())
-                            if log_level.lower() in valid_levels
-                            else 1
+                            valid_levels.index(log_level.lower()) if log_level.lower() in valid_levels else 1
                         )
-                        current_level_idx = (
-                            valid_levels.index(level.lower())
-                            if level.lower() in valid_levels
-                            else 1
-                        )
+                        current_level_idx = valid_levels.index(level.lower()) if level.lower() in valid_levels else 1
 
                         if current_level_idx < params_level_idx:
                             continue
@@ -381,7 +351,7 @@ class SystemInfoTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _health_check(self, health_check_type: str) -> Dict[str, Any]:
+    async def _health_check(self, health_check_type: str) -> dict[str, Any]:
         """Perform system health check."""
         # Validate parameters
         valid_types = ["full", "quick", "services"]

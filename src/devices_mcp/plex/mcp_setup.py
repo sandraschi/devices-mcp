@@ -5,7 +5,6 @@ Use plex_mcp.server:main as the entry point instead.
 """
 
 import logging
-from typing import Optional
 
 # Import portmanteau tools to register them
 # This ensures all @mcp.tool() decorators execute
@@ -39,9 +38,7 @@ except ImportError:
     search_media = None
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -49,7 +46,7 @@ logger = logging.getLogger(__name__)
 # Tools are now registered via @mcp.tool() decorators in portmanteau modules
 
 
-def run_server(config_path: Optional[str] = None):
+def run_server(config_path: str | None = None):
     """Run the Plex MCP server (Legacy - redirects to server.py).
 
     Args:

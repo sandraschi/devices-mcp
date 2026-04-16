@@ -7,9 +7,10 @@ This module provides utility functions for working with asyncio and asynchronous
 import asyncio
 import functools
 import logging
+from collections.abc import Callable, Coroutine
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from functools import wraps
-from typing import Any, Callable, Coroutine, List, Optional, Set, Type, TypeVar, Union
+from typing import Any, TypeVar
 
 # Type variables
 T = TypeVar("T")
@@ -22,13 +23,13 @@ _PROCESS_POOL = ProcessPoolExecutor(max_workers=4)
 logger = logging.getLogger(__name__)
 
 # Track running tasks for graceful shutdown
-_RUNNING_TASKS: Set[asyncio.Task] = set()
+_RUNNING_TASKS: set[asyncio.Task] = set()
 
 
 def run_in_executor(
     func: Callable[..., T],
     *args: Any,
-    executor: Optional[Union[ThreadPoolExecutor, ProcessPoolExecutor]] = None,
+    executor: ThreadPoolExecutor | ProcessPoolExecutor | None = None,
     **kwargs: Any,
 ) -> Coroutine[Any, Any, T]:
     """Run a synchronous function in a thread or process pool executor.
@@ -73,7 +74,7 @@ class AsyncLock:
 
     def __init__(self):
         self._lock = asyncio.Lock()
-        self._task: Optional[asyncio.Task] = None
+        self._task: asyncio.Task | None = None
         self._depth = 0
 
     async def __aenter__(self):
@@ -106,8 +107,8 @@ def async_retry(
     max_attempts: int = 3,
     delay: float = 1.0,
     backoff: float = 2.0,
-    exceptions: Union[Type[Exception], tuple[Type[Exception], ...]] = Exception,
-    logger: Optional[logging.Logger] = None,
+    exceptions: type[Exception] | tuple[type[Exception], ...] = Exception,
+    logger: logging.Logger | None = None,
 ):
     """Decorator for retrying async functions with exponential backoff.
 
@@ -169,15 +170,15 @@ class TaskPool:
         """
         self.max_concurrent = max_concurrent
         self._semaphore = asyncio.Semaphore(max_concurrent)
-        self._pending: List[asyncio.Task] = []
-        self._running: Set[asyncio.Task] = set()
-        self._completed: List[asyncio.Task] = []
+        self._pending: list[asyncio.Task] = []
+        self._running: set[asyncio.Task] = set()
+        self._completed: list[asyncio.Task] = []
 
     async def add_task(
         self,
         coro: Coroutine[Any, Any, T],
-        callback: Optional[Callable[[T], None]] = None,
-        error_callback: Optional[Callable[[Exception], None]] = None,
+        callback: Callable[[T], None] | None = None,
+        error_callback: Callable[[Exception], None] | None = None,
     ) -> asyncio.Task:
         """Add a task to the pool.
 
@@ -214,7 +215,7 @@ class TaskPool:
 
         return task
 
-    async def gather(self) -> List[Any]:
+    async def gather(self) -> list[Any]:
         """Wait for all tasks in the pool to complete and return their results."""
         if not self._pending and not self._running:
             return []
@@ -261,7 +262,7 @@ class TaskPool:
         return len(self._completed)
 
 
-def create_task(coro: Coroutine[Any, Any, T], name: Optional[str] = None) -> asyncio.Task[T]:
+def create_task(coro: Coroutine[Any, Any, T], name: str | None = None) -> asyncio.Task[T]:
     """Create a task and track it for graceful shutdown.
 
     Args:
@@ -291,7 +292,7 @@ def create_task(coro: Coroutine[Any, Any, T], name: Optional[str] = None) -> asy
 
 async def gather_with_concurrency(
     n: int, *coros: Coroutine[Any, Any, T], return_exceptions: bool = False
-) -> List[Union[T, Exception]]:
+) -> list[T | Exception]:
     """Run coroutines with limited concurrency.
 
     Args:
@@ -356,19 +357,15 @@ def async_timeout(
         async def wrapper(*args: Any, **kwargs: Any) -> T:
             try:
                 return await asyncio.wait_for(func(*args, **kwargs), timeout=seconds)
-            except asyncio.TimeoutError as e:
-                raise asyncio.TimeoutError(
-                    f"Function {func.__name__} timed out after {seconds} seconds"
-                ) from e
+            except TimeoutError as e:
+                raise TimeoutError(f"Function {func.__name__} timed out after {seconds} seconds") from e
 
         return wrapper
 
     return decorator
 
 
-async def run_until_complete_with_timeout(
-    coro: Coroutine[Any, Any, T], timeout: float, default: T = None
-) -> Optional[T]:
+async def run_until_complete_with_timeout(coro: Coroutine[Any, Any, T], timeout: float, default: T = None) -> T | None:
     """Run a coroutine with a timeout and return a default value on timeout.
 
     Args:
@@ -381,5 +378,5 @@ async def run_until_complete_with_timeout(
     """
     try:
         return await asyncio.wait_for(coro, timeout=timeout)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return default

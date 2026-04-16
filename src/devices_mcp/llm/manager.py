@@ -4,7 +4,7 @@ import logging
 import os
 
 # Import for type checking
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
@@ -24,15 +24,15 @@ class LLMManager:
 
     def __init__(self):
         """Initialize the LLM manager."""
-        self.providers: Dict[ProviderType, LLMProvider] = {}
-        self.current_provider: Optional[ProviderType] = None
-        self.current_model: Optional[str] = None
+        self.providers: dict[ProviderType, LLMProvider] = {}
+        self.current_provider: ProviderType | None = None
+        self.current_model: str | None = None
 
     def register_provider(
         self,
         provider_type: ProviderType,
         base_url: str,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
     ) -> bool:
         """Register a provider.
 
@@ -65,7 +65,7 @@ class LLMManager:
             logger.exception("Failed to register %s provider", provider_type.value)
             return False
 
-    async def list_providers(self) -> List[Dict[str, Any]]:
+    async def list_providers(self) -> list[dict[str, Any]]:
         """List all registered providers."""
         providers = []
         for provider_type, provider in self.providers.items():
@@ -93,9 +93,7 @@ class LLMManager:
                 )
         return providers
 
-    async def list_models(
-        self, provider_type: Optional[ProviderType] = None
-    ) -> List[Dict[str, Any]]:
+    async def list_models(self, provider_type: ProviderType | None = None) -> list[dict[str, Any]]:
         """List models for a provider.
 
         Args:
@@ -114,9 +112,7 @@ class LLMManager:
             logger.exception("Failed to list models")
             return []
 
-    async def load_model(
-        self, model_name: str, provider_type: Optional[ProviderType] = None
-    ) -> bool:
+    async def load_model(self, model_name: str, provider_type: ProviderType | None = None) -> bool:
         """Load a model.
 
         Args:
@@ -136,15 +132,13 @@ class LLMManager:
                 self.current_model = model_name
                 if provider_type:
                     self.current_provider = provider_type
-                logger.info(
-                    f"Loaded model {model_name} on {provider_type or self.current_provider}"
-                )
+                logger.info(f"Loaded model {model_name} on {provider_type or self.current_provider}")
             return success
         except Exception:
             logger.exception("Failed to load model %s", model_name)
             return False
 
-    async def unload_model(self, provider_type: Optional[ProviderType] = None) -> bool:
+    async def unload_model(self, provider_type: ProviderType | None = None) -> bool:
         """Unload the current model.
 
         Args:
@@ -169,10 +163,10 @@ class LLMManager:
 
     async def chat(
         self,
-        messages: List[Dict[str, str]],
-        provider_type: Optional[ProviderType] = None,
+        messages: list[dict[str, str]],
+        provider_type: ProviderType | None = None,
         stream: bool = False,
-        model_name: Optional[str] = None,
+        model_name: str | None = None,
     ) -> Any:
         """Send a chat message.
 
@@ -197,7 +191,7 @@ class LLMManager:
             return await provider.chat(messages, stream=stream, model_name=use_model)
         return await provider.chat(messages, stream=stream)
 
-    def _get_provider(self, provider_type: Optional[ProviderType] = None) -> Optional[LLMProvider]:
+    def _get_provider(self, provider_type: ProviderType | None = None) -> LLMProvider | None:
         """Get a provider instance.
 
         Args:
@@ -249,7 +243,7 @@ class LLMManager:
 
 
 # Global manager instance
-_llm_manager: Optional[LLMManager] = None
+_llm_manager: LLMManager | None = None
 
 
 def get_llm_manager() -> LLMManager:

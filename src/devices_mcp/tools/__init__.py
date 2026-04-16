@@ -38,7 +38,7 @@ get_tool = _get_tool
 get_all_tools = _get_all_tools
 
 
-def discover_tools_wrapper(package: Optional[str] = None) -> List[Type[BaseTool]]:
+def discover_tools_wrapper(package: str | None = None) -> list[type[BaseTool]]:
     """Discover and import all tools in the specified package.
 
     Args:
@@ -54,9 +54,7 @@ def discover_tools_wrapper(package: Optional[str] = None) -> List[Type[BaseTool]
     package_path = os.path.dirname(os.path.abspath(__file__))
 
     # Determine subpackage directory names to avoid importing same-named .py modules
-    subpackage_dirs = {
-        name for name in os.listdir(package_path) if os.path.isdir(os.path.join(package_path, name))
-    }
+    subpackage_dirs = {name for name in os.listdir(package_path) if os.path.isdir(os.path.join(package_path, name))}
 
     # Import all modules in the tools directory
     for finder, module_name, is_pkg in pkgutil.iter_modules([package_path]):
@@ -184,9 +182,7 @@ def import_consolidated_tools():
                 logger.exception("Failed to register")
 
         _tools_registered = True
-        logger.info(
-            "[OK] All 16 consolidated portmanteau tools registered (FastMCP 3.1 compliant)"
-        )
+        logger.info("[OK] All 16 consolidated portmanteau tools registered (FastMCP 3.1 compliant)")
         logger.info("[SUCCESS] Tool consolidation successful: 64 -> 16 tools (75% reduction)")
 
     except ImportError:

@@ -13,7 +13,7 @@ tool registration for Claude Desktop stdio communication.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -34,9 +34,7 @@ def register_tools(app: FastMCP) -> None:
         name="list_available_tools",
         description="List all available Ring MCP tools with categories and descriptions",
     )
-    async def list_available_tools(
-        category: Optional[str] = None, include_hidden: bool = False
-    ) -> Dict[str, Any]:
+    async def list_available_tools(category: str | None = None, include_hidden: bool = False) -> dict[str, Any]:
         """List all available Ring MCP tools with categories and descriptions.
 
         Provides a comprehensive overview of all available tools, organized by category.
@@ -280,7 +278,7 @@ def register_tools(app: FastMCP) -> None:
         name="get_tool_help",
         description="Get detailed help and usage information for a specific tool",
     )
-    async def get_tool_help(tool_name: str, include_examples: bool = True) -> Dict[str, Any]:
+    async def get_tool_help(tool_name: str, include_examples: bool = True) -> dict[str, Any]:
         """Get detailed help and usage information for a specific tool.
 
         Provides comprehensive information about a specific tool including:
@@ -337,12 +335,8 @@ def register_tools(app: FastMCP) -> None:
 
         return help_info
 
-    @app.tool(
-        name="search_tools", description="Search for tools by name, description, or functionality"
-    )
-    async def search_tools(
-        query: str, category: Optional[str] = None, limit: int = 10
-    ) -> Dict[str, Any]:
+    @app.tool(name="search_tools", description="Search for tools by name, description, or functionality")
+    async def search_tools(query: str, category: str | None = None, limit: int = 10) -> dict[str, Any]:
         """Search for tools by name, description, or functionality.
 
         Intelligent search across all tools using fuzzy matching on:
@@ -414,7 +408,7 @@ def register_tools(app: FastMCP) -> None:
         }
 
 
-def generate_advanced_example(tool: Dict[str, Any]) -> str:
+def generate_advanced_example(tool: dict[str, Any]) -> str:
     """Generate advanced usage examples for a tool."""
     examples = {
         "get_camera_status": "get_camera_status()  # Get all cameras with detailed status",
@@ -425,7 +419,7 @@ def generate_advanced_example(tool: Dict[str, Any]) -> str:
     return examples.get(tool["name"], f"{tool['name']}()  # Advanced usage with error handling")
 
 
-def generate_error_handling_example(tool: Dict[str, Any]) -> str:
+def generate_error_handling_example(tool: dict[str, Any]) -> str:
     """Generate error handling examples for a tool."""
     return f"""try:
     result = await {tool["name"]}()
@@ -437,7 +431,7 @@ except Exception as e:
     # Tools are designed to handle errors gracefully"""
 
 
-def generate_usage_tips(tool: Dict[str, Any]) -> List[str]:
+def generate_usage_tips(tool: dict[str, Any]) -> list[str]:
     """Generate usage tips for a tool."""
     tips = []
 
@@ -479,7 +473,7 @@ def generate_usage_tips(tool: Dict[str, Any]) -> List[str]:
     return tips
 
 
-def find_related_tools(tool: Dict[str, Any], all_tools: List[Dict[str, Any]]) -> List[str]:
+def find_related_tools(tool: dict[str, Any], all_tools: list[dict[str, Any]]) -> list[str]:
     """Find tools related to the current tool."""
     related = []
     current_category = tool["category"]

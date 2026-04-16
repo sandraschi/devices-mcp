@@ -9,9 +9,10 @@ import asyncio
 import logging
 import time
 from collections import deque
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import Any, AsyncIterator, Callable, Deque, Dict, Optional, Type, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from ..core.exceptions import RateLimitError
 
@@ -40,7 +41,7 @@ class RateLimitState:
     """Tracks the state of a rate limit."""
 
     limit: RateLimit
-    timestamps: Deque[float] = field(default_factory=deque)
+    timestamps: deque[float] = field(default_factory=deque)
 
     def is_exceeded(self) -> bool:
         """Check if the rate limit has been exceeded."""
@@ -72,7 +73,7 @@ class RateLimiter:
 
     def __init__(self) -> None:
         """Initialize the rate limiter."""
-        self.limits: Dict[str, RateLimitState] = {}
+        self.limits: dict[str, RateLimitState] = {}
         self.lock = asyncio.Lock()
 
     def add_limit(self, name: str, limit: RateLimit) -> None:
@@ -84,7 +85,7 @@ class RateLimiter:
         """
         self.limits[name] = RateLimitState(limit)
 
-    async def acquire(self, name: str, timeout: Optional[float] = None) -> None:
+    async def acquire(self, name: str, timeout: float | None = None) -> None:
         """Acquire a permit for a rate-limited operation.
 
         Args:
@@ -112,9 +113,7 @@ class RateLimiter:
 
                 # If we have a timeout and we'd exceed it, raise an error
                 if timeout is not None and (time.monotonic() + wait_time - start_time) > timeout:
-                    raise RateLimitError(
-                        f"Rate limit '{name}' exceeded. Try again in {wait_time:.1f} seconds"
-                    )
+                    raise RateLimitError(f"Rate limit '{name}' exceeded. Try again in {wait_time:.1f} seconds")
 
                 # If we don't need to wait, record the request and return
                 if wait_time <= 0:
@@ -131,7 +130,7 @@ class RateLimiter:
                     raise RateLimitError("Rate limit timeout exceeded")
 
     @asynccontextmanager
-    async def limit(self, name: str, timeout: Optional[float] = None) -> AsyncIterator[None]:
+    async def limit(self, name: str, timeout: float | None = None) -> AsyncIterator[None]:
         """Context manager for rate-limited operations.
 
         Args:
@@ -152,7 +151,7 @@ class RateLimiter:
 
 
 def retry_with_backoff(
-    *exception_types: Type[Exception],
+    *exception_types: type[Exception],
     max_attempts: int = 3,
     initial_delay: float = 1.0,
     max_delay: float = 30.0,
@@ -177,7 +176,7 @@ def retry_with_backoff(
 
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         async def async_wrapper(*args: Any) -> T:
-            last_exception: Optional[Exception] = None
+            last_exception: Exception | None = None
 
             for attempt in range(1, max_attempts + 1):
                 try:
@@ -215,7 +214,7 @@ def retry_with_backoff(
             raise RuntimeError("Retry failed but no exception was caught")
 
         def sync_wrapper(*args: Any) -> T:
-            last_exception: Optional[Exception] = None
+            last_exception: Exception | None = None
 
             for attempt in range(1, max_attempts + 1):
                 try:
@@ -259,7 +258,7 @@ def retry_with_backoff(
 
 
 def with_retry(
-    *exception_types: Type[Exception],
+    *exception_types: type[Exception],
     max_attempts: int = 3,
     initial_delay: float = 1.0,
     max_delay: float = 30.0,
@@ -286,7 +285,7 @@ def get_rate_limiter() -> RateLimiter:
     return global_rate_limiter
 
 
-def set_rate_limits(limits: Dict[str, RateLimit]) -> None:
+def set_rate_limits(limits: dict[str, RateLimit]) -> None:
     """Set rate limits for the global rate limiter.
 
     Args:

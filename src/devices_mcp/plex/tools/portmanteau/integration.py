@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -42,15 +42,15 @@ async def plex_integration(
         "configure",
         "sync",
     ],
-    content_type: Optional[str] = None,
+    content_type: str | None = None,
     limit: int = 10,
     include_european: bool = True,
-    country: Optional[str] = None,
-    year: Optional[int] = None,
-    season: Optional[Literal["winter", "spring", "summer", "fall"]] = None,
-    integration_name: Optional[str] = None,
-    config: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    country: str | None = None,
+    year: int | None = None,
+    season: Literal["winter", "spring", "summer", "fall"] | None = None,
+    integration_name: str | None = None,
+    config: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Comprehensive third-party integration operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -231,9 +231,7 @@ async def plex_integration(
         if operation == "european_content":
             from ...api.vienna import EuropeanContentRequest
 
-            request = EuropeanContentRequest(
-                country=country, content_type=content_type, limit=limit
-            )
+            request = EuropeanContentRequest(country=country, content_type=content_type, limit=limit)
             result = await get_european_content(request)
             return {
                 "success": True,

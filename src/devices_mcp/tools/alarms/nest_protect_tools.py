@@ -7,7 +7,7 @@ enabling real-time monitoring and alert correlation with camera systems.
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -48,11 +48,11 @@ class NestProtectManager:
     """Manager for Nest Protect devices and integration."""
 
     def __init__(self):
-        self.devices: Dict[str, NestProtectDevice] = {}
-        self.alerts: List[NestProtectAlert] = []
+        self.devices: dict[str, NestProtectDevice] = {}
+        self.alerts: list[NestProtectAlert] = []
         self._initialized = False
 
-    async def initialize(self, _google_account: Dict[str, str]) -> bool:
+    async def initialize(self, _google_account: dict[str, str]) -> bool:
         """Initialize connection to Nest Protect API."""
         try:
             # In real implementation, this would connect to Google Nest API
@@ -105,26 +105,24 @@ class NestProtectManager:
             logger.warning(f"Failed to load real Nest Protect devices: {e}")
 
         # No real devices found - return empty
-        logger.warning(
-            "No Nest Protect devices found. Configure Nest Protect integration in config.yaml"
-        )
+        logger.warning("No Nest Protect devices found. Configure Nest Protect integration in config.yaml")
         self.devices.clear()
 
-    async def get_all_devices(self) -> List[NestProtectDevice]:
+    async def get_all_devices(self) -> list[NestProtectDevice]:
         """Get all Nest Protect devices."""
         if not self._initialized:
             await self.initialize({})
 
         return list(self.devices.values())
 
-    async def get_device_status(self, device_id: str) -> Optional[NestProtectDevice]:
+    async def get_device_status(self, device_id: str) -> NestProtectDevice | None:
         """Get status of a specific Nest Protect device."""
         if not self._initialized:
             await self.initialize({})
 
         return self.devices.get(device_id)
 
-    async def get_recent_alerts(self, _hours: int = 24) -> List[NestProtectAlert]:
+    async def get_recent_alerts(self, _hours: int = 24) -> list[NestProtectAlert]:
         """Get recent alerts from Nest Protect devices."""
         if not self._initialized:
             await self.initialize({})
@@ -198,12 +196,10 @@ class GetNestProtectStatusTool(BaseTool):
 
     class Meta:
         name = "get_nest_protect_status"
-        description = (
-            "Get status and health information for all Nest Protect smoke and CO detectors"
-        )
+        description = "Get status and health information for all Nest Protect smoke and CO detectors"
         category = ToolCategory.SECURITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the tool to get Nest Protect device status."""
         try:
             devices = await nest_manager.get_all_devices()
@@ -216,9 +212,7 @@ class GetNestProtectStatusTool(BaseTool):
                 "warning_devices": len([d for d in devices if d.status == "warning"]),
                 "offline_devices": len([d for d in devices if d.status == "offline"]),
                 "summary": {
-                    "all_clear": all(
-                        d.smoke_status == "clear" and d.co_status == "clear" for d in devices
-                    ),
+                    "all_clear": all(d.smoke_status == "clear" and d.co_status == "clear" for d in devices),
                     "low_battery_devices": [d.name for d in devices if d.battery_level < 20],
                     "last_test_times": {d.name: d.last_test for d in devices},
                 },
@@ -251,7 +245,7 @@ class GetNestProtectAlertsTool(BaseTool):
         class Parameters:
             hours: int = Field(default=24, description="Number of hours to look back for alerts")
 
-    async def execute(self, hours: int = 24) -> Dict[str, Any]:
+    async def execute(self, hours: int = 24) -> dict[str, Any]:
         """
         Execute the tool to get Nest Protect alerts.
 
@@ -310,7 +304,7 @@ class TestNestProtectDeviceTool(BaseTool):
         class Parameters:
             device_id: str = Field(..., description="ID of the Nest Protect device to test")
 
-    async def execute(self, device_id: str) -> Dict[str, Any]:
+    async def execute(self, device_id: str) -> dict[str, Any]:
         """
         Execute the tool to test a Nest Protect device.
 
@@ -355,7 +349,7 @@ class GetNestProtectBatteryStatusTool(BaseTool):
         description = "Get battery levels and status for all Nest Protect devices"
         category = ToolCategory.SECURITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the tool to get battery status."""
         try:
             devices = await nest_manager.get_all_devices()
@@ -372,9 +366,7 @@ class GetNestProtectBatteryStatusTool(BaseTool):
                     "low_battery_count": len(low_battery),
                     "medium_battery_count": len(medium_battery),
                     "good_battery_count": len(good_battery),
-                    "average_battery_level": sum(d.battery_level for d in devices) / len(devices)
-                    if devices
-                    else 0,
+                    "average_battery_level": sum(d.battery_level for d in devices) / len(devices) if devices else 0,
                 },
                 "low_battery_devices": [
                     {
@@ -423,16 +415,10 @@ class CorrelateNestCameraEventsTool(BaseTool):
         category = ToolCategory.SECURITY
 
         class Parameters:
-            alert_id: Optional[str] = Field(
-                None, description="Specific alert ID to correlate (optional)"
-            )
-            time_window_minutes: int = Field(
-                default=10, description="Time window to search for related events"
-            )
+            alert_id: str | None = Field(None, description="Specific alert ID to correlate (optional)")
+            time_window_minutes: int = Field(default=10, description="Time window to search for related events")
 
-    async def execute(
-        self, alert_id: Optional[str] = None, time_window_minutes: int = 10
-    ) -> Dict[str, Any]:
+    async def execute(self, alert_id: str | None = None, time_window_minutes: int = 10) -> dict[str, Any]:
         """
         Execute the tool to correlate Nest Protect events with camera events.
 

@@ -3,7 +3,8 @@
 This module contains all the tools available in the Nest Protect MCP server.
 """
 
-from typing import Any, Callable, Dict, List, Type
+from collections.abc import Callable
+from typing import Any, Dict, List, Type
 
 from fastmcp.tools import Tool
 
@@ -19,7 +20,7 @@ from . import (
 
 
 # Collect all tool functions from modules
-def get_all_tools() -> Dict[str, Callable]:
+def get_all_tools() -> dict[str, Callable]:
     """Get all tools from all modules."""
     tools = {}
 

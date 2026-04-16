@@ -8,7 +8,7 @@ initialized and tested at startup with connection verification.
 import asyncio
 import logging
 import os
-from typing import Dict, Optional, Tuple
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,10 @@ class HardwareInitializer:
 
     def __init__(self, camera_manager=None):
         self.camera_manager = camera_manager
-        self.initialization_results: Dict[str, Dict] = {}
+        self.initialization_results: dict[str, dict] = {}
         self._initialized = False
 
-    async def initialize_all(self) -> Dict[str, Dict]:
+    async def initialize_all(self) -> dict[str, dict]:
         """
         Initialize all hardware components and test connections.
 
@@ -62,15 +62,11 @@ class HardwareInitializer:
         config = get_config()
         logger.info(f"Config loaded: {len(config)} top-level keys")
         logger.info(f"Cameras configured: {len(config.get('cameras', {}))}")
-        logger.info(
-            f"Hue configured: {bool(config.get('lighting', {}).get('philips_hue', {}).get('bridge_ip'))}"
-        )
+        logger.info(f"Hue configured: {bool(config.get('lighting', {}).get('philips_hue', {}).get('bridge_ip'))}")
         logger.info(
             f"Tapo lighting configured: {len(config.get('lighting', {}).get('tapo_lighting', {}).get('devices', []))}"
         )
-        logger.info(
-            f"Tapo plugs configured: {len(config.get('energy', {}).get('tapo_p115', {}).get('devices', []))}"
-        )
+        logger.info(f"Tapo plugs configured: {len(config.get('energy', {}).get('tapo_p115', {}).get('devices', []))}")
         logger.info(
             f"Netatmo enabled: {config.get('weather', {}).get('integrations', {}).get('netatmo', {}).get('enabled', False)}"
         )
@@ -119,33 +115,29 @@ class HardwareInitializer:
         total = len(self.initialization_results)
 
         logger.info("=" * 60)
-        logger.info(
-            f"HARDWARE INITIALIZATION COMPLETE: {successful}/{total} components initialized"
-        )
+        logger.info(f"HARDWARE INITIALIZATION COMPLETE: {successful}/{total} components initialized")
         logger.info("=" * 60)
 
         for component, result in self.initialization_results.items():
             status = "[OK]" if result.get("success") else "[FAIL]"
-            logger.info(
-                f"  {status} {component}: {result.get('message', result.get('error', 'Unknown'))}"
-            )
+            logger.info(f"  {status} {component}: {result.get('message', result.get('error', 'Unknown'))}")
 
         self._initialized = True
         return self.initialization_results
 
-    async def _init_cameras(self) -> Dict:
+    async def _init_cameras(self) -> dict:
         """Initialize and test all cameras."""
         try:
             # Wrap entire camera init in timeout to ensure it doesn't block server startup
             return await asyncio.wait_for(self._init_cameras_internal(), timeout=15.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.exception("[CAMERA] Initialization timed out after 15s")
             return {"success": False, "error": "Initialization timed out"}
         except Exception as e:
             logger.exception("[CAMERA] Unexpected error during initialization")
             return {"success": False, "error": str(e)}
 
-    async def _init_cameras_internal(self) -> Dict:
+    async def _init_cameras_internal(self) -> dict:
         """Internal camera initialization logic."""
         try:
             from ..config import get_config
@@ -193,18 +185,12 @@ class HardwareInitializer:
                 cam_name = cam.get("name")
                 status = cam.get("status", {})
                 connected = status.get("connected", False) if isinstance(status, dict) else False
-                in_use = (
-                    status.get("in_use_by_another_app", False)
-                    if isinstance(status, dict)
-                    else False
-                )
+                in_use = status.get("in_use_by_another_app", False) if isinstance(status, dict) else False
 
                 if in_use:
                     in_use_cameras.append(cam_name)
                     in_use_msg = (
-                        status.get("in_use_error")
-                        or status.get("warning")
-                        or "Camera in use by another application"
+                        status.get("in_use_error") or status.get("warning") or "Camera in use by another application"
                     )
                     logger.warning(f"  [WARN] Camera '{cam_name}': {in_use_msg}")
                 elif connected:
@@ -223,9 +209,7 @@ class HardwareInitializer:
                     message_parts.append(f"{len(in_use_cameras)} in use by other apps")
                 if failed_cameras:
                     message_parts.append(f"{len(failed_cameras)} failed")
-                message = (
-                    f"{connected_count}/{len(cameras)} cameras ready ({', '.join(message_parts)})"
-                )
+                message = f"{connected_count}/{len(cameras)} cameras ready ({', '.join(message_parts)})"
             elif connected_count == len(cameras):
                 message = f"All {connected_count} cameras connected"
             else:
@@ -244,7 +228,7 @@ class HardwareInitializer:
             logger.exception("Failed to initialize cameras")
             return {"success": False, "error": str(e)}
 
-    async def _init_hue_bridge(self) -> Dict:
+    async def _init_hue_bridge(self) -> dict:
         """Initialize and test Hue Bridge connection."""
         try:
             from ..config import get_config
@@ -283,9 +267,7 @@ class HardwareInitializer:
             groups = hue_manager.groups
             scenes = hue_manager.scenes
 
-            logger.info(
-                f"  [OK] Hue Bridge: {len(lights)} lights, {len(groups)} groups, {len(scenes)} scenes"
-            )
+            logger.info(f"  [OK] Hue Bridge: {len(lights)} lights, {len(groups)} groups, {len(scenes)} scenes")
 
             return {
                 "success": True,
@@ -300,7 +282,7 @@ class HardwareInitializer:
             logger.exception("Failed to initialize Hue Bridge")
             return {"success": False, "error": str(e)}
 
-    async def _init_tapo_lighting(self) -> Dict:
+    async def _init_tapo_lighting(self) -> dict:
         """Initialize and test Tapo lighting devices."""
         try:
             from ..config import get_config
@@ -343,7 +325,7 @@ class HardwareInitializer:
             logger.exception("Failed to initialize Tapo lighting")
             return {"success": False, "error": str(e)}
 
-    async def _init_tapo_plugs(self) -> Dict:
+    async def _init_tapo_plugs(self) -> dict:
         """Initialize and test Tapo P115 smart plugs."""
         try:
             from ..config import get_config
@@ -416,9 +398,7 @@ class HardwareInitializer:
                     energy = await device.get_energy_usage()
 
                     connected_count += 1
-                    power = (
-                        energy.current_power if energy and hasattr(energy, "current_power") else 0
-                    )
+                    power = energy.current_power if energy and hasattr(energy, "current_power") else 0
                     logger.info(f"  [OK] Plug '{name}' ({host}): Connected - {power}W")
                 except Exception as e:
                     failed_plugs.append(name)
@@ -442,7 +422,7 @@ class HardwareInitializer:
             logger.exception("Failed to initialize Tapo plugs")
             return {"success": False, "error": str(e)}
 
-    async def _init_netatmo(self) -> Dict:
+    async def _init_netatmo(self) -> dict:
         """Initialize and test Netatmo weather station."""
         try:
             from ..config import get_config
@@ -486,7 +466,7 @@ class HardwareInitializer:
                     "stations_count": station_count,
                     "modules_count": module_count,
                 }
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 error_msg = "Connection timeout - network/DNS issue"
                 logger.warning(f"  [TIMEOUT] Netatmo initialization: {error_msg}")
                 return {"success": False, "error": error_msg}
@@ -502,7 +482,7 @@ class HardwareInitializer:
             logger.exception("Failed to initialize Netatmo")
             return {"success": False, "error": str(e)}
 
-    async def _init_ring(self) -> Dict:
+    async def _init_ring(self) -> dict:
         """Initialize and test Ring doorbell."""
         try:
             from ..config import get_config
@@ -580,7 +560,7 @@ class HardwareInitializer:
                     "message": f"Connected - {device_count} cameras",
                     "devices_count": device_count,
                 }
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 error_msg = "Connection timeout - network/DNS issue"
                 logger.warning(f"  [TIMEOUT] Ring: {error_msg}")
                 return {"success": False, "error": error_msg}
@@ -592,7 +572,7 @@ class HardwareInitializer:
             logger.exception("Failed to initialize Ring")
             return {"success": False, "error": str(e)}
 
-    async def _init_home_assistant(self) -> Dict:
+    async def _init_home_assistant(self) -> dict:
         """Initialize and test Home Assistant connection (for Nest Protect)."""
         try:
             from ..config import get_config
@@ -626,9 +606,7 @@ class HardwareInitializer:
                 devices = await client.get_nest_protect_devices()
                 device_count = len(devices) if devices else 0
 
-                logger.info(
-                    f"  [OK] Home Assistant: Connected - {device_count} Nest Protect device(s)"
-                )
+                logger.info(f"  [OK] Home Assistant: Connected - {device_count} Nest Protect device(s)")
 
                 return {
                     "success": True,
@@ -637,9 +615,7 @@ class HardwareInitializer:
                     "url": url,
                 }
             except Exception as e:
-                logger.warning(
-                    f"  [WARN] Home Assistant: Connected but no Nest devices found: {e!s}"
-                )
+                logger.warning(f"  [WARN] Home Assistant: Connected but no Nest devices found: {e!s}")
                 return {
                     "success": True,  # Connection works, just no devices
                     "message": "Connected but no Nest Protect devices found",
@@ -709,7 +685,7 @@ class HardwareInitializer:
 
         logger.info(f"  [NETWORK] Testing connectivity to {len(test_ips)} device(s)...")
 
-        async def test_ip(device_type: str, name: str, ip: str) -> Tuple[str, str, bool, str]:
+        async def test_ip(device_type: str, name: str, ip: str) -> tuple[str, str, bool, str]:
             """Test if we can reach an IP address."""
             try:
                 # Try to resolve the IP (if it's a hostname)
@@ -743,9 +719,7 @@ class HardwareInitializer:
                 return (device_type, name, False, str(e))
 
         # Test all IPs in parallel
-        results = await asyncio.gather(
-            *[test_ip(dt, n, ip) for dt, n, ip in test_ips], return_exceptions=True
-        )
+        results = await asyncio.gather(*[test_ip(dt, n, ip) for dt, n, ip in test_ips], return_exceptions=True)
 
         # Log results
         reachable_count = 0
@@ -768,9 +742,7 @@ class HardwareInitializer:
                 f"  [NETWORK] {reachable_count}/{len(test_ips)} device(s) reachable - check network configuration"
             )
         else:
-            logger.error(
-                "  [NETWORK] No devices reachable - Docker network may not have access to host network"
-            )
+            logger.error("  [NETWORK] No devices reachable - Docker network may not have access to host network")
             logger.error(
                 "  [NETWORK] Check: docker-compose.yml network configuration, Windows Firewall, router settings"
             )
@@ -780,7 +752,7 @@ class HardwareInitializer:
 _init_lock = asyncio.Lock()
 
 
-async def initialize_all_hardware(camera_manager) -> Dict[str, Dict]:
+async def initialize_all_hardware(camera_manager) -> dict[str, dict]:
     """Initialize all hardware components at startup."""
     global _hardware_initializer
 
@@ -794,7 +766,7 @@ async def initialize_all_hardware(camera_manager) -> Dict[str, Dict]:
         return await _hardware_initializer.initialize_all()
 
 
-def get_initialization_results() -> Dict[str, Dict]:
+def get_initialization_results() -> dict[str, dict]:
     """Get hardware initialization results."""
     if _hardware_initializer:
         return _hardware_initializer.initialization_results

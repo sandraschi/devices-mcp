@@ -6,7 +6,7 @@ Supports volume control, audio stream selection, and media handover between clie
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -43,12 +43,12 @@ async def plex_audio_mgr(
         "select_stream",
         "handover",
     ],
-    client_id: Optional[str] = None,
-    target_client_id: Optional[str] = None,
-    media_key: Optional[str] = None,
-    volume: Optional[int] = None,
-    stream_id: Optional[str] = None,
-) -> Dict[str, Any]:
+    client_id: str | None = None,
+    target_client_id: str | None = None,
+    media_key: str | None = None,
+    volume: int | None = None,
+    stream_id: str | None = None,
+) -> dict[str, Any]:
     """Comprehensive audio management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -103,9 +103,7 @@ async def plex_audio_mgr(
                     "error_code": "MISSING_VOLUME",
                 }
 
-            result = await plex.control_playback(
-                client_identifier=client_id, action="set_volume", volume=target_volume
-            )
+            result = await plex.control_playback(client_identifier=client_id, action="set_volume", volume=target_volume)
             return {
                 "success": result,
                 "operation": operation,

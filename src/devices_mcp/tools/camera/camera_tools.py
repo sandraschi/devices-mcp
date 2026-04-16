@@ -6,7 +6,7 @@ This module contains tools for managing and controlling Tapo cameras.
 
 import logging
 from enum import Enum
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import ConfigDict, Field
 
@@ -65,7 +65,7 @@ class ListCamerasTool(BaseTool):
             pass
 
     # Config is no longer needed as we use Meta class for metadata
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """List all configured cameras with their current status and information.
 
         Retrieves a comprehensive list of all cameras registered in the system,
@@ -148,8 +148,7 @@ class ListCamerasTool(BaseTool):
                                 "name": camera_name,
                                 "type": (
                                     camera.config.type.value
-                                    if hasattr(camera.config, "type")
-                                    and hasattr(camera.config.type, "value")
+                                    if hasattr(camera.config, "type") and hasattr(camera.config.type, "value")
                                     else str(camera.config.type)
                                     if hasattr(camera.config, "type")
                                     else "unknown"
@@ -254,15 +253,15 @@ class AddCameraTool(BaseTool):
             ip_address: str = Field(..., description="IP address of the camera")
             username: str = Field(..., description="Username for camera authentication")
             password: str = Field(..., description="Password for camera authentication")
-            stream_url: Optional[str] = Field(None, description="Optional custom RTSP stream URL")
+            stream_url: str | None = Field(None, description="Optional custom RTSP stream URL")
 
     camera_name: str
     ip_address: str
     username: str
     password: str
-    stream_url: Optional[str] = None
+    stream_url: str | None = None
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Add a new camera to the system with full configuration support.
 
         Registers and connects to a new camera device using the provided configuration
@@ -483,7 +482,7 @@ class RemoveCameraTool(BaseTool):
 
     camera_id: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Remove a camera from the system."""
         from devices_mcp.core.server import (  # Lazy import to avoid circular imports
             TapoCameraServer,
@@ -521,7 +520,7 @@ class SetActiveCameraTool(BaseTool):
 
     name: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Set the active camera for operations."""
         from devices_mcp.core.server import (  # Lazy import to avoid circular imports
             TapoCameraServer,
@@ -566,7 +565,7 @@ class GetCameraStatusTool(BaseTool):
                 description="ID of the camera to get status for. If not provided, returns status of active camera.",
             )
 
-    camera_id: Optional[str] = None
+    camera_id: str | None = None
 
     async def execute(self) -> ToolResult:
         """Get the status of a specific camera."""
@@ -678,9 +677,7 @@ class ConnectCameraTool(BaseTool):
             host: str = Field(..., description="IP address or hostname of the camera")
             username: str = Field(..., description="Username for camera authentication")
             password: str = Field(..., description="Password for camera authentication")
-            verify_ssl: bool = Field(
-                True, description="Whether to verify SSL certificates (default: True)"
-            )
+            verify_ssl: bool = Field(True, description="Whether to verify SSL certificates (default: True)")
 
     host: str
     username: str
@@ -865,7 +862,7 @@ class GetCameraInfoTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self, **_kwargs) -> Dict[str, Any]:
+    async def execute(self, **_kwargs) -> dict[str, Any]:
         """Get detailed information about the connected camera.
 
         Args:
@@ -916,19 +913,15 @@ class ManageCameraGroupsTool(BaseTool):
         category = ToolCategory.CAMERA
 
         class Parameters:
-            action: Literal["list", "add", "remove", "list_group"] = Field(
-                ..., description="Action to perform"
-            )
-            group: Optional[str] = Field(
-                None, description="Group name (required for add/remove/list_group)"
-            )
-            camera: Optional[str] = Field(None, description="Camera name (required for add/remove)")
+            action: Literal["list", "add", "remove", "list_group"] = Field(..., description="Action to perform")
+            group: str | None = Field(None, description="Group name (required for add/remove/list_group)")
+            camera: str | None = Field(None, description="Camera name (required for add/remove)")
 
     action: str
-    group: Optional[str] = None
-    camera: Optional[str] = None
+    group: str | None = None
+    camera: str | None = None
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Manage camera groups."""
         from devices_mcp.core.server import (  # Lazy import to avoid circular imports
             TapoCameraServer,

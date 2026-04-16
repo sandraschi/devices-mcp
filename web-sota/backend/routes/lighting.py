@@ -5,7 +5,7 @@ import logging
 # Add src to Python path for MCP imports
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -25,7 +25,7 @@ class HuePairBody(BaseModel):
 
 
 @router.get("/api/lighting/hue/status")
-async def get_philips_hue_status() -> Dict[str, Any]:
+async def get_philips_hue_status() -> dict[str, Any]:
     """Hue Bridge v2 setup status for the Lighting page (LAN + link button pairing)."""
     try:
         from devices_mcp.config import get_config
@@ -79,11 +79,7 @@ async def get_philips_hue_status() -> Dict[str, Any]:
             "lights_count": len(mgr.lights) if connected else 0,
             "clip_v2_available": getattr(mgr, "_clip_v2_available", False),
             "clip_v2_error": getattr(mgr, "_clip_v2_error", None),
-            "message": (
-                "Hue is connected."
-                if connected
-                else (err or "Configure the bridge or pair below.")
-            ),
+            "message": ("Hue is connected." if connected else (err or "Configure the bridge or pair below.")),
             "last_error": err if not connected else None,
         }
     except Exception as e:
@@ -92,7 +88,7 @@ async def get_philips_hue_status() -> Dict[str, Any]:
 
 
 @router.get("/api/lighting/hue/discover")
-async def discover_philips_hue_bridges() -> Dict[str, Any]:
+async def discover_philips_hue_bridges() -> dict[str, Any]:
     """Discover Hue bridges via Philips cloud (same LAN usually required for control)."""
     try:
         from devices_mcp.tools.lighting.hue_tools import discover_hue_bridges_cloud
@@ -112,7 +108,7 @@ async def discover_philips_hue_bridges() -> Dict[str, Any]:
 
 
 @router.post("/api/lighting/hue/bridge")
-async def set_philips_hue_bridge_ip(body: HueBridgeIpBody) -> Dict[str, Any]:
+async def set_philips_hue_bridge_ip(body: HueBridgeIpBody) -> dict[str, Any]:
     """Remember bridge IP in hue_bridge.cache (no link button yet)."""
     try:
         from devices_mcp.tools.lighting.hue_tools import (
@@ -132,7 +128,7 @@ async def set_philips_hue_bridge_ip(body: HueBridgeIpBody) -> Dict[str, Any]:
 
 
 @router.post("/api/lighting/hue/pair")
-async def hue_pair_route(body: HuePairBody) -> Dict[str, Any]:
+async def hue_pair_route(body: HuePairBody) -> dict[str, Any]:
     """Pair with the bridge (press link button first). Saves API username to hue_bridge.cache."""
     try:
         from devices_mcp.tools.lighting.hue_tools import pair_philips_hue_bridge as run_hue_pair
@@ -143,7 +139,7 @@ async def hue_pair_route(body: HuePairBody) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
-async def _hue_motionaware_status_body() -> Dict[str, Any]:
+async def _hue_motionaware_status_body() -> dict[str, Any]:
     from devices_mcp.tools.lighting.hue_tools import get_hue_manager
 
     mgr = get_hue_manager()
@@ -155,7 +151,7 @@ async def _hue_motionaware_status_body() -> Dict[str, Any]:
 
 @router.get("/api/lighting/hue/motionaware/status")
 @router.get("/api/lighting/hue/homeaware/status")
-async def hue_motionaware_status() -> Dict[str, Any]:
+async def hue_motionaware_status() -> dict[str, Any]:
     """MotionAware motion areas — Signify Hue API v2 (CLIP)."""
     try:
         return await _hue_motionaware_status_body()
@@ -166,7 +162,7 @@ async def hue_motionaware_status() -> Dict[str, Any]:
 
 @router.get("/api/lighting/hue/motionaware/motion")
 @router.get("/api/lighting/hue/homeaware/motion")
-async def hue_motionaware_motion_poll() -> Dict[str, Any]:
+async def hue_motionaware_motion_poll() -> dict[str, Any]:
     """Poll MotionAware areas for new motion edges (same logic as MCP monitor)."""
     try:
         from devices_mcp.tools.lighting.hue_tools import get_hue_manager
@@ -182,7 +178,7 @@ async def hue_motionaware_motion_poll() -> Dict[str, Any]:
 
 
 @router.post("/api/lighting/hue/reconnect")
-async def reconnect_philips_hue() -> Dict[str, Any]:
+async def reconnect_philips_hue() -> dict[str, Any]:
     """Re-run Hue manager initialize after config/cache changes."""
     try:
         from devices_mcp.tools.lighting.hue_tools import get_hue_manager, reset_hue_manager
@@ -208,7 +204,7 @@ async def reconnect_philips_hue() -> Dict[str, Any]:
 
 
 @router.get("/api/lighting/status")
-async def get_lighting_status() -> Dict[str, Any]:
+async def get_lighting_status() -> dict[str, Any]:
     """Get all lighting devices status using MCP lighting tools."""
     try:
         # Import MCP lighting tools
@@ -237,9 +233,7 @@ async def get_lighting_status() -> Dict[str, Any]:
 
 
 @router.post("/api/lighting/control")
-async def control_lighting_device(
-    device_id: str, action: str, params: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+async def control_lighting_device(device_id: str, action: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
     """Control lighting device using MCP lighting tools."""
     try:
         # Import MCP lighting tools
@@ -248,20 +242,14 @@ async def control_lighting_device(
         # Validate action
         valid_actions = ["on", "off", "toggle", "brightness", "color", "scene"]
         if action not in valid_actions:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid action. Must be one of: {valid_actions}"
-            )
+            raise HTTPException(status_code=400, detail=f"Invalid action. Must be one of: {valid_actions}")
 
         # Execute the MCP tool to control device
         tool = LightingManagementTool()
-        result = await tool.execute(
-            operation="control", device_id=device_id, action=action, **(params or {})
-        )
+        result = await tool.execute(operation="control", device_id=device_id, action=action, **(params or {}))
 
         if not result.get("success", False):
-            raise HTTPException(
-                status_code=400, detail=result.get("error", "Control operation failed")
-            )
+            raise HTTPException(status_code=400, detail=result.get("error", "Control operation failed"))
 
         return {
             "success": True,
@@ -277,7 +265,7 @@ async def control_lighting_device(
 
 
 @router.get("/api/lighting/scenes")
-async def get_lighting_scenes() -> Dict[str, Any]:
+async def get_lighting_scenes() -> dict[str, Any]:
     """Get available lighting scenes using MCP lighting tools."""
     try:
         # Import MCP lighting tools
@@ -299,7 +287,7 @@ async def get_lighting_scenes() -> Dict[str, Any]:
 
 
 @router.post("/api/lighting/scene")
-async def activate_lighting_scene(scene_name: str) -> Dict[str, Any]:
+async def activate_lighting_scene(scene_name: str) -> dict[str, Any]:
     """Activate a lighting scene using MCP lighting tools."""
     try:
         # Import MCP lighting tools
@@ -310,9 +298,7 @@ async def activate_lighting_scene(scene_name: str) -> Dict[str, Any]:
         result = await tool.execute(operation="activate_scene", scene_name=scene_name)
 
         if not result.get("success", False):
-            raise HTTPException(
-                status_code=400, detail=result.get("error", "Scene activation failed")
-            )
+            raise HTTPException(status_code=400, detail=result.get("error", "Scene activation failed"))
 
         return {"success": True, "scene_name": scene_name, "result": result}
 
@@ -322,7 +308,7 @@ async def activate_lighting_scene(scene_name: str) -> Dict[str, Any]:
 
 
 @router.get("/api/lighting/device/{device_id}")
-async def get_lighting_device_details(device_id: str) -> Dict[str, Any]:
+async def get_lighting_device_details(device_id: str) -> dict[str, Any]:
     """Get detailed information about a specific lighting device."""
     try:
         # Import MCP lighting tools
@@ -345,7 +331,7 @@ async def get_lighting_device_details(device_id: str) -> Dict[str, Any]:
 
 
 @router.get("/api/lighting/groups")
-async def get_lighting_groups() -> Dict[str, Any]:
+async def get_lighting_groups() -> dict[str, Any]:
     """Get lighting groups using MCP lighting tools."""
     try:
         # Import MCP lighting tools

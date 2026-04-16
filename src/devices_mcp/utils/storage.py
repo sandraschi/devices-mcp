@@ -6,9 +6,9 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def _default_events_storage_dir() -> Path:
     return p
 
 
-def _parse_event_ts(raw: str) -> Optional[datetime]:
+def _parse_event_ts(raw: str) -> datetime | None:
     """Parse event timestamp for filtering (handles trailing Z)."""
     if not raw:
         return None
@@ -45,7 +45,7 @@ def _parse_event_ts(raw: str) -> Optional[datetime]:
 class EventStore:
     """Append-only JSONL event log (camera, security, automation, etc.)."""
 
-    def __init__(self, storage_dir: Optional[Path] = None):
+    def __init__(self, storage_dir: Path | None = None):
         """Initialize event store."""
         self.storage_dir = Path(storage_dir) if storage_dir else _default_events_storage_dir()
         self.storage_dir.mkdir(parents=True, exist_ok=True)
@@ -54,13 +54,13 @@ class EventStore:
     def add_event(
         self,
         event_type: str,
-        camera_id: Optional[str] = None,
+        camera_id: str | None = None,
         message: str = "",
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
         source: str = "api",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Add an event to storage. Raises OSError if the file cannot be written."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         event = {
             "id": str(uuid.uuid4()),
             "timestamp": now.isoformat(),
@@ -77,7 +77,7 @@ class EventStore:
 
         return event
 
-    def get_event_by_id(self, event_id: str) -> Optional[Dict[str, Any]]:
+    def get_event_by_id(self, event_id: str) -> dict[str, Any] | None:
         """Return a single event by id, or None."""
         if not self.events_file.exists():
             return None
@@ -100,7 +100,7 @@ class EventStore:
         """Remove one event by id (rewrite file). Returns True if removed."""
         if not self.events_file.exists():
             return False
-        kept: List[Dict[str, Any]] = []
+        kept: list[dict[str, Any]] = []
         removed = False
         try:
             with open(self.events_file, encoding="utf-8") as f:
@@ -129,14 +129,14 @@ class EventStore:
         self,
         limit: int = 100,
         offset: int = 0,
-        event_type: Optional[str] = None,
-        camera_id: Optional[str] = None,
-        since: Optional[datetime] = None,
-        until: Optional[datetime] = None,
-        source: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        event_type: str | None = None,
+        camera_id: str | None = None,
+        since: datetime | None = None,
+        until: datetime | None = None,
+        source: str | None = None,
+    ) -> list[dict[str, Any]]:
         """Get events from storage with filters; sorted newest first; supports offset pagination."""
-        events: List[Dict[str, Any]] = []
+        events: list[dict[str, Any]] = []
 
         if not self.events_file.exists():
             return events
@@ -162,19 +162,19 @@ class EventStore:
                         if since and event_time is not None:
                             et = event_time
                             if et.tzinfo is None:
-                                et = et.replace(tzinfo=timezone.utc)
+                                et = et.replace(tzinfo=UTC)
                             st = since
                             if st.tzinfo is None:
-                                st = st.replace(tzinfo=timezone.utc)
+                                st = st.replace(tzinfo=UTC)
                             if et < st:
                                 continue
                         if until and event_time is not None:
                             et = event_time
                             if et.tzinfo is None:
-                                et = et.replace(tzinfo=timezone.utc)
+                                et = et.replace(tzinfo=UTC)
                             ut = until
                             if ut.tzinfo is None:
-                                ut = ut.replace(tzinfo=timezone.utc)
+                                ut = ut.replace(tzinfo=UTC)
                             if et > ut:
                                 continue
 
@@ -189,16 +189,14 @@ class EventStore:
 
     def count_events(
         self,
-        event_type: Optional[str] = None,
-        camera_id: Optional[str] = None,
-        since: Optional[datetime] = None,
+        event_type: str | None = None,
+        camera_id: str | None = None,
+        since: datetime | None = None,
     ) -> int:
         """Count matching events (no limit)."""
-        return len(
-            self.get_events(limit=1_000_000, event_type=event_type, camera_id=camera_id, since=since)
-        )
+        return len(self.get_events(limit=1_000_000, event_type=event_type, camera_id=camera_id, since=since))
 
-    def distinct_types(self) -> List[str]:
+    def distinct_types(self) -> list[str]:
         """Return sorted distinct event types in the log."""
         types: set[str] = set()
         if not self.events_file.exists():
@@ -219,7 +217,7 @@ class EventStore:
             logger.exception("Error reading events for types")
         return sorted(types)
 
-    def stats(self) -> Dict[str, Any]:
+    def stats(self) -> dict[str, Any]:
         """Aggregate counts for dashboard use."""
         if not self.events_file.exists():
             return {
@@ -227,7 +225,7 @@ class EventStore:
                 "by_type": {},
                 "storage_path": str(self.events_file),
             }
-        by_type: Dict[str, int] = {}
+        by_type: dict[str, int] = {}
         total = 0
         try:
             with open(self.events_file, encoding="utf-8") as f:
@@ -252,19 +250,19 @@ class EventStore:
 
     def clear_old_events(self, days: int = 30) -> int:
         """Remove events with timestamp older than ``days`` (rewrite file)."""
-        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff = datetime.now(UTC) - timedelta(days=days)
         if not self.events_file.exists():
             return 0
         all_events = self.get_events(limit=1_000_000)
         n_before = len(all_events)
-        kept: List[Dict[str, Any]] = []
+        kept: list[dict[str, Any]] = []
         for e in all_events:
             ts = _parse_event_ts(e.get("timestamp", ""))
             if ts is None:
                 kept.append(e)
                 continue
             if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
+                ts = ts.replace(tzinfo=UTC)
             if ts >= cutoff:
                 kept.append(e)
         if len(kept) == n_before:
@@ -282,7 +280,7 @@ class EventStore:
 class RecordingStore:
     """Recording storage for camera recordings using PostgreSQL for metadata."""
 
-    def __init__(self, storage_dir: Optional[Path] = None):
+    def __init__(self, storage_dir: Path | None = None):
         """Initialize recording store."""
         if storage_dir is None:
             storage_dir = Path("~/.local/share/devices-mcp/recordings").expanduser()
@@ -306,17 +304,17 @@ class RecordingStore:
     def add_recording(
         self,
         camera_id: str,
-        video_path: Optional[Path] = None,
+        video_path: Path | None = None,
         duration_seconds: float = 0.0,
         size_bytes: int = 0,
         recording_type: str = "automatic",  # 'on_demand', 'automatic', 'motion', 'emergency'
         is_emergency: bool = False,
         is_unusual: bool = False,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Add a recording to storage."""
         recording_id = f"rec_{datetime.now().timestamp():.6f}"
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         if self.use_postgres and self.db:
             # Use PostgreSQL
@@ -372,13 +370,13 @@ class RecordingStore:
     def get_recordings(
         self,
         limit: int = 100,
-        camera_id: Optional[str] = None,
-        recording_type: Optional[str] = None,
-        since: Optional[datetime] = None,
+        camera_id: str | None = None,
+        recording_type: str | None = None,
+        since: datetime | None = None,
         emergency_only: bool = False,
         unusual_only: bool = False,
         with_ai_analysis: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get recordings from storage."""
         if self.use_postgres and self.db:
             # Use PostgreSQL
@@ -398,9 +396,7 @@ class RecordingStore:
                     {
                         "id": row.get("recording_id", ""),
                         "recording_id": row.get("recording_id", ""),
-                        "timestamp": row.get("timestamp").isoformat()
-                        if row.get("timestamp")
-                        else "",
+                        "timestamp": row.get("timestamp").isoformat() if row.get("timestamp") else "",
                         "camera_id": row.get("camera_id", ""),
                         "video_path": row.get("file_path", ""),
                         "duration_seconds": row.get("duration_seconds", 0.0),
@@ -505,7 +501,7 @@ class RecordingStore:
             logger.exception("Error deleting recording")
             return False
 
-    def get_storage_stats(self) -> Dict[str, Any]:
+    def get_storage_stats(self) -> dict[str, Any]:
         """Get storage statistics."""
         if self.use_postgres and self.db:
             return self.db.get_storage_stats()
@@ -513,10 +509,8 @@ class RecordingStore:
         recordings = self.get_recordings(limit=10000)
         total_size = sum(r.get("size_bytes", 0) for r in recordings)
         total_count = len(recordings)
-        today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-        today_count = len(
-            [r for r in recordings if datetime.fromisoformat(r.get("timestamp", "")) >= today]
-        )
+        today = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+        today_count = len([r for r in recordings if datetime.fromisoformat(r.get("timestamp", "")) >= today])
 
         return {
             "total_recordings": total_count,

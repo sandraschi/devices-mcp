@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Query
 
@@ -79,9 +79,9 @@ def _effective_level(entry: dict[str, str]) -> str:
 
 @router.get("/api/logs")
 async def get_logs(
-    level: Optional[str] = Query(None, description="Filter by log level"),
+    level: str | None = Query(None, description="Filter by log level"),
     lines: int = Query(100, ge=1, le=1000, description="Log lines to retrieve"),
-    search: Optional[str] = Query(None, description="Search term (message / full line)"),
+    search: str | None = Query(None, description="Search term (message / full line)"),
 ):
     """Tail the configured application log file (same file as devices_mcp file logging)."""
     try:
@@ -136,7 +136,7 @@ async def get_logs(
 
 @router.post("/api/logs/analyze")
 async def analyze_logs(
-    logs: List[Dict],
+    logs: list[dict],
     enable_clustering: bool = False,
     enable_anomaly_detection: bool = False,
     enable_ai_synopsis: bool = False,
@@ -163,9 +163,7 @@ async def analyze_logs(
                     "UUID",
                     normalized,
                 )
-                normalized = re.sub(
-                    r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", "IP", normalized
-                )
+                normalized = re.sub(r"[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", "IP", normalized)
 
                 if normalized not in clusters:
                     clusters[normalized] = []
@@ -252,9 +250,7 @@ async def analyze_logs(
                 # Prepare log summary for LLM
                 log_summary = f"Recent log entries ({len(logs)} total):\n\n"
                 for log_entry in logs[:50]:  # Limit to first 50 for context
-                    log_summary += (
-                        f"[{log_entry.get('level', 'INFO')}] {log_entry.get('message', '')}\n"
-                    )
+                    log_summary += f"[{log_entry.get('level', 'INFO')}] {log_entry.get('message', '')}\n"
 
                 prompt = f"""Analyze these application logs and provide a brief synopsis (2-3 sentences):
 

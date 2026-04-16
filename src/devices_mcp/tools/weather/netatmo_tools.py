@@ -7,7 +7,7 @@ including main modules and connected modules (temperature, humidity, CO2, noise,
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -25,11 +25,9 @@ class NetatmoModule(BaseModel):
     location: str = Field(..., description="Module location")
     is_online: bool = Field(..., description="Online status")
     last_update: float = Field(..., description="Last update timestamp")
-    battery_percent: Optional[int] = Field(
-        None, description="Battery percentage (for wireless modules)"
-    )
-    wifi_signal: Optional[int] = Field(None, description="WiFi signal strength (for main module)")
-    rf_signal: Optional[int] = Field(None, description="RF signal strength (for connected modules)")
+    battery_percent: int | None = Field(None, description="Battery percentage (for wireless modules)")
+    wifi_signal: int | None = Field(None, description="WiFi signal strength (for main module)")
+    rf_signal: int | None = Field(None, description="RF signal strength (for connected modules)")
 
 
 class NetatmoIndoorData(BaseModel):
@@ -63,11 +61,9 @@ class NetatmoWeatherStation(BaseModel):
     location: str = Field(..., description="Station location")
     is_online: bool = Field(..., description="Online status")
     main_module: NetatmoModule = Field(..., description="Main module information")
-    connected_modules: List[NetatmoModule] = Field(
-        default_factory=list, description="Connected modules"
-    )
-    indoor_data: Optional[NetatmoIndoorData] = Field(None, description="Indoor weather data")
-    outdoor_data: Optional[NetatmoOutdoorData] = Field(None, description="Outdoor weather data")
+    connected_modules: list[NetatmoModule] = Field(default_factory=list, description="Connected modules")
+    indoor_data: NetatmoIndoorData | None = Field(None, description="Indoor weather data")
+    outdoor_data: NetatmoOutdoorData | None = Field(None, description="Outdoor weather data")
     last_update: float = Field(..., description="Last update timestamp")
 
 
@@ -93,7 +89,7 @@ class GetNetatmoStationsTool(BaseTool):
         class Parameters(BaseModel):
             include_offline: bool = Field(default=False, description="Include offline stations")
 
-    async def execute(self, include_offline: bool = False) -> Dict[str, Any]:
+    async def execute(self, include_offline: bool = False) -> dict[str, Any]:
         """Get all Netatmo weather stations."""
         try:
             logger.info(f"Getting Netatmo stations (include_offline={include_offline})")
@@ -117,7 +113,7 @@ class GetNetatmoStationsTool(BaseTool):
             logger.exception("Failed to get Netatmo stations")
             return {"success": False, "error": str(e), "stations": [], "timestamp": time.time()}
 
-    async def _discover_stations(self) -> List[NetatmoWeatherStation]:
+    async def _discover_stations(self) -> list[NetatmoWeatherStation]:
         """Simulate Netatmo stations discovery."""
 
         # Simulate main indoor station
@@ -158,9 +154,7 @@ class GetNetatmoStationsTool(BaseTool):
         )
 
         # Simulate outdoor data
-        outdoor_data = NetatmoOutdoorData(
-            temperature=18.7, humidity=62, temp_trend="down", timestamp=time.time()
-        )
+        outdoor_data = NetatmoOutdoorData(temperature=18.7, humidity=62, temp_trend="down", timestamp=time.time())
 
         station = NetatmoWeatherStation(
             station_id="netatmo_001",
@@ -199,16 +193,12 @@ class GetNetatmoWeatherDataTool(BaseTool):
 
         class Parameters(BaseModel):
             station_id: str = Field(..., description="Weather station ID")
-            module_type: str = Field(
-                default="all", description="Module type to query (indoor, outdoor, all)"
-            )
+            module_type: str = Field(default="all", description="Module type to query (indoor, outdoor, all)")
 
-    async def execute(self, station_id: str, module_type: str = "all") -> Dict[str, Any]:
+    async def execute(self, station_id: str, module_type: str = "all") -> dict[str, Any]:
         """Get current weather data from Netatmo station."""
         try:
-            logger.info(
-                f"Getting weather data for station {station_id}, module type: {module_type}"
-            )
+            logger.info(f"Getting weather data for station {station_id}, module type: {module_type}")
 
             # Simulate weather data retrieval
             weather_data = await self._get_station_data(station_id, module_type)
@@ -231,7 +221,7 @@ class GetNetatmoWeatherDataTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_station_data(self, _station_id: str, _module_type: str) -> Dict[str, Any]:
+    async def _get_station_data(self, _station_id: str, _module_type: str) -> dict[str, Any]:
         """Simulate weather data retrieval."""
         import secrets
 
@@ -306,7 +296,7 @@ class GetNetatmoHistoricalDataTool(BaseTool):
         module_type: str = "indoor",
         data_type: str = "temperature",
         time_range: str = "24h",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get historical weather data."""
         try:
             logger.info(f"Getting historical data for {station_id}, {data_type}, {time_range}")
@@ -329,9 +319,7 @@ class GetNetatmoHistoricalDataTool(BaseTool):
             logger.exception("Failed to get historical data")
             return {"success": False, "error": str(e), "data": [], "timestamp": time.time()}
 
-    async def _generate_historical_data(
-        self, data_type: str, time_range: str
-    ) -> List[Dict[str, Any]]:
+    async def _generate_historical_data(self, data_type: str, time_range: str) -> list[dict[str, Any]]:
         """Generate simulated historical data."""
         import secrets
 
@@ -421,13 +409,9 @@ class ConfigureNetatmoAlertsTool(BaseTool):
 
         class Parameters(BaseModel):
             station_id: str = Field(..., description="Weather station ID")
-            alert_type: str = Field(
-                ..., description="Alert type (temperature, humidity, co2, pressure)"
-            )
+            alert_type: str = Field(..., description="Alert type (temperature, humidity, co2, pressure)")
             threshold_value: float = Field(..., description="Threshold value for alert")
-            comparison: str = Field(
-                default="above", description="Comparison operator (above, below, equal)"
-            )
+            comparison: str = Field(default="above", description="Comparison operator (above, below, equal)")
             enabled: bool = Field(default=True, description="Whether alert is enabled")
 
     async def execute(
@@ -437,12 +421,10 @@ class ConfigureNetatmoAlertsTool(BaseTool):
         threshold_value: float,
         comparison: str = "above",
         enabled: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Configure Netatmo weather alerts."""
         try:
-            logger.info(
-                f"Configuring alert for {station_id}: {alert_type} {comparison} {threshold_value}"
-            )
+            logger.info(f"Configuring alert for {station_id}: {alert_type} {comparison} {threshold_value}")
 
             # Validate alert type
             valid_types = ["temperature", "humidity", "co2", "pressure", "noise"]
@@ -508,13 +490,9 @@ class GetNetatmoHealthReportTool(BaseTool):
 
         class Parameters(BaseModel):
             station_id: str = Field(..., description="Weather station ID")
-            include_recommendations: bool = Field(
-                default=True, description="Include improvement recommendations"
-            )
+            include_recommendations: bool = Field(default=True, description="Include improvement recommendations")
 
-    async def execute(
-        self, station_id: str, include_recommendations: bool = True
-    ) -> Dict[str, Any]:
+    async def execute(self, station_id: str, include_recommendations: bool = True) -> dict[str, Any]:
         """Get Netatmo health report."""
         try:
             logger.info(f"Generating health report for {station_id}")
@@ -537,7 +515,7 @@ class GetNetatmoHealthReportTool(BaseTool):
             logger.exception("Failed to generate health report")
             return {"success": False, "error": str(e), "timestamp": time.time()}
 
-    async def _get_station_data(self, _station_id: str, _module_type: str) -> Dict[str, Any]:
+    async def _get_station_data(self, _station_id: str, _module_type: str) -> dict[str, Any]:
         """Get station data (reused from other tools)."""
         # This would normally call the actual Netatmo API
         # For now, return simulated data
@@ -551,9 +529,7 @@ class GetNetatmoHealthReportTool(BaseTool):
             }
         }
 
-    async def _analyze_health(
-        self, indoor_data: Dict[str, Any], include_recommendations: bool
-    ) -> Dict[str, Any]:
+    async def _analyze_health(self, indoor_data: dict[str, Any], include_recommendations: bool) -> dict[str, Any]:
         """Analyze health based on indoor data."""
         temp = indoor_data.get("temperature", 22.0)
         humidity = indoor_data.get("humidity", 50)
@@ -647,7 +623,7 @@ class GetNetatmoHealthReportTool(BaseTool):
             return 60
         return 40
 
-    def _analyze_temperature(self, temp: float) -> Dict[str, Any]:
+    def _analyze_temperature(self, temp: float) -> dict[str, Any]:
         """Analyze temperature."""
         if temp < 18:
             return {"status": "cold", "message": "Room is too cold for comfort"}
@@ -655,7 +631,7 @@ class GetNetatmoHealthReportTool(BaseTool):
             return {"status": "hot", "message": "Room is too warm for comfort"}
         return {"status": "comfortable", "message": "Temperature is comfortable"}
 
-    def _analyze_humidity(self, humidity: int) -> Dict[str, Any]:
+    def _analyze_humidity(self, humidity: int) -> dict[str, Any]:
         """Analyze humidity."""
         if humidity < 30:
             return {"status": "dry", "message": "Air is too dry, may cause discomfort"}
@@ -663,7 +639,7 @@ class GetNetatmoHealthReportTool(BaseTool):
             return {"status": "humid", "message": "Air is too humid, may cause mold growth"}
         return {"status": "comfortable", "message": "Humidity level is comfortable"}
 
-    def _analyze_co2(self, co2: int) -> Dict[str, Any]:
+    def _analyze_co2(self, co2: int) -> dict[str, Any]:
         """Analyze CO2 levels."""
         if co2 > 1000:
             return {"status": "high", "message": "CO2 levels are very high, ventilation needed"}
@@ -676,7 +652,7 @@ class GetNetatmoHealthReportTool(BaseTool):
             return {"status": "moderate", "message": "CO2 levels are moderate"}
         return {"status": "good", "message": "CO2 levels are good"}
 
-    def _analyze_noise(self, noise: int) -> Dict[str, Any]:
+    def _analyze_noise(self, noise: int) -> dict[str, Any]:
         """Analyze noise levels."""
         if noise > 60:
             return {"status": "loud", "message": "Noise levels are high, may affect concentration"}
@@ -684,9 +660,7 @@ class GetNetatmoHealthReportTool(BaseTool):
             return {"status": "moderate", "message": "Noise levels are moderate"}
         return {"status": "quiet", "message": "Noise levels are comfortable"}
 
-    def _generate_recommendations(
-        self, temp: float, humidity: int, co2: int, noise: int
-    ) -> List[str]:
+    def _generate_recommendations(self, temp: float, humidity: int, co2: int, noise: int) -> list[str]:
         """Generate improvement recommendations."""
         recommendations = []
 

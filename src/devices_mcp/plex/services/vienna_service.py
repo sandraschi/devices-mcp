@@ -5,7 +5,6 @@ Provides functionality for content recommendations with Austrian cultural contex
 """
 
 from datetime import datetime
-from typing import List, Optional
 
 from ..models.vienna import AnimeSeasonInfo, EuropeanContent, WienerRecommendation
 
@@ -18,8 +17,8 @@ class ViennaService:
         self.plex_manager = plex_manager
 
     async def get_wiener_recommendations(
-        self, mood: str, time_context: Optional[str] = None, max_recommendations: int = 5
-    ) -> List[WienerRecommendation]:
+        self, mood: str, time_context: str | None = None, max_recommendations: int = 5
+    ) -> list[WienerRecommendation]:
         """
         Get Vienna-context content recommendations with Austrian gemütlichkeit.
 
@@ -102,9 +101,7 @@ class ViennaService:
 
             # Time context adjustment
             time_bonus = 0
-            if (time_context == "morning" and duration <= 60) or (
-                time_context == "evening" and duration > 60
-            ):
+            if (time_context == "morning" and duration <= 60) or (time_context == "evening" and duration > 60):
                 time_bonus = 0.5
 
             vienna_score += time_bonus
@@ -138,7 +135,7 @@ class ViennaService:
         genre_score: float,
         seasonal_bonus: float,
         time_bonus: float,
-        austrian_context: Optional[str],
+        austrian_context: str | None,
     ) -> str:
         """Generate a human-readable reason for the recommendation."""
         reasons = []
@@ -162,11 +159,11 @@ class ViennaService:
 
     async def find_european_content(
         self,
-        country: Optional[str] = None,
-        genre: Optional[str] = None,
+        country: str | None = None,
+        genre: str | None = None,
         language: str = "any",
         max_results: int = 15,
-    ) -> List[EuropeanContent]:
+    ) -> list[EuropeanContent]:
         """
         Discover European cinema and content with Austrian cultural perspective.
 
@@ -181,7 +178,7 @@ class ViennaService:
         """
         # Implementation will be added in the next step
 
-    async def get_anime_season_info(self) -> List[AnimeSeasonInfo]:
+    async def get_anime_season_info(self) -> list[AnimeSeasonInfo]:
         """
         Get information about current anime seasons with Austrian efficiency.
 

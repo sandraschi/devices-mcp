@@ -9,7 +9,7 @@ Combines camera management operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -43,27 +43,21 @@ class CameraManagementTool(BaseTool):
 
         class Parameters(BaseModel):
             operation: str = Field(..., description="Management operation: 'list', 'add', 'remove'")
-            camera_id: Optional[str] = Field(None, description="Camera ID for operations")
-            camera_name: Optional[str] = Field(None, description="Camera name for add operations")
-            camera_ip: Optional[str] = Field(
-                None, description="Camera IP address for add operations"
-            )
-            camera_username: Optional[str] = Field(
-                None, description="Camera username for add operations"
-            )
-            camera_password: Optional[str] = Field(
-                None, description="Camera password for add operations"
-            )
+            camera_id: str | None = Field(None, description="Camera ID for operations")
+            camera_name: str | None = Field(None, description="Camera name for add operations")
+            camera_ip: str | None = Field(None, description="Camera IP address for add operations")
+            camera_username: str | None = Field(None, description="Camera username for add operations")
+            camera_password: str | None = Field(None, description="Camera password for add operations")
 
     async def execute(
         self,
         operation: str,
-        camera_id: Optional[str] = None,
-        camera_name: Optional[str] = None,
-        camera_ip: Optional[str] = None,
-        camera_username: Optional[str] = None,
-        camera_password: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        camera_id: str | None = None,
+        camera_name: str | None = None,
+        camera_ip: str | None = None,
+        camera_username: str | None = None,
+        camera_password: str | None = None,
+    ) -> dict[str, Any]:
         """Execute camera management operation."""
         try:
             logger.info(f"Camera management {operation} operation")
@@ -71,9 +65,7 @@ class CameraManagementTool(BaseTool):
             if operation == "list":
                 return await self._list_cameras()
             if operation == "add":
-                return await self._add_camera(
-                    camera_name, camera_ip, camera_username, camera_password
-                )
+                return await self._add_camera(camera_name, camera_ip, camera_username, camera_password)
             if operation == "remove":
                 return await self._remove_camera(camera_id)
             return {
@@ -91,7 +83,7 @@ class CameraManagementTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _list_cameras(self) -> Dict[str, Any]:
+    async def _list_cameras(self) -> dict[str, Any]:
         """List all cameras."""
         # Simulate camera data
         cameras = [
@@ -139,11 +131,11 @@ class CameraManagementTool(BaseTool):
 
     async def _add_camera(
         self,
-        camera_name: Optional[str],
-        camera_ip: Optional[str],
-        camera_username: Optional[str],
-        camera_password: Optional[str],
-    ) -> Dict[str, Any]:
+        camera_name: str | None,
+        camera_ip: str | None,
+        camera_username: str | None,
+        camera_password: str | None,
+    ) -> dict[str, Any]:
         """Add a new camera."""
         if not all([camera_name, camera_ip, camera_username, camera_password]):
             return {
@@ -176,7 +168,7 @@ class CameraManagementTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _remove_camera(self, camera_id: Optional[str]) -> Dict[str, Any]:
+    async def _remove_camera(self, camera_id: str | None) -> dict[str, Any]:
         """Remove a camera."""
         if not camera_id:
             return {

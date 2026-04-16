@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -43,16 +43,14 @@ async def plex_metadata(
         "match",
         "organize",
     ],
-    item_id: Optional[str] = None,
-    library_id: Optional[str] = None,
-    match_id: Optional[str] = None,
-    media_type: Optional[
-        Literal["movie", "show", "season", "episode", "artist", "album", "track", "photo"]
-    ] = None,
-    metadata: Optional[Dict[str, Any]] = None,
+    item_id: str | None = None,
+    library_id: str | None = None,
+    match_id: str | None = None,
+    media_type: Literal["movie", "show", "season", "episode", "artist", "album", "track", "photo"] | None = None,
+    metadata: dict[str, Any] | None = None,
     force: bool = False,
-    patterns: Optional[Dict[str, str]] = None,
-) -> Dict[str, Any]:
+    patterns: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Comprehensive metadata management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -196,9 +194,7 @@ async def plex_metadata(
                     ],
                 }
 
-            result = await plex.refresh_metadata(
-                item_id=item_id, library_id=library_id, force=force
-            )
+            result = await plex.refresh_metadata(item_id=item_id, library_id=library_id, force=force)
             return {
                 "success": True,
                 "operation": "refresh",
@@ -356,9 +352,7 @@ async def plex_metadata(
                     "suggestions": ["Provide library_id parameter"],
                 }
 
-            result = await plex.organize_library(
-                library_id=library_id, dry_run=False, patterns=patterns
-            )
+            result = await plex.organize_library(library_id=library_id, dry_run=False, patterns=patterns)
             return {
                 "success": True,
                 "operation": "organize",

@@ -4,7 +4,7 @@ PTZ (Pan-Tilt-Zoom) tools for Devices MCP.
 This module contains tools for controlling PTZ functionality of Tapo cameras.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import Field
 
@@ -29,7 +29,7 @@ class MovePTZTool(BaseTool):
     tilt: float
     zoom: float
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the move PTZ tool."""
         return {
             "status": "moved",
@@ -51,7 +51,7 @@ class SavePTZPresetTool(BaseTool):
 
     preset_name: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the save PTZ preset tool."""
         return {"status": "preset_saved", "preset_name": self.preset_name}
 
@@ -70,7 +70,7 @@ class RecallPTZPresetTool(BaseTool):
 
     preset_name: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the recall PTZ preset tool."""
         return {"status": "preset_recalled", "preset_name": self.preset_name}
 
@@ -87,7 +87,7 @@ class GetPTZPresetsTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> List[Dict[str, Any]]:
+    async def execute(self) -> list[dict[str, Any]]:
         """Execute the get PTZ presets tool."""
         return []
 
@@ -104,7 +104,7 @@ class GoToHomePTZTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the go to home PTZ tool."""
         return {"status": "moved_to_home"}
 
@@ -121,7 +121,7 @@ class StopPTZTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the stop PTZ tool."""
         return {"status": "stopped"}
 
@@ -138,6 +138,6 @@ class GetPTZPositionTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> Dict[str, float]:
+    async def execute(self) -> dict[str, float]:
         """Execute the get PTZ position tool."""
         return {"pan": 0.0, "tilt": 0.0, "zoom": 0.0}

@@ -6,7 +6,7 @@ Fixed to properly read environment variables for PlexService initialization.
 """
 
 import os
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 # Import the shared FastMCP instance from the app module
 from ..app import mcp
@@ -69,7 +69,7 @@ async def get_plex_status() -> PlexServerStatus:
         raise RuntimeError(f"Error fetching Plex server status: {e!s}") from e
 
 
-async def get_libraries() -> List[MediaLibrary]:
+async def get_libraries() -> list[MediaLibrary]:
     """
     Get all media libraries available on the Plex server.
 
@@ -102,31 +102,31 @@ async def get_libraries() -> List[MediaLibrary]:
 
 
 async def search_media(
-    query: Optional[str] = None,
-    library_id: Optional[str] = None,
-    media_type: Optional[str] = None,
-    title: Optional[str] = None,
-    year: Optional[Union[int, List[int]]] = None,
-    decade: Optional[int] = None,
-    genre: Optional[Union[str, List[str]]] = None,
-    actor: Optional[Union[str, List[str]]] = None,
-    director: Optional[Union[str, List[str]]] = None,
-    composer: Optional[Union[str, List[str]]] = None,
-    performer: Optional[Union[str, List[str]]] = None,
-    content_rating: Optional[Union[str, List[str]]] = None,
-    studio: Optional[Union[str, List[str]]] = None,
-    country: Optional[Union[str, List[str]]] = None,
-    collection: Optional[Union[str, List[str]]] = None,
-    min_rating: Optional[float] = None,
-    max_rating: Optional[float] = None,
-    min_year: Optional[int] = None,
-    max_year: Optional[int] = None,
-    unwatched: Optional[bool] = None,
+    query: str | None = None,
+    library_id: str | None = None,
+    media_type: str | None = None,
+    title: str | None = None,
+    year: int | list[int] | None = None,
+    decade: int | None = None,
+    genre: str | list[str] | None = None,
+    actor: str | list[str] | None = None,
+    director: str | list[str] | None = None,
+    composer: str | list[str] | None = None,
+    performer: str | list[str] | None = None,
+    content_rating: str | list[str] | None = None,
+    studio: str | list[str] | None = None,
+    country: str | list[str] | None = None,
+    collection: str | list[str] | None = None,
+    min_rating: float | None = None,
+    max_rating: float | None = None,
+    min_year: int | None = None,
+    max_year: int | None = None,
+    unwatched: bool | None = None,
     sort_by: str = "titleSort",
     sort_dir: str = "asc",
     limit: int = 100,
     offset: int = 0,
-) -> List[MediaItem]:
+) -> list[MediaItem]:
     """
     Advanced search for media content with extensive filtering capabilities.
 
@@ -329,7 +329,7 @@ async def search_media(
         raise RuntimeError(f"Error searching for media: {e!s}") from e
 
 
-async def get_recently_added(library_id: Optional[str] = None, limit: int = 20) -> List[MediaItem]:
+async def get_recently_added(library_id: str | None = None, limit: int = 20) -> list[MediaItem]:
     """
     Get recently added media from all libraries or specific library.
 
@@ -361,12 +361,8 @@ async def get_recently_added(library_id: Optional[str] = None, limit: int = 20) 
                         thumb=item.thumbUrl if hasattr(item, "thumbUrl") else "",
                         art=item.artUrl if hasattr(item, "artUrl") else "",
                         duration=item.duration if hasattr(item, "duration") else 0,
-                        added_at=item.addedAt.timestamp()
-                        if hasattr(item, "addedAt") and item.addedAt
-                        else 0,
-                        updated_at=item.updatedAt.timestamp()
-                        if hasattr(item, "updatedAt") and item.updatedAt
-                        else 0,
+                        added_at=item.addedAt.timestamp() if hasattr(item, "addedAt") and item.addedAt else 0,
+                        updated_at=item.updatedAt.timestamp() if hasattr(item, "updatedAt") and item.updatedAt else 0,
                     )
                 )
             elif hasattr(item, "type") and item.type == "episode":
@@ -381,12 +377,8 @@ async def get_recently_added(library_id: Optional[str] = None, limit: int = 20) 
                         thumb=item.thumbUrl if hasattr(item, "thumbUrl") else "",
                         art=item.grandparentThumb if hasattr(item, "grandparentThumb") else "",
                         duration=item.duration if hasattr(item, "duration") else 0,
-                        added_at=item.addedAt.timestamp()
-                        if hasattr(item, "addedAt") and item.addedAt
-                        else 0,
-                        updated_at=item.updatedAt.timestamp()
-                        if hasattr(item, "updatedAt") and item.updatedAt
-                        else 0,
+                        added_at=item.addedAt.timestamp() if hasattr(item, "addedAt") and item.addedAt else 0,
+                        updated_at=item.updatedAt.timestamp() if hasattr(item, "updatedAt") and item.updatedAt else 0,
                     )
                 )
             else:
@@ -416,7 +408,7 @@ async def get_recently_added(library_id: Optional[str] = None, limit: int = 20) 
         raise RuntimeError(f"Error fetching recently added items: {e!s}") from e
 
 
-async def get_media_info(media_key: str) -> Dict[str, Any]:
+async def get_media_info(media_key: str) -> dict[str, Any]:
     """
     Get detailed information about a specific media item.
 
@@ -465,12 +457,8 @@ async def get_media_info(media_key: str) -> Dict[str, Any]:
             "thumb": item.thumbUrl if hasattr(item, "thumbUrl") else "",
             "art": item.artUrl if hasattr(item, "artUrl") else "",
             "duration": getattr(item, "duration", 0),
-            "added_at": item.addedAt.timestamp()
-            if hasattr(item, "addedAt") and item.addedAt
-            else 0,
-            "updated_at": item.updatedAt.timestamp()
-            if hasattr(item, "updatedAt") and item.updatedAt
-            else 0,
+            "added_at": item.addedAt.timestamp() if hasattr(item, "addedAt") and item.addedAt else 0,
+            "updated_at": item.updatedAt.timestamp() if hasattr(item, "updatedAt") and item.updatedAt else 0,
             "genres": [tag.tag for tag in getattr(item, "genres", [])],
             "directors": [tag.tag for tag in getattr(item, "directors", [])],
             "writers": [tag.tag for tag in getattr(item, "writers", [])],
@@ -532,7 +520,7 @@ async def scan_library(library_id: str) -> bool:
         raise RuntimeError(f"Error scanning library {library_id}: {e!s}") from e
 
 
-async def help(level: str = "beginner", section: str = "all") -> Dict[str, Any]:
+async def help(level: str = "beginner", section: str = "all") -> dict[str, Any]:
     """
     Get comprehensive help documentation for the PlexMCP API.
 
@@ -600,9 +588,7 @@ async def help(level: str = "beginner", section: str = "all") -> Dict[str, Any]:
                     if param_name == "self":
                         continue
                     param_info = {
-                        "type": str(param.annotation)
-                        if param.annotation != Parameter.empty
-                        else "any",
+                        "type": str(param.annotation) if param.annotation != Parameter.empty else "any",
                         "required": param.default == Parameter.empty,
                         "default": param.default if param.default != Parameter.empty else None,
                     }
@@ -617,9 +603,7 @@ async def help(level: str = "beginner", section: str = "all") -> Dict[str, Any]:
                     "short_description": short_desc,
                     "long_description": long_desc,
                     "parameters": params,
-                    "returns": str(sig.return_annotation)
-                    if sig.return_annotation != sig.empty
-                    else "None",
+                    "returns": str(sig.return_annotation) if sig.return_annotation != sig.empty else "None",
                 }
 
     # Build response based on requested level and section

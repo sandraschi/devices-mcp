@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 import psutil
 from fastapi import APIRouter, Request
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 AUTO_WEBCAM_RETRY_INTERVAL = timedelta(seconds=10)
-_last_webcam_attempt: Optional[datetime] = None
+_last_webcam_attempt: datetime | None = None
 
 
 @router.get("/", response_class=HTMLResponse, name="dashboard")
@@ -85,10 +84,7 @@ async def index_page(request: Request):
             try:
                 global _last_webcam_attempt
                 now = datetime.utcnow()
-                if (
-                    _last_webcam_attempt is None
-                    or now - _last_webcam_attempt >= AUTO_WEBCAM_RETRY_INTERVAL
-                ):
+                if _last_webcam_attempt is None or now - _last_webcam_attempt >= AUTO_WEBCAM_RETRY_INTERVAL:
                     _last_webcam_attempt = now
                     logger.info("Auto-adding USB webcam...")
                     config = {
@@ -96,13 +92,9 @@ async def index_page(request: Request):
                         "type": "webcam",
                         "params": {"device_id": 0},
                     }
-                    success = await asyncio.wait_for(
-                        server.camera_manager.add_camera(config), timeout=5.0
-                    )
+                    success = await asyncio.wait_for(server.camera_manager.add_camera(config), timeout=5.0)
                     if success:
-                        cameras = await asyncio.wait_for(
-                            server.camera_manager.list_cameras(), timeout=5.0
-                        )
+                        cameras = await asyncio.wait_for(server.camera_manager.list_cameras(), timeout=5.0)
                         total_cameras = len(cameras)
                         online_cameras = sum(1 for cam in cameras if cam.get("status") == "online")
             except Exception as e:
@@ -114,6 +106,7 @@ async def index_page(request: Request):
     # System metrics
     try:
         import os
+
         _root = os.path.abspath(os.sep) if os.name != "nt" else (os.environ.get("SystemDrive", "C:") + os.sep)
         disk = psutil.disk_usage(_root)
         storage_used = round(disk.percent, 1)
@@ -184,6 +177,7 @@ async def cameras_page(request: Request):
     load_error = None
     try:
         from devices_mcp.core.server import DevicesMCPServer
+
         # Prevent route timeout from cancelling shared server initialization.
         server = await asyncio.wait_for(
             asyncio.shield(DevicesMCPServer.get_instance()),
@@ -192,7 +186,7 @@ async def cameras_page(request: Request):
         cameras = await asyncio.wait_for(server.camera_manager.list_cameras(), timeout=10.0)
         total_cameras = len(cameras)
         online_cameras = sum(1 for c in cameras if c.get("status") == "online")
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         load_error = "Device server is still starting. Wait a moment and refresh the page."
         logger.warning("Cameras page: timeout waiting for server: %s", e)
     except Exception as e:

@@ -3,7 +3,7 @@
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import httpx
 
@@ -21,7 +21,7 @@ class ProviderType(str, Enum):
 class LLMProvider(ABC):
     """Base class for LLM providers."""
 
-    def __init__(self, base_url: str, api_key: Optional[str] = None):
+    def __init__(self, base_url: str, api_key: str | None = None):
         """Initialize the provider.
 
         Args:
@@ -33,7 +33,7 @@ class LLMProvider(ABC):
         self._client = httpx.AsyncClient(timeout=60.0)
 
     @abstractmethod
-    async def list_models(self) -> List[Dict[str, Any]]:
+    async def list_models(self) -> list[dict[str, Any]]:
         """List available models."""
 
     @abstractmethod
@@ -45,11 +45,11 @@ class LLMProvider(ABC):
         """Unload the current model."""
 
     @abstractmethod
-    async def get_current_model(self) -> Optional[str]:
+    async def get_current_model(self) -> str | None:
         """Get the currently loaded model name."""
 
     @abstractmethod
-    async def chat(self, messages: List[Dict[str, str]], stream: bool = False) -> Any:
+    async def chat(self, messages: list[dict[str, str]], stream: bool = False) -> Any:
         """Send a chat message."""
 
     async def close(self):
@@ -63,9 +63,9 @@ class OllamaProvider(LLMProvider):
     def __init__(self, base_url: str = "http://localhost:11434"):
         """Initialize Ollama provider."""
         super().__init__(base_url)
-        self._current_model: Optional[str] = None
+        self._current_model: str | None = None
 
-    async def list_models(self) -> List[Dict[str, Any]]:
+    async def list_models(self) -> list[dict[str, Any]]:
         """List available Ollama models."""
         try:
             response = await self._client.get(f"{self.base_url}/api/tags")
@@ -118,13 +118,11 @@ class OllamaProvider(LLMProvider):
         except Exception:
             return True  # Ignore errors for unload
 
-    async def get_current_model(self) -> Optional[str]:
+    async def get_current_model(self) -> str | None:
         """Get current Ollama model."""
         return self._current_model
 
-    async def chat(
-        self, messages: List[Dict[str, str]], stream: bool = False, model_name: Optional[str] = None
-    ) -> Any:
+    async def chat(self, messages: list[dict[str, str]], stream: bool = False, model_name: str | None = None) -> Any:
         """Send chat message to Ollama."""
         # Use provided model or current model
         use_model = model_name or self._current_model or "llama2"
@@ -183,7 +181,7 @@ class LMStudioProvider(LLMProvider):
         """Initialize LM Studio provider."""
         super().__init__(base_url)
 
-    async def list_models(self) -> List[Dict[str, Any]]:
+    async def list_models(self) -> list[dict[str, Any]]:
         """List available LM Studio models."""
         try:
             response = await self._client.get(f"{self.base_url}/v1/models")
@@ -227,7 +225,7 @@ class LMStudioProvider(LLMProvider):
             logger.exception("Failed to unload LM Studio model")
             return False
 
-    async def get_current_model(self) -> Optional[str]:
+    async def get_current_model(self) -> str | None:
         """Get current LM Studio model."""
         try:
             response = await self._client.get(f"{self.base_url}/v1/models")
@@ -241,7 +239,7 @@ class LMStudioProvider(LLMProvider):
         except Exception:
             return None
 
-    async def chat(self, messages: List[Dict[str, str]], stream: bool = False) -> Any:
+    async def chat(self, messages: list[dict[str, str]], stream: bool = False) -> Any:
         """Send chat message to LM Studio (OpenAI-compatible)."""
         try:
             response = await self._client.post(
@@ -284,13 +282,13 @@ class LMStudioProvider(LLMProvider):
 class OpenAIProvider(LLMProvider):
     """OpenAI provider implementation."""
 
-    def __init__(self, base_url: str = "https://api.openai.com/v1", api_key: Optional[str] = None):
+    def __init__(self, base_url: str = "https://api.openai.com/v1", api_key: str | None = None):
         """Initialize OpenAI provider."""
         super().__init__(base_url, api_key)
         if not api_key:
             raise ValueError("OpenAI provider requires an API key")
 
-    async def list_models(self) -> List[Dict[str, Any]]:
+    async def list_models(self) -> list[dict[str, Any]]:
         """List available OpenAI models."""
         try:
             response = await self._client.get(
@@ -324,11 +322,11 @@ class OpenAIProvider(LLMProvider):
         """OpenAI doesn't require explicit model unloading."""
         return True
 
-    async def get_current_model(self) -> Optional[str]:
+    async def get_current_model(self) -> str | None:
         """OpenAI doesn't have a concept of 'current' model."""
         return None
 
-    async def chat(self, messages: List[Dict[str, str]], stream: bool = False) -> Any:
+    async def chat(self, messages: list[dict[str, str]], stream: bool = False) -> Any:
         """Send chat message to OpenAI."""
         try:
             response = await self._client.post(

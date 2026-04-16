@@ -4,7 +4,8 @@ Asynchronous utilities for Devices MCP.
 
 import asyncio
 import logging
-from typing import Any, Coroutine, Optional, TypeVar
+from collections.abc import Coroutine
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,8 @@ T = TypeVar("T")
 def safe_create_task(
     coro: Coroutine[Any, Any, T],
     *,
-    name: Optional[str] = None,
-    context: Optional[dict] = None,
+    name: str | None = None,
+    context: dict | None = None,
 ) -> asyncio.Task[T]:
     """
     Create an asyncio task with a standard exception handler that logs errors.

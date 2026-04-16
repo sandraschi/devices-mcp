@@ -9,7 +9,7 @@ Combines Nest Protect operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -36,26 +36,20 @@ class NestProtectTool(BaseTool):
 
     class Meta:
         name = "nest_protect"
-        description = (
-            "Unified Nest Protect operations including status, alerts, and battery monitoring"
-        )
+        description = "Unified Nest Protect operations including status, alerts, and battery monitoring"
         category = ToolCategory.ALARMS
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Nest Protect operation: 'status', 'alerts', 'battery'"
-            )
-            device_id: Optional[str] = Field(None, description="Nest Protect device ID")
-            alert_type: Optional[str] = Field(
-                None, description="Alert type filter: 'smoke', 'co', 'test'"
-            )
+            operation: str = Field(..., description="Nest Protect operation: 'status', 'alerts', 'battery'")
+            device_id: str | None = Field(None, description="Nest Protect device ID")
+            alert_type: str | None = Field(None, description="Alert type filter: 'smoke', 'co', 'test'")
 
     async def execute(
         self,
         operation: str,
-        device_id: Optional[str] = None,
-        alert_type: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        device_id: str | None = None,
+        alert_type: str | None = None,
+    ) -> dict[str, Any]:
         """Execute Nest Protect operation."""
         try:
             logger.info(f"Nest Protect {operation} operation")
@@ -81,7 +75,7 @@ class NestProtectTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_status(self, device_id: Optional[str]) -> Dict[str, Any]:
+    async def _get_status(self, device_id: str | None) -> dict[str, Any]:
         """Get Nest Protect status."""
         # Simulate Nest Protect devices
         devices = [
@@ -155,9 +149,7 @@ class NestProtectTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _get_alerts(
-        self, device_id: Optional[str], alert_type: Optional[str]
-    ) -> Dict[str, Any]:
+    async def _get_alerts(self, device_id: str | None, alert_type: str | None) -> dict[str, Any]:
         """Get Nest Protect alerts."""
         # Simulate alerts data
         all_alerts = [
@@ -228,7 +220,7 @@ class NestProtectTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _get_battery_status(self, device_id: Optional[str]) -> Dict[str, Any]:
+    async def _get_battery_status(self, device_id: str | None) -> dict[str, Any]:
         """Get Nest Protect battery status."""
         # Simulate battery data
         devices = [

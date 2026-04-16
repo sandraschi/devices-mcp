@@ -7,7 +7,7 @@ for camera operations, helping optimize system performance and identify bottlene
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -48,15 +48,13 @@ class PerformanceAnalyzerTool(BaseTool):
         category = ToolCategory.ANALYSIS
 
         class Parameters:
-            operation: str = Field(
-                default="full_analysis", description="Type of analysis to perform"
-            )
+            operation: str = Field(default="full_analysis", description="Type of analysis to perform")
 
     # Performance tracking
-    _metrics: List[PerformanceMetrics] = []
-    _start_time: Optional[float] = None
+    _metrics: list[PerformanceMetrics] = []
+    _start_time: float | None = None
 
-    async def execute(self, operation: str = "full_analysis") -> Dict[str, Any]:
+    async def execute(self, operation: str = "full_analysis") -> dict[str, Any]:
         """
         Execute performance analysis.
 
@@ -78,7 +76,7 @@ class PerformanceAnalyzerTool(BaseTool):
             logger.exception("Performance analysis failed")
             return {"error": str(e)}
 
-    async def _full_performance_analysis(self) -> Dict[str, Any]:
+    async def _full_performance_analysis(self) -> dict[str, Any]:
         """Perform comprehensive performance analysis."""
         analysis_results = {
             "timestamp": time.time(),
@@ -95,7 +93,7 @@ class PerformanceAnalyzerTool(BaseTool):
             "summary": self._generate_summary(analysis_results),
         }
 
-    async def _camera_operations_analysis(self) -> Dict[str, Any]:
+    async def _camera_operations_analysis(self) -> dict[str, Any]:
         """Analyze camera operation performance."""
         try:
             # Simulate camera operations analysis
@@ -116,9 +114,7 @@ class PerformanceAnalyzerTool(BaseTool):
                     "total_operations": total_operations,
                     "average_duration_ms": round(avg_duration, 2),
                     "average_success_rate": round(avg_success_rate, 3),
-                    "performance_grade": self._calculate_performance_grade(
-                        avg_duration, avg_success_rate
-                    ),
+                    "performance_grade": self._calculate_performance_grade(avg_duration, avg_success_rate),
                 },
             }
 
@@ -126,7 +122,7 @@ class PerformanceAnalyzerTool(BaseTool):
             logger.exception("Camera operations analysis failed")
             return {"error": str(e)}
 
-    async def _system_resources_analysis(self) -> Dict[str, Any]:
+    async def _system_resources_analysis(self) -> dict[str, Any]:
         """Analyze system resource usage."""
         try:
             import psutil
@@ -140,9 +136,7 @@ class PerformanceAnalyzerTool(BaseTool):
                 "cpu": {
                     "usage_percent": cpu_percent,
                     "cores": psutil.cpu_count(),
-                    "load_average": psutil.getloadavg()
-                    if hasattr(psutil, "getloadavg")
-                    else [0, 0, 0],
+                    "load_average": psutil.getloadavg() if hasattr(psutil, "getloadavg") else [0, 0, 0],
                 },
                 "memory": {
                     "total_gb": round(memory.total / (1024**3), 2),
@@ -156,9 +150,7 @@ class PerformanceAnalyzerTool(BaseTool):
                     "free_gb": round(disk.free / (1024**3), 2),
                     "usage_percent": round((disk.used / disk.total) * 100, 2),
                 },
-                "recommendations": self._generate_resource_recommendations(
-                    cpu_percent, memory.percent, disk.percent
-                ),
+                "recommendations": self._generate_resource_recommendations(cpu_percent, memory.percent, disk.percent),
             }
 
         except ImportError:
@@ -167,7 +159,7 @@ class PerformanceAnalyzerTool(BaseTool):
             logger.exception("System resources analysis failed")
             return {"error": str(e)}
 
-    async def _network_performance_analysis(self) -> Dict[str, Any]:
+    async def _network_performance_analysis(self) -> dict[str, Any]:
         """Analyze network performance for camera operations."""
         try:
             # Simulate network analysis
@@ -201,14 +193,12 @@ class PerformanceAnalyzerTool(BaseTool):
 
     def _generate_resource_recommendations(
         self, cpu_percent: float, memory_percent: float, disk_percent: float
-    ) -> List[str]:
+    ) -> list[str]:
         """Generate recommendations based on resource usage."""
         recommendations = []
 
         if cpu_percent > 80:
-            recommendations.append(
-                "High CPU usage detected - consider optimizing camera operations"
-            )
+            recommendations.append("High CPU usage detected - consider optimizing camera operations")
         if memory_percent > 85:
             recommendations.append("High memory usage - monitor for memory leaks")
         if disk_percent > 90:
@@ -219,7 +209,7 @@ class PerformanceAnalyzerTool(BaseTool):
 
         return recommendations
 
-    async def _generate_recommendations(self) -> List[str]:
+    async def _generate_recommendations(self) -> list[str]:
         """Generate overall system recommendations."""
         return [
             "Enable camera motion detection to reduce bandwidth usage",
@@ -230,7 +220,7 @@ class PerformanceAnalyzerTool(BaseTool):
             "Use local storage for snapshots to reduce network load",
         ]
 
-    def _generate_summary(self, _analysis: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_summary(self, _analysis: dict[str, Any]) -> dict[str, Any]:
         """Generate performance analysis summary."""
         return {
             "overall_grade": "A",

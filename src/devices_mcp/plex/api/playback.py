@@ -4,8 +4,6 @@ Playback-related API endpoints for PlexMCP.
 This module contains API endpoints for managing Plex playback, sessions, and clients.
 """
 
-from typing import List
-
 # Import the shared FastMCP instance from the package level
 # Import models
 from ..models import (
@@ -17,7 +15,7 @@ from ..models import (
 )
 
 
-async def get_clients() -> List[PlexClient]:
+async def get_clients() -> list[PlexClient]:
     """
     Get all available Plex client devices.
 
@@ -53,7 +51,7 @@ async def get_clients() -> List[PlexClient]:
         raise RuntimeError(f"Error fetching clients: {e!s}") from e
 
 
-async def get_sessions() -> List[PlexSession]:
+async def get_sessions() -> list[PlexSession]:
     """
     Get active playback sessions on the Plex server.
 

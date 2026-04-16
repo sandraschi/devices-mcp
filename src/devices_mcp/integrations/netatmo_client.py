@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -118,9 +118,7 @@ class NetatmoOAuth2Auth(AbstractAsyncAuth):
                             f"Authentication failed (401). Invalid credentials or token. Error: {error_text}"
                         )
                     if resp.status == 403:
-                        raise RuntimeError(
-                            f"Access forbidden (403). Check API permissions. Error: {error_text}"
-                        )
+                        raise RuntimeError(f"Access forbidden (403). Check API permissions. Error: {error_text}")
                     raise RuntimeError(error_msg)
 
                 try:
@@ -133,18 +131,12 @@ class NetatmoOAuth2Auth(AbstractAsyncAuth):
 
                 # Check if access_token is present in response
                 if "access_token" not in tokens:
-                    error_msg = (
-                        f"Access token not found in response. Response keys: {list(tokens.keys())}"
-                    )
+                    error_msg = f"Access token not found in response. Response keys: {list(tokens.keys())}"
                     logger.error(f"Netatmo token response missing access_token: {error_msg}")
                     # Check for error in response
                     if "error" in tokens:
-                        error_desc = tokens.get(
-                            "error_description", tokens.get("error", "Unknown error")
-                        )
-                        raise RuntimeError(
-                            f"Netatmo API error: {error_desc}. Full response: {tokens}"
-                        )
+                        error_desc = tokens.get("error_description", tokens.get("error", "Unknown error"))
+                        raise RuntimeError(f"Netatmo API error: {error_desc}. Full response: {tokens}")
                     raise RuntimeError(f"Access token not found in Netatmo response: {error_msg}")
 
                 self._access_token = tokens["access_token"]
@@ -318,9 +310,7 @@ class NetatmoService:
 
         if not PYATMO_AVAILABLE:
             self._last_error = "pyatmo is not installed. Install with: pip install pyatmo"
-            logger.warning(
-                "pyatmo not installed; using simulated data. Install with: pip install pyatmo"
-            )
+            logger.warning("pyatmo not installed; using simulated data. Install with: pip install pyatmo")
             return
 
         # Check for required credentials
@@ -400,9 +390,7 @@ class NetatmoService:
             try:
                 await asyncio.wait_for(self._account.async_update_weather_stations(), timeout=15.0)
                 self._last_update_success = time.time()
-                logger.info(
-                    f"Netatmo initialized: {len(self._account.homes)} homes, weather stations loaded"
-                )
+                logger.info(f"Netatmo initialized: {len(self._account.homes)} homes, weather stations loaded")
 
                 # Start background update loop
                 if self._background_task is None or self._background_task.done():
@@ -425,13 +413,11 @@ class NetatmoService:
                 if self._background_task is None or self._background_task.done():
                     self._background_task = asyncio.create_task(self._update_loop())
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             self._last_error = (
                 "Netatmo API timed out during first sync. Check firewall, DNS, or api.netatmo.com reachability."
             )
-            logger.exception(
-                "Netatmo initialization timed out - async_update_weather_stations took too long"
-            )
+            logger.exception("Netatmo initialization timed out - async_update_weather_stations took too long")
             if self._session:
                 try:
                     await self._session.close()
@@ -461,9 +447,7 @@ class NetatmoService:
         except AttributeError as e:
             self._last_error = f"pyatmo API mismatch or missing attribute: {e}"
             # pyatmo API changes or missing attributes
-            logger.exception(
-                f"Netatmo API attribute error during initialization (pyatmo version mismatch?): {e}"
-            )
+            logger.exception(f"Netatmo API attribute error during initialization (pyatmo version mismatch?): {e}")
             if self._session:
                 try:
                     await self._session.close()
@@ -493,13 +477,9 @@ class NetatmoService:
             self._last_error = f"{error_type}: {error_msg}"
             if "getaddrinfo" in error_msg or "ClientConnectorDNSError" in error_type:
                 logger.exception("Netatmo DNS error during initialization: {error_type}:")
-                logger.exception(
-                    "This indicates a network/DNS configuration issue, not just async DNS bug"
-                )
+                logger.exception("This indicates a network/DNS configuration issue, not just async DNS bug")
             else:
-                logger.exception(
-                    f"Netatmo network error during initialization: {error_type}: {error_msg}"
-                )
+                logger.exception(f"Netatmo network error during initialization: {error_type}: {error_msg}")
             if self._session:
                 try:
                     await self._session.close()
@@ -517,26 +497,14 @@ class NetatmoService:
             logger.exception("Failed to initialize Netatmo: {error_type}:")
 
             # Check if it's a DNS error - should already be using sync resolver, but log it
-            if (
-                "getaddrinfo" in error_msg
-                or "ClientConnectorDNSError" in error_type
-                or "DNS" in error_type
-            ):
-                logger.exception(
-                    f"Netatmo DNS error persists even with sync DNS resolver: {error_type}: {error_msg}"
-                )
-                logger.exception(
-                    "This indicates a network/DNS configuration issue, not just async DNS bug"
-                )
+            if "getaddrinfo" in error_msg or "ClientConnectorDNSError" in error_type or "DNS" in error_type:
+                logger.exception(f"Netatmo DNS error persists even with sync DNS resolver: {error_type}: {error_msg}")
+                logger.exception("This indicates a network/DNS configuration issue, not just async DNS bug")
             # Check for pyatmo-specific exceptions
             elif "pyatmo" in error_type.lower() or "netatmo" in error_type.lower():
-                logger.exception(
-                    f"Netatmo/pyatmo exception during initialization: {error_type}: {error_msg}"
-                )
+                logger.exception(f"Netatmo/pyatmo exception during initialization: {error_type}: {error_msg}")
             else:
-                logger.exception(
-                    f"Unexpected error during Netatmo initialization: {error_type}: {error_msg}"
-                )
+                logger.exception(f"Unexpected error during Netatmo initialization: {error_type}: {error_msg}")
 
             # Clean up and return - no simulated data
             if self._session:
@@ -692,10 +660,8 @@ class NetatmoService:
                 import asyncio
 
                 try:
-                    await asyncio.wait_for(
-                        self._account.async_update_weather_stations(), timeout=10.0
-                    )
-                except asyncio.TimeoutError:
+                    await asyncio.wait_for(self._account.async_update_weather_stations(), timeout=10.0)
+                except TimeoutError:
                     logger.warning("Netatmo data update timed out in current_data")
                     # Return empty data instead of raising
                     return {}, time.time()
@@ -709,9 +675,7 @@ class NetatmoService:
                     return {}, time.time()
                 except AttributeError as e:
                     # pyatmo API changes or missing attributes
-                    logger.exception(
-                        f"Netatmo API attribute error in current_data (pyatmo version mismatch?): {e}"
-                    )
+                    logger.exception(f"Netatmo API attribute error in current_data (pyatmo version mismatch?): {e}")
                     return {}, time.time()
                 except KeyError:
                     # Missing expected data in pyatmo response
@@ -726,47 +690,30 @@ class NetatmoService:
                         )
                         # Try to force token refresh and retry once
                         try:
-                            if hasattr(self._account, "auth") and hasattr(
-                                self._account.auth, "async_get_access_token"
-                            ):
+                            if hasattr(self._account, "auth") and hasattr(self._account.auth, "async_get_access_token"):
                                 # Clear cached token AND expiry to force refresh
                                 if hasattr(self._account.auth, "_access_token"):
                                     self._account.auth._access_token = None
                                 if hasattr(self._account.auth, "_token_expiry"):
-                                    self._account.auth._token_expiry = (
-                                        0  # Force expiry check to fail
-                                    )
+                                    self._account.auth._token_expiry = 0  # Force expiry check to fail
                                 # Force token refresh
                                 await self._account.auth.async_get_access_token()
-                                logger.info(
-                                    "Netatmo access token refreshed in current_data, retrying API call..."
-                                )
+                                logger.info("Netatmo access token refreshed in current_data, retrying API call...")
                                 # Retry the API call
-                                await asyncio.wait_for(
-                                    self._account.async_update_weather_stations(), timeout=10.0
-                                )
-                                logger.info(
-                                    "Netatmo token refreshed successfully in current_data, continuing..."
-                                )
+                                await asyncio.wait_for(self._account.async_update_weather_stations(), timeout=10.0)
+                                logger.info("Netatmo token refreshed successfully in current_data, continuing...")
                                 # Continue processing - don't return empty data yet
                             else:
-                                logger.exception(
-                                    "Cannot refresh token in current_data - auth object missing"
-                                )
+                                logger.exception("Cannot refresh token in current_data - auth object missing")
                                 return {}, time.time()
                         except (RuntimeError, PyatmoApiError) as refresh_error:
                             refresh_msg = str(refresh_error)
-                            if (
-                                "Invalid refresh token" in refresh_msg
-                                or "expired" in refresh_msg.lower()
-                            ):
+                            if "Invalid refresh token" in refresh_msg or "expired" in refresh_msg.lower():
                                 logger.exception(
                                     "Netatmo refresh token is invalid or expired in current_data. Please re-authenticate."
                                 )
                             else:
-                                logger.exception(
-                                    f"Netatmo token refresh failed in current_data: {refresh_error}"
-                                )
+                                logger.exception(f"Netatmo token refresh failed in current_data: {refresh_error}")
                             return {}, time.time()
                     else:
                         logger.exception("Netatmo API error in current_data:")
@@ -783,19 +730,11 @@ class NetatmoService:
                     error_type = type(e).__name__
                     error_msg = str(e)
                     # Check for DNS errors
-                    if (
-                        "getaddrinfo" in error_msg
-                        or "ClientConnectorDNSError" in error_type
-                        or "DNS" in error_type
-                    ):
-                        logger.warning(
-                            f"Netatmo DNS error in current_data: {error_type}: {error_msg}"
-                        )
+                    if "getaddrinfo" in error_msg or "ClientConnectorDNSError" in error_type or "DNS" in error_type:
+                        logger.warning(f"Netatmo DNS error in current_data: {error_type}: {error_msg}")
                     # Check for pyatmo-specific exceptions
                     elif "pyatmo" in error_type.lower() or "netatmo" in error_type.lower():
-                        logger.exception(
-                            f"Netatmo/pyatmo exception in current_data: {error_type}: {error_msg}"
-                        )
+                        logger.exception(f"Netatmo/pyatmo exception in current_data: {error_type}: {error_msg}")
                     else:
                         logger.exception("Unexpected error in current_data: {error_type}:")
                     return {}, time.time()
@@ -810,9 +749,7 @@ class NetatmoService:
                 for home_id, home in self._account.homes.items():
                     for mod_id, module in home.modules.items():
                         # Check if this is the station we're looking for
-                        if mod_id == station_id and "NAMain" in str(
-                            getattr(module, "device_type", "")
-                        ):
+                        if mod_id == station_id and "NAMain" in str(getattr(module, "device_type", "")):
                             target_home = home
                             target_station_module = module
                             break
@@ -883,9 +820,7 @@ class NetatmoService:
                 if data:
                     self._store_data(station_id, module_type, data, netatmo_timestamp=timestamp)
                     return data, timestamp
-                logger.warning(
-                    f"No data found for station {station_id} with module_type {module_type}"
-                )
+                logger.warning(f"No data found for station {station_id} with module_type {module_type}")
                 return {}, time.time()
 
             except Exception as e:
@@ -894,31 +829,19 @@ class NetatmoService:
                 error_type = type(e).__name__
                 error_msg = str(e)
                 # Check for DNS errors
-                if (
-                    "getaddrinfo" in error_msg
-                    or "ClientConnectorDNSError" in error_type
-                    or "DNS" in error_type
-                ):
+                if "getaddrinfo" in error_msg or "ClientConnectorDNSError" in error_type or "DNS" in error_type:
                     logger.warning(
                         f"Netatmo DNS error in current_data (catch-all): {error_type} - returning empty data"
                     )
                 elif "TimeoutError" in error_type or "asyncio.TimeoutError" in error_type:
-                    logger.warning(
-                        "Netatmo data update timed out (catch-all) - returning empty data"
-                    )
+                    logger.warning("Netatmo data update timed out (catch-all) - returning empty data")
                 elif "pyatmo" in error_type.lower() or "netatmo" in error_type.lower():
-                    logger.exception(
-                        f"Netatmo/pyatmo exception in current_data (catch-all): {error_type}: {error_msg}"
-                    )
+                    logger.exception(f"Netatmo/pyatmo exception in current_data (catch-all): {error_type}: {error_msg}")
                 else:
-                    logger.exception(
-                        f"Unexpected error fetching Netatmo data (catch-all): {error_type}: {error_msg}"
-                    )
+                    logger.exception(f"Unexpected error fetching Netatmo data (catch-all): {error_type}: {error_msg}")
 
         # NO simulated data - return empty dict
-        logger.warning(
-            f"Netatmo API unavailable - returning empty data for {station_id} (no simulated data)"
-        )
+        logger.warning(f"Netatmo API unavailable - returning empty data for {station_id} (no simulated data)")
         return {}, time.time()
 
     def _get_module_type(self, module: Any) -> str:
@@ -954,21 +877,19 @@ class NetatmoService:
         try:
             # Use Netatmo's timestamp if provided, otherwise use current time
             if netatmo_timestamp:
-                timestamp = datetime.fromtimestamp(netatmo_timestamp, tz=timezone.utc)
+                timestamp = datetime.fromtimestamp(netatmo_timestamp, tz=UTC)
                 # Check if we already stored data at this timestamp (dedup)
                 cache_key = f"last_stored_{station_id}_{module_type}"
                 last_stored = getattr(self, "_last_stored_timestamps", {}).get(cache_key, 0)
                 if netatmo_timestamp <= last_stored:
-                    logger.debug(
-                        f"Skipping duplicate data for {station_id}/{module_type} at {netatmo_timestamp}"
-                    )
+                    logger.debug(f"Skipping duplicate data for {station_id}/{module_type} at {netatmo_timestamp}")
                     return
                 # Update cache
                 if not hasattr(self, "_last_stored_timestamps"):
                     self._last_stored_timestamps = {}
                 self._last_stored_timestamps[cache_key] = netatmo_timestamp
             else:
-                timestamp = datetime.now(timezone.utc)
+                timestamp = datetime.now(UTC)
 
             if module_type in ("indoor", "all"):
                 indoor_data = data.get("indoor") if module_type == "all" else data
@@ -1041,8 +962,6 @@ class NetatmoService:
             return []
 
         try:
-            import asyncio
-
             # Parse time range to days
             time_range_days = {
                 "1d": 1,
@@ -1082,9 +1001,7 @@ class NetatmoService:
 
             # Get access token from pyatmo auth
             access_token = None
-            if hasattr(self._account, "auth") and hasattr(
-                self._account.auth, "async_get_access_token"
-            ):
+            if hasattr(self._account, "auth") and hasattr(self._account.auth, "async_get_access_token"):
                 access_token = await self._account.auth.async_get_access_token()
 
             if not access_token:
@@ -1158,7 +1075,7 @@ class NetatmoService:
             stored_count = 0
             for point in result:
                 try:
-                    ts = datetime.fromtimestamp(point["timestamp"], tz=timezone.utc)
+                    ts = datetime.fromtimestamp(point["timestamp"], tz=UTC)
                     # Build kwargs dynamically based on data_type
                     kwargs = {}
                     if data_type == "temperature":
@@ -1185,7 +1102,7 @@ class NetatmoService:
             logger.info(f"Stored {stored_count} data points in local DB")
             return result
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.exception("Netatmo historical data fetch timed out")
             return []
         except Exception:
@@ -1197,12 +1114,8 @@ class NetatmoService:
         logger.warning("Netatmo API unavailable - returning empty list (no simulated data)")
         return []
 
-    def _get_simulated_data(
-        self, station_id: str, module_type: str
-    ) -> tuple[dict[str, Any], float]:
+    def _get_simulated_data(self, station_id: str, module_type: str) -> tuple[dict[str, Any], float]:
         """Return empty data - NO simulated data in production."""
-        logger.warning(
-            f"Netatmo API unavailable for {station_id} - returning empty data (no simulated data)"
-        )
+        logger.warning(f"Netatmo API unavailable for {station_id} - returning empty data (no simulated data)")
         # Return empty dict - no fake data
         return {}, time.time()

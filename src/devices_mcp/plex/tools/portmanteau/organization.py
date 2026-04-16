@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -41,14 +41,14 @@ async def plex_organization(
         "optimize_database",
         "fix_issues",
     ],
-    library_id: Optional[str] = None,
+    library_id: str | None = None,
     dry_run: bool = False,
-    patterns: Optional[Dict[str, str]] = None,
+    patterns: dict[str, str] | None = None,
     threshold_days: int = 30,
     analyze: bool = True,
     vacuum: bool = True,
     reindex: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Comprehensive library organization and maintenance operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -165,9 +165,7 @@ async def plex_organization(
                     "suggestions": ["Provide library_id parameter"],
                 }
 
-            result = await plex.organize_library(
-                library_id=library_id, dry_run=dry_run, patterns=patterns
-            )
+            result = await plex.organize_library(library_id=library_id, dry_run=dry_run, patterns=patterns)
             return {
                 "success": True,
                 "operation": "organize",
@@ -212,9 +210,7 @@ async def plex_organization(
         # Operation: optimize_database
         if operation == "optimize_database":
             # Note: This is a placeholder - actual implementation would optimize the database
-            logger.info(
-                f"Optimizing database (analyze={analyze}, vacuum={vacuum}, reindex={reindex})"
-            )
+            logger.info(f"Optimizing database (analyze={analyze}, vacuum={vacuum}, reindex={reindex})")
             return {
                 "success": True,
                 "operation": "optimize_database",

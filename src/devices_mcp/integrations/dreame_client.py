@@ -5,9 +5,9 @@ Supports two modes:
 - Proxy to a running `dreame-mcp` backend (DreameHome cloud) via /api/v1/*
 """
 
-from dataclasses import dataclass
 import os
-from typing import Any, Dict, Optional
+from dataclasses import dataclass
+from typing import Any, Optional
 
 from ..utils import get_logger
 
@@ -25,7 +25,7 @@ class DreameStatus:
     battery_level: int
     cleaning_time: int
     cleaned_area: float
-    error_code: Optional[int]
+    error_code: int | None
     is_charging: bool
     is_cleaning: bool
     fan_speed: str
@@ -42,10 +42,10 @@ class DreameClient:
     def __init__(
         self,
         host: str,
-        token: Optional[str] = None,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        dreame_mcp_url: Optional[str] = None,
+        token: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        dreame_mcp_url: str | None = None,
     ):
         """
         Initialize Dreame client.
@@ -72,7 +72,7 @@ class DreameClient:
             or "http://localhost:10894"
         )
 
-    async def connect(self) -> Dict[str, Any]:
+    async def connect(self) -> dict[str, Any]:
         """Connect and verify Dreame integration."""
         if self.mock_mode:
             logger.info(f"[MOCK] Connected to Dreame via Home Assistant at {self.host}")
@@ -102,9 +102,7 @@ class DreameClient:
                         states = await response.json()
                         # Look for Dreame vacuum entities
                         dreame_entities = [
-                            entity
-                            for entity in states
-                            if entity.get("entity_id", "").startswith("vacuum.dreame_")
+                            entity for entity in states if entity.get("entity_id", "").startswith("vacuum.dreame_")
                         ]
 
                         self.entities = dreame_entities
@@ -145,7 +143,7 @@ class DreameClient:
             logger.exception("Error connecting to dreame-mcp proxy:")
             return {"success": False, "error": str(e)}
 
-    async def get_status(self, entity_id: str | None = None) -> Optional[DreameStatus]:
+    async def get_status(self, entity_id: str | None = None) -> DreameStatus | None:
         """Get current status of Dreame vacuum."""
         if self.mock_mode:
             return DreameStatus(
@@ -185,9 +183,7 @@ class DreameClient:
             if not eid:
                 return None
 
-            async with self.session.get(
-                f"{self.base_url}/api/states/{eid}"
-            ) as response:
+            async with self.session.get(f"{self.base_url}/api/states/{eid}") as response:
                 if response.status == 200:
                     data = await response.json()
 
@@ -210,33 +206,33 @@ class DreameClient:
             logger.exception("Error getting Dreame status:")
             return None
 
-    async def start_cleaning(self, entity_id: str) -> Dict[str, Any]:
+    async def start_cleaning(self, entity_id: str) -> dict[str, Any]:
         """Start cleaning cycle."""
         return await self._call_service(entity_id, "vacuum", "start")
 
-    async def stop_cleaning(self, entity_id: str) -> Dict[str, Any]:
+    async def stop_cleaning(self, entity_id: str) -> dict[str, Any]:
         """Stop cleaning cycle."""
         return await self._call_service(entity_id, "vacuum", "stop")
 
-    async def return_to_dock(self, entity_id: str) -> Dict[str, Any]:
+    async def return_to_dock(self, entity_id: str) -> dict[str, Any]:
         """Send vacuum back to dock."""
         return await self._call_service(entity_id, "vacuum", "return_to_base")
 
-    async def pause_cleaning(self, entity_id: str) -> Dict[str, Any]:
+    async def pause_cleaning(self, entity_id: str) -> dict[str, Any]:
         """Pause cleaning cycle."""
         return await self._call_service(entity_id, "vacuum", "pause")
 
-    async def set_fan_speed(self, entity_id: str, speed: str) -> Dict[str, Any]:
+    async def set_fan_speed(self, entity_id: str, speed: str) -> dict[str, Any]:
         """Set fan speed (quiet, normal, turbo, max)."""
         return await self._call_service(entity_id, "vacuum", "set_fan_speed", {"fan_speed": speed})
 
-    async def locate_vacuum(self, entity_id: str) -> Dict[str, Any]:
+    async def locate_vacuum(self, entity_id: str) -> dict[str, Any]:
         """Locate vacuum by playing sound."""
         return await self._call_service(entity_id, "vacuum", "locate")
 
     async def _call_service(
-        self, entity_id: str, domain: str, service: str, service_data: Optional[Dict] = None
-    ) -> Dict[str, Any]:
+        self, entity_id: str, domain: str, service: str, service_data: dict | None = None
+    ) -> dict[str, Any]:
         """Call Home Assistant service for Dreame vacuum."""
         try:
             if not self.session:
@@ -298,9 +294,7 @@ class DreameClient:
         return None
 
 
-def get_dreame_client(
-    host: str, token: str, username: Optional[str] = None, password: Optional[str] = None
-) -> DreameClient:
+def get_dreame_client(host: str, token: str, username: str | None = None, password: str | None = None) -> DreameClient:
     """Get or create Dreame client instance."""
     global _dreame_client
 
@@ -311,8 +305,8 @@ def get_dreame_client(
 
 
 async def init_dreame_client(
-    host: str, token: str, username: Optional[str] = None, password: Optional[str] = None
-) -> Dict[str, Any]:
+    host: str, token: str, username: str | None = None, password: str | None = None
+) -> dict[str, Any]:
     """Initialize Dreame client and test connection."""
     try:
         client = get_dreame_client(host, token, username, password)

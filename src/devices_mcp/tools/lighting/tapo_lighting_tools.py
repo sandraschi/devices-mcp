@@ -8,7 +8,7 @@ like L900 lightstrips with color control, brightness, and effects.
 import concurrent.futures
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -40,9 +40,7 @@ class TapoLight(BaseModel):
     color_temp: int = Field(default=0, description="Color temperature (Kelvin)")
     hue: int = Field(default=0, description="Hue (0-360)")
     saturation: int = Field(default=0, description="Saturation (0-100)")
-    rgb: List[int] = Field(
-        default_factory=lambda: [255, 255, 255], description="RGB color values (0-255)"
-    )
+    rgb: list[int] = Field(default_factory=lambda: [255, 255, 255], description="RGB color values (0-255)")
     effect: str = Field(default="", description="Current light effect/mode")
     reachable: bool = Field(..., description="Whether device is reachable")
     last_seen: str = Field(..., description="Last communication timestamp")
@@ -52,22 +50,20 @@ class TapoLightingManager:
     """Manager for Tapo smart lighting devices."""
 
     def __init__(self):
-        self.devices: Dict[str, TapoLight] = {}
+        self.devices: dict[str, TapoLight] = {}
         self._initialized = False
-        self._device_hosts: Dict[str, str] = {}
-        self._device_readonly: Dict[str, bool] = {}
-        self._connection_error: Optional[str] = None
-        self._last_scan_time: Optional[datetime] = None
-        self._account_email: Optional[str] = None
-        self._account_password: Optional[str] = None
+        self._device_hosts: dict[str, str] = {}
+        self._device_readonly: dict[str, bool] = {}
+        self._connection_error: str | None = None
+        self._last_scan_time: datetime | None = None
+        self._account_email: str | None = None
+        self._account_password: str | None = None
 
     async def initialize(self) -> bool:
         """Initialize connection to Tapo lighting devices."""
         try:
             if not PYTAPO_AVAILABLE:
-                self._connection_error = (
-                    "pytapo library not installed. Install with: pip install pytapo"
-                )
+                self._connection_error = "pytapo library not installed. Install with: pip install pytapo"
                 logger.warning(self._connection_error)
                 return False
 
@@ -77,9 +73,7 @@ class TapoLightingManager:
 
             # Go up from src/devices_mcp/tools/lighting/ to project root
             project_config_path = os.path.join(
-                os.path.dirname(
-                    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-                ),
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))),
                 "config.yaml",
             )
             if os.path.exists(project_config_path):
@@ -90,9 +84,7 @@ class TapoLightingManager:
                 logger.info(f"Loaded config from project path: {project_config_path}")
             else:
                 cfg = get_config() or {}
-                logger.warning(
-                    f"Project config not found at {project_config_path}, using default config"
-                )
+                logger.warning(f"Project config not found at {project_config_path}, using default config")
             lighting_cfg = cfg.get("lighting", {}).get("tapo_lighting", {})
 
             if not lighting_cfg:
@@ -145,7 +137,7 @@ class TapoLightingManager:
             logger.exception(self._connection_error)
             return False
 
-    def _sync_get_device_status(self, host: str, email: str, password: str) -> Dict[str, Any]:
+    def _sync_get_device_status(self, host: str, email: str, password: str) -> dict[str, Any]:
         """Synchronous method to get device status (runs in separate thread)."""
         try:
             tapo_device = Tapo(host, email, password)
@@ -259,9 +251,7 @@ class TapoLightingManager:
                         device.last_seen = datetime.now().isoformat()
                         updated_count += 1
 
-                        logger.debug(
-                            f"Updated Tapo light {device_id}: on={device.on}, brightness={device.brightness}"
-                        )
+                        logger.debug(f"Updated Tapo light {device_id}: on={device.on}, brightness={device.brightness}")
 
                     except Exception as e:
                         logger.warning(f"Failed to update Tapo light {device_id}: {e}")
@@ -276,7 +266,7 @@ class TapoLightingManager:
             logger.exception("Failed to rescan Tapo lighting devices:")
             return False
 
-    async def get_all_lights(self) -> List[TapoLight]:
+    async def get_all_lights(self) -> list[TapoLight]:
         """Get all configured Tapo lights."""
         if not self._initialized:
             await self.initialize()
@@ -286,7 +276,7 @@ class TapoLightingManager:
 
         return list(self.devices.values())
 
-    async def get_light(self, light_id: str) -> Optional[TapoLight]:
+    async def get_light(self, light_id: str) -> TapoLight | None:
         """Get a specific Tapo light by ID."""
         if not self._initialized:
             await self.initialize()
@@ -296,12 +286,12 @@ class TapoLightingManager:
     async def set_light_state(
         self,
         light_id: str,
-        on: Optional[bool] = None,
-        brightness_percent: Optional[int] = None,
-        hue: Optional[int] = None,
-        saturation: Optional[int] = None,
-        rgb: Optional[List[int]] = None,
-        effect: Optional[str] = None,
+        on: bool | None = None,
+        brightness_percent: int | None = None,
+        hue: int | None = None,
+        saturation: int | None = None,
+        rgb: list[int] | None = None,
+        effect: str | None = None,
     ) -> bool:
         """Set Tapo light state."""
         try:
@@ -371,9 +361,7 @@ class TapoLightingManager:
                             f"Successfully set physical Tapo light {light_id} state: on={on}, brightness={brightness_percent}, rgb={rgb}"
                         )
                     else:
-                        logger.warning(
-                            f"Failed to set physical Tapo light {light_id} state, but local state updated"
-                        )
+                        logger.warning(f"Failed to set physical Tapo light {light_id} state, but local state updated")
             else:
                 logger.info(
                     f"Tapo light {light_id} not reachable, updated local state only: on={on}, brightness={brightness_percent}, rgb={rgb}"
@@ -408,9 +396,7 @@ class TapoLightingTool(BaseTool):
     """Base class for Tapo lighting MCP tools."""
 
     def __init__(self):
-        super().__init__(
-            category=ToolCategory.LIGHTING, description="Control Tapo smart lighting devices"
-        )
+        super().__init__(category=ToolCategory.LIGHTING, description="Control Tapo smart lighting devices")
 
     async def ensure_initialized(self) -> bool:
         """Ensure the lighting manager is initialized."""
@@ -426,7 +412,7 @@ class ListTapoLights(TapoLightingTool):
     def __init__(self):
         super().__init__()
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """List all configured Tapo lights."""
         try:
             if not await self.ensure_initialized():
@@ -473,12 +459,12 @@ class ControlTapoLight(TapoLightingTool):
         self,
         device_id: str,
         action: str,
-        brightness_percent: Optional[int] = None,
-        hue: Optional[int] = None,
-        saturation: Optional[int] = None,
-        rgb: Optional[List[int]] = None,
-        effect: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        brightness_percent: int | None = None,
+        hue: int | None = None,
+        saturation: int | None = None,
+        rgb: list[int] | None = None,
+        effect: str | None = None,
+    ) -> dict[str, Any]:
         """Control a Tapo light."""
         try:
             if not await self.ensure_initialized():
@@ -494,15 +480,11 @@ class ControlTapoLight(TapoLightingTool):
             elif action.lower() == "toggle":
                 success = await tapo_lighting_manager.toggle_light(device_id)
             elif action.lower() == "brightness" and brightness_percent is not None:
-                success = await tapo_lighting_manager.set_light_state(
-                    device_id, brightness_percent=brightness_percent
-                )
+                success = await tapo_lighting_manager.set_light_state(device_id, brightness_percent=brightness_percent)
             elif action.lower() == "color" and rgb:
                 success = await tapo_lighting_manager.set_light_state(device_id, rgb=rgb)
             elif action.lower() == "hsv" and hue is not None and saturation is not None:
-                success = await tapo_lighting_manager.set_light_state(
-                    device_id, hue=hue, saturation=saturation
-                )
+                success = await tapo_lighting_manager.set_light_state(device_id, hue=hue, saturation=saturation)
             elif action.lower() == "effect" and effect:
                 success = await tapo_lighting_manager.set_light_state(device_id, effect=effect)
             else:
@@ -542,7 +524,7 @@ class GetTapoLightStatus(TapoLightingTool):
     def __init__(self):
         super().__init__()
 
-    async def execute(self, device_id: str) -> Dict[str, Any]:
+    async def execute(self, device_id: str) -> dict[str, Any]:
         """Get Tapo light status."""
         try:
             if not await self.ensure_initialized():

@@ -5,7 +5,7 @@ This module contains tools for system-level operations and configuration.
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import Field
 
@@ -36,7 +36,7 @@ class GetSystemInfoTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Get system information and status."""
         from ...core.server import TapoCameraServer
 
@@ -59,7 +59,7 @@ class RebootCameraTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Reboot the camera."""
         from ...core.server import TapoCameraServer
 
@@ -85,14 +85,12 @@ class GetLogsTool(BaseTool):
                 description="Log level to retrieve",
                 json_schema_extra={"enum": ["debug", "info", "warning", "error", "critical"]},
             )
-            limit: int = Field(
-                default=100, ge=1, description="Maximum number of log entries to return"
-            )
+            limit: int = Field(default=100, ge=1, description="Maximum number of log entries to return")
 
     level: str = "info"
     limit: int = 100
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Get system logs."""
         from ...core.server import TapoCameraServer
 
@@ -113,11 +111,11 @@ class GetHelpTool(BaseTool):
         category = ToolCategory.UTILITY
 
         class Parameters:
-            tool_name: Optional[str] = Field(None, description="Name of the tool to get help for")
+            tool_name: str | None = Field(None, description="Name of the tool to get help for")
 
-    tool_name: Optional[str] = None
+    tool_name: str | None = None
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Get help about available tools and their usage."""
         from ...core.server import TapoCameraServer
 
@@ -139,23 +137,19 @@ class SetMotionDetectionTool(BaseTool):
 
         class Parameters:
             enabled: bool = Field(..., description="Whether to enable motion detection")
-            sensitivity: Optional[int] = Field(
-                None, ge=1, le=100, description="Sensitivity level (1-100)"
-            )
-            zones: Optional[List[Any]] = Field(None, description="List of motion detection zones")
+            sensitivity: int | None = Field(None, ge=1, le=100, description="Sensitivity level (1-100)")
+            zones: list[Any] | None = Field(None, description="List of motion detection zones")
 
     enabled: bool
-    sensitivity: Optional[int] = None
-    zones: Optional[List[Any]] = None
+    sensitivity: int | None = None
+    zones: list[Any] | None = None
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Enable or disable motion detection."""
         from ...core.server import TapoCameraServer
 
         server = await TapoCameraServer.get_instance()
-        return await server.set_motion_detection(
-            enabled=self.enabled, sensitivity=self.sensitivity, zones=self.zones
-        )
+        return await server.set_motion_detection(enabled=self.enabled, sensitivity=self.sensitivity, zones=self.zones)
 
 
 # Register the tool
@@ -175,7 +169,7 @@ class SetLEDEnabledTool(BaseTool):
 
     enabled: bool
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Enable or disable the camera LED."""
         from ...core.server import TapoCameraServer
 
@@ -200,7 +194,7 @@ class SetPrivacyModeTool(BaseTool):
 
     enabled: bool
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Enable or disable privacy mode."""
         from ...core.server import TapoCameraServer
 
@@ -221,13 +215,13 @@ class HelpTool(BaseTool):
         category = ToolCategory.UTILITY
 
         class Parameters:
-            tool_name: Optional[str] = Field(None, description="Name of the tool to get help for")
-            category: Optional[str] = Field(None, description="Filter tools by category")
+            tool_name: str | None = Field(None, description="Name of the tool to get help for")
+            category: str | None = Field(None, description="Filter tools by category")
 
-    tool_name: Optional[str] = None
-    category: Optional[str] = None
+    tool_name: str | None = None
+    category: str | None = None
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Get comprehensive help about available tools and their usage."""
         from ...core.server import TapoCameraServer
 

@@ -8,7 +8,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -16,6 +16,7 @@ from ...config import get_config
 from ...tools.base_tool import BaseTool, ToolCategory, tool
 
 logger = logging.getLogger(__name__)
+
 
 # Repo-local cache (optional): bridge_ip + username when not only in config.yaml
 def _hue_repo_root() -> Path:
@@ -144,13 +145,11 @@ class HueLight(BaseModel):
     color_temp_kelvin: int = Field(default=0, description="Color temperature (Kelvin)")
     hue: int = Field(default=0, description="Hue (0-65535)")
     saturation: int = Field(..., description="Saturation (0-254)")
-    xy: List[float] = Field(default_factory=list, description="XY color coordinates")
-    rgb: List[int] = Field(default_factory=list, description="RGB color values (0-255)")
+    xy: list[float] = Field(default_factory=list, description="XY color coordinates")
+    rgb: list[int] = Field(default_factory=list, description="RGB color values (0-255)")
     reachable: bool = Field(..., description="Whether light is reachable")
     last_seen: str = Field(..., description="Last communication timestamp")
-    energy_usage: Optional[float] = Field(
-        default=None, description="Power consumption in watts (if available)"
-    )
+    energy_usage: float | None = Field(default=None, description="Power consumption in watts (if available)")
 
 
 class HueHomeAware(BaseModel):
@@ -160,13 +159,11 @@ class HueHomeAware(BaseModel):
     signal_strength: int = Field(..., description="Current Zigbee signal strength (0-255)")
     signal_quality: str = Field(default="unknown", description="Signal quality assessment")
     last_updated: str = Field(..., description="Last signal measurement timestamp")
-    baseline_strength: Optional[int] = Field(
-        None, description="Established baseline signal strength"
-    )
+    baseline_strength: int | None = Field(None, description="Established baseline signal strength")
     signal_variance: float = Field(default=0.0, description="Signal variance from baseline")
     motion_confidence: float = Field(default=0.0, description="Motion detection confidence (0-1)")
     motion_detected: bool = Field(default=False, description="Active motion detection")
-    last_motion_time: Optional[str] = Field(None, description="Timestamp of last detected motion")
+    last_motion_time: str | None = Field(None, description="Timestamp of last detected motion")
     room: str = Field(default="", description="Room/location for motion context")
 
 
@@ -176,7 +173,7 @@ class HueGroup(BaseModel):
     group_id: str = Field(..., description="Unique group identifier")
     name: str = Field(..., description="Group/room name")
     type: str = Field(default="Room", description="Group type (Room, Zone, etc.)")
-    lights: List[str] = Field(default_factory=list, description="Light IDs in this group")
+    lights: list[str] = Field(default_factory=list, description="Light IDs in this group")
     on: bool = Field(..., description="Whether any lights in group are on")
     brightness: int = Field(default=0, description="Average brightness")
     reachable_lights: int = Field(default=0, description="Number of reachable lights")
@@ -188,7 +185,7 @@ class HueScene(BaseModel):
     scene_id: str = Field(..., description="Unique scene identifier")
     name: str = Field(..., description="Scene name")
     group: str = Field(default="", description="Group/room this scene belongs to")
-    lights: List[str] = Field(default_factory=list, description="Light IDs in this scene")
+    lights: list[str] = Field(default_factory=list, description="Light IDs in this scene")
     active: bool = Field(default=False, description="Whether scene is currently active")
 
 
@@ -200,29 +197,27 @@ class HueManager:
     """
 
     def __init__(self):
-        self.lights: Dict[str, HueLight] = {}
-        self.groups: Dict[str, HueGroup] = {}
-        self.scenes: Dict[str, HueScene] = {}
-        self.homeaware_sensors: Dict[str, HueHomeAware] = {}
+        self.lights: dict[str, HueLight] = {}
+        self.groups: dict[str, HueGroup] = {}
+        self.scenes: dict[str, HueScene] = {}
+        self.homeaware_sensors: dict[str, HueHomeAware] = {}
         self._initialized = False
-        self._bridge: Optional[Any] = None
+        self._bridge: Any | None = None
         self._homeaware_enabled = False  # MotionAware: Hue CLIP v2 available
         self._clip_v2_available = False
         self._clip_v2_error: str | None = None
         self._motionaware_last_state: dict[str, bool] = {}
-        self._bridge_ip: Optional[str] = None
-        self._bridge_username: Optional[str] = None
-        self._connection_error: Optional[str] = None
+        self._bridge_ip: str | None = None
+        self._bridge_username: str | None = None
+        self._connection_error: str | None = None
         self._cache_loaded = False  # Track if we've loaded from bridge at least once
-        self._last_scan_time: Optional[datetime] = None
+        self._last_scan_time: datetime | None = None
 
     async def initialize(self) -> bool:
         """Initialize connection to Philips Hue Bridge."""
         try:
             if not PHUE_AVAILABLE:
-                self._connection_error = (
-                    "phue library not installed. Install with: pip install phue"
-                )
+                self._connection_error = "phue library not installed. Install with: pip install phue"
                 logger.warning(self._connection_error)
                 return False
 
@@ -294,9 +289,7 @@ class HueManager:
         if not self._bridge_ip or not self._bridge_username:
             self._clip_v2_error = "Missing bridge IP or API username"
             return
-        code, payload, err = await hue_clip_v2_get(
-            self._bridge_ip, self._bridge_username, "bridge"
-        )
+        code, payload, err = await hue_clip_v2_get(self._bridge_ip, self._bridge_username, "bridge")
         if code != 200 or payload is None:
             self._clip_v2_error = err or "CLIP v2 bridge probe failed"
             logger.info("Hue CLIP v2 not available: %s", self._clip_v2_error)
@@ -324,18 +317,14 @@ class HueManager:
         conv: list[dict[str, Any]] = []
         sec: list[dict[str, Any]] = []
 
-        c1, p1, e1 = await hue_clip_v2_get(
-            self._bridge_ip, self._bridge_username, "convenience_area_motion"
-        )
+        c1, p1, e1 = await hue_clip_v2_get(self._bridge_ip, self._bridge_username, "convenience_area_motion")
         if c1 == 200 and p1 is not None:
             conv = _clip_v2_data_rows(p1)
             conv_err = _clip_v2_errors_hint(p1)
         else:
             conv_err = e1 or f"HTTP {c1}"
 
-        c2, p2, e2 = await hue_clip_v2_get(
-            self._bridge_ip, self._bridge_username, "security_area_motion"
-        )
+        c2, p2, e2 = await hue_clip_v2_get(self._bridge_ip, self._bridge_username, "security_area_motion")
         if c2 == 200 and p2 is not None:
             sec = _clip_v2_data_rows(p2)
             sec_err = _clip_v2_errors_hint(p2)
@@ -360,9 +349,7 @@ class HueManager:
                     light_data = self._create_light_from_bridge(light)
                     self.lights[light_data.light_id] = light_data
                 except Exception as e:
-                    logger.debug(
-                        f"Failed to process light {getattr(light, 'light_id', 'unknown')}: {e}"
-                    )
+                    logger.debug(f"Failed to process light {getattr(light, 'light_id', 'unknown')}: {e}")
                     # Continue with other lights even if one fails
 
             # Discover groups
@@ -374,9 +361,7 @@ class HueManager:
                         group_data = self._create_group_from_bridge(group)
                         self.groups[group_data.group_id] = group_data
                     except Exception as e:
-                        logger.warning(
-                            f"Failed to process group {getattr(group, 'group_id', 'unknown')}: {e}"
-                        )
+                        logger.warning(f"Failed to process group {getattr(group, 'group_id', 'unknown')}: {e}")
             except Exception as e:
                 logger.warning(f"Failed to discover groups: {e}")
 
@@ -389,9 +374,7 @@ class HueManager:
                         scene_data = self._create_scene_from_bridge(scene)
                         self.scenes[scene_data.scene_id] = scene_data
                     except Exception as e:
-                        logger.warning(
-                            f"Failed to process scene {getattr(scene, 'scene_id', 'unknown')}: {e}"
-                        )
+                        logger.warning(f"Failed to process scene {getattr(scene, 'scene_id', 'unknown')}: {e}")
             except Exception as e:
                 logger.warning(f"Failed to discover scenes: {e}")
 
@@ -570,7 +553,7 @@ class HueManager:
             active=False,  # Would need to check current state
         )
 
-    async def monitor_homeaware_motion(self) -> List[Dict[str, Any]]:
+    async def monitor_homeaware_motion(self) -> list[dict[str, Any]]:
         """
         Poll MotionAware motion areas via Hue CLIP v2 (Signify ``convenience_area_motion`` /
         ``security_area_motion``).
@@ -582,7 +565,7 @@ class HueManager:
         if not self._clip_v2_available:
             return []
 
-        motion_events: List[Dict[str, Any]] = []
+        motion_events: list[dict[str, Any]] = []
         try:
             conv, sec, _err = await self._fetch_motionaware_area_lists()
             grouped = (
@@ -615,12 +598,12 @@ class HueManager:
             logger.warning("MotionAware poll failed: %s", e)
         return motion_events
 
-    async def get_homeaware_status(self) -> Dict[str, Any]:
+    async def get_homeaware_status(self) -> dict[str, Any]:
         """MotionAware status from Signify Hue API v2 (motion areas configured in the Hue app)."""
         if not self._initialized:
             await self.initialize()
 
-        base: Dict[str, Any] = {
+        base: dict[str, Any] = {
             "feature": "MotionAware",
             "api": "hue_clip_v2",
             "clip_v2_available": self._clip_v2_available,
@@ -656,9 +639,7 @@ class HueManager:
             }
             for a in sec
         ]
-        with_motion = sum(1 for a in conv_areas if a.get("motion")) + sum(
-            1 for a in sec_areas if a.get("motion")
-        )
+        with_motion = sum(1 for a in conv_areas if a.get("motion")) + sum(1 for a in sec_areas if a.get("motion"))
         return {
             **base,
             "enabled": True,
@@ -668,7 +649,7 @@ class HueManager:
             "fetch_hint": err,
         }
 
-    async def get_all_lights(self) -> List[HueLight]:
+    async def get_all_lights(self) -> list[HueLight]:
         """Get all discovered lights (from cache, with auto-rescan if stale)."""
         if not self._initialized:
             await self.initialize()
@@ -676,11 +657,7 @@ class HueManager:
         # Auto-rescan if cache is older than 30 minutes OR if we have no cache at all
         # Removed the flawed "all lights off" logic that caused constant rescanning
         now = datetime.now()
-        cache_age_minutes = (
-            (now - self._last_scan_time).total_seconds() / 60
-            if self._last_scan_time
-            else float("inf")
-        )
+        cache_age_minutes = (now - self._last_scan_time).total_seconds() / 60 if self._last_scan_time else float("inf")
 
         if not self.lights or cache_age_minutes > 10:
             logger.info(f"Cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning...")
@@ -688,7 +665,7 @@ class HueManager:
 
         return list(self.lights.values())
 
-    async def get_light(self, light_id: str) -> Optional[HueLight]:
+    async def get_light(self, light_id: str) -> HueLight | None:
         """Get a specific light by ID (from cache, fast)."""
         if not self._initialized:
             await self.initialize()
@@ -702,7 +679,7 @@ class HueManager:
                 return light
         return None
 
-    def _xy_to_rgb(self, x: float, y: float, brightness: int = 254) -> List[int]:
+    def _xy_to_rgb(self, x: float, y: float, brightness: int = 254) -> list[int]:
         """Convert CIE 1931 XY color space to RGB for Hue lights.
 
         Converts XY coordinates back to RGB for display purposes.
@@ -748,7 +725,7 @@ class HueManager:
             logger.exception("Failed to convert XY to RGB")
             return [255, 255, 255]  # Default to white on error
 
-    def _rgb_to_xy(self, r: int, g: int, b: int) -> List[float] | None:
+    def _rgb_to_xy(self, r: int, g: int, b: int) -> list[float] | None:
         """Convert RGB (0-255) to CIE 1931 XY color space for Hue lights.
 
         Based on Philips Hue API specification for RGB to XY conversion.
@@ -803,13 +780,13 @@ class HueManager:
     async def set_light_state(
         self,
         light_id: str,
-        on: Optional[bool] = None,
-        brightness: Optional[int] = None,
-        brightness_percent: Optional[int] = None,
-        color_temp: Optional[int] = None,
-        hue: Optional[int] = None,
-        saturation: Optional[int] = None,
-        rgb: Optional[List[int]] = None,
+        on: bool | None = None,
+        brightness: int | None = None,
+        brightness_percent: int | None = None,
+        color_temp: int | None = None,
+        hue: int | None = None,
+        saturation: int | None = None,
+        rgb: list[int] | None = None,
     ) -> bool:
         """Set light state."""
         if not self._bridge:
@@ -882,49 +859,37 @@ class HueManager:
             logger.exception(f"Failed to set light {light_id} state")
             raise
 
-    async def get_all_groups(self) -> List[HueGroup]:
+    async def get_all_groups(self) -> list[HueGroup]:
         """Get all groups/rooms (from cache, with auto-rescan if stale)."""
         if not self._initialized:
             await self.initialize()
 
         # Use same time-based staleness check as lights
         now = datetime.now()
-        cache_age_minutes = (
-            (now - self._last_scan_time).total_seconds() / 60
-            if self._last_scan_time
-            else float("inf")
-        )
+        cache_age_minutes = (now - self._last_scan_time).total_seconds() / 60 if self._last_scan_time else float("inf")
 
         if not self.groups or cache_age_minutes > 10:
-            logger.info(
-                f"Groups cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning..."
-            )
+            logger.info(f"Groups cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning...")
             await self.rescan()
 
         return list(self.groups.values())
 
-    async def get_all_scenes(self) -> List[HueScene]:
+    async def get_all_scenes(self) -> list[HueScene]:
         """Get all scenes (from cache, with auto-rescan if stale)."""
         if not self._initialized:
             await self.initialize()
 
         # Use same time-based staleness check as lights/groups
         now = datetime.now()
-        cache_age_minutes = (
-            (now - self._last_scan_time).total_seconds() / 60
-            if self._last_scan_time
-            else float("inf")
-        )
+        cache_age_minutes = (now - self._last_scan_time).total_seconds() / 60 if self._last_scan_time else float("inf")
 
         if not self.scenes or cache_age_minutes > 10:
-            logger.info(
-                f"Scenes cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning..."
-            )
+            logger.info(f"Scenes cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning...")
             await self.rescan()
 
         return list(self.scenes.values())
 
-    async def rescan(self) -> Dict[str, int]:
+    async def rescan(self) -> dict[str, int]:
         """Manually rescan all devices from bridge. Use when devices change."""
         # Try to initialize if not already done
         if not self._initialized:
@@ -941,10 +906,8 @@ class HueManager:
         try:
             import asyncio
 
-            await asyncio.wait_for(
-                self._discover_devices(), timeout=15.0
-            )  # 15 second timeout for rescans
-        except asyncio.TimeoutError:
+            await asyncio.wait_for(self._discover_devices(), timeout=15.0)  # 15 second timeout for rescans
+        except TimeoutError:
             logger.warning("Hue bridge rescan timed out after 15 seconds")
             raise RuntimeError("Hue bridge rescan timed out - bridge may be unresponsive")
         except Exception:
@@ -965,8 +928,8 @@ class HueManager:
     async def set_group_state(
         self,
         group_id: str,
-        on: Optional[bool] = None,
-        brightness: Optional[int] = None,
+        on: bool | None = None,
+        brightness: int | None = None,
     ) -> bool:
         """Set group/room state."""
         if not self._bridge:
@@ -997,7 +960,7 @@ class HueManager:
             logger.exception(f"Failed to set group {group_id} state")
             raise
 
-    async def activate_scene(self, scene_id: str, group_id: Optional[str] = None) -> bool:
+    async def activate_scene(self, scene_id: str, group_id: str | None = None) -> bool:
         """Activate a scene."""
         if not self._bridge:
             raise RuntimeError("Hue Bridge not connected")
@@ -1053,7 +1016,7 @@ class HueManager:
 
 # Global manager instance
 # Global Hue manager instance (lazy initialization)
-_hue_manager_instance: Optional[HueManager] = None
+_hue_manager_instance: HueManager | None = None
 
 
 def get_hue_manager() -> HueManager:
@@ -1194,7 +1157,7 @@ async def pair_philips_hue_bridge(bridge_ip: str) -> dict[str, Any]:
 class GetHueLightsTool(BaseTool):
     """Get all Philips Hue lights."""
 
-    async def run(self) -> Dict[str, Any]:
+    async def run(self) -> dict[str, Any]:
         """Get all lights."""
         lights = await hue_manager.get_all_lights()
         return {
@@ -1211,11 +1174,11 @@ class ControlHueLightTool(BaseTool):
     """Control a Philips Hue light."""
 
     light_id: str = Field(..., description="Light ID")
-    on: Optional[bool] = Field(None, description="Turn light on/off")
-    brightness_percent: Optional[int] = Field(None, description="Brightness (0-100)")
-    color_temp_kelvin: Optional[int] = Field(None, description="Color temperature in Kelvin")
+    on: bool | None = Field(None, description="Turn light on/off")
+    brightness_percent: int | None = Field(None, description="Brightness (0-100)")
+    color_temp_kelvin: int | None = Field(None, description="Color temperature in Kelvin")
 
-    async def run(self) -> Dict[str, Any]:
+    async def run(self) -> dict[str, Any]:
         """Control light."""
         success = await hue_manager.set_light_state(
             self.light_id,
@@ -1237,7 +1200,7 @@ class ControlHueLightTool(BaseTool):
 class GetHueGroupsTool(BaseTool):
     """Get all Hue groups/rooms."""
 
-    async def run(self) -> Dict[str, Any]:
+    async def run(self) -> dict[str, Any]:
         """Get all groups."""
         groups = await hue_manager.get_all_groups()
         return {
@@ -1254,10 +1217,10 @@ class ControlHueGroupTool(BaseTool):
     """Control a Hue group/room."""
 
     group_id: str = Field(..., description="Group ID")
-    on: Optional[bool] = Field(None, description="Turn all lights in group on/off")
-    brightness: Optional[int] = Field(None, description="Brightness (0-254)")
+    on: bool | None = Field(None, description="Turn all lights in group on/off")
+    brightness: int | None = Field(None, description="Brightness (0-254)")
 
-    async def run(self) -> Dict[str, Any]:
+    async def run(self) -> dict[str, Any]:
         """Control group."""
         success = await hue_manager.set_group_state(
             self.group_id,
@@ -1277,7 +1240,7 @@ class GetHomeAwareStatus(BaseTool):
             description="Get MotionAware motion areas from Signify Hue API v2 (convenience_area_motion / security_area_motion)",
         )
 
-    async def run(self) -> Dict[str, Any]:
+    async def run(self) -> dict[str, Any]:
         """Return MotionAware motion area state (CLIP v2)."""
         try:
             status = await hue_manager.get_homeaware_status()
@@ -1296,7 +1259,7 @@ class MonitorHomeAwareMotion(BaseTool):
             description="Poll MotionAware motion areas (false-to-true motion edges per area)",
         )
 
-    async def run(self) -> Dict[str, Any]:
+    async def run(self) -> dict[str, Any]:
         """Poll MotionAware motion areas (CLIP v2)."""
         try:
             motion_events = await hue_manager.monitor_homeaware_motion()

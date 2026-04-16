@@ -12,7 +12,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import aiofiles
 from cryptography.fernet import Fernet, InvalidToken
@@ -27,9 +27,9 @@ class TokenManager:
 
     def __init__(
         self,
-        storage_path: Optional[Union[str, Path]] = None,
-        encryption_key: Optional[bytes] = None,
-        salt: Optional[bytes] = None,
+        storage_path: str | Path | None = None,
+        encryption_key: bytes | None = None,
+        salt: bytes | None = None,
     ):
         """Initialize the TokenManager.
 
@@ -49,12 +49,10 @@ class TokenManager:
 
         # Initialize encryption
         self.fernet = self._init_encryption(encryption_key, salt)
-        self._tokens: Dict[str, Dict[str, Any]] = {}
+        self._tokens: dict[str, dict[str, Any]] = {}
         self._refresh_lock = asyncio.Lock()
 
-    def _init_encryption(
-        self, encryption_key: Optional[bytes] = None, salt: Optional[bytes] = None
-    ) -> Fernet:
+    def _init_encryption(self, encryption_key: bytes | None = None, salt: bytes | None = None) -> Fernet:
         """Initialize the encryption system.
 
         Args:
@@ -203,7 +201,7 @@ class TokenManager:
                     pass
             return False
 
-    async def get_token(self, username: str) -> Optional[Dict[str, Any]]:
+    async def get_token(self, username: str) -> dict[str, Any] | None:
         """Get a token for the specified username.
 
         Args:
@@ -228,9 +226,7 @@ class TokenManager:
                 expires_at = datetime.fromisoformat(token_data.get("expires_at", ""))
 
                 if expires_at < (datetime.utcnow() + timedelta(minutes=5)):
-                    logger.info(
-                        "Token for %s is expired or about to expire, refreshing...", username
-                    )
+                    logger.info("Token for %s is expired or about to expire, refreshing...", username)
                     try:
                         # Import here to avoid circular imports
                         from .ring_client_modern import RingClient
@@ -243,9 +239,7 @@ class TokenManager:
                         if client.token and client.token != token_data["access_token"]:
                             # Update the token data
                             token_data["access_token"] = client.token
-                            token_data["expires_at"] = (
-                                datetime.utcnow() + timedelta(hours=1)
-                            ).isoformat()
+                            token_data["expires_at"] = (datetime.utcnow() + timedelta(hours=1)).isoformat()
 
                             # Save the updated tokens
                             self._tokens[username] = token_data
@@ -263,7 +257,7 @@ class TokenManager:
         self,
         username: str,
         access_token: str,
-        refresh_token: Optional[str] = None,
+        refresh_token: str | None = None,
         expires_in: int = 3600,
     ) -> bool:
         """Save a token for the specified username.
@@ -303,7 +297,7 @@ class TokenManager:
             return await self.save_tokens()
         return True
 
-    async def get_all_tokens(self) -> Dict[str, Dict[str, Any]]:
+    async def get_all_tokens(self) -> dict[str, dict[str, Any]]:
         """Get all stored tokens.
 
         Returns:

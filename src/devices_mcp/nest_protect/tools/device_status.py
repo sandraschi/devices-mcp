@@ -1,6 +1,6 @@
 """Device status tools for Nest Protect MCP."""
 
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -22,7 +22,7 @@ class DeviceEventsParams(BaseModel):
     limit: int = Field(10, ge=1, le=100, description="Maximum number of events to return")
 
 
-async def list_devices() -> Dict[str, Any]:
+async def list_devices() -> dict[str, Any]:
     """List all Nest Protect devices with conversational response format."""
     import aiohttp
 
@@ -65,15 +65,9 @@ async def list_devices() -> Dict[str, Any]:
                         {
                             "id": d["name"].split("/")[-1],
                             "type": d.get("type", "").split(".")[-1],
-                            "name": d.get("traits", {})
-                            .get("sdm.devices.traits.Info", {})
-                            .get("customName", ""),
-                            "model": d.get("traits", {})
-                            .get("sdm.devices.traits.Info", {})
-                            .get("modelNumber", ""),
-                            "online": d.get("traits", {})
-                            .get("sdm.devices.traits.Connectivity", {})
-                            .get("status")
+                            "name": d.get("traits", {}).get("sdm.devices.traits.Info", {}).get("customName", ""),
+                            "model": d.get("traits", {}).get("sdm.devices.traits.Info", {}).get("modelNumber", ""),
+                            "online": d.get("traits", {}).get("sdm.devices.traits.Connectivity", {}).get("status")
                             == "ONLINE",
                         }
                         for d in devices
@@ -164,7 +158,7 @@ async def list_devices() -> Dict[str, Any]:
         }
 
 
-async def get_device_status(device_id: str) -> Dict[str, Any]:
+async def get_device_status(device_id: str) -> dict[str, Any]:
     """Get status of a specific Nest Protect device with conversational response format."""
     import aiohttp
 
@@ -195,7 +189,9 @@ async def get_device_status(device_id: str) -> Dict[str, Any]:
         }
 
     try:
-        url = f"https://smartdevicemanagement.googleapis.com/v1/enterprises/{state.config.project_id}/devices/{device_id}"
+        url = (
+            f"https://smartdevicemanagement.googleapis.com/v1/enterprises/{state.config.project_id}/devices/{device_id}"
+        )
         headers = {"Authorization": f"Bearer {state.access_token}"}
 
         async with aiohttp.ClientSession() as session:
@@ -212,46 +208,26 @@ async def get_device_status(device_id: str) -> Dict[str, Any]:
                         "model": info.get("modelNumber", ""),
                         "online": connectivity.get("status") == "ONLINE",
                         "battery": {
-                            "level": traits.get("sdm.devices.traits.Battery", {}).get(
-                                "batteryLevel"
-                            ),
-                            "status": traits.get("sdm.devices.traits.Battery", {}).get(
-                                "batteryStatus"
-                            ),
+                            "level": traits.get("sdm.devices.traits.Battery", {}).get("batteryLevel"),
+                            "status": traits.get("sdm.devices.traits.Battery", {}).get("batteryStatus"),
                         },
                         "alarm": {
-                            "status": traits.get("sdm.devices.traits.SafetyAlarm", {}).get(
-                                "alarmStatus"
-                            ),
-                            "last_event": traits.get("sdm.devices.traits.SafetyAlarm", {}).get(
-                                "lastEvent"
-                            ),
+                            "status": traits.get("sdm.devices.traits.SafetyAlarm", {}).get("alarmStatus"),
+                            "last_event": traits.get("sdm.devices.traits.SafetyAlarm", {}).get("lastEvent"),
                         },
                         "smoke": {
                             "status": traits.get("sdm.devices.traits.Smoke", {}).get("smokeStatus"),
-                            "last_event": traits.get("sdm.devices.traits.Smoke", {}).get(
-                                "lastEvent"
-                            ),
+                            "last_event": traits.get("sdm.devices.traits.Smoke", {}).get("lastEvent"),
                         },
                         "co": {
-                            "status": traits.get("sdm.devices.traits.CarbonMonoxide", {}).get(
-                                "coStatus"
-                            ),
-                            "level_ppm": traits.get("sdm.devices.traits.CarbonMonoxide", {}).get(
-                                "coLevel"
-                            ),
-                            "last_event": traits.get("sdm.devices.traits.CarbonMonoxide", {}).get(
-                                "lastEvent"
-                            ),
+                            "status": traits.get("sdm.devices.traits.CarbonMonoxide", {}).get("coStatus"),
+                            "level_ppm": traits.get("sdm.devices.traits.CarbonMonoxide", {}).get("coLevel"),
+                            "last_event": traits.get("sdm.devices.traits.CarbonMonoxide", {}).get("lastEvent"),
                         },
                         "heat": {
                             "status": traits.get("sdm.devices.traits.Heat", {}).get("heatStatus"),
-                            "temperature_c": traits.get("sdm.devices.traits.Temperature", {}).get(
-                                "temperature"
-                            ),
-                            "humidity": traits.get("sdm.devices.traits.Humidity", {}).get(
-                                "humidity"
-                            ),
+                            "temperature_c": traits.get("sdm.devices.traits.Temperature", {}).get("temperature"),
+                            "humidity": traits.get("sdm.devices.traits.Humidity", {}).get("humidity"),
                         },
                         "last_update": device.get("lastEventTime"),
                     }
@@ -264,17 +240,13 @@ async def get_device_status(device_id: str) -> Dict[str, Any]:
                     if not device_status["online"]:
                         health_issues.append("Device is offline")
                         suggestions.append("Check device power and Wi-Fi connection")
-                        follow_up_questions.append(
-                            "Would you like me to try reconnecting the device?"
-                        )
+                        follow_up_questions.append("Would you like me to try reconnecting the device?")
 
                     battery_level = device_status["battery"]["level"]
                     if battery_level and battery_level < 20:
                         health_issues.append(f"Low battery ({battery_level}%)")
                         suggestions.append("Replace the battery soon")
-                        follow_up_questions.append(
-                            "Should I schedule a battery replacement reminder?"
-                        )
+                        follow_up_questions.append("Should I schedule a battery replacement reminder?")
 
                     alarm_status = device_status["alarm"]["status"]
                     if alarm_status and alarm_status != "NONE":
@@ -367,7 +339,7 @@ async def get_device_status(device_id: str) -> Dict[str, Any]:
         }
 
 
-async def get_device_events(device_id: str, limit: int = 10) -> Dict[str, Any]:
+async def get_device_events(device_id: str, limit: int = 10) -> dict[str, Any]:
     """Get recent events for a Nest Protect device with conversational response format."""
     import aiohttp
 
@@ -427,15 +399,9 @@ async def get_device_events(device_id: str, limit: int = 10) -> Dict[str, Any]:
                         event_types.add(event_type)
 
                         # Categorize events for analysis
-                        if any(
-                            keyword in event_type.lower()
-                            for keyword in ["alarm", "smoke", "co", "safety"]
-                        ):
+                        if any(keyword in event_type.lower() for keyword in ["alarm", "smoke", "co", "safety"]):
                             alarm_events.append(formatted_event)
-                        elif any(
-                            keyword in event_type.lower()
-                            for keyword in ["connectivity", "battery", "status"]
-                        ):
+                        elif any(keyword in event_type.lower() for keyword in ["connectivity", "battery", "status"]):
                             status_events.append(formatted_event)
 
                     # Analyze event patterns
@@ -444,9 +410,7 @@ async def get_device_events(device_id: str, limit: int = 10) -> Dict[str, Any]:
 
                     if alarm_events:
                         suggestions.append("Review alarm events for safety concerns")
-                        follow_up_questions.append(
-                            "Would you like me to check current device status?"
-                        )
+                        follow_up_questions.append("Would you like me to check current device status?")
 
                     if not formatted_events:
                         suggestions.append("Device may not have recent activity")
@@ -467,12 +431,8 @@ async def get_device_events(device_id: str, limit: int = 10) -> Dict[str, Any]:
                                 "status_events": len(status_events),
                                 "event_types": list(event_types),
                                 "time_range": {
-                                    "newest": formatted_events[0]["timestamp"]
-                                    if formatted_events
-                                    else None,
-                                    "oldest": formatted_events[-1]["timestamp"]
-                                    if formatted_events
-                                    else None,
+                                    "newest": formatted_events[0]["timestamp"] if formatted_events else None,
+                                    "oldest": formatted_events[-1]["timestamp"] if formatted_events else None,
                                 },
                             },
                         },

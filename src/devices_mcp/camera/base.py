@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from PIL import Image
 
@@ -98,7 +98,7 @@ class BaseCamera(ABC):
         self._is_connected = False
 
     @abstractmethod
-    async def capture_still(self, save_path: Optional[Union[str, Path]] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | Path | None = None) -> Image.Image:
         """Capture a still image from the camera.
 
         Args:
@@ -114,7 +114,7 @@ class BaseCamera(ABC):
             raise RuntimeError("Camera is not connected")
 
     @abstractmethod
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Get the stream URL for the camera.
 
         Returns:
@@ -124,7 +124,7 @@ class BaseCamera(ABC):
             return None
 
     @abstractmethod
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get the status of the camera.
 
         Returns:
@@ -190,7 +190,7 @@ class BaseCamera(ABC):
         self._speakerphone_enabled = False
         return True
 
-    async def get_speakerphone_status(self) -> Dict[str, Any]:
+    async def get_speakerphone_status(self) -> dict[str, Any]:
         """Get speakerphone status and capabilities.
 
         Returns:
@@ -222,7 +222,7 @@ class CameraFactory:
         return decorator
 
     @classmethod
-    def create(cls, config: Union[dict, CameraConfig]) -> BaseCamera:
+    def create(cls, config: dict | CameraConfig) -> BaseCamera:
         """Create a camera instance from config."""
         if isinstance(config, dict):
             config = CameraConfig(**config)

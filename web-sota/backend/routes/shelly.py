@@ -6,7 +6,6 @@ using Shelly Plus devices with DS18B20 probes.
 """
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -24,7 +23,7 @@ router = APIRouter(prefix="/api/shelly", tags=["Shelly"])
 class ShellyDeviceConfig(BaseModel):
     ip: str
     name: str
-    thresholds: Optional[dict] = None
+    thresholds: dict | None = None
 
 
 class ShellyInitRequest(BaseModel):
@@ -139,9 +138,7 @@ async def initialize_shelly(request: ShellyInitRequest):
             "success": client.is_initialized,
             "device_count": len(client._devices),
             "message": (
-                f"Initialized with {len(client._devices)} devices"
-                if client.is_initialized
-                else "No devices found"
+                f"Initialized with {len(client._devices)} devices" if client.is_initialized else "No devices found"
             ),
         }
     except Exception as e:

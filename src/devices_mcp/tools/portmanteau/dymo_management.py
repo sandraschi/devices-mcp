@@ -5,7 +5,7 @@ Consolidates all Dymo LabelManager PnP operations into a single tool with action
 """
 
 import logging
-from typing import Any, List, Literal
+from typing import Any, Literal
 
 from fastmcp import FastMCP
 
@@ -35,8 +35,8 @@ def register_dymo_management_tool(mcp: FastMCP) -> None:
             "inventory_labels",
         ],
         text: str | None = None,
-        labels: List[str] | None = None,
-        items: List[Any] | None = None,
+        labels: list[str] | None = None,
+        items: list[Any] | None = None,
         tape_size: Literal["6mm", "9mm", "12mm", "19mm", "24mm"] = "12mm",
         tape_color: str = "black_on_white",
         include_checkboxes: bool = True,
@@ -146,9 +146,7 @@ def register_dymo_management_tool(mcp: FastMCP) -> None:
                     else:
                         processed_items.append({"name": str(item)})
 
-                data = await client.create_inventory_labels(
-                    processed_items, tape_size=tape_size, tape_color=tape_color
-                )
+                data = await client.create_inventory_labels(processed_items, tape_size=tape_size, tape_color=tape_color)
                 return {"success": True, "action": action, "data": data}
 
             return {"success": False, "error": f"Action '{action}' not implemented"}

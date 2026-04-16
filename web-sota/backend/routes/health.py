@@ -5,7 +5,7 @@ Provides real-time device health status and connection monitoring.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/system", tags=["system"])
 
 
 @router.get("/connection-health")
-async def get_connection_health() -> Dict[str, Any]:
+async def get_connection_health() -> dict[str, Any]:
     """
     Get comprehensive device connection health status.
 
@@ -32,7 +32,7 @@ async def get_connection_health() -> Dict[str, Any]:
         # Trigger a fresh health check first (with timeout)
         try:
             await asyncio.wait_for(supervisor._check_all_devices(), timeout=10.0)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Health check timed out, returning cached data")
         except Exception as e:
             logger.warning(f"Health check failed: {e}, returning cached data")
@@ -45,7 +45,7 @@ async def get_connection_health() -> Dict[str, Any]:
 
 
 @router.get("/offline-devices")
-async def get_offline_devices() -> Dict[str, Any]:
+async def get_offline_devices() -> dict[str, Any]:
     """Get list of currently offline devices."""
     try:
         supervisor = get_supervisor()
@@ -70,7 +70,7 @@ async def get_offline_devices() -> Dict[str, Any]:
 
 
 @router.post("/trigger-health-check")
-async def trigger_health_check() -> Dict[str, Any]:
+async def trigger_health_check() -> dict[str, Any]:
     """Manually trigger an immediate health check of all devices."""
     try:
         import asyncio
@@ -79,7 +79,7 @@ async def trigger_health_check() -> Dict[str, Any]:
         # Add timeout to prevent hanging
         await asyncio.wait_for(supervisor._check_all_devices(), timeout=10.0)
         return {"success": True, "message": "Health check completed"}
-    except asyncio.TimeoutError:
+    except TimeoutError:
         logger.warning("Health check trigger timed out")
         return {"success": False, "error": "Health check timed out"}
     except Exception as e:

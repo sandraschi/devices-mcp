@@ -16,7 +16,7 @@ Real implementation would require actual camera integration.
 import logging
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -30,8 +30,8 @@ class AutomationRule(BaseModel):
 
     rule_id: str = Field(..., description="Unique rule identifier")
     name: str = Field(..., description="Human-readable rule name")
-    conditions: Dict[str, Any] = Field(..., description="Rule conditions")
-    actions: List[Dict[str, Any]] = Field(..., description="Actions to execute")
+    conditions: dict[str, Any] = Field(..., description="Rule conditions")
+    actions: list[dict[str, Any]] = Field(..., description="Actions to execute")
     enabled: bool = Field(default=True, description="Whether rule is enabled")
     priority: int = Field(default=1, description="Rule priority (1-10)")
 
@@ -42,7 +42,7 @@ class AutomationSchedule(BaseModel):
     schedule_id: str = Field(..., description="Unique schedule identifier")
     name: str = Field(..., description="Schedule name")
     cron_expression: str = Field(..., description="Cron expression for scheduling")
-    actions: List[Dict[str, Any]] = Field(..., description="Actions to execute")
+    actions: list[dict[str, Any]] = Field(..., description="Actions to execute")
     enabled: bool = Field(default=True, description="Whether schedule is enabled")
 
 
@@ -69,7 +69,9 @@ class SmartAutomationTool(BaseTool):
 
     class Meta:
         name = "smart_automation"
-        description = "[MOCK] Intelligent automation system with smart scheduling, conditional rules, and predictive maintenance"
+        description = (
+            "[MOCK] Intelligent automation system with smart scheduling, conditional rules, and predictive maintenance"
+        )
         category = ToolCategory.UTILITY
 
         class Parameters:
@@ -77,14 +79,14 @@ class SmartAutomationTool(BaseTool):
 
     def __init__(self):
         super().__init__()
-        self._rules: Dict[str, AutomationRule] = {}
-        self._schedules: Dict[str, AutomationSchedule] = {}
-        self._automation_history: List[Dict[str, Any]] = []
+        self._rules: dict[str, AutomationRule] = {}
+        self._schedules: dict[str, AutomationSchedule] = {}
+        self._automation_history: list[dict[str, Any]] = []
 
         # Initialize with default rules
         self._initialize_default_rules()
 
-    async def execute(self, action: str, **kwargs) -> Dict[str, Any]:
+    async def execute(self, action: str, **kwargs) -> dict[str, Any]:
         """
         Execute automation operations.
 
@@ -116,14 +118,12 @@ class SmartAutomationTool(BaseTool):
         self,
         rule_id: str,
         name: str,
-        conditions: Dict[str, Any],
-        actions: List[Dict[str, Any]],
+        conditions: dict[str, Any],
+        actions: list[dict[str, Any]],
         priority: int = 1,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new automation rule."""
-        rule = AutomationRule(
-            rule_id=rule_id, name=name, conditions=conditions, actions=actions, priority=priority
-        )
+        rule = AutomationRule(rule_id=rule_id, name=name, conditions=conditions, actions=actions, priority=priority)
 
         self._rules[rule_id] = rule
 
@@ -134,7 +134,7 @@ class SmartAutomationTool(BaseTool):
             "rule": rule.dict(),
         }
 
-    async def _list_automation_rules(self) -> Dict[str, Any]:
+    async def _list_automation_rules(self) -> dict[str, Any]:
         """List all automation rules."""
         rules_list = []
         for rule_id, rule in self._rules.items():
@@ -151,7 +151,7 @@ class SmartAutomationTool(BaseTool):
 
         return {"status": "success", "rules": rules_list, "total_rules": len(rules_list)}
 
-    async def _execute_automation_rule(self, rule_id: str) -> Dict[str, Any]:
+    async def _execute_automation_rule(self, rule_id: str) -> dict[str, Any]:
         """Execute a specific automation rule."""
         if rule_id not in self._rules:
             return {"error": f"Rule {rule_id} not found"}
@@ -196,8 +196,8 @@ class SmartAutomationTool(BaseTool):
         }
 
     async def _create_automation_schedule(
-        self, schedule_id: str, name: str, cron_expression: str, actions: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        self, schedule_id: str, name: str, cron_expression: str, actions: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """Create a new automation schedule."""
         schedule = AutomationSchedule(
             schedule_id=schedule_id, name=name, cron_expression=cron_expression, actions=actions
@@ -212,7 +212,7 @@ class SmartAutomationTool(BaseTool):
             "schedule": schedule.dict(),
         }
 
-    async def _list_automation_schedules(self) -> Dict[str, Any]:
+    async def _list_automation_schedules(self) -> dict[str, Any]:
         """List all automation schedules."""
         schedules_list = []
         for schedule_id, schedule in self._schedules.items():
@@ -232,7 +232,7 @@ class SmartAutomationTool(BaseTool):
             "total_schedules": len(schedules_list),
         }
 
-    async def _perform_smart_analysis(self, analysis_type: str = "comprehensive") -> Dict[str, Any]:
+    async def _perform_smart_analysis(self, analysis_type: str = "comprehensive") -> dict[str, Any]:
         """Perform smart analysis of camera usage patterns."""
         try:
             analysis_results = {
@@ -254,7 +254,7 @@ class SmartAutomationTool(BaseTool):
             logger.exception("Smart analysis failed")
             return {"error": str(e)}
 
-    async def _predictive_maintenance_check(self) -> Dict[str, Any]:
+    async def _predictive_maintenance_check(self) -> dict[str, Any]:
         """Perform predictive maintenance analysis."""
         try:
             maintenance_checks = {
@@ -287,7 +287,7 @@ class SmartAutomationTool(BaseTool):
             logger.exception("Predictive maintenance check failed")
             return {"error": str(e)}
 
-    async def _analyze_usage_patterns(self) -> Dict[str, Any]:
+    async def _analyze_usage_patterns(self) -> dict[str, Any]:
         """Analyze camera usage patterns."""
         # [MOCK] Simulate usage pattern analysis - returns hardcoded fake data
         return {
@@ -335,13 +335,13 @@ class SmartAutomationTool(BaseTool):
         self._rules[motion_rule.rule_id] = motion_rule
         self._rules[cpu_rule.rule_id] = cpu_rule
 
-    async def _check_rule_conditions(self, _conditions: Dict[str, Any]) -> bool:
+    async def _check_rule_conditions(self, _conditions: dict[str, Any]) -> bool:
         """Check if rule conditions are met."""
         # [MOCK] Simplified condition checking - in real implementation this would
         # integrate with actual camera and system monitoring
         return True  # [MOCK] Always returns True for simulation
 
-    async def _execute_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def _execute_action(self, action: dict[str, Any]) -> dict[str, Any]:
         """Execute a single automation action."""
         # [MOCK] All actions return fake success messages without actually doing anything
         action_type = action.get("action")
@@ -356,7 +356,7 @@ class SmartAutomationTool(BaseTool):
             return {"status": "success", "message": "Camera streams optimized"}  # [MOCK]
         return {"status": "error", "message": f"Unknown action: {action_type}"}
 
-    async def _generate_optimization_suggestions(self) -> List[str]:
+    async def _generate_optimization_suggestions(self) -> list[str]:
         """Generate optimization suggestions based on analysis."""
         return [
             "Schedule camera maintenance during low-usage hours (2-6 AM)",
@@ -366,7 +366,7 @@ class SmartAutomationTool(BaseTool):
             "Implement automatic firmware updates during maintenance windows",
         ]
 
-    async def _identify_automation_opportunities(self) -> List[str]:
+    async def _identify_automation_opportunities(self) -> list[str]:
         """Identify opportunities for automation."""
         return [
             "Automate camera positioning based on time of day",
@@ -376,7 +376,7 @@ class SmartAutomationTool(BaseTool):
             "Implement predictive camera maintenance scheduling",
         ]
 
-    async def _get_performance_insights(self) -> Dict[str, Any]:
+    async def _get_performance_insights(self) -> dict[str, Any]:
         """Get performance insights."""
         return {
             "average_response_time_ms": 150,
@@ -386,27 +386,27 @@ class SmartAutomationTool(BaseTool):
             "network_optimization_score": 92,
         }
 
-    async def _check_camera_health(self) -> Dict[str, Any]:
+    async def _check_camera_health(self) -> dict[str, Any]:
         """Check camera health status."""
         return {"status": "healthy", "message": "All cameras operational"}
 
-    async def _check_system_resources(self) -> Dict[str, Any]:
+    async def _check_system_resources(self) -> dict[str, Any]:
         """Check system resource usage."""
         return {"status": "good", "message": "System resources within normal limits"}
 
-    async def _check_network_connectivity(self) -> Dict[str, Any]:
+    async def _check_network_connectivity(self) -> dict[str, Any]:
         """Check network connectivity."""
         return {"status": "excellent", "message": "Network connectivity optimal"}
 
-    async def _check_storage_usage(self) -> Dict[str, Any]:
+    async def _check_storage_usage(self) -> dict[str, Any]:
         """Check storage usage."""
         return {"status": "good", "message": "Storage usage at 65%"}
 
-    async def _check_firmware_status(self) -> Dict[str, Any]:
+    async def _check_firmware_status(self) -> dict[str, Any]:
         """Check firmware status."""
         return {"status": "current", "message": "All cameras on latest firmware"}
 
-    def _generate_smart_analysis_summary(self, _analysis: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_smart_analysis_summary(self, _analysis: dict[str, Any]) -> dict[str, Any]:
         """Generate smart analysis summary."""
         return {
             "overall_health": "excellent",

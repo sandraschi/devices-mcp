@@ -4,7 +4,7 @@ Configuration models for the Devices MCP server.
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -20,9 +20,7 @@ class WebUISettings(BaseModel):
     enable_swagger: bool = True
     enable_redoc: bool = False
     enable_cors: bool = True
-    cors_origins: List[str] = Field(
-        default_factory=lambda: ["*"], description="List of allowed CORS origins"
-    )
+    cors_origins: list[str] = Field(default_factory=lambda: ["*"], description="List of allowed CORS origins")
     session_secret: str = "change-this-in-production"  # nosec B105
     session_lifetime: int = 86400  # 24 hours in seconds
 
@@ -31,8 +29,8 @@ class RingSettings(BaseModel):
     """Ring doorbell and alarm settings."""
 
     enabled: bool = False
-    email: Optional[str] = None
-    password: Optional[str] = None
+    email: str | None = None
+    password: str | None = None
     token_file: str = "ring_token.cache"
     cache_ttl: int = 60  # seconds
 
@@ -41,7 +39,7 @@ class NestSettings(BaseModel):
     """Nest Protect settings - uses Google account auth."""
 
     enabled: bool = False
-    refresh_token: Optional[str] = None  # Google OAuth refresh token
+    refresh_token: str | None = None  # Google OAuth refresh token
     token_file: str = "nest_token.cache"
     cache_ttl: int = 60  # seconds
 
@@ -51,14 +49,14 @@ class HomeAssistantSettings(BaseModel):
 
     enabled: bool = False
     url: str = "http://localhost:8123"
-    access_token: Optional[str] = None  # Long-lived access token from HA
+    access_token: str | None = None  # Long-lived access token from HA
     cache_ttl: int = 30  # seconds
 
 
 class SecurityIntegrations(BaseModel):
     """Settings for external security system integrations."""
 
-    nest_protect: Dict[str, Any] = Field(
+    nest_protect: dict[str, Any] = Field(
         default_factory=lambda: {
             "enabled": False,
             "server_url": "http://localhost:8123",
@@ -74,7 +72,7 @@ class SecurityIntegrations(BaseModel):
         default_factory=HomeAssistantSettings,
         description="Home Assistant for Nest Protect (recommended)",
     )
-    ring_mcp: Dict[str, Any] = Field(
+    ring_mcp: dict[str, Any] = Field(
         default_factory=lambda: {
             "enabled": False,
             "server_path": "D:\\Dev\\repos\\ring-mcp",
@@ -105,7 +103,7 @@ class SecuritySettings(BaseModel):
 class WeatherSettings(BaseModel):
     """Weather and environment integrations."""
 
-    integrations: Dict[str, Any] = Field(
+    integrations: dict[str, Any] = Field(
         default_factory=lambda: {
             "netatmo": {
                 "enabled": False,
@@ -134,7 +132,7 @@ class LoggingSettings(BaseModel):
     """Logging configuration."""
 
     level: str = "INFO"
-    file: Optional[Path] = None
+    file: Path | None = None
     max_size_mb: int = 10
     backup_count: int = 5
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -180,18 +178,18 @@ class ServerConfig:
     storage: StorageSettings = field(default_factory=StorageSettings)
 
     # Camera settings
-    default_camera: Optional[Dict[str, Any]] = None
+    default_camera: dict[str, Any] | None = None
     camera_scan_interval: int = 300  # 5 minutes
 
     # Performance settings
     max_workers: int = 4
     request_timeout: int = 30
     log_level: str = "INFO"
-    log_file: Optional[Path] = None
+    log_file: Path | None = None
 
     # Security settings
-    api_key: Optional[str] = None
-    cors_origins: List[str] = field(default_factory=lambda: ["*"])
+    api_key: str | None = None
+    cors_origins: list[str] = field(default_factory=lambda: ["*"])
 
     # Storage settings
     data_dir: Path = Path("data")
@@ -223,7 +221,7 @@ class CameraConfig:
     # Motion detection settings
     motion_detection: bool = True
     motion_sensitivity: str = "medium"  # low, medium, high
-    motion_zones: List[Dict] = field(default_factory=list)
+    motion_zones: list[dict] = field(default_factory=list)
 
     # Recording settings
     recording: bool = False

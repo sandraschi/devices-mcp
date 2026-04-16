@@ -3,7 +3,7 @@ import inspect
 import logging
 import os
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import psutil
@@ -74,9 +74,7 @@ async def get_init_status():
             "server": "devices-mcp",
             "initialized": bool(getattr(DevicesMCPServer, "_initialized", False)),
             "initializing": bool(getattr(DevicesMCPServer, "_initializing", False)),
-            "hardware_initialized": bool(
-                getattr(DevicesMCPServer, "_hardware_initialized", False)
-            ),
+            "hardware_initialized": bool(getattr(DevicesMCPServer, "_hardware_initialized", False)),
         }
     except Exception as e:
         logger.exception("Failed to read init status")
@@ -109,10 +107,10 @@ async def get_tools():
                     "name": getattr(t, "name", str(t)),
                     "description": getattr(t, "description", ""),
                     "parameters": (
-                    t.parameters.model_json_schema()
-                    if hasattr(t, "parameters") and hasattr(t.parameters, "model_json_schema")
-                    else getattr(t, "parameters", {}),
-                ),
+                        t.parameters.model_json_schema()
+                        if hasattr(t, "parameters") and hasattr(t.parameters, "model_json_schema")
+                        else getattr(t, "parameters", {}),
+                    ),
                 }
                 for t in sorted(mcp_tools, key=lambda x: getattr(x, "name", str(x)))
             ],
@@ -145,25 +143,17 @@ async def get_capabilities():
 
         if hasattr(mcp, "list_prompts") and callable(mcp.list_prompts):
             prompts = await _maybe_await(mcp.list_prompts())
-            prompt_names = sorted(
-                [getattr(p, "name", str(p)) for p in prompts if getattr(p, "name", None)]
-            )
+            prompt_names = sorted([getattr(p, "name", str(p)) for p in prompts if getattr(p, "name", None)])
 
         if hasattr(mcp, "list_resources") and callable(mcp.list_resources):
             resources = await _maybe_await(mcp.list_resources())
-            resource_uris = sorted(
-                [str(getattr(r, "uri", "")) for r in resources if getattr(r, "uri", None)]
-            )
+            resource_uris = sorted([str(getattr(r, "uri", "")) for r in resources if getattr(r, "uri", None)])
 
         portmanteau_tools = [name for name in tool_names if _is_portmanteau_tool_name(name)]
         atomic_tools = [name for name in tool_names if name not in portmanteau_tools]
 
-        workflow_tools = sorted(
-            [name for name in tool_names if "workflow" in name or "assistant" in name]
-        )
-        sampling_indicators = sorted(
-            [name for name in tool_names if "agentic" in name or "assistant" in name]
-        )
+        workflow_tools = sorted([name for name in tool_names if "workflow" in name or "assistant" in name])
+        sampling_indicators = sorted([name for name in tool_names if "agentic" in name or "assistant" in name])
         skill_uris = sorted([uri for uri in resource_uris if uri.startswith("skill://")])
 
         tool_mode = "portmanteau"
@@ -205,7 +195,7 @@ async def get_capabilities():
                 "surface_mode": tool_mode,
                 "tool_mode_env": os.getenv("TAPO_MCP_TOOL_MODE", "production"),
             },
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
     except Exception as e:
         logger.exception("Failed to build capabilities response")
@@ -234,7 +224,7 @@ async def get_capabilities():
                 "skill_uris": [],
             },
             "runtime": {"transport": "http", "surface_mode": "unknown"},
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
 
@@ -323,9 +313,7 @@ async def get_health():
         try:
             from devices_mcp.core.server import DevicesMCPServer
 
-            server = await asyncio.wait_for(
-                asyncio.shield(DevicesMCPServer.get_instance()), timeout=3.0
-            )
+            server = await asyncio.wait_for(asyncio.shield(DevicesMCPServer.get_instance()), timeout=3.0)
             cameras = await asyncio.wait_for(server.camera_manager.list_cameras(), timeout=3.0)
             camera_status["total"] = len(cameras)
             online_count = 0
@@ -386,19 +374,14 @@ async def get_system_status():
     try:
         from devices_mcp.core.server import DevicesMCPServer
 
-        server = await asyncio.wait_for(
-            asyncio.shield(DevicesMCPServer.get_instance()), timeout=3.0
-        )
+        server = await asyncio.wait_for(asyncio.shield(DevicesMCPServer.get_instance()), timeout=3.0)
         cameras = await asyncio.wait_for(server.camera_manager.list_cameras(), timeout=3.0)
         total_cameras = len(cameras)
         online_cameras = sum(
             1
             for cam in cameras
             if cam.get("status") == "online"
-            or (
-                isinstance(cam.get("status"), dict)
-                and cam.get("status", {}).get("connected", False)
-            )
+            or (isinstance(cam.get("status"), dict) and cam.get("status", {}).get("connected", False))
         )
 
         try:

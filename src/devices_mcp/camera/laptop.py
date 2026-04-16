@@ -3,7 +3,6 @@
 import asyncio
 import contextlib
 import logging
-from typing import Dict, Optional
 
 import cv2
 from PIL import Image
@@ -98,7 +97,7 @@ class LaptopCamera(BaseCamera):
             self._cap.release()
         self._cap = None
 
-    async def capture_still(self, save_path: Optional[str] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image from the laptop camera."""
         if not await self.is_connected():
             await self.connect()
@@ -132,11 +131,11 @@ class LaptopCamera(BaseCamera):
             self._is_connected = False
             raise RuntimeError(f"Failed to capture image from laptop camera: {e}") from e
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Laptop cameras typically don't have a stream URL."""
         return None
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get laptop camera status with detailed capabilities."""
         connected = await self.is_connected()
 
@@ -170,7 +169,7 @@ class LaptopCamera(BaseCamera):
             "camera_type": "laptop",
         }
 
-    async def get_info(self) -> Dict:
+    async def get_info(self) -> dict:
         """Get comprehensive laptop camera information."""
         status = await self.get_status()
 

@@ -1,7 +1,6 @@
 """DINOv3 model integration for advanced image analysis."""
 
 import logging
-from typing import Dict, List, Union
 
 import numpy as np
 import torch
@@ -54,7 +53,7 @@ class DINOv3Processor:
             raise RuntimeError(f"Failed to initialize DINOv3 model: {e!s}") from e
 
     @torch.no_grad()
-    def extract_features(self, image: Union[Image.Image, str, np.ndarray]) -> torch.Tensor:
+    def extract_features(self, image: Image.Image | str | np.ndarray) -> torch.Tensor:
         """Extract features from an image using DINOv3.
 
         Args:
@@ -84,8 +83,8 @@ class DINOv3Processor:
 
     def get_similarity(
         self,
-        image1: Union[Image.Image, str, np.ndarray],
-        image2: Union[Image.Image, str, np.ndarray],
+        image1: Image.Image | str | np.ndarray,
+        image2: Image.Image | str | np.ndarray,
     ) -> float:
         """Calculate cosine similarity between two images.
 
@@ -109,10 +108,10 @@ class DINOv3Processor:
 
     def find_similar(
         self,
-        query_image: Union[Image.Image, str, np.ndarray],
-        image_paths: List[str],
+        query_image: Image.Image | str | np.ndarray,
+        image_paths: list[str],
         top_k: int = 5,
-    ) -> List[Dict[str, float]]:
+    ) -> list[dict[str, float]]:
         """Find most similar images to the query image.
 
         Args:

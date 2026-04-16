@@ -43,18 +43,23 @@ class CameraManager:
         self.lock = threading.Lock()
         self._auto_discovered = False
 
-    def add_camera(self, camera_id: int, name: str):
+    def add_camera(self, camera_id: int, name: str, existing_cap=None):
         """Add a camera by device ID."""
         with self.lock:
             if camera_id in self.cameras:
                 logger.warning(f"Camera {camera_id} already exists")
+                if existing_cap:
+                    existing_cap.release()
                 return
 
-            cap = (
-                cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
-                if platform.system() == "Windows"
-                else cv2.VideoCapture(camera_id, cv2.CAP_ANY)
-            )
+            cap = existing_cap
+            if not cap:
+                cap = (
+                    cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
+                    if platform.system() == "Windows"
+                    else cv2.VideoCapture(camera_id, cv2.CAP_ANY)
+                )
+
             if not cap.isOpened():
                 logger.error(f"Failed to open camera {camera_id}")
                 return
@@ -66,6 +71,7 @@ class CameraManager:
                 "last_frame_time": 0,
                 "thread": None,
                 "active": True,
+                "error_count": 0,
             }
 
             # Start capture thread
@@ -102,15 +108,11 @@ class CameraManager:
 
                         # Generate friendly name
                         camera_name = self._generate_camera_name(device_id, width, height)
-                        cap.release()
-
-                        # Add the camera
-                        self.add_camera(device_id, camera_name)
+                        # Add the camera directly without closing it
+                        self.add_camera(device_id, camera_name, existing_cap=cap)
                         discovered_count += 1
 
-                        logger.info(
-                            f"Auto-discovered camera {device_id}: {camera_name} ({width}x{height})"
-                        )
+                        logger.info(f"Auto-discovered camera {device_id}: {camera_name} ({width}x{height})")
                     else:
                         cap.release()
                 else:
@@ -154,16 +156,19 @@ class CameraManager:
         return f"{camera_type} {device_id} ({resolution})"
 
     def _capture_loop(self, camera_id: int):
-        """Background capture loop for a camera."""
+        """Background capture loop for a camera with auto-reconnect."""
         camera = self.cameras.get(camera_id)
         if not camera:
             return
 
-        cap = camera["cap"]
         while camera["active"]:
             try:
+                cap = camera["cap"]
                 ret, frame = cap.read()
                 if ret:
+                    # Reset error count on success
+                    camera["error_count"] = 0
+
                     # Convert BGR to RGB and store
                     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     pil_image = Image.fromarray(rgb_frame)
@@ -172,9 +177,26 @@ class CameraManager:
                         camera["last_frame"] = pil_image
                         camera["last_frame_time"] = time.time()
                 else:
-                    logger.warning(f"No frame from camera {camera_id}")
-            except Exception:
-                logger.exception("Error capturing from camera {camera_id}:")
+                    camera["error_count"] += 1
+                    logger.warning(f"No frame from camera {camera_id} (error count: {camera['error_count']})")
+
+                    # Try to re-open if too many errors
+                    if camera["error_count"] >= 10:
+                        logger.info(f"Attempting to re-initialize camera {camera_id}...")
+                        cap.release()
+                        new_cap = (
+                            cv2.VideoCapture(camera_id, cv2.CAP_DSHOW)
+                            if platform.system() == "Windows"
+                            else cv2.VideoCapture(camera_id, cv2.CAP_ANY)
+                        )
+                        camera["cap"] = new_cap
+                        camera["error_count"] = 0
+                        time.sleep(1.0)  # Grace period
+
+            except Exception as e:
+                logger.error(f"Error capturing from camera {camera_id}: {e}")
+                camera["error_count"] += 1
+                time.sleep(1.0)
 
             time.sleep(0.1)  # 10 FPS
 
@@ -267,7 +289,7 @@ class CameraHTTPRequestHandler(BaseHTTPRequestHandler):
                     try:
                         for frame_data in self.camera_manager.get_mjpeg_stream(camera_id):
                             self.wfile.write(frame_data)
-                    except (BrokenPipeError, ConnectionResetError):
+                    except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                         # Client disconnected
                         pass
 
@@ -372,11 +394,11 @@ async def main():
 
     logger.info("")
     logger.info("USB Camera Features:")
-    logger.info("  ✓ Auto-detection of all connected cameras")
-    logger.info("  ✓ No manual configuration required")
-    logger.info("  ✓ Always online (no connection procedures)")
-    logger.info("  ✓ MJPEG streaming for real-time video")
-    logger.info("  ✓ Automatic fallback and error recovery")
+    logger.info("  [x] Auto-detection of all connected cameras")
+    logger.info("  [x] No manual configuration required")
+    logger.info("  [x] Always online (no connection procedures)")
+    logger.info("  [x] MJPEG streaming for real-time video")
+    logger.info("  [x] Automatic fallback and error recovery")
 
     try:
         # Keep running

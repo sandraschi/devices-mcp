@@ -2,7 +2,7 @@
 Help tool for Devices MCP that provides comprehensive documentation.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import ConfigDict, Field
 
@@ -17,13 +17,11 @@ class HelpTool(BaseTool):
         name = "help"
         category = ToolCategory.SYSTEM
 
-    section: Optional[str] = Field(default="all", description="Section of the help to display")
+    section: str | None = Field(default="all", description="Section of the help to display")
 
-    model_config = ConfigDict(
-        json_schema_extra={"enum": ["all", "core", "grafana", "api", "ptz", "troubleshooting"]}
-    )
+    model_config = ConfigDict(json_schema_extra={"enum": ["all", "core", "grafana", "api", "ptz", "troubleshooting"]})
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Return help information based on the requested section."""
         help_sections = {
             "core": self._get_core_help(),
@@ -35,9 +33,7 @@ class HelpTool(BaseTool):
 
         if self.section == "all":
             return {"status": "success", "help": "\n\n".join(help_sections.values())}
-        help_text = help_sections.get(
-            self.section, "Invalid help section. Try: " + ", ".join(help_sections.keys())
-        )
+        help_text = help_sections.get(self.section, "Invalid help section. Try: " + ", ".join(help_sections.keys()))
         return {"status": "success", "help": help_text}
 
     def _get_core_help(self) -> str:

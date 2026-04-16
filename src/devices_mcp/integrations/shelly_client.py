@@ -7,12 +7,11 @@ Perfect for freezer/fridge monitoring with external probes.
 Shelly devices expose a simple REST API on the local network.
 """
 
-import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 
@@ -47,8 +46,8 @@ class ShellyTemperatureSensor:
     last_updated: datetime = field(default_factory=datetime.now)
     is_online: bool = True
     # Alert thresholds
-    high_threshold_c: Optional[float] = None
-    low_threshold_c: Optional[float] = None
+    high_threshold_c: float | None = None
+    low_threshold_c: float | None = None
     alert_active: bool = False
 
     def to_dict(self) -> dict:
@@ -101,7 +100,7 @@ class ShellyClient:
 
     def __init__(
         self,
-        devices: Optional[list[dict]] = None,
+        devices: list[dict] | None = None,
         cache_ttl: int = 30,
         timeout: int = 5,
     ):
@@ -156,12 +155,10 @@ class ShellyClient:
         elapsed = (datetime.now() - self._cache_time[key]).total_seconds()
         return elapsed < self.cache_ttl
 
-    async def _discover_device(self, ip: str, config: dict) -> Optional[ShellyDevice]:
+    async def _discover_device(self, ip: str, config: dict) -> ShellyDevice | None:
         """Discover a Shelly device and its capabilities."""
         try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
-            ) as session:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
                 # Get device info (Gen 2+ API)
                 async with session.get(f"http://{ip}/rpc/Shelly.GetDeviceInfo") as resp:
                     if resp.status == 200:
@@ -174,7 +171,7 @@ class ShellyClient:
                         info = await resp.json()
                         return self._create_device_gen1(ip, info, config)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Shelly device at {ip} timed out")
         except aiohttp.ClientError as e:
             logger.warning(f"Shelly device at {ip} connection error: {e}")
@@ -215,9 +212,7 @@ class ShellyClient:
             async with session.get(f"http://{ip}/rpc/Temperature.GetStatus?id=0") as resp:
                 if resp.status == 200:
                     temp_data = await resp.json()
-                    sensor = self._parse_temperature_sensor(
-                        ip, name, 0, temp_data, config.get("thresholds", {})
-                    )
+                    sensor = self._parse_temperature_sensor(ip, name, 0, temp_data, config.get("thresholds", {}))
                     if sensor:
                         temperature_sensors.append(sensor)
 
@@ -272,7 +267,7 @@ class ShellyClient:
         index: int,
         data: dict,
         thresholds: dict,
-    ) -> Optional[ShellyTemperatureSensor]:
+    ) -> ShellyTemperatureSensor | None:
         """Parse temperature sensor data."""
         temp_c = data.get("tC")
         if temp_c is None:
@@ -318,9 +313,7 @@ class ShellyClient:
 
         sensors = []
         try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
-            ) as session:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
                 for ip, device in self._devices.items():
                     if not device.has_temperature:
                         continue
@@ -332,14 +325,10 @@ class ShellyClient:
                     # Query each sensor
                     for i in range(5):
                         try:
-                            async with session.get(
-                                f"http://{ip}/rpc/Temperature.GetStatus?id={i}"
-                            ) as resp:
+                            async with session.get(f"http://{ip}/rpc/Temperature.GetStatus?id={i}") as resp:
                                 if resp.status == 200:
                                     temp_data = await resp.json()
-                                    sensor = self._parse_temperature_sensor(
-                                        ip, device.name, i, temp_data, thresholds
-                                    )
+                                    sensor = self._parse_temperature_sensor(ip, device.name, i, temp_data, thresholds)
                                     if sensor:
                                         sensors.append(sensor)
                                 else:
@@ -355,12 +344,13 @@ class ShellyClient:
 
         return sensors
 
-    async def get_device_status(self, ip: str) -> Optional[dict]:
+    async def get_device_status(self, ip: str) -> dict | None:
         """Get full status of a Shelly device."""
         try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
-            ) as session, session.get(f"http://{ip}/rpc/Shelly.GetStatus") as resp:
+            async with (
+                aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session,
+                session.get(f"http://{ip}/rpc/Shelly.GetStatus") as resp,
+            ):
                 if resp.status == 200:
                     return await resp.json()
         except Exception:
@@ -387,16 +377,16 @@ class ShellyClient:
 
 
 # Singleton instance
-shelly_client: Optional[ShellyClient] = None
+shelly_client: ShellyClient | None = None
 
 
-def get_shelly_client() -> Optional[ShellyClient]:
+def get_shelly_client() -> ShellyClient | None:
     """Get the Shelly client singleton."""
     return shelly_client
 
 
 async def init_shelly_client(
-    devices: Optional[list[dict]] = None,
+    devices: list[dict] | None = None,
     cache_ttl: int = 30,
 ) -> ShellyClient:
     """Initialize the Shelly client singleton."""

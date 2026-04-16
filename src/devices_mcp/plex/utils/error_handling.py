@@ -4,16 +4,16 @@ Provides standardized error handling and formatting for MCP tools
 to ensure consistent, AI-friendly error messages across all operations.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 def handle_tool_error(
     exception: Exception,
-    operation: Optional[str] = None,
-    parameters: Optional[Dict[str, Any]] = None,
+    operation: str | None = None,
+    parameters: dict[str, Any] | None = None,
     tool_name: str = "unknown_tool",
     context: str = "",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Standardized error handler for MCP tools.
 
     This function should be used in the except block of all @mcp.tool()
@@ -48,7 +48,7 @@ def handle_tool_error(
     error_message = str(exception)
 
     # Build base error response
-    error_response: Dict[str, Any] = {
+    error_response: dict[str, Any] = {
         "success": False,
         "error": error_message,
         "error_type": error_type,
@@ -87,10 +87,10 @@ def handle_tool_error(
 def format_error_response(
     error_msg: str,
     error_code: str,
-    suggestions: Optional[List[str]] = None,
-    related_tools: Optional[List[str]] = None,
+    suggestions: list[str] | None = None,
+    related_tools: list[str] | None = None,
     **kwargs: Any,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Format a custom error response with suggestions.
 
     Use this when you want to return a custom error message rather than
@@ -135,9 +135,7 @@ def format_error_response(
     return response
 
 
-def get_error_suggestions(
-    exception: Exception, tool_name: str, operation: Optional[str] = None
-) -> List[str]:
+def get_error_suggestions(exception: Exception, tool_name: str, operation: str | None = None) -> list[str]:
     """Get contextual suggestions based on error type.
 
     Args:
@@ -212,7 +210,7 @@ def get_error_suggestions(
     return suggestions
 
 
-def get_related_tools(exception: Exception, tool_name: str) -> List[str]:
+def get_related_tools(exception: Exception, tool_name: str) -> list[str]:
     """Get related tools that might help resolve the error.
 
     Args:
@@ -241,9 +239,7 @@ def get_related_tools(exception: Exception, tool_name: str) -> List[str]:
     return related
 
 
-def create_success_response(
-    data: Any, message: Optional[str] = None, **kwargs: Any
-) -> Dict[str, Any]:
+def create_success_response(data: Any, message: str | None = None, **kwargs: Any) -> dict[str, Any]:
     """Create a standardized success response.
 
     Args:

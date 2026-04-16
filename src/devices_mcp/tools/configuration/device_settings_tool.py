@@ -8,7 +8,7 @@ Combines device settings operations:
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -37,28 +37,24 @@ class DeviceSettingsTool(BaseTool):
 
     class Meta:
         name = "device_settings"
-        description = (
-            "Unified device settings management including LED control and motion detection"
-        )
+        description = "Unified device settings management including LED control and motion detection"
         category = ToolCategory.CONFIGURATION
 
         class Parameters(BaseModel):
             operation: str = Field(..., description="Settings operation: 'led', 'motion_detection'")
             camera_id: str = Field(..., description="Camera ID for settings operations")
-            enabled: Optional[bool] = Field(None, description="Whether to enable the setting")
-            motion_sensitivity: Optional[int] = Field(3, description="Motion sensitivity (1-5)")
-            motion_areas: Optional[List[Dict[str, int]]] = Field(
-                None, description="Motion detection areas"
-            )
+            enabled: bool | None = Field(None, description="Whether to enable the setting")
+            motion_sensitivity: int | None = Field(3, description="Motion sensitivity (1-5)")
+            motion_areas: list[dict[str, int]] | None = Field(None, description="Motion detection areas")
 
     async def execute(
         self,
         operation: str,
         camera_id: str,
-        enabled: Optional[bool] = None,
+        enabled: bool | None = None,
         motion_sensitivity: int = 3,
-        motion_areas: Optional[List[Dict[str, int]]] = None,
-    ) -> Dict[str, Any]:
+        motion_areas: list[dict[str, int]] | None = None,
+    ) -> dict[str, Any]:
         """Execute device settings operation."""
         try:
             logger.info(f"Device settings {operation} operation for camera {camera_id}")
@@ -66,9 +62,7 @@ class DeviceSettingsTool(BaseTool):
             if operation == "led":
                 return await self._set_led(camera_id, enabled)
             if operation == "motion_detection":
-                return await self._set_motion_detection(
-                    camera_id, enabled, motion_sensitivity, motion_areas
-                )
+                return await self._set_motion_detection(camera_id, enabled, motion_sensitivity, motion_areas)
             return {
                 "success": False,
                 "error": f"Invalid operation: {operation}. Must be 'led' or 'motion_detection'",
@@ -85,7 +79,7 @@ class DeviceSettingsTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _set_led(self, camera_id: str, enabled: Optional[bool]) -> Dict[str, Any]:
+    async def _set_led(self, camera_id: str, enabled: bool | None) -> dict[str, Any]:
         """Set LED status."""
         if enabled is None:
             return {
@@ -115,10 +109,10 @@ class DeviceSettingsTool(BaseTool):
     async def _set_motion_detection(
         self,
         camera_id: str,
-        enabled: Optional[bool],
+        enabled: bool | None,
         motion_sensitivity: int,
-        motion_areas: Optional[List[Dict[str, int]]],
-    ) -> Dict[str, Any]:
+        motion_areas: list[dict[str, int]] | None,
+    ) -> dict[str, Any]:
         """Set motion detection settings."""
         if enabled is None:
             return {

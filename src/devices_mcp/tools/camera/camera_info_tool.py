@@ -10,7 +10,7 @@ Combines camera information operations:
 import asyncio
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -38,28 +38,22 @@ class CameraInfoTool(BaseTool):
 
     class Meta:
         name = "camera_info"
-        description = (
-            "Unified camera information management including info, status, and group management"
-        )
+        description = "Unified camera information management including info, status, and group management"
         category = ToolCategory.CAMERA
 
         class Parameters(BaseModel):
             operation: str = Field(..., description="Info operation: 'info', 'status', 'groups'")
-            camera_id: Optional[str] = Field(
-                None, description="Camera ID for info/status operations"
-            )
-            group_action: Optional[str] = Field(
-                None, description="Group action: 'list', 'create', 'add', 'remove'"
-            )
-            group_name: Optional[str] = Field(None, description="Group name for group operations")
+            camera_id: str | None = Field(None, description="Camera ID for info/status operations")
+            group_action: str | None = Field(None, description="Group action: 'list', 'create', 'add', 'remove'")
+            group_name: str | None = Field(None, description="Group name for group operations")
 
     async def execute(
         self,
         operation: str,
-        camera_id: Optional[str] = None,
-        group_action: Optional[str] = None,
-        group_name: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        camera_id: str | None = None,
+        group_action: str | None = None,
+        group_name: str | None = None,
+    ) -> dict[str, Any]:
         """Execute camera info operation."""
         try:
             logger.info(f"Camera info {operation} operation")
@@ -85,7 +79,7 @@ class CameraInfoTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_camera_info(self, camera_id: Optional[str]) -> Dict[str, Any]:
+    async def _get_camera_info(self, camera_id: str | None) -> dict[str, Any]:
         """Get camera information."""
         if not camera_id:
             return {
@@ -188,7 +182,7 @@ class CameraInfoTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_camera_status(self, camera_id: Optional[str]) -> Dict[str, Any]:
+    async def _get_camera_status(self, camera_id: str | None) -> dict[str, Any]:
         """Get camera status."""
         if not camera_id:
             return {
@@ -250,16 +244,12 @@ class CameraInfoTool(BaseTool):
                     camera_status = {
                         "camera_id": camera_id,
                         "status": "online" if status.get("connected", False) else "offline",
-                        "connection_quality": "direct"
-                        if status.get("connected", False)
-                        else "none",
+                        "connection_quality": "direct" if status.get("connected", False) else "none",
                         "signal_strength": None,
                         "battery_level": None,
                         "storage_usage": None,
                         "last_motion": None,
-                        "recording_status": "streaming"
-                        if status.get("streaming", False)
-                        else "idle",
+                        "recording_status": "streaming" if status.get("streaming", False) else "idle",
                         "night_mode": None,
                         "privacy_mode": None,
                         "led_status": "auto",
@@ -295,8 +285,8 @@ class CameraInfoTool(BaseTool):
             }
 
     async def _manage_groups(
-        self, group_action: Optional[str], group_name: Optional[str], camera_id: Optional[str]
-    ) -> Dict[str, Any]:
+        self, group_action: str | None, group_name: str | None, camera_id: str | None
+    ) -> dict[str, Any]:
         """Manage camera groups."""
         if not group_action:
             return {

@@ -1,9 +1,8 @@
-import asyncio
 import logging
 import os
 import socket
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -152,7 +151,7 @@ async def get_health():
             else:
                 camera_status["initialization"] = "error"
                 camera_status["error"] = "MCP call failed"
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Camera status check timed out in health endpoint")
             camera_status = {
                 "total": 0,
@@ -188,11 +187,7 @@ async def get_health():
             issues.append("postgres_unreachable")
 
         overall_status = (
-            "critical"
-            if any("critical" in issue for issue in issues)
-            else "warning"
-            if issues
-            else "healthy"
+            "critical" if any("critical" in issue for issue in issues) else "warning" if issues else "healthy"
         )
 
         # Build response with safe defaults if metrics failed
@@ -221,7 +216,7 @@ async def get_health():
 
         return {
             "status": overall_status,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "system": {
                 "cpu": {
                     "percent": round(cpu_percent, 1),
@@ -247,5 +242,5 @@ async def get_health():
         return {
             "status": "error",
             "error": str(e),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }

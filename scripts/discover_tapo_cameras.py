@@ -11,7 +11,6 @@ import socket
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from ipaddress import IPv4Network
-from typing import List, Optional
 
 from pytapo import Tapo
 
@@ -31,9 +30,7 @@ def check_port(host: str, port: int, timeout: float = 1.0) -> bool:
         return False
 
 
-def discover_tapo_on_ip(
-    ip: str, username: str, password: str, timeout: float = 3.0
-) -> Optional[dict]:
+def discover_tapo_on_ip(ip: str, username: str, password: str, timeout: float = 3.0) -> dict | None:
     """Attempt to connect to a Tapo camera on a specific IP.
 
     Uses safe single-attempt logic to avoid triggering camera lockouts.
@@ -54,9 +51,7 @@ def discover_tapo_on_ip(
 
             # Check for lockout - stop immediately
             if "Temporary Suspension" in error_msg or "1800 seconds" in error_msg:
-                logger.warning(
-                    f"  ⚠️  Camera at {ip} is LOCKED OUT (too many failed attempts). Skipping."
-                )
+                logger.warning(f"  ⚠️  Camera at {ip} is LOCKED OUT (too many failed attempts). Skipping.")
                 logger.warning("     Wait 30 minutes before retrying this camera.")
                 return None
 
@@ -89,7 +84,7 @@ def discover_tapo_on_ip(
     return None
 
 
-def get_local_network() -> Optional[IPv4Network]:
+def get_local_network() -> IPv4Network | None:
     """Get the local network CIDR."""
     try:
         # Connect to a remote address to determine local IP
@@ -135,8 +130,8 @@ def get_local_network() -> Optional[IPv4Network]:
 
 
 def discover_tapo_cameras(
-    username: str, password: str, network: Optional[str] = None, scan_common: bool = True
-) -> List[dict]:
+    username: str, password: str, network: str | None = None, scan_common: bool = True
+) -> list[dict]:
     """Discover Tapo cameras on the local network."""
     logger.info("🔍 Scanning network for Tapo cameras...")
 
@@ -182,9 +177,7 @@ def discover_tapo_cameras(
         logger.info("Example: python discover_tapo_cameras.py --network 192.168.1.0/24")
         return []
 
-    logger.info(
-        f"Scanning {len(networks_to_scan)} network(s): {', '.join(str(n) for n in networks_to_scan[:3])}..."
-    )
+    logger.info(f"Scanning {len(networks_to_scan)} network(s): {', '.join(str(n) for n in networks_to_scan[:3])}...")
 
     # Scan all networks
     all_cameras = []

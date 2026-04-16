@@ -6,7 +6,6 @@ Detects oven left on, server overheating, electrical issues, etc.
 """
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -24,8 +23,8 @@ router = APIRouter(prefix="/api/thermal", tags=["Thermal"])
 class ThermalSensorConfig(BaseModel):
     ip: str
     name: str
-    threshold_c: Optional[float] = None
-    location: Optional[str] = None
+    threshold_c: float | None = None
+    location: str | None = None
 
 
 class ThermalInitRequest(BaseModel):
@@ -161,9 +160,7 @@ async def initialize_thermal(request: ThermalInitRequest):
             "success": client.is_initialized,
             "sensor_count": len(client._sensors),
             "message": (
-                f"Initialized with {len(client._sensors)} sensors"
-                if client.is_initialized
-                else "No sensors found"
+                f"Initialized with {len(client._sensors)} sensors" if client.is_initialized else "No sensors found"
             ),
         }
     except Exception as e:

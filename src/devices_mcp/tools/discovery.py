@@ -9,12 +9,12 @@ import inspect
 import logging
 import pkgutil
 import traceback
-from typing import Any, List, Set, Type
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 # Track imported modules to avoid duplicates
-_imported_modules: Set[str] = set()
+_imported_modules: set[str] = set()
 
 
 def is_tool_class(obj: Any) -> bool:
@@ -53,7 +53,7 @@ def is_tool_class(obj: Any) -> bool:
         return False
 
 
-def discover_tools(package: str = "devices_mcp.tools") -> List[Type[Any]]:
+def discover_tools(package: str = "devices_mcp.tools") -> list[type[Any]]:
     """
     Discover and return all available tools from the specified package.
 
@@ -63,7 +63,7 @@ def discover_tools(package: str = "devices_mcp.tools") -> List[Type[Any]]:
     Returns:
         List of tool classes that can be registered with the MCP server.
     """
-    tools: List[Type[Any]] = []
+    tools: list[type[Any]] = []
 
     try:
         logger.debug(f"Starting tool discovery in package: {package}")

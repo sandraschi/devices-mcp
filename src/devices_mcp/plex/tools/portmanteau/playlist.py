@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -32,7 +32,7 @@ def _get_plex_service():
     return PlexService(base_url=base_url, token=token)
 
 
-def _format_playlist(playlist) -> Dict[str, Any]:
+def _format_playlist(playlist) -> dict[str, Any]:
     """Format a playlist object into a dictionary."""
 
     return {
@@ -44,9 +44,7 @@ def _format_playlist(playlist) -> Dict[str, Any]:
         "item_count": len(playlist.items()),
         "smart": playlist.smart,
         "created_at": int(playlist.addedAt.timestamp()),
-        "updated_at": int(playlist.updatedAt.timestamp())
-        if playlist.updatedAt
-        else int(playlist.addedAt.timestamp()),
+        "updated_at": int(playlist.updatedAt.timestamp()) if playlist.updatedAt else int(playlist.addedAt.timestamp()),
         "owner": playlist.username,
     }
 
@@ -63,13 +61,13 @@ async def plex_playlist(
         "remove_items",
         "get_analytics",
     ],
-    playlist_id: Optional[str] = None,
-    title: Optional[str] = None,
-    items: Optional[List[str]] = None,
-    description: Optional[str] = None,
-    public: Optional[bool] = None,
-    sort: Optional[str] = None,
-) -> Dict[str, Any]:
+    playlist_id: str | None = None,
+    title: str | None = None,
+    items: list[str] | None = None,
+    description: str | None = None,
+    public: bool | None = None,
+    sort: str | None = None,
+) -> dict[str, Any]:
     """Comprehensive playlist management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -229,9 +227,7 @@ async def plex_playlist(
                     "success": False,
                     "error": "playlist_id is required for get operation",
                     "error_code": "MISSING_PLAYLIST_ID",
-                    "suggestions": [
-                        "Use plex_playlist(operation='list') to find available playlist IDs"
-                    ],
+                    "suggestions": ["Use plex_playlist(operation='list') to find available playlist IDs"],
                 }
 
             try:
@@ -452,9 +448,7 @@ async def plex_playlist(
                     "success": False,
                     "error": "items list is required for remove_items operation",
                     "error_code": "MISSING_ITEMS",
-                    "suggestions": [
-                        "Provide items parameter with list of media item IDs to remove"
-                    ],
+                    "suggestions": ["Provide items parameter with list of media item IDs to remove"],
                 }
 
             try:
@@ -544,9 +538,7 @@ async def plex_playlist(
                         "Consider adding more recent content"
                         if len(playlist_items) > 10
                         else "Add more items to this playlist",
-                        "Create a themed playlist"
-                        if "mix" not in playlist.title.lower()
-                        else "Great themed playlist!",
+                        "Create a themed playlist" if "mix" not in playlist.title.lower() else "Great themed playlist!",
                     ],
                     "last_played": max(
                         [

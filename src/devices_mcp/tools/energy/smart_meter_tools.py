@@ -7,8 +7,8 @@ via Wiener Netze infrastructure with real-time energy consumption tracking.
 
 import logging
 import time
-from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -18,10 +18,10 @@ from ...tools.base_tool import BaseTool, ToolCategory, tool
 logger = logging.getLogger(__name__)
 
 # Global smart meter service instance
-_smart_meter_service: Optional[WienEnergieIngestionService] = None
+_smart_meter_service: WienEnergieIngestionService | None = None
 
 
-def get_smart_meter_service() -> Optional[WienEnergieIngestionService]:
+def get_smart_meter_service() -> WienEnergieIngestionService | None:
     """Get or create smart meter service instance."""
     global _smart_meter_service
     if _smart_meter_service is None:
@@ -56,11 +56,9 @@ class SmartMeterStatusTool(BaseTool):
         category = ToolCategory.ENERGY
 
         class Parameters(BaseModel):
-            include_tariff: bool = Field(
-                False, description="Include tariff information in response"
-            )
+            include_tariff: bool = Field(False, description="Include tariff information in response")
 
-    async def execute(self, include_tariff: bool = False) -> Dict[str, Any]:
+    async def execute(self, include_tariff: bool = False) -> dict[str, Any]:
         """Execute smart meter status query."""
         try:
             service = get_smart_meter_service()
@@ -134,18 +132,16 @@ class SmartMeterConsumptionTool(BaseTool):
         category = ToolCategory.ENERGY
 
         class Parameters(BaseModel):
-            time_range: Optional[str] = Field(
-                "24h", description="Time range: '1h', '24h', '7d', '30d'"
-            )
-            start_date: Optional[str] = Field(None, description="Start date (ISO format)")
-            end_date: Optional[str] = Field(None, description="End date (ISO format)")
+            time_range: str | None = Field("24h", description="Time range: '1h', '24h', '7d', '30d'")
+            start_date: str | None = Field(None, description="Start date (ISO format)")
+            end_date: str | None = Field(None, description="End date (ISO format)")
 
     async def execute(
         self,
         time_range: str = "24h",
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> dict[str, Any]:
         """Execute consumption query."""
         try:
             service = get_smart_meter_service()
@@ -161,7 +157,7 @@ class SmartMeterConsumptionTool(BaseTool):
                 start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
                 end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
             else:
-                end = datetime.now(timezone.utc)
+                end = datetime.now(UTC)
                 if time_range == "1h":
                     start = end - timedelta(hours=1)
                 elif time_range == "24h":
@@ -177,14 +173,8 @@ class SmartMeterConsumptionTool(BaseTool):
             history = await service.fetch_historical_data(start, end)
 
             # Calculate statistics
-            total_energy = sum(
-                point.get("daily_energy_kwh", 0) or point.get("energy_kwh", 0) for point in history
-            )
-            avg_power = (
-                sum(point.get("power_w", 0) or 0 for point in history) / len(history)
-                if history
-                else 0
-            )
+            total_energy = sum(point.get("daily_energy_kwh", 0) or point.get("energy_kwh", 0) for point in history)
+            avg_power = sum(point.get("power_w", 0) or 0 for point in history) / len(history) if history else 0
 
             return {
                 "success": True,
@@ -229,18 +219,16 @@ class SmartMeterCostTool(BaseTool):
         category = ToolCategory.ENERGY
 
         class Parameters(BaseModel):
-            energy_kwh: Optional[float] = Field(None, description="Energy consumption in kWh")
-            time_range: Optional[str] = Field(
-                "24h", description="Time range: '1h', '24h', '7d', '30d'"
-            )
-            timestamp: Optional[str] = Field(None, description="Timestamp for tariff calculation")
+            energy_kwh: float | None = Field(None, description="Energy consumption in kWh")
+            time_range: str | None = Field("24h", description="Time range: '1h', '24h', '7d', '30d'")
+            timestamp: str | None = Field(None, description="Timestamp for tariff calculation")
 
     async def execute(
         self,
-        energy_kwh: Optional[float] = None,
+        energy_kwh: float | None = None,
         time_range: str = "24h",
-        timestamp: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        timestamp: str | None = None,
+    ) -> dict[str, Any]:
         """Execute cost calculation."""
         try:
             service = get_smart_meter_service()

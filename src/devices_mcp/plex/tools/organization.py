@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -28,11 +28,11 @@ class OrganizeRequest(BaseModel):
 
     library_id: str = Field(..., description="ID of the library to organize")
     dry_run: bool = Field(False, description="If True, only show what would be changed")
-    patterns: Optional[Dict[str, str]] = Field(None, description="Custom patterns for organization")
+    patterns: dict[str, str] | None = Field(None, description="Custom patterns for organization")
 
 
 @mcp.tool()
-async def organize_library(request: OrganizeRequest) -> Dict[str, Any]:
+async def organize_library(request: OrganizeRequest) -> dict[str, Any]:
     """Organize a Plex library according to best practices.
 
     Args:
@@ -60,7 +60,7 @@ class AnalyzeLibraryRequest(BaseModel):
 
 
 @mcp.tool()
-async def analyze_library(request: AnalyzeLibraryRequest) -> Dict[str, Any]:
+async def analyze_library(request: AnalyzeLibraryRequest) -> dict[str, Any]:
     """Analyze a library for organization issues.
 
     Args:
@@ -72,9 +72,7 @@ async def analyze_library(request: AnalyzeLibraryRequest) -> Dict[str, Any]:
     plex = _get_plex_service()
     try:
         result = await plex.analyze_library(library_id=request.library_id)
-        logger.info(
-            f"Analyzed library {request.library_id}, found {result.get('issues_found', 0)} issues"
-        )
+        logger.info(f"Analyzed library {request.library_id}, found {result.get('issues_found', 0)} issues")
         return result
     except Exception:
         logger.exception("Error analyzing library {request.library_id}:")
@@ -113,13 +111,13 @@ async def fix_media_match(request: FixMatchRequest) -> bool:
 class RefreshMetadataRequest(BaseModel):
     """Request model for refreshing metadata."""
 
-    item_id: Optional[str] = Field(None, description="ID of the item to refresh")
-    library_id: Optional[str] = Field(None, description="ID of the library to refresh")
+    item_id: str | None = Field(None, description="ID of the item to refresh")
+    library_id: str | None = Field(None, description="ID of the library to refresh")
     force: bool = Field(False, description="Force refresh even if not needed")
 
 
 @mcp.tool()
-async def refresh_metadata(request: RefreshMetadataRequest) -> Dict[str, Any]:
+async def refresh_metadata(request: RefreshMetadataRequest) -> dict[str, Any]:
     """Refresh metadata for an item or library.
 
     Args:
@@ -151,7 +149,7 @@ class CleanBundlesRequest(BaseModel):
 
 
 @mcp.tool()
-async def clean_bundles(request: CleanBundlesRequest) -> Dict[str, Any]:
+async def clean_bundles(request: CleanBundlesRequest) -> dict[str, Any]:
     """Clean up old bundles to free up disk space.
 
     Args:
@@ -164,9 +162,7 @@ async def clean_bundles(request: CleanBundlesRequest) -> Dict[str, Any]:
     try:
         # In a real implementation, this would clean up old bundles
         # For now, we'll just log the action
-        logger.info(
-            f"Cleaning bundles (dry_run={request.dry_run}, threshold_days={request.threshold_days})"
-        )
+        logger.info(f"Cleaning bundles (dry_run={request.dry_run}, threshold_days={request.threshold_days})")
         return {
             "cleaned": 0 if request.dry_run else 10,  # Example count
             "freed_space": "0B" if request.dry_run else "1.2GB",  # Example size
@@ -186,7 +182,7 @@ class OptimizeDatabaseRequest(BaseModel):
 
 
 @mcp.tool()
-async def optimize_database(request: OptimizeDatabaseRequest) -> Dict[str, Any]:
+async def optimize_database(request: OptimizeDatabaseRequest) -> dict[str, Any]:
     """Optimize the Plex database.
 
     Args:

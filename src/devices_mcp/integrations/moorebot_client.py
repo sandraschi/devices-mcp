@@ -12,7 +12,6 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +34,9 @@ class MoorebotSensorData:
     tof_distance: float  # meters
     light_ch0: int  # Upper 16 bits
     light_ch1: int  # Lower 16 bits
-    imu_orientation: Tuple[float, float, float, float]  # quaternion (x, y, z, w)
-    imu_angular_velocity: Tuple[float, float, float]  # rad/s
-    imu_linear_acceleration: Tuple[float, float, float]  # m/s^2
+    imu_orientation: tuple[float, float, float, float]  # quaternion (x, y, z, w)
+    imu_angular_velocity: tuple[float, float, float]  # rad/s
+    imu_linear_acceleration: tuple[float, float, float]  # m/s^2
     timestamp: datetime
 
 
@@ -48,7 +47,7 @@ class MoorebotPosition:
     x: float  # meters
     y: float  # meters
     heading: float  # degrees
-    room: Optional[str] = None
+    room: str | None = None
 
 
 class MoorebotScoutClient:
@@ -107,11 +106,9 @@ class MoorebotScoutClient:
         self._battery_level = 100
         self._position = MoorebotPosition(0.0, 0.0, 0.0)
 
-        logger.info(
-            f"Moorebot Scout client initialized: {ip_address}:{port} (mock_mode={mock_mode})"
-        )
+        logger.info(f"Moorebot Scout client initialized: {ip_address}:{port} (mock_mode={mock_mode})")
 
-    async def connect(self) -> Dict:
+    async def connect(self) -> dict:
         """
         Connect to Moorebot Scout robot.
 
@@ -148,7 +145,7 @@ class MoorebotScoutClient:
         self._status = MoorebotStatus.OFFLINE
         logger.info("Disconnected from Moorebot Scout")
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """
         Get comprehensive robot status.
 
@@ -216,7 +213,7 @@ class MoorebotScoutClient:
             timestamp=datetime.now(),
         )
 
-    async def move(self, linear: float = 0.0, angular: float = 0.0, duration: float = 0.0) -> Dict:
+    async def move(self, linear: float = 0.0, angular: float = 0.0, duration: float = 0.0) -> dict:
         """
         Move robot with specified velocities.
 
@@ -233,9 +230,7 @@ class MoorebotScoutClient:
 
         if self.mock_mode:
             logger.info(f"Mock move: linear={linear}, angular={angular}, duration={duration}")
-            self._status = (
-                MoorebotStatus.MOVING if (linear != 0 or angular != 0) else MoorebotStatus.IDLE
-            )
+            self._status = MoorebotStatus.MOVING if (linear != 0 or angular != 0) else MoorebotStatus.IDLE
 
             # Simulate position update
             if linear > 0:
@@ -252,11 +247,11 @@ class MoorebotScoutClient:
         # TODO: Publish to /cmd_vel topic (geometry_msgs/Twist)
         return {"success": True}
 
-    async def stop(self) -> Dict:
+    async def stop(self) -> dict:
         """Emergency stop - halt all movement"""
         return await self.move(0.0, 0.0)
 
-    async def start_patrol(self, route: str = "default") -> Dict:
+    async def start_patrol(self, route: str = "default") -> dict:
         """
         Start autonomous patrol route.
 
@@ -283,7 +278,7 @@ class MoorebotScoutClient:
         # TODO: Call ROS service /start_patrol
         return {"success": True}
 
-    async def stop_patrol(self) -> Dict:
+    async def stop_patrol(self) -> dict:
         """Stop current patrol"""
         if self.mock_mode:
             self._status = MoorebotStatus.IDLE
@@ -292,7 +287,7 @@ class MoorebotScoutClient:
         # TODO: Call ROS service /stop_patrol
         return {"success": True}
 
-    async def return_to_dock(self) -> Dict:
+    async def return_to_dock(self) -> dict:
         """
         Return to charging dock.
 

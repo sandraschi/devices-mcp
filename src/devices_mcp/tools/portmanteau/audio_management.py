@@ -392,9 +392,7 @@ async def _speak_with_edge(text: str, voice: str | None = None) -> dict[str, Any
         return {"success": False, "error": str(e)}
 
 
-async def _speak_with_pyttsx3(
-    text: str, voice: str | None = None, rate: int = 150
-) -> dict[str, Any]:
+async def _speak_with_pyttsx3(text: str, voice: str | None = None, rate: int = 150) -> dict[str, Any]:
     """TTS using pyttsx3 (offline, system voices)."""
     if not PYTTSX3_AVAILABLE:
         return {"success": False, "error": "pyttsx3 not available"}
@@ -418,9 +416,7 @@ async def _speak_with_pyttsx3(
         return {"success": False, "error": str(e)}
 
 
-async def _speak_text(
-    text: str, voice: str | None = None, rate: int = 150, use_edge: bool = False
-) -> dict[str, Any]:
+async def _speak_text(text: str, voice: str | None = None, rate: int = 150, use_edge: bool = False) -> dict[str, Any]:
     """
     TTS with automatic fallback chain: Piper -> Edge-TTS -> pyttsx3
 
@@ -477,10 +473,7 @@ async def _transcribe_with_faster_whisper(audio_path: str, model: str = "base") 
 
     try:
         # Lazy load model
-        if (
-            _faster_whisper_model is None
-            or getattr(_faster_whisper_model, "_model_size", None) != model
-        ):
+        if _faster_whisper_model is None or getattr(_faster_whisper_model, "_model_size", None) != model:
             logger.info(f"Loading Faster-Whisper model: {model}")
             _faster_whisper_model = WhisperModel(model, device="cpu", compute_type="int8")
             _faster_whisper_model._model_size = model  # type: ignore[attr-defined]
@@ -600,13 +593,9 @@ async def _transcribe_audio(audio_path: str, model: str = "base") -> dict[str, A
 async def _record_audio(duration: float, sample_rate: int = 16000) -> tuple[str, bytes]:
     """Record audio from microphone."""
     if not SOUNDDEVICE_AVAILABLE:
-        raise RuntimeError(
-            "Audio recording requires sounddevice. Install: pip install sounddevice soundfile"
-        )
+        raise RuntimeError("Audio recording requires sounddevice. Install: pip install sounddevice soundfile")
 
-    recording = sd.rec(
-        int(duration * sample_rate), samplerate=sample_rate, channels=1, dtype="int16"
-    )
+    recording = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1, dtype="int16")
     sd.wait()
 
     # Save to temp file (using NamedTemporaryFile for security)
@@ -731,9 +720,7 @@ async def _wake_word_listener_loop(
     try:
         # If OpenWakeWord available, use it for efficient wake word detection
         if OPENWAKEWORD_AVAILABLE and _oww_model is not None:
-            await _wake_listener_with_oww(
-                wake_word, command_duration, threshold, sample_rate, chunk_size
-            )
+            await _wake_listener_with_oww(wake_word, command_duration, threshold, sample_rate, chunk_size)
         else:
             # Fallback: Use Vosk keyword spotting or periodic STT
             await _wake_listener_with_vosk(wake_word, command_duration, sample_rate)
@@ -748,7 +735,7 @@ async def _wake_word_listener_loop(
 
 
 async def _wake_listener_with_oww(
-    wake_word: str,  # noqa: ARG001 - reserved for custom wake word training
+    wake_word: str,
     command_duration: float,
     threshold: float,
     sample_rate: int,
@@ -876,9 +863,7 @@ async def _wake_listener_with_vosk(
         stream.close()
 
 
-async def _start_wake_listener(
-    wake_word: str = "hey tapo", command_duration: float = 5.0
-) -> dict[str, Any]:
+async def _start_wake_listener(wake_word: str = "hey tapo", command_duration: float = 5.0) -> dict[str, Any]:
     """Start the always-on wake word listener in background."""
     global _wake_listener_running, _wake_listener_task
 
@@ -1170,11 +1155,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                             "note": "Required for playback and recording",
                         },
                         "wake_word_detection": {
-                            "primary": "openwakeword"
-                            if OPENWAKEWORD_AVAILABLE
-                            else "vosk"
-                            if VOSK_AVAILABLE
-                            else None,
+                            "primary": "openwakeword" if OPENWAKEWORD_AVAILABLE else "vosk" if VOSK_AVAILABLE else None,
                             "openwakeword": {
                                 "available": OPENWAKEWORD_AVAILABLE,
                                 "quality": "⭐⭐⭐⭐⭐",

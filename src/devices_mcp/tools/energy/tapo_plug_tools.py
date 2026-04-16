@@ -6,8 +6,8 @@ with energy consumption tracking, cost analysis, and smart automation.
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -35,13 +35,9 @@ class TapoSmartPlug(BaseModel):
     monthly_cost: float = Field(..., description="Monthly cost in USD")
     last_seen: str = Field(..., description="Last communication timestamp")
     automation_enabled: bool = Field(default=False, description="Whether automation is enabled")
-    energy_monitoring: bool = Field(
-        default=True, description="Whether energy monitoring is enabled"
-    )
+    energy_monitoring: bool = Field(default=True, description="Whether energy monitoring is enabled")
     power_schedule: str = Field(default="", description="Power on/off schedule")
-    energy_saving_mode: bool = Field(
-        default=False, description="Whether energy saving mode is enabled"
-    )
+    energy_saving_mode: bool = Field(default=False, description="Whether energy saving mode is enabled")
 
 
 class EnergyUsageData(BaseModel):
@@ -69,15 +65,15 @@ class TapoPlugManager:
     """Manager for Tapo smart plugs and energy monitoring."""
 
     def __init__(self):
-        self.devices: Dict[str, TapoSmartPlug] = {}
-        self.usage_history: List[EnergyUsageData] = []
-        self.automation_rules: List[EnergyAutomation] = []
+        self.devices: dict[str, TapoSmartPlug] = {}
+        self.usage_history: list[EnergyUsageData] = []
+        self.automation_rules: list[EnergyAutomation] = []
         self._initialized = False
         self._electricity_rate = 0.12  # USD per kWh (default rate)
-        self._device_hosts: Dict[str, str] = {}
-        self._device_readonly: Dict[str, bool] = {}
-        self._ingestion: Optional[TapoP115IngestionService] = None
-        self._ingestion_error: Optional[str] = None
+        self._device_hosts: dict[str, str] = {}
+        self._device_readonly: dict[str, bool] = {}
+        self._ingestion: TapoP115IngestionService | None = None
+        self._ingestion_error: str | None = None
         # Mock fallback toggle via environment (default: disabled)
         try:
             import os
@@ -93,8 +89,8 @@ class TapoPlugManager:
 
         # Load per-device readonly settings from configuration (deferred until first use)
         self._config_loaded = False
-        self._readonly_by_host: Dict[str, bool] = {}
-        self._readonly_by_device_id: Dict[str, bool] = {}
+        self._readonly_by_host: dict[str, bool] = {}
+        self._readonly_by_device_id: dict[str, bool] = {}
 
     def _load_config(self):
         """Load configuration settings (called lazily)."""
@@ -135,7 +131,7 @@ class TapoPlugManager:
             self._ingestion = None
             self._ingestion_error = str(exc)
 
-    async def initialize(self, _tapo_account: Dict[str, str]) -> bool:
+    async def initialize(self, _tapo_account: dict[str, str]) -> bool:
         """Initialize connection to Tapo smart plugs."""
         try:
             logger.info("Initializing Tapo smart plug connection...")
@@ -148,9 +144,7 @@ class TapoPlugManager:
                 await self._discover_devices()
             except Exception as e:
                 logger.warning("Device discovery failed during initialization: %s", e)
-                logger.info(
-                    "Tapo plug manager will initialize without devices - they will be discovered on-demand"
-                )
+                logger.info("Tapo plug manager will initialize without devices - they will be discovered on-demand")
 
             # Load historical data (don't fail if this doesn't work either)
             try:
@@ -174,9 +168,7 @@ class TapoPlugManager:
             try:
                 logger.info("Calling ingestion.discover_devices()...")
                 real_devices = await self._ingestion.discover_devices()
-                logger.info(
-                    f"Discovery returned {len(real_devices) if real_devices else 0} devices"
-                )
+                logger.info(f"Discovery returned {len(real_devices) if real_devices else 0} devices")
                 if real_devices:
                     logger.info("Loaded %s real Tapo P115 devices", len(real_devices))
                     self.devices.clear()
@@ -200,9 +192,7 @@ class TapoPlugManager:
                     return
                 logger.warning("No devices returned from discovery")
             except IngestionUnavailableError as exc:
-                logger.warning(
-                    "Real Tapo ingestion unavailable, falling back to simulated data: %s", exc
-                )
+                logger.warning("Real Tapo ingestion unavailable, falling back to simulated data: %s", exc)
             except Exception:
                 logger.exception("Failed to load real Tapo P115 data; falling back to mock data.")
 
@@ -318,7 +308,7 @@ class TapoPlugManager:
             device = TapoSmartPlug(**device_data)
             self.devices[device.device_id] = device
 
-    def _create_device_from_payload(self, payload: Dict[str, Any]) -> TapoSmartPlug:
+    def _create_device_from_payload(self, payload: dict[str, Any]) -> TapoSmartPlug:
         """Create a TapoSmartPlug instance from ingestion payload."""
         power_state = bool(payload.get("power_state", False))
         daily_energy = float(payload.get("daily_energy", 0.0))
@@ -331,9 +321,7 @@ class TapoPlugManager:
             daily_cost = daily_energy * self._electricity_rate
         else:
             daily_cost = 0.0
-        monthly_cost = (
-            monthly_energy * self._electricity_rate if monthly_energy else daily_cost * 30
-        )
+        monthly_cost = monthly_energy * self._electricity_rate if monthly_energy else daily_cost * 30
 
         return TapoSmartPlug(
             device_id=str(payload.get("device_id")),
@@ -401,9 +389,7 @@ class TapoPlugManager:
                     if "coffee" in device.name.lower():
                         power_multiplier = 2.0 if 6 <= timestamp.hour <= 8 else 0.1
                     elif "charger" in device.name.lower():
-                        power_multiplier = (
-                            1.5 if timestamp.hour >= 22 or timestamp.hour <= 6 else 0.1
-                        )
+                        power_multiplier = 1.5 if timestamp.hour >= 22 or timestamp.hour <= 6 else 0.1
                     elif "tv" in device.name.lower():
                         power_multiplier = 1.0 if 18 <= timestamp.hour <= 23 else 0.1
                     elif "computer" in device.name.lower():
@@ -433,7 +419,7 @@ class TapoPlugManager:
             await self.initialize({})
         await self._discover_devices()
 
-    async def get_all_devices(self) -> List[TapoSmartPlug]:
+    async def get_all_devices(self) -> list[TapoSmartPlug]:
         """Get all Tapo smart plug devices."""
         if not self._initialized:
             await self.initialize({})
@@ -447,14 +433,14 @@ class TapoPlugManager:
 
         return list(self.devices.values())
 
-    async def get_device_status(self, device_id: str) -> Optional[TapoSmartPlug]:
+    async def get_device_status(self, device_id: str) -> TapoSmartPlug | None:
         """Get status of a specific smart plug device."""
         if not self._initialized:
             await self.initialize({})
 
         return self.devices.get(device_id)
 
-    def get_device_host(self, device_id: str) -> Optional[str]:
+    def get_device_host(self, device_id: str) -> str | None:
         """Return the network host for a device if known."""
         return self._device_hosts.get(device_id)
 
@@ -474,9 +460,7 @@ class TapoPlugManager:
 
             # Enforce read-only devices cannot be toggled
             if self.is_device_readonly(device_id):
-                logger.warning(
-                    "Toggle blocked for read-only device %s (%s)", device_id, device.name
-                )
+                logger.warning("Toggle blocked for read-only device %s (%s)", device_id, device.name)
                 return False
 
             if self._ingestion and host:
@@ -498,17 +482,13 @@ class TapoPlugManager:
             logger.exception("Failed to toggle device %s", device_id)
             return False
 
-    async def get_energy_usage_history(
-        self, device_id: Optional[str] = None, hours: int = 24
-    ) -> List[EnergyUsageData]:
+    async def get_energy_usage_history(self, device_id: str | None = None, hours: int = 24) -> list[EnergyUsageData]:
         """Get energy usage history for devices."""
         if not self._initialized:
             await self.initialize({})
 
-        from datetime import timezone
-
         # Use UTC-aware datetime to match ingestion service timestamps
-        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
+        cutoff_time = datetime.now(UTC) - timedelta(hours=hours)
 
         filtered_data = [
             data
@@ -521,7 +501,7 @@ class TapoPlugManager:
 
         return filtered_data
 
-    async def calculate_cost_savings(self) -> Dict[str, float]:
+    async def calculate_cost_savings(self) -> dict[str, float]:
         """Calculate potential cost savings from automation."""
         total_current_cost = sum(device.daily_cost for device in self.devices.values())
 
@@ -555,20 +535,16 @@ class GetSmartPlugStatusTool(BaseTool):
 
     class Meta:
         name = "get_smart_plug_status"
-        description = (
-            "Get status and energy consumption information for all Tapo smart plug devices"
-        )
+        description = "Get status and energy consumption information for all Tapo smart plug devices"
         category = ToolCategory.UTILITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the tool to get smart plug status."""
         try:
             devices = await tapo_plug_manager.get_all_devices()
 
             # Calculate totals
-            total_current_power = sum(
-                device.current_power for device in devices if device.power_state
-            )
+            total_current_power = sum(device.current_power for device in devices if device.power_state)
             total_daily_cost = sum(device.daily_cost for device in devices)
             total_monthly_cost = sum(device.monthly_cost for device in devices)
             active_devices = len([d for d in devices if d.power_state])
@@ -624,7 +600,7 @@ class ControlSmartPlugTool(BaseTool):
             device_id: str = Field(..., description="ID of the smart plug device to control")
             power_state: bool = Field(..., description="True to turn on, False to turn off")
 
-    async def execute(self, device_id: str, power_state: bool) -> Dict[str, Any]:
+    async def execute(self, device_id: str, power_state: bool) -> dict[str, Any]:
         """
         Execute the tool to control a smart plug device.
 
@@ -673,16 +649,14 @@ class GetEnergyConsumptionTool(BaseTool):
 
     class Meta:
         name = "get_energy_consumption"
-        description = (
-            "Get detailed energy consumption data and cost analysis for smart plug devices"
-        )
+        description = "Get detailed energy consumption data and cost analysis for smart plug devices"
         category = ToolCategory.UTILITY
 
         class Parameters:
-            device_id: Optional[str] = Field(None, description="Specific device ID (optional)")
+            device_id: str | None = Field(None, description="Specific device ID (optional)")
             period: str = Field(default="day", description="Time period (day, week, month)")
 
-    async def execute(self, device_id: Optional[str] = None, period: str = "day") -> Dict[str, Any]:
+    async def execute(self, device_id: str | None = None, period: str = "day") -> dict[str, Any]:
         """
         Execute the tool to get energy consumption data.
 
@@ -748,7 +722,7 @@ class GetEnergyCostAnalysisTool(BaseTool):
         description = "Get detailed energy cost analysis and savings recommendations"
         category = ToolCategory.UTILITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the tool to get energy cost analysis."""
         try:
             devices = await tapo_plug_manager.get_all_devices()
@@ -800,9 +774,7 @@ class GetEnergyCostAnalysisTool(BaseTool):
                     "potential_daily_savings": savings_data["daily_savings"],
                     "savings_percentage": savings_data["savings_percentage"],
                     "high_consumption_count": len([d for d in devices if d.daily_cost > 0.20]),
-                    "automation_coverage": len([d for d in devices if d.automation_enabled])
-                    / len(devices)
-                    * 100,
+                    "automation_coverage": len([d for d in devices if d.automation_enabled]) / len(devices) * 100,
                 },
             }
 
@@ -843,7 +815,7 @@ class SetEnergyAutomationTool(BaseTool):
 
     async def execute(
         self, device_id: str, rule_name: str, condition: str, action: str, enabled: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute the tool to set up energy automation.
 
@@ -905,9 +877,9 @@ class GetTapoP115DetailedStatsTool(BaseTool):
         category = ToolCategory.UTILITY
 
         class Parameters:
-            device_id: Optional[str] = Field(None, description="Specific P115 device ID (optional)")
+            device_id: str | None = Field(None, description="Specific P115 device ID (optional)")
 
-    async def execute(self, device_id: Optional[str] = None) -> Dict[str, Any]:
+    async def execute(self, device_id: str | None = None) -> dict[str, Any]:
         """
         Execute the tool to get detailed P115 statistics.
 
@@ -974,17 +946,11 @@ class GetTapoP115DetailedStatsTool(BaseTool):
                 "summary": {
                     "total_p115_devices": len(p115_devices),
                     "active_p115_devices": len([d for d in p115_devices if d.power_state]),
-                    "total_current_power": sum(
-                        d.current_power for d in p115_devices if d.power_state
-                    ),
+                    "total_current_power": sum(d.current_power for d in p115_devices if d.power_state),
                     "total_daily_energy": sum(d.daily_energy for d in p115_devices),
                     "total_daily_cost": sum(d.daily_cost for d in p115_devices),
-                    "average_voltage": sum(d.voltage for d in p115_devices) / len(p115_devices)
-                    if p115_devices
-                    else 0,
-                    "devices_with_energy_saving": len(
-                        [d for d in p115_devices if d.energy_saving_mode]
-                    ),
+                    "average_voltage": sum(d.voltage for d in p115_devices) / len(p115_devices) if p115_devices else 0,
+                    "devices_with_energy_saving": len([d for d in p115_devices if d.energy_saving_mode]),
                 },
             }
 
@@ -1015,11 +981,9 @@ class SetTapoP115EnergySavingModeTool(BaseTool):
 
         class Parameters:
             device_id: str = Field(..., description="Target P115 device ID")
-            energy_saving_enabled: bool = Field(
-                ..., description="Whether to enable energy saving mode"
-            )
+            energy_saving_enabled: bool = Field(..., description="Whether to enable energy saving mode")
 
-    async def execute(self, device_id: str, energy_saving_enabled: bool) -> Dict[str, Any]:
+    async def execute(self, device_id: str, energy_saving_enabled: bool) -> dict[str, Any]:
         """
         Execute the tool to set energy saving mode.
 
@@ -1083,9 +1047,9 @@ class GetTapoP115PowerScheduleTool(BaseTool):
         category = ToolCategory.UTILITY
 
         class Parameters:
-            device_id: Optional[str] = Field(None, description="Specific P115 device ID (optional)")
+            device_id: str | None = Field(None, description="Specific P115 device ID (optional)")
 
-    async def execute(self, device_id: Optional[str] = None) -> Dict[str, Any]:
+    async def execute(self, device_id: str | None = None) -> dict[str, Any]:
         """
         Execute the tool to get power schedules.
 
@@ -1112,9 +1076,7 @@ class GetTapoP115PowerScheduleTool(BaseTool):
                     "current_schedule": device.power_schedule,
                     "automation_enabled": device.automation_enabled,
                     "energy_saving_mode": device.energy_saving_mode,
-                    "schedule_status": "active"
-                    if device.automation_enabled and device.power_schedule
-                    else "inactive",
+                    "schedule_status": "active" if device.automation_enabled and device.power_schedule else "inactive",
                 }
                 schedules.append(schedule_info)
 
@@ -1124,9 +1086,7 @@ class GetTapoP115PowerScheduleTool(BaseTool):
                 "summary": {
                     "total_p115_devices": len(p115_devices),
                     "devices_with_schedules": len([d for d in p115_devices if d.power_schedule]),
-                    "automation_enabled_devices": len(
-                        [d for d in p115_devices if d.automation_enabled]
-                    ),
+                    "automation_enabled_devices": len([d for d in p115_devices if d.automation_enabled]),
                     "energy_saving_devices": len([d for d in p115_devices if d.energy_saving_mode]),
                 },
             }
@@ -1152,7 +1112,7 @@ class GetTapoP115DataStorageInfoTool(BaseTool):
         description = "Get information about P115 data storage capabilities, limitations, and available historical data"
         category = ToolCategory.UTILITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the tool to get P115 data storage information."""
         try:
             return {

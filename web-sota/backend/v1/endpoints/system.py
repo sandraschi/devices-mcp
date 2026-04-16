@@ -3,7 +3,7 @@ System and administration API endpoints.
 """
 
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
@@ -54,7 +54,7 @@ async def get_system_status():
 
 
 @router.get("/config")
-async def get_system_config(_: None = Depends(verify_api_key)) -> Dict[str, Any]:
+async def get_system_config(_: None = Depends(verify_api_key)) -> dict[str, Any]:
     """Get the current system configuration (requires authentication)."""
     # This would return the current configuration
     return {"status": "success", "config": {}}
@@ -68,9 +68,7 @@ async def restart_system(_: None = Depends(verify_api_key)):
 
 
 @router.get("/logs")
-async def get_system_logs(
-    _: None = Depends(verify_api_key), _lines: int = 100, _level: str = "INFO"
-):
+async def get_system_logs(_: None = Depends(verify_api_key), _lines: int = 100, _level: str = "INFO"):
     """Get system logs (requires authentication)."""
     # This would return the system logs
     return {

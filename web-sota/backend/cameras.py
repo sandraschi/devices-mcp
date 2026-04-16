@@ -5,7 +5,7 @@ import logging
 # Add src to Python path for MCP imports
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/api/cameras")
-async def get_cameras() -> Dict[str, Any]:
+async def get_cameras() -> dict[str, Any]:
     """Get all cameras using MCP camera tools."""
     try:
         # Import MCP camera tools
@@ -168,9 +168,7 @@ async def move_camera_ptz(camera_name: str, direction: str, amount: float = 1.0)
         from devices_mcp.tools.camera.camera_management_tool import CameraManagementTool
 
         tool = CameraManagementTool()
-        result = await tool.execute(
-            camera_name=camera_name, operation="move", direction=direction, amount=amount
-        )
+        result = await tool.execute(camera_name=camera_name, operation="move", direction=direction, amount=amount)
 
         if not result.get("success", False):
             raise HTTPException(status_code=400, detail=result.get("error", "PTZ operation failed"))

@@ -1,6 +1,6 @@
 """About and general help tool for Nest Protect MCP."""
 
-from typing import Any, Dict, Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -15,7 +15,7 @@ class AboutParams(BaseModel):
 
 async def about_server(
     level: Literal["simple", "intermediate", "technical"] = "simple",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Get information about what this MCP server is and what it can do."""
 
     if level == "simple":
@@ -284,7 +284,7 @@ async def about_server(
     }
 
 
-async def get_supported_devices() -> Dict[str, Any]:
+async def get_supported_devices() -> dict[str, Any]:
     """Get detailed information about supported and planned devices."""
     return {
         "status": "success",

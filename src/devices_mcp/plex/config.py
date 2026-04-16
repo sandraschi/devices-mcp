@@ -10,13 +10,12 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 
 
-def setup_logging(level: str = "INFO", format_string: Optional[str] = None) -> None:
+def setup_logging(level: str = "INFO", format_string: str | None = None) -> None:
     """
     Configure logging for the entire application.
 
@@ -55,8 +54,8 @@ class PlexConfig(BaseModel):
     # Server connection
     server_url: str = Field(default="http://localhost:32400", description="Plex server URL")
     plex_token: str = Field(description="Plex authentication token")
-    username: Optional[str] = Field(default=None, description="Plex username (if using basic auth)")
-    password: Optional[str] = Field(default=None, description="Plex password (if using basic auth)")
+    username: str | None = Field(default=None, description="Plex username (if using basic auth)")
+    password: str | None = Field(default=None, description="Plex password (if using basic auth)")
 
     # Request settings
     timeout: int = Field(default=30, description="Request timeout in seconds")
@@ -84,7 +83,7 @@ class PlexConfig(BaseModel):
         return max(5, min(300, v))  # 5-300 seconds
 
     @classmethod
-    def load_config(cls, config_file: Optional[str] = None) -> "PlexConfig":
+    def load_config(cls, config_file: str | None = None) -> "PlexConfig":
         """
         Load configuration from environment variables and optional JSON file.
 
@@ -149,7 +148,7 @@ class PlexConfig(BaseModel):
                     try:
                         config_data[config_key] = int(env_value)
                     except ValueError:
-                        print(f"Warning: Invalid integer value for {env_var}: {env_value}")
+                        logger.warning("Invalid integer value for %s: %s", env_var, env_value)
                 else:
                     config_data[config_key] = env_value
 

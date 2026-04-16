@@ -15,8 +15,9 @@ import asyncio
 import sys
 import tempfile
 import time
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
@@ -101,9 +102,7 @@ def sample_config_data():
         "energy": {
             "tapo_p115": {
                 "account": {"email": "test@example.com", "password": "testpass"},
-                "devices": [
-                    {"device_id": TEST_PLUG_ID, "name": "Test Plug", "host": "192.168.1.101"}
-                ],
+                "devices": [{"device_id": TEST_PLUG_ID, "name": "Test Plug", "host": "192.168.1.101"}],
             }
         },
     }
@@ -330,13 +329,11 @@ def test_image() -> bytes:
 
 
 # Test utilities
-def assert_dict_contains(d: Dict[Any, Any], sub_d: Dict[Any, Any]) -> None:
+def assert_dict_contains(d: dict[Any, Any], sub_d: dict[Any, Any]) -> None:
     """Assert that dictionary d contains all key-value pairs from sub_d."""
     for key, value in sub_d.items():
         assert key in d, f"Key '{key}' not found in dictionary"
-        assert d[key] == value, (
-            f"Value for key '{key}' does not match. Expected {value}, got {d[key]}"
-        )
+        assert d[key] == value, f"Value for key '{key}' does not match. Expected {value}, got {d[key]}"
 
 
 # Mock classes for testing
@@ -358,14 +355,12 @@ class AsyncContextManagerMock:
 class MockResponse:
     """A mock response class for testing HTTP requests."""
 
-    def __init__(
-        self, status: int, json_data: Optional[Dict[str, Any]] = None, text: Optional[str] = None
-    ):
+    def __init__(self, status: int, json_data: dict[str, Any] | None = None, text: str | None = None):
         self.status = status
         self._json_data = json_data or {}
         self._text = text or ""
 
-    async def json(self) -> Dict[str, Any]:
+    async def json(self) -> dict[str, Any]:
         """Return the JSON response data."""
         return self._json_data
 
@@ -476,7 +471,7 @@ def patch_json_dump():
     return patch("json.dump")
 
 
-def patch_mcp_call_tool(return_value: Dict[str, Any] = None):
+def patch_mcp_call_tool(return_value: dict[str, Any] = None):
     """Patch the MCP call_mcp_tool function."""
     return patch(
         "devices_mcp.mcp_client.call_mcp_tool",
@@ -706,7 +701,7 @@ class MockWebSocket:
         self.received_messages = []
         self.closed = False
 
-    async def send_json(self, data: Dict[str, Any]):
+    async def send_json(self, data: dict[str, Any]):
         """Send JSON data through the WebSocket."""
         self.sent_messages.append(data)
 
@@ -730,7 +725,7 @@ class MockDatabase:
         self.data = {}
         self.queries = []
 
-    def insert(self, table: str, data: Dict[str, Any]) -> int:
+    def insert(self, table: str, data: dict[str, Any]) -> int:
         """Insert data into a table."""
         if table not in self.data:
             self.data[table] = []
@@ -740,7 +735,7 @@ class MockDatabase:
         self.queries.append(f"INSERT INTO {table}: {data}")
         return record_id
 
-    def select(self, table: str, where: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    def select(self, table: str, where: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         """Select data from a table."""
         if table not in self.data:
             return []
@@ -756,7 +751,7 @@ class MockDatabase:
         self.queries.append(f"SELECT FROM {table} WHERE {where}")
         return records
 
-    def update(self, table: str, where: Dict[str, Any], data: Dict[str, Any]) -> int:
+    def update(self, table: str, where: dict[str, Any], data: dict[str, Any]) -> int:
         """Update records in a table."""
         if table not in self.data:
             return 0
@@ -770,16 +765,14 @@ class MockDatabase:
         self.queries.append(f"UPDATE {table} WHERE {where}: {data}")
         return updated_count
 
-    def delete(self, table: str, where: Dict[str, Any]) -> int:
+    def delete(self, table: str, where: dict[str, Any]) -> int:
         """Delete records from a table."""
         if table not in self.data:
             return 0
 
         original_length = len(self.data[table])
         self.data[table] = [
-            record
-            for record in self.data[table]
-            if not all(record.get(k) == v for k, v in where.items())
+            record for record in self.data[table] if not all(record.get(k) == v for k, v in where.items())
         ]
         deleted_count = original_length - len(self.data[table])
 
@@ -792,28 +785,26 @@ class MockDatabase:
 # ============================================================================
 
 
-def assert_dict_contains(d: Dict[Any, Any], sub_d: Dict[Any, Any]) -> None:
+def assert_dict_contains(d: dict[Any, Any], sub_d: dict[Any, Any]) -> None:
     """Assert that dictionary d contains all key-value pairs from sub_d."""
     for key, value in sub_d.items():
         assert key in d, f"Key '{key}' not found in dictionary"
-        assert d[key] == value, (
-            f"Value for key '{key}' does not match. Expected {value}, got {d[key]}"
-        )
+        assert d[key] == value, f"Value for key '{key}' does not match. Expected {value}, got {d[key]}"
 
 
-def assert_dict_contains_keys(d: Dict[Any, Any], keys: List[str]) -> None:
+def assert_dict_contains_keys(d: dict[Any, Any], keys: list[str]) -> None:
     """Assert that dictionary d contains all specified keys."""
     for key in keys:
         assert key in d, f"Key '{key}' not found in dictionary"
 
 
-def assert_api_response_success(response: Dict[str, Any]) -> None:
+def assert_api_response_success(response: dict[str, Any]) -> None:
     """Assert that an API response indicates success."""
     assert "success" in response, "Response missing 'success' field"
     assert response["success"] is True, f"API call failed: {response}"
 
 
-def assert_api_response_error(response: Dict[str, Any], expected_status: int = None) -> None:
+def assert_api_response_error(response: dict[str, Any], expected_status: int = None) -> None:
     """Assert that an API response indicates an error."""
     assert "success" in response, "Response missing 'success' field"
     assert response["success"] is False, "Expected error response but got success"
@@ -880,8 +871,6 @@ def performance_timer():
             return self.end_time - self.start_time
 
         def assert_under_limit(self, limit_seconds: float):
-            assert self.elapsed < limit_seconds, (
-                f"Operation took {self.elapsed:.2f}s, limit was {limit_seconds}s"
-            )
+            assert self.elapsed < limit_seconds, f"Operation took {self.elapsed:.2f}s, limit was {limit_seconds}s"
 
     return PerformanceTimer()

@@ -6,15 +6,13 @@ This module contains tools for controlling camera movements and presets.
 
 import logging
 import warnings
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import ConfigDict, Field
 
 from devices_mcp.tools.base_tool import BaseTool, ToolCategory, ToolResult, tool
 
-warnings.filterwarnings(
-    "ignore", category=DeprecationWarning, message=".*Support for class-based.*"
-)
+warnings.filterwarnings("ignore", category=DeprecationWarning, message=".*Support for class-based.*")
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +60,7 @@ class MovePTZTool(BaseTool):
 
     relative: bool = Field(default=True, description="Whether the movement is relative")
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Control camera PTZ (Pan-Tilt-Zoom) movements with precise positioning.
 
         Moves the camera to a new position with adjustable pan, tilt, zoom, and speed settings.
@@ -217,9 +215,9 @@ class SavePTZPresetTool(BaseTool):
 
     preset_id: int = Field(..., ge=1, le=16)
 
-    name: Optional[str] = Field(None)
+    name: str | None = Field(None)
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Save the current PTZ position as a preset."""
         from ...core.server import TapoCameraServer
 
@@ -256,7 +254,7 @@ class RecallPTZPresetTool(BaseTool):
 
     preset_id: int = Field(..., ge=1, le=16)
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Recall a saved PTZ preset."""
         from ...core.server import TapoCameraServer
 
@@ -292,7 +290,7 @@ class GetPTZPresetsTool(BaseTool):
             "description": "Get all saved PTZ presets",
         }
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Get all saved PTZ presets."""
         from ...core.server import TapoCameraServer
 
@@ -325,7 +323,7 @@ class GoToHomePTZTool(BaseTool):
             "description": "Move the PTZ to the home position",
         }
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Move the PTZ to the home position."""
         from ...core.server import TapoCameraServer
 
@@ -365,7 +363,7 @@ class StopPTZTool(BaseTool):
             "description": "Stop all PTZ movement",
         }
 
-    async def execute(self, **_kwargs) -> Dict[str, Any]:
+    async def execute(self, **_kwargs) -> dict[str, Any]:
         """Stop all PTZ movement."""
         from devices_mcp.core.server import (  # Lazy import to avoid circular imports
             TapoCameraServer,

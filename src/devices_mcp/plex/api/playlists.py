@@ -4,8 +4,6 @@ Playlist-related API endpoints for PlexMCP.
 This module contains API endpoints for managing Plex playlists.
 """
 
-from typing import List, Optional
-
 # Import the shared FastMCP instance from the package level
 # Import models
 from ..models import MediaItem, PlaylistAnalytics, PlaylistCreateRequest, PlexPlaylist
@@ -71,9 +69,7 @@ async def create_playlist(request: PlaylistCreateRequest) -> PlexPlaylist:
         raise RuntimeError(f"Error creating playlist: {e!s}") from e
 
 
-async def get_playlists(
-    playlist_type: Optional[str] = None, user_playlists: bool = True
-) -> List[PlexPlaylist]:
+async def get_playlists(playlist_type: str | None = None, user_playlists: bool = True) -> list[PlexPlaylist]:
     """
     Get all playlists from the Plex server.
 
@@ -182,7 +178,7 @@ async def get_playlist(playlist_id: str) -> PlexPlaylist:
         raise RuntimeError(f"Error fetching playlist: {e!s}") from e
 
 
-async def get_playlist_items(playlist_id: str) -> List[MediaItem]:
+async def get_playlist_items(playlist_id: str) -> list[MediaItem]:
     """
     Get all items in a playlist.
 
@@ -217,9 +213,7 @@ async def get_playlist_items(playlist_id: str) -> List[MediaItem]:
                             thumb=item.thumbUrl if hasattr(item, "thumbUrl") else "",
                             art=item.artUrl if hasattr(item, "artUrl") else "",
                             duration=getattr(item, "duration", 0),
-                            added_at=item.addedAt.timestamp()
-                            if hasattr(item, "addedAt") and item.addedAt
-                            else 0,
+                            added_at=item.addedAt.timestamp() if hasattr(item, "addedAt") and item.addedAt else 0,
                             updated_at=item.updatedAt.timestamp()
                             if hasattr(item, "updatedAt") and item.updatedAt
                             else 0,
@@ -237,9 +231,7 @@ async def get_playlist_items(playlist_id: str) -> List[MediaItem]:
                             thumb=item.thumbUrl if hasattr(item, "thumbUrl") else "",
                             art=item.grandparentThumb if hasattr(item, "grandparentThumb") else "",
                             duration=getattr(item, "duration", 0),
-                            added_at=item.addedAt.timestamp()
-                            if hasattr(item, "addedAt") and item.addedAt
-                            else 0,
+                            added_at=item.addedAt.timestamp() if hasattr(item, "addedAt") and item.addedAt else 0,
                             updated_at=item.updatedAt.timestamp()
                             if hasattr(item, "updatedAt") and item.updatedAt
                             else 0,

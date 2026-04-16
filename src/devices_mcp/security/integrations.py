@@ -9,7 +9,7 @@ import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import aiohttp
 
@@ -24,10 +24,10 @@ class SecurityDevice:
     name: str
     type: str  # 'smoke_detector', 'co_detector', 'camera', 'doorbell'
     status: str  # 'online', 'offline', 'alert'
-    battery_level: Optional[int] = None
-    last_seen: Optional[datetime] = None
-    location: Optional[str] = None
-    alerts: List[Dict] = None
+    battery_level: int | None = None
+    last_seen: datetime | None = None
+    location: str | None = None
+    alerts: list[dict] = None
 
     def __post_init__(self):
         if self.alerts is None:
@@ -59,7 +59,7 @@ class NestProtectClient:
     def __init__(self, base_url: str = "http://localhost:8123", timeout: int = 10):
         self.base_url = base_url.rstrip("/")
         self.timeout = aiohttp.ClientTimeout(total=timeout)
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
 
     async def __aenter__(self):
         await self.connect()
@@ -79,7 +79,7 @@ class NestProtectClient:
             await self._session.close()
             self._session = None
 
-    async def _get(self, endpoint: str) -> Dict:
+    async def _get(self, endpoint: str) -> dict:
         """Make GET request to Nest Protect API"""
         if not self._session:
             await self.connect()
@@ -96,7 +96,7 @@ class NestProtectClient:
             logger.exception("Invalid JSON response from Nest Protect")
             return {}
 
-    async def get_devices(self) -> List[SecurityDevice]:
+    async def get_devices(self) -> list[SecurityDevice]:
         """Fetch all Nest Protect devices"""
         data = await self._get("/api/devices")
         devices = []
@@ -117,7 +117,7 @@ class NestProtectClient:
 
         return devices
 
-    async def get_alerts(self, active_only: bool = True) -> List[SecurityAlert]:
+    async def get_alerts(self, active_only: bool = True) -> list[SecurityAlert]:
         """Fetch security alerts"""
         endpoint = "/api/alerts/active" if active_only else "/api/alerts"
         data = await self._get(endpoint)
@@ -138,7 +138,7 @@ class NestProtectClient:
 
         return alerts
 
-    async def get_system_status(self) -> Dict[str, Any]:
+    async def get_system_status(self) -> dict[str, Any]:
         """Get overall system health status"""
         data = await self._get("/api/system/status")
         return {
@@ -180,7 +180,7 @@ class NestProtectClient:
         }
         return alert_mapping.get(nest_alert_type.lower(), "warning")
 
-    def _parse_timestamp(self, timestamp_str: Optional[str]) -> Optional[datetime]:
+    def _parse_timestamp(self, timestamp_str: str | None) -> datetime | None:
         """Parse timestamp string to datetime object"""
         if not timestamp_str:
             return None
@@ -209,7 +209,7 @@ class RingMCPClient:
         self.mcp_server_path = mcp_server_path
         # TODO: Implement MCP proxy when Ring server is working
 
-    async def get_devices(self) -> List[SecurityDevice]:
+    async def get_devices(self) -> list[SecurityDevice]:
         """Fetch Ring devices from camera manager."""
         devices = []
         try:
@@ -237,7 +237,7 @@ class RingMCPClient:
             logger.exception("Failed to get Ring devices from camera manager")
         return devices
 
-    async def get_alerts(self) -> List[SecurityAlert]:
+    async def get_alerts(self) -> list[SecurityAlert]:
         """Fetch Ring alerts - not yet implemented."""
         # Ring doorbell alerts would come from Ring API
         # For now, return empty list
@@ -253,12 +253,12 @@ class SecurityIntegrationManager:
     """
 
     def __init__(self):
-        self.nest_client: Optional[NestProtectClient] = None
-        self.ring_client: Optional[RingMCPClient] = None
-        self._cache: Dict[str, Any] = {}
+        self.nest_client: NestProtectClient | None = None
+        self.ring_client: RingMCPClient | None = None
+        self._cache: dict[str, Any] = {}
         self._cache_timeout = timedelta(seconds=30)  # Cache for 30 seconds
 
-    async def initialize(self, config: Dict[str, Any]):
+    async def initialize(self, config: dict[str, Any]):
         """Initialize security integrations based on config"""
         # Nest Protect integration
         if config.get("nest_protect", {}).get("enabled", False):
@@ -273,7 +273,7 @@ class SecurityIntegrationManager:
             self.ring_client = RingMCPClient(mcp_server_path=ring_path)
             logger.info(f"Initialized Ring MCP integration: {ring_path}")
 
-    async def get_all_devices(self) -> List[SecurityDevice]:
+    async def get_all_devices(self) -> list[SecurityDevice]:
         """Get all security devices from all integrated systems"""
         devices = []
 
@@ -295,7 +295,7 @@ class SecurityIntegrationManager:
 
         return devices
 
-    async def get_all_alerts(self) -> List[SecurityAlert]:
+    async def get_all_alerts(self) -> list[SecurityAlert]:
         """Get all security alerts from all integrated systems"""
         alerts = []
 
@@ -317,7 +317,7 @@ class SecurityIntegrationManager:
 
         return alerts
 
-    async def get_system_overview(self) -> Dict[str, Any]:
+    async def get_system_overview(self) -> dict[str, Any]:
         """Get unified system overview"""
         overview = {
             "total_devices": 0,

@@ -10,12 +10,11 @@ Typical ESP32 endpoints:
 - GET /thermal/hotspot - Highest temperature point
 """
 
-import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 
@@ -61,7 +60,7 @@ class ThermalFrame:
     max_temp_c: float
     avg_temp_c: float
     hotspot: ThermalHotSpot
-    pixels: Optional[list[float]] = None  # Flattened temperature array
+    pixels: list[float] | None = None  # Flattened temperature array
     timestamp: datetime = field(default_factory=datetime.now)
 
     def to_dict(self, include_pixels: bool = False) -> dict:
@@ -89,9 +88,9 @@ class ThermalSensor:
     sensor_type: ThermalSensorType
     is_online: bool = True
     firmware: str = ""
-    last_frame: Optional[ThermalFrame] = None
+    last_frame: ThermalFrame | None = None
     # Alert configuration
-    high_threshold_c: Optional[float] = None
+    high_threshold_c: float | None = None
     alert_active: bool = False
     location: str = ""
 
@@ -115,7 +114,7 @@ class ThermalClient:
 
     def __init__(
         self,
-        sensors: Optional[list[dict]] = None,
+        sensors: list[dict] | None = None,
         cache_ttl: int = 5,
         timeout: int = 5,
     ):
@@ -170,12 +169,10 @@ class ThermalClient:
         elapsed = (datetime.now() - self._cache_time[key]).total_seconds()
         return elapsed < self.cache_ttl
 
-    async def _discover_sensor(self, ip: str, config: dict) -> Optional[ThermalSensor]:
+    async def _discover_sensor(self, ip: str, config: dict) -> ThermalSensor | None:
         """Discover a thermal sensor and its capabilities."""
         try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
-            ) as session:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
                 # Try to get sensor info
                 async with session.get(f"http://{ip}/thermal/info") as resp:
                     if resp.status == 200:
@@ -188,7 +185,7 @@ class ThermalClient:
                         stats = await resp.json()
                         return self._create_sensor_from_stats(ip, stats, config)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Thermal sensor at {ip} timed out")
         except aiohttp.ClientError as e:
             logger.warning(f"Thermal sensor at {ip} connection error: {e}")
@@ -240,7 +237,7 @@ class ThermalClient:
             location=config.get("location", ""),
         )
 
-    async def get_frame(self, ip: str, include_pixels: bool = False) -> Optional[ThermalFrame]:
+    async def get_frame(self, ip: str, include_pixels: bool = False) -> ThermalFrame | None:
         """Get thermal frame from a sensor."""
         if ip not in self._sensors:
             return None
@@ -250,9 +247,7 @@ class ThermalClient:
             return self._cache[cache_key]
 
         try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout)
-            ) as session:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=self.timeout)) as session:
                 endpoint = "/thermal/frame" if include_pixels else "/thermal/stats"
                 async with session.get(f"http://{ip}{endpoint}") as resp:
                     if resp.status == 200:
@@ -341,16 +336,16 @@ class ThermalClient:
 
 
 # Singleton instance
-thermal_client: Optional[ThermalClient] = None
+thermal_client: ThermalClient | None = None
 
 
-def get_thermal_client() -> Optional[ThermalClient]:
+def get_thermal_client() -> ThermalClient | None:
     """Get the thermal client singleton."""
     return thermal_client
 
 
 async def init_thermal_client(
-    sensors: Optional[list[dict]] = None,
+    sensors: list[dict] | None = None,
     cache_ttl: int = 5,
 ) -> ThermalClient:
     """Initialize the thermal client singleton."""

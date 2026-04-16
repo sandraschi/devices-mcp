@@ -1,6 +1,6 @@
 """Help tools for Nest Protect MCP."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -51,14 +51,12 @@ def _get_tool_category(tool_name: str) -> str:
     return "Other"
 
 
-def _generate_usage_examples(tool_name: str, parameters: Dict[str, Any]) -> List[Dict[str, Any]]:
+def _generate_usage_examples(tool_name: str, parameters: dict[str, Any]) -> list[dict[str, Any]]:
     """Generate usage examples for a tool based on its parameters."""
     examples = []
 
     # Basic example with minimal required parameters
-    required_params = {
-        name: info for name, info in parameters.items() if info.get("required", False)
-    }
+    required_params = {name: info for name, info in parameters.items() if info.get("required", False)}
 
     if required_params:
         basic_example = {
@@ -116,10 +114,10 @@ class SearchToolsParams(BaseModel):
     """Parameters for searching tools."""
 
     query: str = Field(..., description="Search query")
-    search_in: List[str] = Field(["name", "description"], description="Fields to search in")
+    search_in: list[str] = Field(["name", "description"], description="Fields to search in")
 
 
-async def list_available_tools() -> Dict[str, Any]:
+async def list_available_tools() -> dict[str, Any]:
     """List all available tools with their descriptions."""
     # Import here to avoid circular imports
     from ..fastmcp_server import app
@@ -144,9 +142,7 @@ async def list_available_tools() -> Dict[str, Any]:
             params_ref = input_schema.get("properties", {}).get("params", {})
             if "$ref" in params_ref:
                 # Get the referenced schema from $defs
-                ref_name = params_ref["$ref"].split("/")[
-                    -1
-                ]  # Get 'EmptyParams' from '#/$defs/EmptyParams'
+                ref_name = params_ref["$ref"].split("/")[-1]  # Get 'EmptyParams' from '#/$defs/EmptyParams'
                 param_schema = input_schema.get("$defs", {}).get(ref_name, {})
             else:
                 param_schema = params_ref
@@ -179,7 +175,7 @@ async def list_available_tools() -> Dict[str, Any]:
         return {"status": "error", "message": f"Failed to list tools: {e!s}"}
 
 
-async def get_tool_help(tool_name: str) -> Dict[str, Any]:
+async def get_tool_help(tool_name: str) -> dict[str, Any]:
     """Get detailed help for a specific tool with comprehensive information."""
     from ..fastmcp_server import app
 
@@ -254,9 +250,7 @@ async def get_tool_help(tool_name: str) -> Dict[str, Any]:
         }
 
 
-async def search_tools(
-    query: str, search_in: List[str] = ["name", "description"]
-) -> Dict[str, Any]:
+async def search_tools(query: str, search_in: list[str] = ["name", "description"]) -> dict[str, Any]:
     """Search for tools by keyword or description with advanced filtering."""
     from ..fastmcp_server import app
 

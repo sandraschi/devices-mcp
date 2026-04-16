@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -89,10 +89,10 @@ class RingDevice:
     id: str
     name: str
     device_type: RingDeviceType
-    battery_level: Optional[int] = None
+    battery_level: int | None = None
     is_online: bool = True
-    last_activity: Optional[datetime] = None
-    location_id: Optional[str] = None
+    last_activity: datetime | None = None
+    location_id: str | None = None
     extra_data: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -115,14 +115,14 @@ class RingSensor:
     id: str
     name: str
     sensor_type: str  # contact, motion, flood_freeze, glassbreak, smoke_co
-    is_open: Optional[bool] = None  # For contact sensors
+    is_open: bool | None = None  # For contact sensors
     motion_detected: bool = False  # For motion sensors
-    battery_level: Optional[int] = None
+    battery_level: int | None = None
     is_online: bool = True
-    tamper_status: Optional[str] = None  # ok, tamper
+    tamper_status: str | None = None  # ok, tamper
     fault_status: bool = False
-    location_id: Optional[str] = None
-    zone_id: Optional[str] = None
+    location_id: str | None = None
+    zone_id: str | None = None
     extra_data: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -152,9 +152,9 @@ class RingBaseStation:
     mode: RingAlarmMode
     is_online: bool = True
     siren_enabled: bool = True
-    firmware: Optional[str] = None
-    volume: Optional[int] = None  # 0-100
-    brightness: Optional[int] = None  # LED brightness
+    firmware: str | None = None
+    volume: int | None = None  # 0-100
+    brightness: int | None = None  # LED brightness
     extra_data: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -179,7 +179,7 @@ class RingAlarmStatus:
 
     mode: RingAlarmMode
     is_armed: bool
-    base_station: Optional[RingBaseStation] = None
+    base_station: RingBaseStation | None = None
     sensors: list[RingSensor] = field(default_factory=list)
     keypads: list[RingDevice] = field(default_factory=list)
     all_devices: list[RingDevice] = field(default_factory=list)
@@ -217,7 +217,7 @@ class RingClient:
     def __init__(
         self,
         email: str,
-        password: Optional[str] = None,
+        password: str | None = None,
         token_file: str = "ring_token.cache",
         cache_ttl: int = 60,
     ):
@@ -233,7 +233,7 @@ class RingClient:
         self._cache_time: dict[str, datetime] = {}
         self._2fa_pending = False
         self._initialized = False
-        self._last_error: Optional[str] = None
+        self._last_error: str | None = None
 
         # Raw API data for alarm devices
         self._raw_devices_data: dict[str, Any] = {}
@@ -356,7 +356,7 @@ class RingClient:
         return self._initialized
 
     @property
-    def last_error(self) -> Optional[str]:
+    def last_error(self) -> str | None:
         return self._last_error
 
     def _is_cache_valid(self, key: str) -> bool:
@@ -422,10 +422,7 @@ class RingClient:
                         logger.debug(f"  - {name} (kind={kind}, id={dev_id})")
 
                         # Count alarm-related devices
-                        if any(
-                            k in kind.lower()
-                            for k in ["hub", "base", "panel", "sensor", "keypad", "siren"]
-                        ):
+                        if any(k in kind.lower() for k in ["hub", "base", "panel", "sensor", "keypad", "siren"]):
                             alarm_device_count += 1
 
             logger.info(f"Ring: Total {total_devices} devices, {alarm_device_count} alarm-related")
@@ -468,9 +465,7 @@ class RingClient:
                     # Check for security panel (base station)
                     security_panel = location.get("security_panel")
                     if security_panel:
-                        logger.info(
-                            f"Ring: Location '{location_name}' has security panel (alarm system)"
-                        )
+                        logger.info(f"Ring: Location '{location_name}' has security panel (alarm system)")
 
                         # Security panel has devices list (sensors, keypads, etc.)
                         panel_devices = security_panel.get("devices", [])
@@ -497,9 +492,7 @@ class RingClient:
                             device_id = device.get("device_id") or device.get("id")
                             if device_id:
                                 device_kind = device.get("kind", "unknown")
-                                device_name = device.get("description") or device.get(
-                                    "name", f"Device {device_id}"
-                                )
+                                device_name = device.get("description") or device.get("name", f"Device {device_id}")
 
                                 self._raw_devices_data["other"][str(device_id)] = {
                                     "kind": device_kind,
@@ -521,9 +514,7 @@ class RingClient:
                                     f"Ring: Added alarm device '{device_name}' ({device_kind}) from location '{location_name}'"
                                 )
                     else:
-                        logger.debug(
-                            f"Ring: Location '{location_name}' has no security panel (no alarm system)"
-                        )
+                        logger.debug(f"Ring: Location '{location_name}' has no security panel (no alarm system)")
             else:
                 logger.warning(f"Ring: Failed to fetch locations (status {response.status_code})")
 
@@ -663,7 +654,7 @@ class RingClient:
             logger.exception("Failed to get Ring alarm devices")
             return []
 
-    async def get_alarm_status(self) -> Optional[RingAlarmStatus]:
+    async def get_alarm_status(self) -> RingAlarmStatus | None:
         """Get Ring alarm status including sensors and base station."""
         if not self._initialized:
             return None
@@ -676,7 +667,7 @@ class RingClient:
             await self._update_data()
 
             mode = RingAlarmMode.DISARMED
-            base_station: Optional[RingBaseStation] = None
+            base_station: RingBaseStation | None = None
             sensors: list[RingSensor] = []
             keypads: list[RingDevice] = []
             all_devices: list[RingDevice] = []
@@ -696,9 +687,7 @@ class RingClient:
                 # Extract common fields
                 battery = dev_data.get("battery_life")
                 is_online = (
-                    dev_data.get("status") not in ["offline", "disconnected", None]
-                    if "status" in dev_data
-                    else True
+                    dev_data.get("status") not in ["offline", "disconnected", None] if "status" in dev_data else True
                 )
 
                 # Create base device
@@ -1024,7 +1013,7 @@ class RingClient:
             logger.exception("Failed to get Ring alarm events")
             return []
 
-    async def get_doorbell_snapshot(self, device_id: str) -> Optional[bytes]:
+    async def get_doorbell_snapshot(self, device_id: str) -> bytes | None:
         """Get a snapshot from a Ring doorbell."""
         if not self._initialized:
             return None
@@ -1105,9 +1094,7 @@ class RingClient:
 
         # Alarm device summary
         alarm_devices = await self.get_alarm_devices()
-        contact_sensors = [
-            d for d in alarm_devices if d.device_type == RingDeviceType.CONTACT_SENSOR
-        ]
+        contact_sensors = [d for d in alarm_devices if d.device_type == RingDeviceType.CONTACT_SENSOR]
         motion_sensors = [d for d in alarm_devices if d.device_type == RingDeviceType.MOTION_SENSOR]
 
         return {
@@ -1132,13 +1119,13 @@ class RingClient:
 
 
 # Singleton instance - DEPRECATED: Use server-level storage instead
-ring_client: Optional[RingClient] = None
+ring_client: RingClient | None = None
 
 # Server-level storage for Ring clients (to avoid singleton issues in web apps)
-_server_ring_clients: Dict[str, RingClient] = {}
+_server_ring_clients: dict[str, RingClient] = {}
 
 
-def get_ring_client(server_id: str = "default") -> Optional[RingClient]:
+def get_ring_client(server_id: str = "default") -> RingClient | None:
     """Get the Ring client for a specific server instance.
 
     Returns the stored client even when not yet initialized (e.g. 2FA pending or failed
@@ -1176,7 +1163,7 @@ def _resolve_token_file(token_file: str) -> str:
 
 async def init_ring_client(
     email: str,
-    password: Optional[str] = None,
+    password: str | None = None,
     token_file: str = "ring_token.cache",
     cache_ttl: int = 60,
     server_id: str = "default",

@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Dict, Optional
 from urllib.parse import urlparse
 
 from PIL import Image
@@ -42,19 +41,15 @@ class ONVIFCameraWrapper:
             import zeep
 
             transport = zeep.transports.Transport(timeout=10)  # 10 second timeout
-            self._camera = ONVIFCamera(
-                self.host, self.port, self.username, self.password, transport=transport
-            )
+            self._camera = ONVIFCamera(self.host, self.port, self.username, self.password, transport=transport)
             logger.info(f"ONVIF camera connected at {self.host}:{self.port} (fresh connection)")
             return True
         except Exception as e:
-            logger.warning(
-                "Failed to connect to ONVIF camera at %s:%s: %s", self.host, self.port, e
-            )
+            logger.warning("Failed to connect to ONVIF camera at %s:%s: %s", self.host, self.port, e)
             # Don't raise exception - just return False for graceful failure
             return False
 
-    def get_device_info(self) -> Dict:
+    def get_device_info(self) -> dict:
         """Get device information."""
         if not self._camera:
             raise RuntimeError("Camera not connected")
@@ -77,7 +72,7 @@ class ONVIFCameraWrapper:
             self._profiles = self._media.GetProfiles()
         return self._profiles
 
-    def get_stream_uri(self, profile_token: Optional[str] = None) -> str:
+    def get_stream_uri(self, profile_token: str | None = None) -> str:
         """Get RTSP stream URI for a profile."""
         if not self._camera:
             raise RuntimeError("Camera not connected")
@@ -104,7 +99,7 @@ class ONVIFCameraWrapper:
         uri_response = self._media.GetStreamUri(req)
         return uri_response.Uri
 
-    def get_snapshot_uri(self, profile_token: Optional[str] = None) -> str:
+    def get_snapshot_uri(self, profile_token: str | None = None) -> str:
         """Get snapshot URI for a profile."""
         if not self._camera:
             raise RuntimeError("Camera not connected")
@@ -279,10 +274,10 @@ class ONVIFBasedCamera(BaseCamera):
 
     def __init__(self, config, mock_camera=None):
         super().__init__(config)
-        self._camera: Optional[ONVIFCameraWrapper] = None
+        self._camera: ONVIFCameraWrapper | None = None
         self._mock_camera = mock_camera
-        self._stream_url: Optional[str] = None
-        self._snapshot_url: Optional[str] = None
+        self._stream_url: str | None = None
+        self._snapshot_url: str | None = None
 
     async def connect(self) -> bool:
         """Initialize connection to the ONVIF camera."""
@@ -330,7 +325,7 @@ class ONVIFBasedCamera(BaseCamera):
         self._stream_url = None
         self._snapshot_url = None
 
-    async def capture_still(self, save_path: Optional[str] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image from the camera via RTSP stream.
 
         Note: Tapo cameras don't support ONVIF GetSnapshotUri, so we grab
@@ -354,9 +349,7 @@ class ONVIFBasedCamera(BaseCamera):
             password = self.config.params["password"]
             # Parse and rebuild URL with auth
             parsed = urlparse(stream_url)
-            auth_url = (
-                f"rtsp://{username}:{password}@{parsed.hostname}:{parsed.port or 554}{parsed.path}"
-            )
+            auth_url = f"rtsp://{username}:{password}@{parsed.hostname}:{parsed.port or 554}{parsed.path}"
 
             # Capture frame from RTSP in thread pool
             def grab_frame():
@@ -386,22 +379,18 @@ class ONVIFBasedCamera(BaseCamera):
             logger.exception("Failed to capture ONVIF snapshot via RTSP")
             raise RuntimeError(f"Failed to capture image: {e}") from e
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Get the RTSP stream URL for the camera - CRITICAL: Must work for streaming."""
         # Ensure we're connected
         if not await self.is_connected():
             try:
                 logger.info(f"Connecting to {self.config.name} to get stream URL...")
                 await asyncio.wait_for(self.connect(), timeout=15.0)
-            except asyncio.TimeoutError:
-                logger.exception(
-                    f"Camera {self.config.name} connection timed out when getting stream URL"
-                )
+            except TimeoutError:
+                logger.exception(f"Camera {self.config.name} connection timed out when getting stream URL")
                 return None
             except Exception:
-                logger.exception(
-                    f"Camera {self.config.name} connection failed when getting stream URL"
-                )
+                logger.exception(f"Camera {self.config.name} connection failed when getting stream URL")
                 return None
 
         # Use cached URL if available and we're connected (stream URLs don't change frequently)
@@ -416,16 +405,14 @@ class ONVIFBasedCamera(BaseCamera):
 
         try:
             loop = asyncio.get_event_loop()
-            stream_url = await asyncio.wait_for(
-                loop.run_in_executor(None, self._camera.get_stream_uri), timeout=10.0
-            )
+            stream_url = await asyncio.wait_for(loop.run_in_executor(None, self._camera.get_stream_uri), timeout=10.0)
             if stream_url:
                 logger.info(f"Got stream URL for {self.config.name}: {stream_url[:50]}...")
                 self._stream_url = stream_url
                 return stream_url
             logger.error(f"Camera {self.config.name} returned None stream URL")
             return None
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.exception(f"Failed to get ONVIF stream URI for {self.config.name} - timed out")
             self._stream_url = None
             return None
@@ -435,7 +422,7 @@ class ONVIFBasedCamera(BaseCamera):
             # Don't raise - return None so caller can handle gracefully
             return None
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get camera status with detailed capabilities."""
         if not await self.is_connected():
             try:
@@ -497,7 +484,7 @@ class ONVIFBasedCamera(BaseCamera):
                 "capture_capable": False,
             }
 
-    async def get_info(self) -> Dict:
+    async def get_info(self) -> dict:
         """Get comprehensive ONVIF camera information."""
         try:
             info = {
@@ -583,14 +570,12 @@ class ONVIFBasedCamera(BaseCamera):
             await asyncio.wait_for(
                 loop.run_in_executor(
                     None,
-                    lambda: self._camera.relative_move(
-                        pan_normalized, tilt_normalized, zoom_relative
-                    ),
+                    lambda: self._camera.relative_move(pan_normalized, tilt_normalized, zoom_relative),
                 ),
                 timeout=8.0,  # Longer timeout for positioning
             )
             logger.debug("PTZ relative move executed successfully")
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.exception("PTZ move timed out after 8 seconds")
             # Reset connection state on timeout
             self._is_connected = False

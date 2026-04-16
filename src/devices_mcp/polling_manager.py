@@ -19,10 +19,11 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Awaitable, Callable, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class PollingTask:
     interval_seconds: float
     priority: PollingPriority = PollingPriority.NORMAL
     enabled: bool = True
-    last_run: Optional[datetime] = None
+    last_run: datetime | None = None
     last_duration: float = 0.0
     error_count: int = 0
     success_count: int = 0
@@ -107,11 +108,11 @@ class PollingManager:
     """
 
     def __init__(self):
-        self._tasks: Dict[str, PollingTask] = {}
+        self._tasks: dict[str, PollingTask] = {}
         self._running = False
-        self._tasks_dict: Dict[str, asyncio.Task] = {}
+        self._tasks_dict: dict[str, asyncio.Task] = {}
         self._lock = asyncio.Lock()
-        self._start_time: Optional[datetime] = None
+        self._start_time: datetime | None = None
         self._stats = {
             "total_polls": 0,
             "total_errors": 0,
@@ -305,7 +306,7 @@ class PollingManager:
 
         logger.debug(f"Polling task loop for '{name}' stopped")
 
-    def get_task_status(self, name: str) -> Optional[Dict[str, Any]]:
+    def get_task_status(self, name: str) -> dict[str, Any] | None:
         """Get status information for a specific task."""
         task = self._tasks.get(name)
         if not task:
@@ -329,7 +330,7 @@ class PollingManager:
             ),
         }
 
-    def get_all_status(self) -> Dict[str, Any]:
+    def get_all_status(self) -> dict[str, Any]:
         """Get status information for all tasks."""
         tasks_status = {name: self.get_task_status(name) for name in self._tasks.keys()}
 
@@ -347,7 +348,7 @@ class PollingManager:
             "tasks": tasks_status,
         }
 
-    def get_health(self) -> Dict[str, Any]:
+    def get_health(self) -> dict[str, Any]:
         """Get health summary of polling manager."""
         if not self._running:
             return {"status": "stopped", "healthy": False}
@@ -382,7 +383,7 @@ class PollingManager:
 
 
 # Global singleton instance
-_global_manager: Optional[PollingManager] = None
+_global_manager: PollingManager | None = None
 
 
 def get_polling_manager() -> PollingManager:

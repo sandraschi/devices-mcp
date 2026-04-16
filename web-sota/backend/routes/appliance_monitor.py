@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
@@ -18,7 +17,7 @@ class ApplianceConfig(BaseModel):
 
     device_id: str
     appliance_type: str  # fridge, freezer, washer, dryer, etc.
-    expected_power_range: Dict[str, float]  # {"min": 50, "max": 200} watts
+    expected_power_range: dict[str, float]  # {"min": 50, "max": 200} watts
     monitoring_period: int = 3600  # seconds to monitor
     alert_threshold: int = 1800  # seconds without expected power before alert
     enabled: bool = True
@@ -31,10 +30,10 @@ class ApplianceStatus(BaseModel):
     appliance_type: str
     status: str  # healthy, warning, critical, offline
     current_power: float
-    last_active: Optional[datetime]
+    last_active: datetime | None
     monitoring_since: datetime
     alerts_triggered: int
-    last_alert: Optional[datetime]
+    last_alert: datetime | None
 
 
 class CreateApplianceMonitorRequest(BaseModel):
@@ -42,9 +41,9 @@ class CreateApplianceMonitorRequest(BaseModel):
 
     device_id: str
     appliance_type: str
-    expected_power_range: Dict[str, float]
-    monitoring_period: Optional[int] = 3600
-    alert_threshold: Optional[int] = 1800
+    expected_power_range: dict[str, float]
+    monitoring_period: int | None = 3600
+    alert_threshold: int | None = 1800
 
 
 class ApplianceAlert(BaseModel):
@@ -56,7 +55,7 @@ class ApplianceAlert(BaseModel):
     message: str
     triggered_at: datetime
     current_power: float
-    expected_range: Dict[str, float]
+    expected_range: dict[str, float]
 
 
 # In-memory storage for appliance monitoring
@@ -65,17 +64,17 @@ _appliance_status = {}
 _appliance_alerts = []
 
 
-def get_appliance_configs() -> Dict[str, ApplianceConfig]:
+def get_appliance_configs() -> dict[str, ApplianceConfig]:
     """Get all appliance configurations."""
     return _appliance_configs.copy()
 
 
-def get_appliance_status() -> Dict[str, ApplianceStatus]:
+def get_appliance_status() -> dict[str, ApplianceStatus]:
     """Get all appliance statuses."""
     return _appliance_status.copy()
 
 
-def get_appliance_alerts(limit: int = 50) -> List[ApplianceAlert]:
+def get_appliance_alerts(limit: int = 50) -> list[ApplianceAlert]:
     """Get recent appliance alerts."""
     return _appliance_alerts[-limit:] if _appliance_alerts else []
 
@@ -108,9 +107,7 @@ async def check_appliance_health(device_id: str) -> None:
                 appliance_type=config.appliance_type,
                 status="monitoring",
                 current_power=current_power,
-                last_active=now
-                if current_power >= config.expected_power_range.get("min", 0)
-                else None,
+                last_active=now if current_power >= config.expected_power_range.get("min", 0) else None,
                 monitoring_since=now,
                 alerts_triggered=0,
                 last_alert=None,
@@ -308,9 +305,7 @@ async def manual_health_check(device_id: str):
         return {
             "success": True,
             "message": f"Health check completed for {device_id}",
-            "status": _appliance_status.get(device_id, {}).dict()
-            if device_id in _appliance_status
-            else None,
+            "status": _appliance_status.get(device_id, {}).dict() if device_id in _appliance_status else None,
         }
 
     except HTTPException:

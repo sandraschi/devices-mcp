@@ -10,7 +10,7 @@ tool registration for Claude Desktop stdio communication.
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from fastmcp import FastMCP
 
@@ -34,7 +34,7 @@ def register_tools(app: FastMCP) -> None:
         name="get_security_system_status",
         description="Get comprehensive status of the entire Ring security system",
     )
-    async def get_security_system_status() -> Dict[str, Any]:
+    async def get_security_system_status() -> dict[str, Any]:
         """Get comprehensive status of the entire Ring security system.
 
         Returns detailed information about all Ring security devices including:
@@ -133,9 +133,7 @@ def register_tools(app: FastMCP) -> None:
 
                     # Check for recent motion or alarm events
                     recent_security_events = [
-                        e
-                        for e in recent_events[:5]
-                        if e.get("kind") in ["motion", "alarm", "doorbell"]
+                        e for e in recent_events[:5] if e.get("kind") in ["motion", "alarm", "doorbell"]
                     ]
 
                     if recent_security_events:
@@ -200,9 +198,9 @@ def register_tools(app: FastMCP) -> None:
     )
     def arm_security_system(
         mode: Literal["home", "away", "disarmed"] = "away",
-        bypass_sensors: Optional[List[str]] = None,
-        delay_minutes: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        bypass_sensors: list[str] | None = None,
+        delay_minutes: int | None = None,
+    ) -> dict[str, Any]:
         """Arm the Ring security system with specified mode and options.
 
         Arms your Ring security system in the specified mode. The system supports
@@ -262,9 +260,7 @@ def register_tools(app: FastMCP) -> None:
             # Check for low battery devices that might cause issues
             devices = client.get_all_devices()
             low_battery_devices = [
-                d
-                for d in devices
-                if hasattr(d, "battery_level") and d.battery_level and d.battery_level < 15
+                d for d in devices if hasattr(d, "battery_level") and d.battery_level and d.battery_level < 15
             ]
 
             warnings = []
@@ -286,9 +282,7 @@ def register_tools(app: FastMCP) -> None:
             countdown_seconds = arm_result.get("countdown_seconds", 0)
             estimated_arm_time = None
             if countdown_seconds > 0:
-                estimated_arm_time = (
-                    datetime.now() + timedelta(seconds=countdown_seconds)
-                ).isoformat()
+                estimated_arm_time = (datetime.now() + timedelta(seconds=countdown_seconds)).isoformat()
 
             return {
                 "success": True,
@@ -326,9 +320,7 @@ def register_tools(app: FastMCP) -> None:
         name="disarm_security_system",
         description="Disarm the Ring security system safely with authentication",
     )
-    def disarm_security_system(
-        force_disarm: bool = False, disarm_code: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def disarm_security_system(force_disarm: bool = False, disarm_code: str | None = None) -> dict[str, Any]:
         """Disarm the Ring security system safely with authentication.
 
         Disarms the Ring security system with proper authentication and safety checks.
@@ -384,9 +376,7 @@ def register_tools(app: FastMCP) -> None:
             # Check for recent activity that might indicate a security event
             recent_events = client.get_recent_events(minutes=5)
             security_events = [
-                event
-                for event in recent_events
-                if event.get("event_type") in ["motion", "contact", "alarm"]
+                event for event in recent_events if event.get("event_type") in ["motion", "contact", "alarm"]
             ]
 
             warnings = []
@@ -454,8 +444,8 @@ def register_tools(app: FastMCP) -> None:
         description="Get comprehensive security system history and event timeline",
     )
     def get_security_history(
-        hours: int = 24, event_types: Optional[List[str]] = None, include_video: bool = False
-    ) -> Dict[str, Any]:
+        hours: int = 24, event_types: list[str] | None = None, include_video: bool = False
+    ) -> dict[str, Any]:
         """Get comprehensive security system history and event timeline.
 
         Retrieves detailed history of security system events, providing insights into
@@ -487,9 +477,7 @@ def register_tools(app: FastMCP) -> None:
             start_time = end_time - timedelta(hours=hours)
 
             # Get events from Ring API
-            all_events = client.get_events_history(
-                start_time=start_time, end_time=end_time, event_types=event_types
-            )
+            all_events = client.get_events_history(start_time=start_time, end_time=end_time, event_types=event_types)
 
             # Process and categorize events
             arm_events = []
@@ -551,9 +539,7 @@ def register_tools(app: FastMCP) -> None:
                 "alarm_events": len(alarm_events),
                 "active_devices": len(device_activity),
                 "time_period_hours": hours,
-                "most_active_device": max(
-                    device_activity.items(), key=lambda x: x[1]["event_count"]
-                )[0]
+                "most_active_device": max(device_activity.items(), key=lambda x: x[1]["event_count"])[0]
                 if device_activity
                 else None,
             }
@@ -579,9 +565,7 @@ def register_tools(app: FastMCP) -> None:
 
             # Add video recordings if requested
             if include_video:
-                video_recordings = client.get_video_recordings(
-                    start_time=start_time, end_time=end_time
-                )
+                video_recordings = client.get_video_recordings(start_time=start_time, end_time=end_time)
                 result["video_recordings"] = video_recordings
                 result["video_count"] = len(video_recordings)
 

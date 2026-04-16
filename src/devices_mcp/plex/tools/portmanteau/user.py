@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...models.user import UserRole
@@ -36,14 +36,14 @@ def _get_plex_service():
 @mcp.tool()
 async def plex_user(
     operation: Literal["list", "get", "create", "update", "delete", "update_permissions"],
-    user_id: Optional[str] = None,
-    username: Optional[str] = None,
-    email: Optional[str] = None,
-    password: Optional[str] = None,
-    role: Optional[Literal["owner", "admin", "user", "managed", "shared"]] = None,
-    restricted: Optional[bool] = None,
-    permissions: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    user_id: str | None = None,
+    username: str | None = None,
+    email: str | None = None,
+    password: str | None = None,
+    role: Literal["owner", "admin", "user", "managed", "shared"] | None = None,
+    restricted: bool | None = None,
+    permissions: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Comprehensive user management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:

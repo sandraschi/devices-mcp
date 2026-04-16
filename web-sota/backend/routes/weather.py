@@ -5,19 +5,16 @@ import datetime
 import html
 import logging
 import secrets
+import sys
 import time
 from collections import defaultdict
-from datetime import timezone
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from urllib.parse import urlencode
 
 import httpx
-
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
-
-import sys
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "src"))
 
@@ -170,8 +167,7 @@ async def get_netatmo_status() -> dict[str, Any]:
         "enabled": True,
         "connected": False,
         "initialized": inst.initialized,
-        "message": inst.last_error
-        or "Netatmo is not connected. Click Connect to retry (check token and network).",
+        "message": inst.last_error or "Netatmo is not connected. Click Connect to retry (check token and network).",
         "last_error": inst.last_error,
         "needs_init": True,
     }
@@ -233,14 +229,14 @@ async def netatmo_oauth_callback(
     if error:
         body = _netatmo_oauth_html_page(
             "Netatmo authorization failed",
-            f"<h1>Authorization failed</h1><p>{html.escape(error)}</p><p><a href=\"{html.escape(success_redirect, quote=True)}\">Back to Weather</a></p>",
+            f'<h1>Authorization failed</h1><p>{html.escape(error)}</p><p><a href="{html.escape(success_redirect, quote=True)}">Back to Weather</a></p>',
         )
         return HTMLResponse(content=body, status_code=400)
 
     if not code or not state:
         body = _netatmo_oauth_html_page(
             "Netatmo authorization incomplete",
-            f"<h1>Missing code or state</h1><p><a href=\"{html.escape(success_redirect, quote=True)}\">Back to Weather</a></p>",
+            f'<h1>Missing code or state</h1><p><a href="{html.escape(success_redirect, quote=True)}">Back to Weather</a></p>',
         )
         return HTMLResponse(content=body, status_code=400)
 
@@ -286,7 +282,7 @@ async def netatmo_oauth_callback(
             body = _netatmo_oauth_html_page(
                 "Token exchange failed",
                 f"<h1>Could not complete sign-in</h1><pre>{html.escape(err_txt)}</pre>"
-                f"<p><a href=\"{html.escape(success_redirect, quote=True)}\">Back to Weather</a></p>",
+                f'<p><a href="{html.escape(success_redirect, quote=True)}">Back to Weather</a></p>',
             )
             return HTMLResponse(content=body, status_code=400)
         tokens = resp.json()
@@ -363,7 +359,7 @@ async def initialize_netatmo() -> dict[str, Any]:
     try:
         await NetatmoService.reset_for_reconnect()
         svc = await asyncio.wait_for(NetatmoService.get_instance(token_file), timeout=45.0)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         raise HTTPException(
             status_code=504,
             detail="Netatmo initialization timed out. Check network and api.netatmo.com access.",
@@ -426,9 +422,9 @@ def _weather_payload_from_netatmo(weather_data: dict[str, Any]) -> dict[str, Any
     loc = str(weather_data.get("station_id") or "Netatmo")
     ts = weather_data.get("timestamp")
     if isinstance(ts, (int, float)):
-        ts_iso = datetime.datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+        ts_iso = datetime.datetime.fromtimestamp(ts, tz=datetime.UTC).isoformat()
     else:
-        ts_iso = datetime.datetime.now(tz=timezone.utc).isoformat()
+        ts_iso = datetime.datetime.now(tz=datetime.UTC).isoformat()
 
     return {
         "temperature": temp,
@@ -490,7 +486,7 @@ async def _primary_netatmo_station_id() -> str | None:
 
 
 @router.get("/api/weather/current")
-async def get_current_weather() -> Dict[str, Any]:
+async def get_current_weather() -> dict[str, Any]:
     """Current conditions from Netatmo when enabled and authenticated."""
     try:
         from devices_mcp.tools.weather.netatmo_weather_tool import NetatmoWeatherTool
@@ -533,7 +529,7 @@ async def get_current_weather() -> Dict[str, Any]:
 
 
 @router.get("/api/weather/forecast")
-async def get_weather_forecast(days: int = 5) -> Dict[str, Any]:
+async def get_weather_forecast(days: int = 5) -> dict[str, Any]:
     """Netatmo does not expose a multi-day public forecast here; return empty list."""
     return {
         "forecast": [],
@@ -544,7 +540,7 @@ async def get_weather_forecast(days: int = 5) -> Dict[str, Any]:
 
 
 @router.get("/api/weather/history")
-async def get_weather_history(days: int = 7) -> Dict[str, Any]:
+async def get_weather_history(days: int = 7) -> dict[str, Any]:
     """Daily indoor temperature from local SQLite (filled when Netatmo updates)."""
     try:
         from devices_mcp.db import TimeSeriesDB
@@ -576,7 +572,7 @@ async def get_weather_history(days: int = 7) -> Dict[str, Any]:
             sec = float(ts)
             if sec > 1e12:
                 sec /= 1000.0
-            dt = datetime.datetime.fromtimestamp(sec, tz=timezone.utc)
+            dt = datetime.datetime.fromtimestamp(sec, tz=datetime.UTC)
             by_day[dt.strftime("%Y-%m-%d")].append(float(val))
 
         history: list[dict[str, Any]] = []
@@ -599,7 +595,7 @@ async def get_weather_history(days: int = 7) -> Dict[str, Any]:
 
 
 @router.get("/api/weather/stations")
-async def get_weather_stations() -> Dict[str, Any]:
+async def get_weather_stations() -> dict[str, Any]:
     """List Netatmo stations (operation must be 'stations', not 'get_stations')."""
     try:
         from devices_mcp.tools.weather.netatmo_weather_tool import NetatmoWeatherTool
@@ -620,7 +616,7 @@ async def get_weather_stations() -> Dict[str, Any]:
 
 
 @router.get("/api/weather/alerts")
-async def get_weather_alerts() -> Dict[str, Any]:
+async def get_weather_alerts() -> dict[str, Any]:
     """Alerts not implemented for the web UI; use Netatmo app."""
     return {
         "alerts": [],

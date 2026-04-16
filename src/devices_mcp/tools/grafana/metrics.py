@@ -2,7 +2,7 @@
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from ..base_tool import BaseTool, ToolCategory
 
@@ -15,7 +15,7 @@ class GrafanaMetricsTool(BaseTool):
         description: str = "Export comprehensive camera metrics for Grafana HTTP data source"
         category: ToolCategory = ToolCategory.UTILITY
 
-    async def execute(self, **_kwargs) -> Dict[str, Any]:
+    async def execute(self, **_kwargs) -> dict[str, Any]:
         """Collect all camera metrics for Grafana consumption."""
         try:
             # Get camera manager instance
@@ -135,8 +135,7 @@ class GrafanaMetricsTool(BaseTool):
                     recent_events = [
                         event
                         for event in events
-                        if datetime.fromisoformat(event.get("timestamp", "1970-01-01"))
-                        > cutoff_time
+                        if datetime.fromisoformat(event.get("timestamp", "1970-01-01")) > cutoff_time
                     ]
 
                     return len(recent_events)

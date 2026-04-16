@@ -3,7 +3,7 @@ Core data models for devices-mcp.
 """
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress, field_validator
 
@@ -65,9 +65,7 @@ class CameraStatus(BaseModel):
     firmware_version: str = Field(..., description="Camera firmware version")
     hardware_version: str = Field(..., description="Camera hardware version")
     uptime: int = Field(0, description="Uptime in seconds")
-    storage: Dict[str, Union[int, str]] = Field(
-        default_factory=dict, description="Storage information"
-    )
+    storage: dict[str, int | str] = Field(default_factory=dict, description="Storage information")
 
 
 class PTZPosition(BaseModel):
@@ -83,9 +81,9 @@ class MotionEvent(BaseModel):
 
     timestamp: float = Field(..., description="Event timestamp")
     confidence: float = Field(..., description="Detection confidence (0.0 to 1.0)")
-    zones: List[Dict] = Field(default_factory=list, description="Triggered zones")
-    snapshot_url: Optional[HttpUrl] = Field(None, description="URL to snapshot of the event")
-    video_clip_url: Optional[HttpUrl] = Field(None, description="URL to video clip of the event")
+    zones: list[dict] = Field(default_factory=list, description="Triggered zones")
+    snapshot_url: HttpUrl | None = Field(None, description="URL to snapshot of the event")
+    video_clip_url: HttpUrl | None = Field(None, description="URL to video clip of the event")
 
 
 class CameraInfo(BaseModel):
@@ -99,7 +97,7 @@ class CameraInfo(BaseModel):
     uptime: int
     ip_address: IPvAnyAddress
     wifi_signal: int = Field(ge=0, le=100, description="WiFi signal strength (0-100)")
-    wifi_ssid: Optional[str] = Field(None, description="Connected WiFi SSID")
+    wifi_ssid: str | None = Field(None, description="Connected WiFi SSID")
 
 
 class TapoCameraConfig(BaseModel):
@@ -112,7 +110,7 @@ class TapoCameraConfig(BaseModel):
     use_https: bool = Field(True, description="Use HTTPS for API calls")
     verify_ssl: bool = Field(False, description="Verify SSL certificate")
     timeout: int = Field(10, description="Request timeout in seconds")
-    web: Dict[str, Any] = Field(
+    web: dict[str, Any] = Field(
         default_factory=lambda: {"enabled": False},
         description="Web server configuration",
     )
@@ -138,9 +136,9 @@ class SystemInfo(BaseModel):
     version: str = Field(..., description="MCP server version")
     python_version: str = Field(..., description="Python version")
     platform: str = Field(..., description="Operating system platform")
-    uptime: Optional[float] = Field(None, description="Server uptime in seconds")
-    memory_usage: Optional[Dict[str, Any]] = Field(None, description="Memory usage statistics")
-    cpu_usage: Optional[float] = Field(None, description="CPU usage percentage")
+    uptime: float | None = Field(None, description="Server uptime in seconds")
+    memory_usage: dict[str, Any] | None = Field(None, description="Memory usage statistics")
+    cpu_usage: float | None = Field(None, description="CPU usage percentage")
 
 
 class SystemStatus(BaseModel):
@@ -149,9 +147,7 @@ class SystemStatus(BaseModel):
     status: str = Field(..., description="Overall system status")
     cameras_connected: int = Field(..., description="Number of connected cameras")
     cameras_total: int = Field(..., description="Total number of configured cameras")
-    server_uptime: Optional[float] = Field(None, description="Server uptime in seconds")
-    last_camera_check: Optional[float] = Field(
-        None, description="Last camera health check timestamp"
-    )
+    server_uptime: float | None = Field(None, description="Server uptime in seconds")
+    last_camera_check: float | None = Field(None, description="Last camera health check timestamp")
     active_streams: int = Field(0, description="Number of active video streams")
-    disk_usage: Optional[Dict[str, Any]] = Field(None, description="Disk usage statistics")
+    disk_usage: dict[str, Any] | None = Field(None, description="Disk usage statistics")

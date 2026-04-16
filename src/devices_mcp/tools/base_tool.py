@@ -7,8 +7,9 @@ with FastMCP 3.1 compatibility.
 
 import inspect
 import logging
+from collections.abc import Awaitable
 from enum import Enum
-from typing import Any, Awaitable, Dict, List, Optional, Type, Union
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -18,14 +19,14 @@ logger = logging.getLogger(__name__)
 class ToolResult(BaseModel):
     """The result of a tool execution."""
 
-    content: Union[str, Dict[str, Any]]
+    content: str | dict[str, Any]
     is_error: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the result to a dictionary."""
         return {"content": self.content, "is_error": self.is_error}
 
-    def __call__(self, **kwargs) -> "Union[ToolResult, Awaitable[ToolResult]]":
+    def __call__(self, **kwargs) -> "ToolResult | Awaitable[ToolResult]":
         """Execute the tool with the given parameters.
 
         This method is NOT async to avoid 'unawaited coroutine' warnings during instantiation.
@@ -47,10 +48,10 @@ class ToolResult(BaseModel):
 
 
 # Tool registry
-_tool_registry: Dict[str, Type["BaseTool"]] = {}
+_tool_registry: dict[str, type["BaseTool"]] = {}
 
 
-def register_tool(tool_cls: "Type[BaseTool]") -> "Type[BaseTool]":
+def register_tool(tool_cls: "type[BaseTool]") -> "type[BaseTool]":
     """Register a tool class in the global registry.
 
     Args:
@@ -71,7 +72,7 @@ def register_tool(tool_cls: "Type[BaseTool]") -> "Type[BaseTool]":
     return tool_cls
 
 
-def get_tool(name: str) -> Optional["Type[BaseTool]"]:
+def get_tool(name: str) -> Optional["type[BaseTool]"]:
     """Get a registered tool by name.
 
     Args:
@@ -83,7 +84,7 @@ def get_tool(name: str) -> Optional["Type[BaseTool]"]:
     return _tool_registry.get(name)
 
 
-def get_all_tools() -> List["Type[BaseTool]"]:
+def get_all_tools() -> list["type[BaseTool]"]:
     """Get all registered tools.
 
     Returns:
@@ -118,7 +119,7 @@ class ToolDefinition(BaseModel):
     name: str
     description: str
     category: ToolCategory
-    parameters: List[Dict[str, Any]] = []
+    parameters: list[dict[str, Any]] = []
     is_async: bool = False
 
     model_config = ConfigDict(use_enum_values=True)
@@ -144,7 +145,7 @@ class BaseTool(BaseModel):
         name: str = ""
         description: str = ""
         category: ToolCategory = ToolCategory.UTILITY
-        parameters: List[Dict[str, Any]] = []
+        parameters: list[dict[str, Any]] = []
 
     def __init_subclass__(cls, **kwargs):
         """Register the tool class when it's defined."""
@@ -175,7 +176,7 @@ class BaseTool(BaseModel):
 
 
 def tool(
-    name: Optional[str] = None,
+    name: str | None = None,
     description: str = "",
     category: "ToolCategory" = ToolCategory.UTILITY,
     **extra_metadata,

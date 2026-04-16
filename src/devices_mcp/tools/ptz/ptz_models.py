@@ -6,7 +6,7 @@ Defines the data structures used for PTZ (Pan-Tilt-Zoom) camera control.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class PTZMoveDirection(str, Enum):
@@ -39,12 +39,12 @@ class PTZPosition:
     tilt: float  # -1.0 (down) to 1.0 (up)
     zoom: float  # 0.0 (wide) to 1.0 (tele)
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert position to dictionary"""
         return {"pan": self.pan, "tilt": self.tilt, "zoom": self.zoom}
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "PTZPosition":
+    def from_dict(cls, data: dict[str, Any]) -> "PTZPosition":
         """Create PTZPosition from dictionary"""
         return cls(
             pan=float(data.get("pan", 0)),
@@ -59,10 +59,10 @@ class PTZStatus:
 
     position: PTZPosition
     is_moving: bool
-    last_movement: Optional[float] = None  # Timestamp of last movement
-    current_preset: Optional[int] = None  # ID of current preset, if any
+    last_movement: float | None = None  # Timestamp of last movement
+    current_preset: int | None = None  # ID of current preset, if any
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert status to dictionary"""
         return {
             "position": self.position.to_dict(),
@@ -81,10 +81,10 @@ class PTZPresetInfo:
     position: PTZPosition
     created_at: float  # Timestamp
     updated_at: float  # Timestamp
-    thumbnail_url: Optional[str] = None
-    description: Optional[str] = None
+    thumbnail_url: str | None = None
+    description: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert preset info to dictionary"""
         return {
             "preset_id": self.preset_id,
@@ -108,7 +108,7 @@ class PTZLimits:
     min_zoom: float = 0.0
     max_zoom: float = 1.0
 
-    def to_dict(self) -> Dict[str, float]:
+    def to_dict(self) -> dict[str, float]:
         """Convert limits to dictionary"""
         return {
             "min_pan": self.min_pan,
@@ -140,14 +140,14 @@ class PTZCommand:
     timestamp: float
 
     # Command parameters (optional, depends on command_type)
-    direction: Optional[PTZMoveDirection] = None
-    speed: Optional[PTZSpeed] = PTZSpeed.MEDIUM
-    duration_ms: Optional[int] = 1000
-    preset_id: Optional[int] = None
-    preset_name: Optional[str] = None
-    position: Optional[PTZPosition] = None
+    direction: PTZMoveDirection | None = None
+    speed: PTZSpeed | None = PTZSpeed.MEDIUM
+    duration_ms: int | None = 1000
+    preset_id: int | None = None
+    preset_name: str | None = None
+    position: PTZPosition | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert command to dictionary"""
         result = {
             "command_type": self.command_type.value,

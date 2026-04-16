@@ -5,7 +5,6 @@ Handles RTL-SDR hardware interaction and raw IQ sample acquisition.
 """
 
 import logging
-from typing import List, Optional
 
 import numpy as np
 
@@ -37,10 +36,7 @@ class SDRCapture:
             self.sdr.gain = self.gain
             self.sdr.freq_correction = self.freq_correction
 
-            logger.info(
-                f"RTL-SDR initialized: {self.center_freq / 1e6:.1f} MHz, "
-                f"{self.sample_rate / 1e6:.1f} Msps"
-            )
+            logger.info(f"RTL-SDR initialized: {self.center_freq / 1e6:.1f} MHz, {self.sample_rate / 1e6:.1f} Msps")
             return True
 
         except ImportError:
@@ -74,7 +70,7 @@ class SDRCapture:
                 logger.exception("Failed to set gain:")
         return False
 
-    async def read_samples(self, num_samples: int = 1024 * 1024) -> Optional[np.ndarray]:
+    async def read_samples(self, num_samples: int = 1024 * 1024) -> np.ndarray | None:
         """Read IQ samples from the SDR."""
         if self.sdr:
             try:
@@ -105,7 +101,7 @@ class SDRCapture:
         }
 
     @staticmethod
-    def list_devices() -> List[dict]:
+    def list_devices() -> list[dict]:
         """List available RTL-SDR devices."""
         try:
             from rtlsdr import RtlSdr

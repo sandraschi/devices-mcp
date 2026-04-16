@@ -8,7 +8,7 @@ import shutil
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,14 +21,14 @@ class LogConfig:
     max_files: int = 5  # Maximum number of rotated files to keep
     compress_after_days: int = 1  # Compress files older than X days
     delete_after_days: int = 30  # Delete files older than X days
-    log_directory: Optional[str] = None  # Directory to manage (defaults to script dir)
+    log_directory: str | None = None  # Directory to manage (defaults to script dir)
     enabled: bool = True
 
 
 class LogManager:
     """Manages log file rotation, compression, and cleanup"""
 
-    def __init__(self, config: Optional[LogConfig] = None):
+    def __init__(self, config: LogConfig | None = None):
         self.config = config or LogConfig()
         if self.config.log_directory is None:
             # Default to the directory containing this script
@@ -71,7 +71,7 @@ class LogManager:
             logger.exception("Failed to rotate log file {log_file}:")
             return False
 
-    def compress_old_logs(self, days_old: Optional[int] = None) -> int:
+    def compress_old_logs(self, days_old: int | None = None) -> int:
         """Compress log files older than specified days"""
         if not self.config.enabled:
             return 0
@@ -92,7 +92,7 @@ class LogManager:
             logger.exception("Failed to compress old logs:")
             return 0
 
-    def cleanup_old_logs(self, days_old: Optional[int] = None) -> int:
+    def cleanup_old_logs(self, days_old: int | None = None) -> int:
         """Delete log files older than specified days"""
         if not self.config.enabled:
             return 0
@@ -137,7 +137,7 @@ class LogManager:
             logger.exception("Failed to cleanup old logs:")
             return 0
 
-    def sanitize_logs(self, log_files: Optional[List[str]] = None) -> Dict[str, int]:
+    def sanitize_logs(self, log_files: list[str] | None = None) -> dict[str, int]:
         """Complete log sanitization: rotate, compress, and cleanup"""
         if not self.config.enabled:
             return {"rotated": 0, "compressed": 0, "deleted": 0}
@@ -170,7 +170,7 @@ class LogManager:
             logger.exception("Log sanitization failed:")
             return results
 
-    def get_log_stats(self) -> Dict[str, Any]:
+    def get_log_stats(self) -> dict[str, Any]:
         """Get statistics about log files"""
         if not self.config.enabled:
             return {"enabled": False}
@@ -239,7 +239,7 @@ class LogManager:
             return False
 
 
-def create_log_manager(config: Optional[LogConfig] = None) -> LogManager:
+def create_log_manager(config: LogConfig | None = None) -> LogManager:
     """Factory function to create a LogManager instance"""
     return LogManager(config)
 
@@ -248,11 +248,11 @@ def create_log_manager(config: Optional[LogConfig] = None) -> LogManager:
 default_log_manager = LogManager()
 
 
-def sanitize_logs_now(log_files: Optional[List[str]] = None) -> Dict[str, int]:
+def sanitize_logs_now(log_files: list[str] | None = None) -> dict[str, int]:
     """Convenience function to sanitize logs immediately"""
     return default_log_manager.sanitize_logs(log_files)
 
 
-def get_log_stats() -> Dict[str, Any]:
+def get_log_stats() -> dict[str, Any]:
     """Convenience function to get log statistics"""
     return default_log_manager.get_log_stats()

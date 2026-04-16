@@ -9,7 +9,6 @@ dashboards, mobile apps, and third-party services.
 import asyncio
 import logging
 from contextlib import asynccontextmanager, suppress
-from typing import List, Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -34,8 +33,8 @@ class CameraInfo(BaseModel):
     name: str
     type: str
     status: str
-    ip_address: Optional[str] = None
-    model: Optional[str] = None
+    ip_address: str | None = None
+    model: str | None = None
 
 
 class StreamResponse(BaseModel):
@@ -63,7 +62,7 @@ class TapoCameraDualServer:
     comprehensive camera management and integration.
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize the dual interface server"""
         self.config = get_config()
         self.config_path = config_path
@@ -78,8 +77,8 @@ class TapoCameraDualServer:
         self.rest_app = self._create_rest_app()
 
         # Server state
-        self.mcp_task: Optional[asyncio.Task] = None
-        self.rest_task: Optional[asyncio.Task] = None
+        self.mcp_task: asyncio.Task | None = None
+        self.rest_task: asyncio.Task | None = None
 
         logger.info("Tapo Camera Dual Server initialized")
 
@@ -176,7 +175,7 @@ class TapoCameraDualServer:
             return {"events": [], "total": 0}
 
         # List cameras endpoint
-        @app.get("/api/cameras", response_model=List[CameraInfo])
+        @app.get("/api/cameras", response_model=list[CameraInfo])
         async def list_cameras():
             """List all cameras"""
             try:
@@ -252,9 +251,7 @@ class TapoCameraDualServer:
                 # In a full implementation, this would get the actual RTSP stream URL
                 stream_url = f"rtsp://placeholder/stream/{camera_id}"
 
-                return StreamResponse(
-                    stream_url=stream_url, camera_id=camera_id, status="available"
-                )
+                return StreamResponse(stream_url=stream_url, camera_id=camera_id, status="available")
 
             except Exception as e:
                 logger.exception("Error getting stream for camera")
@@ -366,9 +363,7 @@ class TapoCameraDualServer:
             rest_task = asyncio.create_task(run_rest_server())
 
             # Wait for either to finish (shouldn't happen in normal operation)
-            done, pending = await asyncio.wait(
-                [mcp_task, rest_task], return_when=asyncio.FIRST_COMPLETED
-            )
+            done, pending = await asyncio.wait([mcp_task, rest_task], return_when=asyncio.FIRST_COMPLETED)
 
             # Cancel remaining tasks
             for task in pending:

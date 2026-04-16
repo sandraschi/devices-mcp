@@ -7,8 +7,8 @@ Storage: ``DEVICES_MCP_EVENTS_DIR`` or ``<cwd>/data/events/events.jsonl`` (see E
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -29,7 +29,7 @@ class EventCreate(BaseModel):
 
     type: str = Field(..., min_length=1, max_length=128, description="Event type key")
     message: str = ""
-    camera_id: Optional[str] = Field(None, max_length=256)
+    camera_id: str | None = Field(None, max_length=256)
     metadata: dict[str, Any] = Field(default_factory=dict)
     source: str = Field(
         "api",
@@ -50,11 +50,11 @@ class EventsListResponse(BaseModel):
 async def get_events(
     limit: int = Query(100, ge=1, le=1000),
     offset: int = Query(0, ge=0, le=100_000),
-    event_type: Optional[str] = Query(None, description="Filter by type"),
-    camera_id: Optional[str] = Query(None, description="Filter by camera / device id"),
-    source: Optional[str] = Query(None, description="Filter by source"),
+    event_type: str | None = Query(None, description="Filter by type"),
+    camera_id: str | None = Query(None, description="Filter by camera / device id"),
+    source: str | None = Query(None, description="Filter by source"),
     hours: int = Query(24, ge=1, le=168, description="Only events newer than now - hours"),
-    until_hours_ago: Optional[int] = Query(
+    until_hours_ago: int | None = Query(
         None,
         ge=0,
         le=168,
@@ -63,10 +63,10 @@ async def get_events(
 ):
     """List events with filters and pagination (newest first)."""
     store = _store()
-    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+    since = datetime.now(UTC) - timedelta(hours=hours)
     until: datetime | None = None
     if until_hours_ago is not None:
-        until = datetime.now(timezone.utc) - timedelta(hours=until_hours_ago)
+        until = datetime.now(UTC) - timedelta(hours=until_hours_ago)
 
     try:
         events = store.get_events(

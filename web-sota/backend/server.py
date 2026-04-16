@@ -8,7 +8,6 @@ import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
 
 # Add src directory to path so webapp can import from MCP package
 repo_root = Path(__file__).parent.parent.parent
@@ -19,7 +18,7 @@ if str(src_path) not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -31,7 +30,7 @@ logger = logging.getLogger(__name__)
 class WebServer:
     """Clean, modular web server for Devices MCP."""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize the web server."""
         self.config = get_config()
         self.web_config = get_model(WebUISettings)
@@ -45,7 +44,20 @@ class WebServer:
                 await get_llm_manager().glom_local_providers_if_up()
             except Exception:
                 logger.debug("Startup LLM glom skipped", exc_info=True)
+
+            # Start fleet monitoring background task
+            import asyncio
+
+            monitor_task = asyncio.create_task(self._fleet_monitor())
+
             yield
+
+            # Cleanup
+            monitor_task.cancel()
+            try:
+                await monitor_task
+            except asyncio.CancelledError:
+                pass
 
         # Initialize FastAPI app
         self.app = FastAPI(
@@ -61,7 +73,12 @@ class WebServer:
         # Add CORS middleware for frontend
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["http://localhost:10717", "http://localhost:10716", "http://127.0.0.1:10716", "http://127.0.0.1:10717"],
+            allow_origins=[
+                "http://localhost:10717",
+                "http://localhost:10716",
+                "http://127.0.0.1:10716",
+                "http://127.0.0.1:10717",
+            ],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
@@ -134,6 +151,7 @@ class WebServer:
                 dymo,
                 energy,
                 events,
+                fleet,
                 health,
                 ikettle,
                 lighting,
@@ -170,6 +188,7 @@ class WebServer:
             self.app.include_router(dashboard_api.router, tags=["Dashboard API"])
             self.app.include_router(energy.router, tags=["Energy"])
             self.app.include_router(events.router, tags=["Events"])
+            self.app.include_router(fleet.router, tags=["Fleet Management"])
             self.app.include_router(logs.router, tags=["Logs"])
 
             # Specialized Device API Routes
@@ -190,6 +209,7 @@ class WebServer:
             self.app.include_router(health.router, tags=["Health"])
             self.app.include_router(ikettle.router, tags=["iKettle"])
             from . import onboarding
+
             self.app.include_router(onboarding.router, tags=["Onboarding"])
             self.app.include_router(llm.router, tags=["LLM"])
             self.app.include_router(messages.router, tags=["Messages"])
@@ -224,6 +244,54 @@ class WebServer:
                 """)
 
             logger.info("Minimal routes registered successfully")
+
+    async def _fleet_monitor(self) -> None:
+        """Background task to monitor fleet health and trigger hourly syncs."""
+        import asyncio
+        import subprocess
+        from datetime import UTC, datetime, timedelta
+
+        from devices_mcp.fleet.manager import FleetManager
+
+        logger.info("Fleet monitor background task started")
+
+        # Initial wait to let server settle
+        await asyncio.sleep(60)
+
+        while True:
+            try:
+                manager = FleetManager()
+                nodes = await manager.get_fleet_status()
+                now = datetime.now(UTC)
+
+                # 1. Health Monitoring: Mark nodes as offline if silent > 10 mins
+                offline_threshold = timedelta(minutes=10)
+                for node in nodes:
+                    last_seen = datetime.fromtimestamp(node["last_heartbeat"], tz=UTC)
+                    if now - last_seen > offline_threshold and node["status"] != "offline":
+                        logger.warning(f"Node {node['node_id']} has gone silent. Marking offline.")
+                        await manager.record_heartbeat(
+                            node_id=node["node_id"], status="offline", details=node.get("details", {})
+                        )
+
+                # 2. Trigger Hourly Sync Script
+                # We do this every hour (approx)
+                # For simplicity, we just trigger it and let it handle the 'last_run' logic
+                scripts_dir = Path(__file__).parent.parent.parent / "scripts"
+                sync_script = scripts_dir / "hourly_sync.py"
+                if sync_script.exists():
+                    logger.info("Triggering hourly fleet sync documentation push")
+                    subprocess.Popen(
+                        [sys.executable, str(sync_script)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                    )
+                else:
+                    logger.debug(f"Sync script not found at {sync_script}")
+
+            except Exception as e:
+                logger.error(f"Error in fleet monitor loop: {e}")
+
+            # Sleep for 5 minutes (health check interval)
+            await asyncio.sleep(300)
 
     def _redirect_to_app(self):
         """Redirect root to React SPA."""

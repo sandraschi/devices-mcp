@@ -4,7 +4,7 @@ Camera-related tools for Devices MCP.
 This module contains tools for managing and interacting with Tapo cameras.
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import Field
 
@@ -23,7 +23,7 @@ class ListCamerasTool(BaseTool):
         class Parameters:
             pass
 
-    async def execute(self) -> List[Dict[str, Any]]:
+    async def execute(self) -> list[dict[str, Any]]:
         """Execute the list cameras tool."""
         # This will be implemented by the server
         return []
@@ -43,7 +43,7 @@ class GetCameraInfoTool(BaseTool):
 
     camera_id: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the get camera info tool."""
         # This will be implemented by the server
         return {"camera_id": self.camera_id, "status": "online"}
@@ -63,7 +63,7 @@ class ConnectCameraTool(BaseTool):
 
     camera_id: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the connect camera tool."""
         # This will be implemented by the server
         return {"status": "connected", "camera_id": self.camera_id}
@@ -84,7 +84,7 @@ class DisconnectCameraTool(BaseTool):
 
     camera_id: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the disconnect camera tool."""
         # This will be implemented by the server
         return {"status": "disconnected", "camera_id": self.camera_id}
@@ -104,7 +104,7 @@ class GetCameraStatusTool(BaseTool):
 
     camera_id: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the get camera status tool."""
         # This will be implemented by the server
         return {"camera_id": self.camera_id, "status": "online"}
@@ -124,7 +124,7 @@ class SetActiveCameraTool(BaseTool):
 
     camera_id: str
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute the set active camera tool."""
         # This will be implemented by the server
         return {"status": "active_camera_set", "camera_id": self.camera_id}

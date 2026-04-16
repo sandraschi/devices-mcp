@@ -6,7 +6,7 @@ import asyncio
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 import httpx
 
@@ -22,8 +22,8 @@ class CameraManager:
     Manages connections to multiple Tapo cameras.
     """
 
-    cameras: Dict[str, CameraInfo] = field(default_factory=dict)
-    _client: Optional[httpx.AsyncClient] = None
+    cameras: dict[str, CameraInfo] = field(default_factory=dict)
+    _client: httpx.AsyncClient | None = None
 
     def __post_init__(self):
         self._lock = asyncio.Lock()
@@ -46,7 +46,7 @@ class CameraManager:
             await self._client.aclose()
             self._client = None
 
-    async def add_camera(self, camera_config: Dict[str, Any]) -> CameraInfo:
+    async def add_camera(self, camera_config: dict[str, Any]) -> CameraInfo:
         """
         Add a new camera to the manager.
 
@@ -98,7 +98,7 @@ class CameraManager:
                 return True
             return False
 
-    async def get_camera(self, camera_id: str) -> Optional[CameraInfo]:
+    async def get_camera(self, camera_id: str) -> CameraInfo | None:
         """
         Get a camera by ID.
 

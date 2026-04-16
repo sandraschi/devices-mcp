@@ -7,7 +7,7 @@ consistent logging across all PlexMCP tools and services.
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 # Global logger configuration
 LOGGING_CONFIGURED = False
@@ -17,7 +17,7 @@ LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 def configure_logging(
     level: str = "INFO",
-    log_file: Optional[str] = None,
+    log_file: str | None = None,
     log_to_console: bool = True,
 ) -> None:
     """Configure global logging settings for PlexMCP.
@@ -83,9 +83,7 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def log_operation(
-    logger: logging.Logger, operation: str, level: str = "INFO", **kwargs: Any
-) -> None:
+def log_operation(logger: logging.Logger, operation: str, level: str = "INFO", **kwargs: Any) -> None:
     """Log an operation with structured context.
 
     Args:

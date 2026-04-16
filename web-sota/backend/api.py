@@ -1,6 +1,6 @@
 """API routes for the Devices MCP server."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -19,7 +19,7 @@ class APIRouter:
         """Register all API routes."""
 
         @self.mcp.tool()
-        async def list_cameras() -> Dict[str, Any]:
+        async def list_cameras() -> dict[str, Any]:
             """List all configured cameras with their current status and information.
 
             Retrieves a comprehensive list of all cameras registered in the system,
@@ -95,14 +95,14 @@ class APIRouter:
         async def add_camera(
             name: str,
             camera_type: str,
-            host: Optional[str] = None,
-            username: Optional[str] = None,
-            password: Optional[str] = None,
-            port: Optional[int] = None,
-            stream_type: Optional[str] = None,
+            host: str | None = None,
+            username: str | None = None,
+            password: str | None = None,
+            port: int | None = None,
+            stream_type: str | None = None,
             verify_ssl: bool = True,
             timeout: int = 10,
-        ) -> Dict[str, Any]:
+        ) -> dict[str, Any]:
             """Add a new camera to the system with full configuration support.
 
             Registers and connects to a new camera device using the provided configuration
@@ -245,7 +245,7 @@ class APIRouter:
                 }
 
         @self.mcp.tool()
-        async def remove_camera(name: str) -> Dict[str, Any]:
+        async def remove_camera(name: str) -> dict[str, Any]:
             """Remove a camera from the system and clean up associated resources.
 
             Disconnects and unregisters a camera from the system, stopping all active
@@ -337,7 +337,7 @@ class APIRouter:
                 }
 
         @self.mcp.tool()
-        async def capture_still(camera: str, save_path: Optional[str] = None) -> Dict[str, Any]:
+        async def capture_still(camera: str, save_path: str | None = None) -> dict[str, Any]:
             """Capture a still image from a specified camera.
 
             Takes a snapshot from the specified camera and either returns the image data
@@ -439,7 +439,7 @@ class APIRouter:
                 }
 
         @self.mcp.tool()
-        async def get_stream_url(camera: str) -> Dict[str, Any]:
+        async def get_stream_url(camera: str) -> dict[str, Any]:
             """Get the streaming URL for a specified camera.
 
             Retrieves the appropriate streaming endpoint URL for the specified camera,

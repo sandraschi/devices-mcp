@@ -8,7 +8,7 @@ operations like user management and server maintenance.
 import logging
 import random
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from plexapi.exceptions import Unauthorized
 
@@ -44,7 +44,7 @@ class AdminService(BaseService):
         except Exception as e:
             logger.warning(f"Failed to get MyPlex account: {e!s}")
 
-    async def get_users(self) -> List[UserPermissions]:
+    async def get_users(self) -> list[UserPermissions]:
         """Get all users with access to the Plex server.
 
         Returns:
@@ -82,9 +82,7 @@ class AdminService(BaseService):
             logger.exception(error_msg)
             raise ServiceError(error_msg, code="get_users_failed") from e
 
-    async def update_user_permissions(
-        self, user_id: str, permissions: Dict[str, Any]
-    ) -> UserPermissions:
+    async def update_user_permissions(self, user_id: str, permissions: dict[str, Any]) -> UserPermissions:
         """Update user permissions and restrictions.
 
         Args:
@@ -131,7 +129,7 @@ class AdminService(BaseService):
             raise ServiceError(error_msg, code="update_user_failed") from e
 
     async def run_server_maintenance(
-        self, operation: str, options: Optional[Dict[str, Any]] = None
+        self, operation: str, options: dict[str, Any] | None = None
     ) -> ServerMaintenanceResult:
         """Run server maintenance operations.
 
@@ -210,7 +208,7 @@ class AdminService(BaseService):
             logger.exception(error_msg)
             raise ServiceError(error_msg, code="maintenance_failed") from e
 
-    async def get_server_health(self) -> Dict[str, Any]:
+    async def get_server_health(self) -> dict[str, Any]:
         """Get detailed server health and performance metrics.
 
         Returns:

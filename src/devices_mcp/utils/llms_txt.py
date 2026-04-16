@@ -11,7 +11,7 @@ providing a structured way to document APIs and tools for large language models.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict, Union
+from typing import TypedDict
 
 import pkg_resources
 
@@ -24,8 +24,8 @@ class ToolMetadata(TypedDict, total=False):
     category: str
     rate_limit: str
     requires_auth: bool
-    input_schema: Dict
-    output_schema: Dict
+    input_schema: dict
+    output_schema: dict
 
 
 class LLMsTxtGenerator:
@@ -55,7 +55,7 @@ class LLMsTxtGenerator:
         self.base_url = base_url.rstrip("/")
         self.timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
         self.version = self._get_version()
-        self.tools_metadata: List[ToolMetadata] = []
+        self.tools_metadata: list[ToolMetadata] = []
 
     def _get_version(self) -> str:
         """Get the current package version.
@@ -520,7 +520,7 @@ Apache 2.0 License: {self.base_url}/license
 {navigation_content}
     """
 
-    def write_files(self, output_dir: Union[str, Path]) -> None:
+    def write_files(self, output_dir: str | Path) -> None:
         """Write the LLMs.txt files to the specified directory.
 
         Args:
@@ -541,7 +541,7 @@ Apache 2.0 License: {self.base_url}/license
         full_docs_path.write_text(self.generate_full_documentation(), encoding="utf-8")
 
 
-def generate_llms_txt(output_dir: Union[str, Path], base_url: Optional[str] = None) -> None:
+def generate_llms_txt(output_dir: str | Path, base_url: str | None = None) -> None:
     """Generate LLMs.txt files for the project.
 
     Args:

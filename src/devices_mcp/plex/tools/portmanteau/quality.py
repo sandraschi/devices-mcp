@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -42,10 +42,10 @@ async def plex_quality(
         "delete_profile",
         "set_default",
     ],
-    profile_name: Optional[str] = None,
-    settings: Optional[Dict[str, Any]] = None,
+    profile_name: str | None = None,
+    settings: dict[str, Any] | None = None,
     is_default: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Comprehensive quality profile management tool for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -176,9 +176,7 @@ async def plex_quality(
                     "error_code": "MISSING_PARAMETER",
                 }
 
-            result = await plex.create_quality_profile(
-                name=profile_name, settings=settings, is_default=is_default
-            )
+            result = await plex.create_quality_profile(name=profile_name, settings=settings, is_default=is_default)
             return {
                 "success": True,
                 "operation": "create_profile",
@@ -201,9 +199,7 @@ async def plex_quality(
                     "error_code": "MISSING_PARAMETER",
                 }
 
-            result = await plex.update_transcode_settings(
-                profile_name=profile_name, settings=settings
-            )
+            result = await plex.update_transcode_settings(profile_name=profile_name, settings=settings)
             return {
                 "success": True,
                 "operation": "update_profile",
@@ -236,9 +232,7 @@ async def plex_quality(
                 }
 
             # Update profile to set as default
-            result = await plex.create_quality_profile(
-                name=profile_name, settings={}, is_default=True
-            )
+            result = await plex.create_quality_profile(name=profile_name, settings={}, is_default=True)
             return {
                 "success": True,
                 "operation": "set_default",

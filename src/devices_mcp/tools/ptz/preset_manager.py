@@ -12,7 +12,7 @@ This module provides functionality to manage PTZ presets including:
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from ...core.models import PTZPosition
@@ -29,8 +29,8 @@ class PTZPreset:
     position: "PTZPosition"
     created_at: datetime
     updated_at: datetime
-    thumbnail_url: Optional[str] = None
-    description: Optional[str] = None
+    thumbnail_url: str | None = None
+    description: str | None = None
 
 
 class PTZPresetManager:
@@ -39,7 +39,7 @@ class PTZPresetManager:
     def __init__(self, camera_client):
         """Initialize with a camera client that can control PTZ"""
         self.camera_client = camera_client
-        self.presets: Dict[int, PTZPreset] = {}
+        self.presets: dict[int, PTZPreset] = {}
         self._load_presets()
 
     def _load_presets(self) -> None:
@@ -54,11 +54,11 @@ class PTZPresetManager:
         """Save presets to persistent storage"""
         # This would save to a database or config file
 
-    def get_presets(self) -> List[PTZPreset]:
+    def get_presets(self) -> list[PTZPreset]:
         """Get all available presets"""
         return list(self.presets.values())
 
-    def get_preset(self, preset_id: int) -> Optional[PTZPreset]:
+    def get_preset(self, preset_id: int) -> PTZPreset | None:
         """Get a specific preset by ID"""
         return self.presets.get(preset_id)
 
@@ -66,8 +66,8 @@ class PTZPresetManager:
         self,
         name: str,
         position: "PTZPosition",
-        description: Optional[str] = None,
-        thumbnail_url: Optional[str] = None,
+        description: str | None = None,
+        thumbnail_url: str | None = None,
     ) -> PTZPreset:
         """Save current position as a new preset"""
         try:
@@ -100,11 +100,11 @@ class PTZPresetManager:
     async def update_preset(
         self,
         preset_id: int,
-        name: Optional[str] = None,
+        name: str | None = None,
         position: Optional["PTZPosition"] = None,
-        description: Optional[str] = None,
-        thumbnail_url: Optional[str] = None,
-    ) -> Optional[PTZPreset]:
+        description: str | None = None,
+        thumbnail_url: str | None = None,
+    ) -> PTZPreset | None:
         """Update an existing preset"""
         if preset_id not in self.presets:
             return None
@@ -158,7 +158,7 @@ class PTZPresetManager:
             logger.exception("Failed to recall PTZ preset")
             return False
 
-    async def capture_thumbnail(self, preset_id: int) -> Optional[str]:
+    async def capture_thumbnail(self, preset_id: int) -> str | None:
         """Capture and save a thumbnail for the preset"""
         if preset_id not in self.presets:
             return None

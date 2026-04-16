@@ -16,7 +16,6 @@ extracts design information for virtual robotics (vrobs) testing.
 import json
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import List
 
 from plexapi.server import PlexServer
 
@@ -43,7 +42,7 @@ class AnimeRobotDesign:
     emotion_score: float  # 0=terrifying, 10=cute
     aesthetic: str  # "organic", "mechanical", "bio-mecha", etc.
     mobility: str  # "wheels", "legs", "tracks", "hover", "flight"
-    features: List[str]
+    features: list[str]
     partner_acceptance: str  # "very_low", "low", "medium", "high", "very_high"
     benny_reaction: str  # "terrified", "alert", "curious", "friendly"
     model_available: bool
@@ -149,7 +148,7 @@ class PlexAnimeRobotExtractor:
         self.anime_library = self.plex.library.section("Anime")
         self.robot_designs = []
 
-    def find_robot_anime(self) -> List:
+    def find_robot_anime(self) -> list:
         """
         Search Plex for anime with robot/mecha content.
 
@@ -189,7 +188,7 @@ class PlexAnimeRobotExtractor:
         logger.info(f"Found {len(all_results)} anime with robot content!")
         return sorted(all_results.values(), key=lambda x: x.title)
 
-    def extract_design_from_anime(self, anime_title: str) -> List[AnimeRobotDesign]:
+    def extract_design_from_anime(self, anime_title: str) -> list[AnimeRobotDesign]:
         """
         Extract robot designs from specific anime.
 
@@ -208,7 +207,7 @@ class PlexAnimeRobotExtractor:
         logger.info(f"Anime '{anime_title}' not in famous database - manual extraction needed")
         return []
 
-    def _extract_famous_designs(self, anime_data: dict) -> List[AnimeRobotDesign]:
+    def _extract_famous_designs(self, anime_data: dict) -> list[AnimeRobotDesign]:
         """Extract pre-documented famous robot designs"""
         designs = []
 
@@ -340,9 +339,7 @@ def main():
         python extract_anime_vrobs.py
     """
     # Initialize extractor (update with your Plex token)
-    extractor = PlexAnimeRobotExtractor(
-        plex_url="http://goliath:32400", token="YOUR_PLEX_TOKEN_HERE"
-    )
+    extractor = PlexAnimeRobotExtractor(plex_url="http://goliath:32400", token="YOUR_PLEX_TOKEN_HERE")
 
     # Find all robot anime
     logger.info("Searching Plex for robot anime...")

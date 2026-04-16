@@ -7,7 +7,7 @@ and reliable streaming capabilities.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -37,9 +37,7 @@ class USBCameraManagementTool(BaseTool):
 
     class Meta:
         name = "usb_camera_management"
-        description = (
-            "Comprehensive USB camera management with automatic detection and reliable streaming"
-        )
+        description = "Comprehensive USB camera management with automatic detection and reliable streaming"
         category = ToolCategory.CAMERA
 
         class Parameters(BaseModel):
@@ -47,25 +45,21 @@ class USBCameraManagementTool(BaseTool):
                 ...,
                 description="Operation to perform: 'detect', 'list', 'stream', 'status', 'configure'",
             )
-            camera_id: Optional[int] = Field(
-                None, description="Specific camera device ID (0, 1, 2, etc.)"
-            )
-            resolution: Optional[str] = Field(
+            camera_id: int | None = Field(None, description="Specific camera device ID (0, 1, 2, etc.)")
+            resolution: str | None = Field(
                 None, description="Desired resolution (e.g., '640x480', '1280x720', '1920x1080')"
             )
-            friendly_name: Optional[str] = Field(None, description="Friendly name for the camera")
-            max_cameras: Optional[int] = Field(
-                10, description="Maximum number of cameras to scan during detection"
-            )
+            friendly_name: str | None = Field(None, description="Friendly name for the camera")
+            max_cameras: int | None = Field(10, description="Maximum number of cameras to scan during detection")
 
     async def execute(
         self,
         operation: str,
-        camera_id: Optional[int] = None,
-        resolution: Optional[str] = None,
-        friendly_name: Optional[str] = None,
+        camera_id: int | None = None,
+        resolution: str | None = None,
+        friendly_name: str | None = None,
         max_cameras: int = 10,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute USB camera management operation."""
         try:
             logger.info(f"USB camera management: {operation}")
@@ -179,7 +173,7 @@ class USBCameraManagementTool(BaseTool):
                 "operation": operation,
             }
 
-    async def _detect_usb_cameras(self, max_cameras: int) -> Dict[str, Any]:
+    async def _detect_usb_cameras(self, max_cameras: int) -> dict[str, Any]:
         """Detect all available USB cameras."""
         try:
             import os
@@ -244,7 +238,7 @@ class USBCameraManagementTool(BaseTool):
                 "install_command": "pip install opencv-python",
             }
 
-    async def _list_usb_cameras(self) -> Dict[str, Any]:
+    async def _list_usb_cameras(self) -> dict[str, Any]:
         """List all configured USB cameras."""
         try:
             # Get camera manager
@@ -284,7 +278,7 @@ class USBCameraManagementTool(BaseTool):
                 "error": f"Failed to list USB cameras: {e}",
             }
 
-    async def _setup_stream(self, camera_id: Optional[int]) -> Dict[str, Any]:
+    async def _setup_stream(self, camera_id: int | None) -> dict[str, Any]:
         """Setup streaming for a USB camera."""
         if camera_id is None:
             return {
@@ -309,9 +303,7 @@ class USBCameraManagementTool(BaseTool):
                     "success": False,
                     "error": f"USB camera with device_id {camera_id} not found",
                     "available_cameras": [
-                        c["status"].get("device_id")
-                        for c in cameras_info
-                        if c["status"].get("device_id") is not None
+                        c["status"].get("device_id") for c in cameras_info if c["status"].get("device_id") is not None
                     ],
                 }
 
@@ -345,7 +337,7 @@ class USBCameraManagementTool(BaseTool):
                 "error": f"Failed to setup stream: {e}",
             }
 
-    async def _get_camera_status(self, camera_id: Optional[int]) -> Dict[str, Any]:
+    async def _get_camera_status(self, camera_id: int | None) -> dict[str, Any]:
         """Get status of a specific USB camera or all USB cameras."""
         try:
             from ...camera.manager import camera_manager
@@ -374,9 +366,7 @@ class USBCameraManagementTool(BaseTool):
                 }
             # Return all USB cameras
             usb_cameras = [
-                cam
-                for cam in cameras_info
-                if cam.get("type") in ["webcam", "WebCamera", "WindowsWebCamera"]
+                cam for cam in cameras_info if cam.get("type") in ["webcam", "WebCamera", "WindowsWebCamera"]
             ]
 
             return {
@@ -398,8 +388,8 @@ class USBCameraManagementTool(BaseTool):
             }
 
     async def _configure_camera(
-        self, camera_id: Optional[int], resolution: Optional[str], friendly_name: Optional[str]
-    ) -> Dict[str, Any]:
+        self, camera_id: int | None, resolution: str | None, friendly_name: str | None
+    ) -> dict[str, Any]:
         """Configure a USB camera."""
         if camera_id is None:
             return {
@@ -483,7 +473,7 @@ class USBCameraManagementTool(BaseTool):
         led_control: bool = None,
         led_flash_interval: int = None,
         led_flash_duration: float = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Start surveillance mode for a USB camera."""
         try:
             success = await camera_manager.start_camera_surveillance(
@@ -511,7 +501,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {"success": False, "error": f"Error starting surveillance: {e!s}"}
 
-    async def _stop_surveillance(self, camera_id: str) -> Dict[str, Any]:
+    async def _stop_surveillance(self, camera_id: str) -> dict[str, Any]:
         """Stop surveillance mode for a USB camera."""
         try:
             success = await camera_manager.stop_camera_surveillance(camera_id)
@@ -529,7 +519,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {"success": False, "error": f"Error stopping surveillance: {e!s}"}
 
-    async def _get_surveillance_events(self, camera_id: str, limit: int = 10) -> Dict[str, Any]:
+    async def _get_surveillance_events(self, camera_id: str, limit: int = 10) -> dict[str, Any]:
         """Get surveillance events for a USB camera."""
         try:
             events = await camera_manager.get_camera_surveillance_events(camera_id, limit)
@@ -545,12 +535,10 @@ class USBCameraManagementTool(BaseTool):
 
     async def _enable_led_control(
         self, camera_id: str, flash_interval: int = 5, flash_duration: float = 0.5
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Enable LED control for a USB camera."""
         try:
-            success = await camera_manager.enable_camera_led_control(
-                camera_id, flash_interval, flash_duration
-            )
+            success = await camera_manager.enable_camera_led_control(camera_id, flash_interval, flash_duration)
             if success:
                 return {
                     "success": True,
@@ -565,7 +553,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {"success": False, "error": f"Error enabling LED control: {e!s}"}
 
-    async def _disable_led_control(self, camera_id: str) -> Dict[str, Any]:
+    async def _disable_led_control(self, camera_id: str) -> dict[str, Any]:
         """Disable LED control for a USB camera."""
         try:
             success = await camera_manager.disable_camera_led_control(camera_id)
@@ -583,7 +571,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {"success": False, "error": f"Error disabling LED control: {e!s}"}
 
-    async def _enable_speakerphone(self, camera_id: str) -> Dict[str, Any]:
+    async def _enable_speakerphone(self, camera_id: str) -> dict[str, Any]:
         """Enable speakerphone for a USB camera."""
         try:
             success = await camera_manager.enable_camera_speakerphone(camera_id)
@@ -601,7 +589,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {"success": False, "error": f"Error enabling speakerphone: {e!s}"}
 
-    async def _disable_speakerphone(self, camera_id: str) -> Dict[str, Any]:
+    async def _disable_speakerphone(self, camera_id: str) -> dict[str, Any]:
         """Disable speakerphone for a USB camera."""
         try:
             success = await camera_manager.disable_camera_speakerphone(camera_id)
@@ -619,7 +607,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {"success": False, "error": f"Error disabling speakerphone: {e!s}"}
 
-    async def _get_speakerphone_status(self, camera_id: str) -> Dict[str, Any]:
+    async def _get_speakerphone_status(self, camera_id: str) -> dict[str, Any]:
         """Get speakerphone status for a USB camera."""
         try:
             status = await camera_manager.get_camera_speakerphone_status(camera_id)

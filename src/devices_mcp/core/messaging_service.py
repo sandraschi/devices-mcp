@@ -19,7 +19,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -55,11 +55,11 @@ class Message:
     source: str  # Device ID or system component
     title: str
     description: str
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
     acknowledged: bool = False
-    ack_timestamp: Optional[datetime] = None
+    ack_timestamp: datetime | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
             "id": self.id,
@@ -74,7 +74,7 @@ class Message:
             "ack_timestamp": self.ack_timestamp.isoformat() if self.ack_timestamp else None,
         }
 
-    def to_prometheus_labels(self) -> Dict[str, str]:
+    def to_prometheus_labels(self) -> dict[str, str]:
         """Convert to Prometheus label format."""
         return {
             "severity": self.severity.value,
@@ -137,7 +137,7 @@ class MessagingService:
         source: str,
         title: str,
         description: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> Message:
         """
         Add a new message to the system.
@@ -195,31 +195,23 @@ class MessagingService:
         """Convenience method for INFO messages."""
         return self.add_message(MessageSeverity.INFO, category, source, title, description, details)
 
-    def warning(
-        self, category: MessageCategory, source: str, title: str, description: str, **details
-    ):
+    def warning(self, category: MessageCategory, source: str, title: str, description: str, **details):
         """Convenience method for WARNING messages."""
-        return self.add_message(
-            MessageSeverity.WARNING, category, source, title, description, details
-        )
+        return self.add_message(MessageSeverity.WARNING, category, source, title, description, details)
 
-    def alarm(
-        self, category: MessageCategory, source: str, title: str, description: str, **details
-    ):
+    def alarm(self, category: MessageCategory, source: str, title: str, description: str, **details):
         """Convenience method for ALARM messages."""
-        return self.add_message(
-            MessageSeverity.ALARM, category, source, title, description, details
-        )
+        return self.add_message(MessageSeverity.ALARM, category, source, title, description, details)
 
     def get_messages(
         self,
-        severity: Optional[MessageSeverity] = None,
-        category: Optional[MessageCategory] = None,
-        source: Optional[str] = None,
-        since: Optional[datetime] = None,
+        severity: MessageSeverity | None = None,
+        category: MessageCategory | None = None,
+        source: str | None = None,
+        since: datetime | None = None,
         limit: int = 100,
-        acknowledged: Optional[bool] = None,
-    ) -> List[Message]:
+        acknowledged: bool | None = None,
+    ) -> list[Message]:
         """
         Get messages with optional filtering.
 
@@ -256,7 +248,7 @@ class MessagingService:
 
         return filtered[:limit]
 
-    def get_unacknowledged_alarms(self) -> List[Message]:
+    def get_unacknowledged_alarms(self) -> list[Message]:
         """Get all unacknowledged ALARM messages."""
         return self.get_messages(severity=MessageSeverity.ALARM, acknowledged=False)
 
@@ -270,7 +262,7 @@ class MessagingService:
                 return True
         return False
 
-    def acknowledge_all(self, severity: Optional[MessageSeverity] = None):
+    def acknowledge_all(self, severity: MessageSeverity | None = None):
         """Acknowledge all messages, optionally filtered by severity."""
         count = 0
         for msg in self.messages:
@@ -281,7 +273,7 @@ class MessagingService:
         logger.info(f"Acknowledged {count} messages")
         return count
 
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get messaging metrics for Prometheus."""
         now = datetime.now()
         last_hour = now - timedelta(hours=1)
@@ -290,9 +282,7 @@ class MessagingService:
         recent_hour = [m for m in self.messages if m.timestamp >= last_hour]
         recent_day = [m for m in self.messages if m.timestamp >= last_day]
 
-        unacked_alarms = len(
-            [m for m in self.messages if m.severity == MessageSeverity.ALARM and not m.acknowledged]
-        )
+        unacked_alarms = len([m for m in self.messages if m.severity == MessageSeverity.ALARM and not m.acknowledged])
 
         return {
             # Lifetime counts
@@ -308,9 +298,7 @@ class MessagingService:
             "unacknowledged_alarms": unacked_alarms,
             # By severity (current buffer)
             "info_current": len([m for m in self.messages if m.severity == MessageSeverity.INFO]),
-            "warning_current": len(
-                [m for m in self.messages if m.severity == MessageSeverity.WARNING]
-            ),
+            "warning_current": len([m for m in self.messages if m.severity == MessageSeverity.WARNING]),
             "alarm_current": len([m for m in self.messages if m.severity == MessageSeverity.ALARM]),
         }
 
@@ -343,7 +331,7 @@ class MessagingService:
 
 
 # Global messaging service instance
-_messaging_service: Optional[MessagingService] = None
+_messaging_service: MessagingService | None = None
 
 
 def get_messaging_service() -> MessagingService:

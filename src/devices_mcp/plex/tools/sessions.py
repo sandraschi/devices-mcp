@@ -1,7 +1,6 @@
 """Plex session management tools for FastMCP 2.10.1."""
 
 import os
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -20,7 +19,7 @@ def _get_plex_service():
 
 
 @mcp.tool()
-async def list_sessions() -> List[Session]:
+async def list_sessions() -> list[Session]:
     """Get a list of all active Plex sessions.
 
     Returns:
@@ -41,7 +40,7 @@ class ClientInfo(BaseModel):
 
 
 @mcp.tool()
-async def list_clients() -> List[ClientInfo]:
+async def list_clients() -> list[ClientInfo]:
     """Get a list of all available Plex clients.
 
     Returns:
@@ -69,15 +68,9 @@ class PlaybackControlRequest(BaseModel):
         ...,
         description="Action to perform (play, pause, stop, skip_next, skip_previous, step_forward, step_back, seek_to)",
     )
-    media_key: Optional[str] = Field(
-        None, description="Media key to play (required for play action)"
-    )
-    seek_to: Optional[int] = Field(
-        None, description="Position in milliseconds to seek to (for seek_to action)"
-    )
-    offset: Optional[int] = Field(
-        30, description="Time offset in seconds (for step_forward/step_back actions)"
-    )
+    media_key: str | None = Field(None, description="Media key to play (required for play action)")
+    seek_to: int | None = Field(None, description="Position in milliseconds to seek to (for seek_to action)")
+    offset: int | None = Field(30, description="Time offset in seconds (for step_forward/step_back actions)")
 
 
 @mcp.tool()

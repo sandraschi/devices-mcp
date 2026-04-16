@@ -7,7 +7,7 @@ Combines privacy settings operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -36,32 +36,24 @@ class PrivacySettingsTool(BaseTool):
 
     class Meta:
         name = "privacy_settings"
-        description = (
-            "Unified privacy settings management including privacy mode and data protection"
-        )
+        description = "Unified privacy settings management including privacy mode and data protection"
         category = ToolCategory.CONFIGURATION
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Privacy operation: 'privacy_mode', 'data_protection'"
-            )
+            operation: str = Field(..., description="Privacy operation: 'privacy_mode', 'data_protection'")
             camera_id: str = Field(..., description="Camera ID for privacy operations")
-            enabled: Optional[bool] = Field(None, description="Whether to enable privacy mode")
-            privacy_type: Optional[str] = Field(
-                "full", description="Privacy type: 'full', 'partial', 'scheduled'"
-            )
-            schedule: Optional[Dict[str, Any]] = Field(
-                None, description="Privacy schedule configuration"
-            )
+            enabled: bool | None = Field(None, description="Whether to enable privacy mode")
+            privacy_type: str | None = Field("full", description="Privacy type: 'full', 'partial', 'scheduled'")
+            schedule: dict[str, Any] | None = Field(None, description="Privacy schedule configuration")
 
     async def execute(
         self,
         operation: str,
         camera_id: str,
-        enabled: Optional[bool] = None,
+        enabled: bool | None = None,
         privacy_type: str = "full",
-        schedule: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        schedule: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Execute privacy settings operation."""
         try:
             logger.info(f"Privacy settings {operation} operation for camera {camera_id}")
@@ -89,10 +81,10 @@ class PrivacySettingsTool(BaseTool):
     async def _set_privacy_mode(
         self,
         camera_id: str,
-        enabled: Optional[bool],
+        enabled: bool | None,
         privacy_type: str,
-        schedule: Optional[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        schedule: dict[str, Any] | None,
+    ) -> dict[str, Any]:
         """Set privacy mode."""
         if enabled is None:
             return {
@@ -149,7 +141,7 @@ class PrivacySettingsTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _configure_data_protection(self, camera_id: str) -> Dict[str, Any]:
+    async def _configure_data_protection(self, camera_id: str) -> dict[str, Any]:
         """Configure data protection settings."""
         # Simulate data protection configuration
         data_protection_config = {

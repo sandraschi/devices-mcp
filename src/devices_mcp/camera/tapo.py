@@ -4,7 +4,7 @@ import asyncio
 import io
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from PIL import Image
 from pytapo import Tapo
@@ -73,18 +73,14 @@ class TapoCamera(BaseCamera):
                                 host,
                             )
                         elif "Invalid authentication" in error_msg or "Invalid auth" in error_msg:
-                            logger.exception(
-                                "Invalid credentials for camera %s. Check username/password.", host
-                            )
+                            logger.exception("Invalid credentials for camera %s. Check username/password.", host)
                         return (False, None, error_msg)
 
                 # Create Tapo instance in thread pool to avoid event loop conflict
                 # Only attempt ONCE - no retries to prevent lockouts
                 loop = asyncio.get_event_loop()
                 with concurrent.futures.ThreadPoolExecutor() as executor:
-                    success, camera, error = await loop.run_in_executor(
-                        executor, create_and_test_tapo
-                    )
+                    success, camera, error = await loop.run_in_executor(executor, create_and_test_tapo)
 
                     if not success:
                         self._is_connected = False
@@ -143,7 +139,7 @@ class TapoCamera(BaseCamera):
             # ONVIF camera doesn't have async disconnect, just clear reference
             self._onvif_camera = None
 
-    async def capture_still(self, save_path: Optional[str] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image from the camera."""
         if not await self.is_connected():
             await self.connect()
@@ -155,9 +151,7 @@ class TapoCamera(BaseCamera):
                 img_data = await self._camera.get_image()
             else:
                 # Use real camera
-                img_data = await asyncio.get_event_loop().run_in_executor(
-                    None, lambda: self._camera.get_image()
-                )
+                img_data = await asyncio.get_event_loop().run_in_executor(None, lambda: self._camera.get_image())
 
             # Convert to PIL Image
             image = Image.open(io.BytesIO(img_data))
@@ -174,11 +168,9 @@ class TapoCamera(BaseCamera):
         else:
             return image
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Get the RTSP stream URL for the camera."""
-        logger.info(
-            f"get_stream_url called for {self.config.name}, current _stream_url: {self._stream_url}"
-        )
+        logger.info(f"get_stream_url called for {self.config.name}, current _stream_url: {self._stream_url}")
         if not await self.is_connected():
             await self.connect()
 
@@ -223,9 +215,7 @@ class TapoCamera(BaseCamera):
                         else:
                             # Just host, assume RTSP port 554
                             self._stream_url = f"rtsp://{stream_url}:554/stream1"
-                        logger.info(
-                            f"Converted Tapo API stream URL for {self.config.name}: {self._stream_url}"
-                        )
+                        logger.info(f"Converted Tapo API stream URL for {self.config.name}: {self._stream_url}")
                     else:
                         raise ValueError("Empty stream URL from API")
                 except Exception as e:
@@ -264,9 +254,7 @@ class TapoCamera(BaseCamera):
                                 cap.release()
                                 if ret and frame is not None:
                                     self._stream_url = url
-                                    logger.info(
-                                        f"Found working RTSP URL for {self.config.name}: {url[:40]}..."
-                                    )
+                                    logger.info(f"Found working RTSP URL for {self.config.name}: {url[:40]}...")
                                     break
                             else:
                                 cap.release()
@@ -285,15 +273,13 @@ class TapoCamera(BaseCamera):
 
         return self._stream_url
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get camera status with detailed capabilities."""
         if not await self.is_connected():
             await self.connect()
 
         try:
-            basic_info = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: self._camera.getBasicInfo()
-            )
+            basic_info = await asyncio.get_event_loop().run_in_executor(None, lambda: self._camera.getBasicInfo())
 
             device_info = basic_info.get("device_info", {})
 
@@ -356,7 +342,7 @@ class TapoCamera(BaseCamera):
                 "capture_capable": False,
             }
 
-    async def get_info(self) -> Dict:
+    async def get_info(self) -> dict:
         """Get comprehensive Tapo camera information."""
         try:
             info = {
@@ -509,7 +495,7 @@ class TapoCamera(BaseCamera):
             logger.exception("Failed to disable speakerphone on Tapo camera:")
             return False
 
-    async def get_speakerphone_status(self) -> Dict[str, Any]:
+    async def get_speakerphone_status(self) -> dict[str, Any]:
         """Get speakerphone status for Tapo cameras."""
         return {
             "speakerphone_capable": self._speakerphone_capable,

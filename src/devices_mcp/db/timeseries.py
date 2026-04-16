@@ -6,7 +6,7 @@ Uses SQLite for simplicity and portability.
 
 import logging
 import sqlite3
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -79,6 +79,18 @@ class TimeSeriesDB:
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_weather_station_timestamp
                 ON weather_timeseries(station_id, module_type, timestamp)
+            """)
+
+            # Fleet status table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS fleet_status (
+                    node_id TEXT PRIMARY KEY,
+                    last_heartbeat INTEGER NOT NULL,
+                    status TEXT NOT NULL,
+                    ip_address TEXT,
+                    drift_score REAL DEFAULT 0.0,
+                    details TEXT
+                )
             """)
 
             conn.commit()
@@ -200,7 +212,7 @@ class TimeSeriesDB:
             List of data points
         """
         if end_time is None:
-            end_time = datetime.now(timezone.utc)
+            end_time = datetime.now(UTC)
         if start_time is None:
             start_time = end_time - timedelta(hours=hours)
 
@@ -241,9 +253,7 @@ class TimeSeriesDB:
                     "current_a": row["current_a"],
                     "daily_energy_kwh": row["daily_energy_kwh"],
                     "monthly_energy_kwh": row["monthly_energy_kwh"],
-                    "power_state": bool(row["power_state"])
-                    if row["power_state"] is not None
-                    else None,
+                    "power_state": bool(row["power_state"]) if row["power_state"] is not None else None,
                 }
                 for row in rows
             ]
@@ -272,7 +282,7 @@ class TimeSeriesDB:
             List of data points with timestamp and value
         """
         if end_time is None:
-            end_time = datetime.now(timezone.utc)
+            end_time = datetime.now(UTC)
         if start_time is None:
             start_time = end_time - timedelta(hours=hours)
 

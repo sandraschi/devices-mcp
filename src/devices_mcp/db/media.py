@@ -3,7 +3,7 @@ PostgreSQL database for media metadata (recordings, snapshots, AI analysis).
 """
 
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from psycopg2.extras import RealDictCursor
@@ -182,7 +182,7 @@ class MediaMetadataDB:
     ) -> dict[str, Any]:
         """Add a recording metadata entry."""
         if timestamp is None:
-            timestamp = datetime.now(timezone.utc)
+            timestamp = datetime.now(UTC)
 
         conn = self._get_connection()
         try:
@@ -241,7 +241,7 @@ class MediaMetadataDB:
     ) -> dict[str, Any]:
         """Add a snapshot metadata entry."""
         if timestamp is None:
-            timestamp = datetime.now(timezone.utc)
+            timestamp = datetime.now(UTC)
 
         conn = self._get_connection()
         try:
@@ -291,7 +291,7 @@ class MediaMetadataDB:
     ) -> dict[str, Any]:
         """Add AI analysis result."""
         if detected_at is None:
-            detected_at = datetime.now(timezone.utc)
+            detected_at = datetime.now(UTC)
 
         conn = self._get_connection()
         try:
@@ -597,9 +597,7 @@ class MediaMetadataDB:
 
             cursor.close()
 
-            total_size_bytes = (rec_stats.get("total_size_bytes") or 0) + (
-                snap_stats.get("total_size_bytes") or 0
-            )
+            total_size_bytes = (rec_stats.get("total_size_bytes") or 0) + (snap_stats.get("total_size_bytes") or 0)
 
             return {
                 "total_recordings": rec_stats.get("total_recordings", 0) or 0,

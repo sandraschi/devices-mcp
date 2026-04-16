@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 from ..config import get_config
@@ -90,9 +90,7 @@ class TapoP115IngestionService:
                 self._config = get_config().get("energy", {}).get("tapo_p115", {})
                 logger.info("Tapo P115 ingestion config loaded successfully")
             except Exception as e:
-                logger.warning(
-                    f"Failed to load config for Tapo P115 ingestion: {e}, using defaults"
-                )
+                logger.warning(f"Failed to load config for Tapo P115 ingestion: {e}, using defaults")
                 self._config = {}
         self._account = self._config.get("account", {})
         self._devices_cfg = self._config.get("devices", [])
@@ -100,9 +98,7 @@ class TapoP115IngestionService:
         # Delay DB initialization until needed
         self._db = None
 
-        self._hosts: list[str] = [
-            device.get("host") for device in self._devices_cfg if device.get("host")
-        ]
+        self._hosts: list[str] = [device.get("host") for device in self._devices_cfg if device.get("host")]
 
         logger.info(f"Tapo P115 configured devices: {len(self._devices_cfg)}")
         logger.info(f"Tapo P115 configured hosts: {self._hosts}")
@@ -185,11 +181,7 @@ class TapoP115IngestionService:
         except ImportError:
             return []
 
-        broadcast = (
-            os.getenv("TAPO_P115_BROADCAST")
-            or self._discovery_cfg.get("broadcast")
-            or "255.255.255.255"
-        )
+        broadcast = os.getenv("TAPO_P115_BROADCAST") or self._discovery_cfg.get("broadcast") or "255.255.255.255"
         timeout_s = min(60, max(1, self._discovery_timeout))
         hosts: list[str] = []
         client = await self._get_client()
@@ -227,9 +219,7 @@ class TapoP115IngestionService:
                 hosts = found
                 logger.info("Tapo P115 discovery will use LAN-found hosts: %s", hosts)
             else:
-                logger.warning(
-                    "LAN discovery found no plugs; set TAPO_P115_HOSTS or energy.tapo_p115.devices[].host"
-                )
+                logger.warning("LAN discovery found no plugs; set TAPO_P115_HOSTS or energy.tapo_p115.devices[].host")
 
         if not hosts:
             logger.warning("No P115 hosts available for discovery")
@@ -309,9 +299,7 @@ class TapoP115IngestionService:
 
             # Get device info
             device_info = await asyncio.wait_for(plug.get_device_info(), timeout=3.0)
-            device_name = getattr(
-                device_info, "nickname", getattr(device_info, "name", f"P115 {host}")
-            )
+            device_name = getattr(device_info, "nickname", getattr(device_info, "name", f"P115 {host}"))
             model = getattr(device_info, "model", "P115")
             device_id_attr = getattr(device_info, "device_id", None)
 
@@ -366,12 +354,12 @@ class TapoP115IngestionService:
                 "current": current,
                 "daily_energy": today_energy,
                 "monthly_energy": month_energy,
-                "last_seen": datetime.now(tz=timezone.utc).isoformat(),
+                "last_seen": datetime.now(tz=UTC).isoformat(),
             }
 
             # Store data point in database
             try:
-                timestamp = datetime.now(tz=timezone.utc)
+                timestamp = datetime.now(tz=UTC)
                 self._get_db().store_energy_data(
                     device_id=device_id,
                     timestamp=timestamp,
@@ -412,7 +400,7 @@ class TapoP115IngestionService:
         if not snapshot:
             return []
 
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         hourly_energy = float(snapshot["daily_energy"])
         # Spread the daily energy across the elapsed hours.
         elapsed_hours = max(1, now.hour or 1)

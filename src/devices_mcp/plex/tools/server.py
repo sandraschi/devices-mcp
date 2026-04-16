@@ -1,7 +1,6 @@
 """Plex server tools for FastMCP 2.10.1."""
 
 import os
-from typing import List
 
 from pydantic import BaseModel, Field
 
@@ -57,7 +56,7 @@ class LibraryInfo(BaseModel):
 
 
 @mcp.tool()
-async def list_libraries() -> List[LibraryInfo]:
+async def list_libraries() -> list[LibraryInfo]:
     """List all libraries available on the Plex server.
 
     Returns:
@@ -92,7 +91,7 @@ class ServerInfoResponse(BaseModel):
     """Comprehensive server information response."""
 
     status: ServerStatusResponse = Field(..., description="Server status information")
-    libraries: List[LibraryInfo] = Field(..., description="List of libraries on the server")
+    libraries: list[LibraryInfo] = Field(..., description="List of libraries on the server")
 
 
 @mcp.tool()

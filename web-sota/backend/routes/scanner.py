@@ -1,7 +1,6 @@
 """Scanner-specific API endpoints for document scanning."""
 
 import logging
-from typing import Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
@@ -23,23 +22,23 @@ class ScannerControlRequest(BaseModel):
 class ScanRequest(ScannerControlRequest):
     """Request model for scanning documents."""
 
-    filename: Optional[str] = None
+    filename: str | None = None
     format: str = "png"
 
 
 class SetScanSettingsRequest(ScannerControlRequest):
     """Request model for setting scan settings."""
 
-    dpi: Optional[int] = None
-    color_mode: Optional[str] = None
-    brightness: Optional[int] = None
-    contrast: Optional[int] = None
+    dpi: int | None = None
+    color_mode: str | None = None
+    brightness: int | None = None
+    contrast: int | None = None
 
 
 class OCRRequest(ScannerControlRequest):
     """Request model for OCR scanning."""
 
-    filename: Optional[str] = None
+    filename: str | None = None
     language: str = "eng"
 
 
@@ -63,13 +62,11 @@ async def _get_scanner_camera(camera_name: str) -> ScannerCamera:
     if not camera:
         raise HTTPException(status_code=404, detail=f"Camera not found: {camera_name}")
     if not isinstance(camera, ScannerCamera):
-        raise HTTPException(
-            status_code=400, detail=f"Camera '{camera_name}' is not a scanner camera."
-        )
+        raise HTTPException(status_code=400, detail=f"Camera '{camera_name}' is not a scanner camera.")
     return camera
 
 
-@router.get("/info/{camera_name}", response_model=Dict)
+@router.get("/info/{camera_name}", response_model=dict)
 async def get_scanner_info(camera_name: str):
     """Get detailed information about a scanner camera."""
     camera = await _get_scanner_camera(camera_name)
@@ -123,7 +120,7 @@ async def set_scan_settings(request: SetScanSettingsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/history/{camera_name}", response_model=List[Dict])
+@router.get("/history/{camera_name}", response_model=list[dict])
 async def get_scan_history(camera_name: str):
     """Get history of recent scans."""
     camera = await _get_scanner_camera(camera_name)
@@ -192,9 +189,7 @@ async def download_scan(camera_name: str, filename: str):
         if not scan_path.exists():
             raise HTTPException(status_code=404, detail=f"Scan file '{filename}' not found")
 
-        return FileResponse(
-            path=scan_path, filename=filename, media_type="application/octet-stream"
-        )
+        return FileResponse(path=scan_path, filename=filename, media_type="application/octet-stream")
     except HTTPException:
         raise
     except Exception as e:

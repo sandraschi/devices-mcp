@@ -2,7 +2,7 @@
 
 import base64
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from ..base_tool import BaseTool, ToolCategory
 
@@ -12,12 +12,10 @@ class GrafanaSnapshotsTool(BaseTool):
 
     class Meta:
         name: str = "get_camera_snapshot"
-        description: str = (
-            "Capture live camera snapshot for Grafana image panels - MANDATORY FOR VIDEO/IMAGES"
-        )
+        description: str = "Capture live camera snapshot for Grafana image panels - MANDATORY FOR VIDEO/IMAGES"
         category: ToolCategory = ToolCategory.UTILITY
 
-    async def execute(self, **kwargs) -> Dict[str, Any]:
+    async def execute(self, **kwargs) -> dict[str, Any]:
         """Capture a snapshot from the specified camera."""
         try:
             camera_id = kwargs.get("camera_id")

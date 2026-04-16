@@ -29,16 +29,16 @@ T = TypeVar("T")
 class ConfigManager:
     """Manages configuration loading and saving."""
 
-    def __init__(self, config_path: Optional[Union[str, Path]] = None):
+    def __init__(self, config_path: str | Path | None = None):
         """Initialize the config manager.
 
         Args:
             config_path: Path to the configuration file. If None, looks for config in default locations.
         """
         self.config_path = self._find_config_file(config_path)
-        self._config_cache: Dict[str, Any] = {}
+        self._config_cache: dict[str, Any] = {}
 
-    def _find_config_file(self, config_path: Optional[Union[str, Path]] = None) -> Path:
+    def _find_config_file(self, config_path: str | Path | None = None) -> Path:
         """Find the configuration file.
 
         Args:
@@ -94,7 +94,7 @@ class ConfigManager:
         self.save_default_config(user_config_file)
         return user_config_file
 
-    def save_default_config(self, path: Union[str, Path]) -> None:
+    def save_default_config(self, path: str | Path) -> None:
         """Save a default configuration file.
 
         Args:
@@ -190,7 +190,7 @@ class ConfigManager:
             # If we can't write to the specified path, create a warning but don't crash
             pass
 
-    def load_config(self) -> Dict[str, Any]:
+    def load_config(self) -> dict[str, Any]:
         """Load configuration from file.
 
         Returns:
@@ -256,7 +256,7 @@ class ConfigManager:
         except (KeyError, TypeError):
             return default
 
-    def get_model(self, model_class: Type[T]) -> T:
+    def get_model(self, model_class: type[T]) -> T:
         """Get a configuration model instance.
 
         Args:
@@ -289,9 +289,7 @@ class ConfigManager:
                 port=config.get("port", 8080),
                 debug=config.get("debug", False),
                 web=WebUISettings(**web_config) if web_config else WebUISettings(),
-                security=(
-                    SecuritySettings(**security_config) if security_config else SecuritySettings()
-                ),
+                security=(SecuritySettings(**security_config) if security_config else SecuritySettings()),
                 logging=LoggingSettings(**logging_config) if logging_config else LoggingSettings(),
                 storage=StorageSettings(**storage_config) if storage_config else StorageSettings(),
                 camera_scan_interval=config.get("camera_scan_interval", 300),
@@ -327,7 +325,7 @@ class ConfigManager:
 
 
 # Lazy-loaded global configuration instance
-_config_manager_instance: Optional[ConfigManager] = None
+_config_manager_instance: ConfigManager | None = None
 
 
 def _get_config_manager() -> ConfigManager:
@@ -339,7 +337,7 @@ def _get_config_manager() -> ConfigManager:
 
 
 # Shortcut functions with lazy loading
-def get_config() -> Dict[str, Any]:
+def get_config() -> dict[str, Any]:
     return _get_config_manager().load_config()
 
 
@@ -347,7 +345,7 @@ def get_setting(key: str, default: Any = None) -> Any:
     return _get_config_manager().get(key, default)
 
 
-def get_model(model_class: Type[T]) -> T:
+def get_model(model_class: type[T]) -> T:
     return _get_config_manager().get_model(model_class)
 
 

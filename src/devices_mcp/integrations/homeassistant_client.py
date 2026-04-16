@@ -5,11 +5,11 @@ Fetches device data from Home Assistant REST API.
 Used primarily for Nest Protect integration (since HA has verified Google OAuth).
 """
 
-import logging
 import asyncio
+import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 
@@ -25,9 +25,9 @@ class NestProtectState:
     location: str
     smoke_status: str  # "idle", "warning", "emergency"
     co_status: str  # "idle", "warning", "emergency"
-    battery_level: Optional[int]
+    battery_level: int | None
     is_online: bool
-    last_updated: Optional[datetime]
+    last_updated: datetime | None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -52,7 +52,7 @@ class HomeAssistantClient:
     def __init__(
         self,
         base_url: str = "http://localhost:8123",
-        access_token: Optional[str] = None,
+        access_token: str | None = None,
         cache_ttl: int = 30,
     ):
         # Auto-detect Docker environment and adjust URL
@@ -79,7 +79,7 @@ class HomeAssistantClient:
         self.access_token = access_token
         self.cache_ttl = cache_ttl
 
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._session: aiohttp.ClientSession | None = None
         self._cache: dict[str, Any] = {}
         self._cache_time: dict[str, datetime] = {}
         self._initialized = False
@@ -128,12 +128,8 @@ class HomeAssistantClient:
             import os
 
             if os.getenv("CONTAINER") == "yes":
-                logger.warning(
-                    "  [DOCKER] If Home Assistant is on host, try: http://host.docker.internal:8123"
-                )
-                logger.warning(
-                    "  [DOCKER] If Home Assistant is in Docker, ensure it's on same network"
-                )
+                logger.warning("  [DOCKER] If Home Assistant is on host, try: http://host.docker.internal:8123")
+                logger.warning("  [DOCKER] If Home Assistant is in Docker, ensure it's on same network")
             await self.close()
             return False
         except Exception:
@@ -151,7 +147,7 @@ class HomeAssistantClient:
     def is_initialized(self) -> bool:
         return self._initialized
 
-    async def _get(self, endpoint: str) -> Optional[dict | list]:
+    async def _get(self, endpoint: str) -> dict | list | None:
         """Make GET request to HA API."""
         if not self._session:
             return None
@@ -171,7 +167,7 @@ class HomeAssistantClient:
         result = await self._get("/api/states")
         return result if isinstance(result, list) else []
 
-    async def get_state(self, entity_id: str) -> Optional[dict]:
+    async def get_state(self, entity_id: str) -> dict | None:
         """Get state of a specific entity."""
         return await self._get(f"/api/states/{entity_id}")
 
@@ -211,9 +207,7 @@ class HomeAssistantClient:
                         "location": attrs.get("area", "Unknown"),
                     }
                 devices[device_name]["smoke_entity"] = entity_id
-                devices[device_name]["smoke_status"] = (
-                    "emergency" if state.get("state") == "on" else "idle"
-                )
+                devices[device_name]["smoke_status"] = "emergency" if state.get("state") == "on" else "idle"
 
             # Nest Protect CO sensors
             elif "nest" in entity_id.lower() and "co" in entity_id.lower():
@@ -224,9 +218,7 @@ class HomeAssistantClient:
                         "location": attrs.get("area", "Unknown"),
                     }
                 devices[device_name]["co_entity"] = entity_id
-                devices[device_name]["co_status"] = (
-                    "emergency" if state.get("state") == "on" else "idle"
-                )
+                devices[device_name]["co_status"] = "emergency" if state.get("state") == "on" else "idle"
 
             # Battery level
             elif "nest" in entity_id.lower() and "battery" in entity_id.lower():
@@ -284,23 +276,21 @@ class HomeAssistantClient:
             "online_count": sum(1 for d in devices if d.is_online),
             "smoke_status": "ok" if smoke_ok else "alert",
             "co_status": "ok" if co_ok else "alert",
-            "battery_warnings": [
-                d.friendly_name for d in devices if d.battery_level and d.battery_level < 20
-            ],
+            "battery_warnings": [d.friendly_name for d in devices if d.battery_level and d.battery_level < 20],
             "all_ok": smoke_ok and co_ok and all_online,
             "devices": [d.to_dict() for d in devices],
         }
 
 
 # Global client instance
-_ha_client: Optional[HomeAssistantClient] = None
+_ha_client: HomeAssistantClient | None = None
 
 
 async def init_homeassistant_client(
     base_url: str = "http://localhost:8123",
-    access_token: Optional[str] = None,
+    access_token: str | None = None,
     cache_ttl: int = 30,
-) -> Optional[HomeAssistantClient]:
+) -> HomeAssistantClient | None:
     """Initialize the global Home Assistant client."""
     global _ha_client
 
@@ -321,6 +311,6 @@ async def init_homeassistant_client(
     return None
 
 
-def get_homeassistant_client() -> Optional[HomeAssistantClient]:
+def get_homeassistant_client() -> HomeAssistantClient | None:
     """Get the global Home Assistant client instance."""
     return _ha_client

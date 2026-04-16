@@ -1,6 +1,6 @@
 """Device control tools for Nest Protect MCP."""
 
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -9,18 +9,14 @@ class HushAlarmParams(BaseModel):
     """Parameters for hushing an alarm."""
 
     device_id: str = Field(..., description="ID of the device to hush")
-    duration_seconds: int = Field(
-        180, ge=30, le=300, description="Duration to hush in seconds (30-300)"
-    )
+    duration_seconds: int = Field(180, ge=30, le=300, description="Duration to hush in seconds (30-300)")
 
 
 class SafetyCheckParams(BaseModel):
     """Parameters for running a safety check."""
 
     device_id: str = Field(..., description="ID of the device to test")
-    test_type: Literal["full", "smoke", "co", "heat"] = Field(
-        "full", description="Type of test to run"
-    )
+    test_type: Literal["full", "smoke", "co", "heat"] = Field("full", description="Type of test to run")
 
 
 class LedBrightnessParams(BaseModel):
@@ -34,12 +30,8 @@ class SoundAlarmParams(BaseModel):
     """Parameters for sounding an alarm for testing."""
 
     device_id: str = Field(..., description="ID of the device to test")
-    alarm_type: Literal["smoke", "co", "security", "emergency"] = Field(
-        "smoke", description="Type of alarm to sound"
-    )
-    duration_seconds: int = Field(
-        10, ge=5, le=60, description="Duration to sound alarm in seconds (5-60)"
-    )
+    alarm_type: Literal["smoke", "co", "security", "emergency"] = Field("smoke", description="Type of alarm to sound")
+    duration_seconds: int = Field(10, ge=5, le=60, description="Duration to sound alarm in seconds (5-60)")
     volume: int = Field(100, ge=50, le=100, description="Alarm volume percentage (50-100)")
 
 
@@ -47,13 +39,11 @@ class ArmDisarmParams(BaseModel):
     """Parameters for arming/disarming security system."""
 
     device_id: str = Field(..., description="ID of the security device (Nest Guard)")
-    action: Literal["arm_home", "arm_away", "disarm"] = Field(
-        ..., description="Security action to perform"
-    )
-    passcode: Optional[str] = Field(None, description="Security passcode (required for disarm)")
+    action: Literal["arm_home", "arm_away", "disarm"] = Field(..., description="Security action to perform")
+    passcode: str | None = Field(None, description="Security passcode (required for disarm)")
 
 
-async def hush_alarm(device_id: str, duration_seconds: int = 180) -> Dict[str, Any]:
+async def hush_alarm(device_id: str, duration_seconds: int = 180) -> dict[str, Any]:
     """Silence an active alarm on a Nest Protect device."""
     import aiohttp
 
@@ -92,7 +82,7 @@ async def hush_alarm(device_id: str, duration_seconds: int = 180) -> Dict[str, A
 
 async def run_safety_check(
     device_id: str, test_type: Literal["full", "smoke", "co", "heat"] = "full"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run a safety check on a Nest Protect device."""
     import aiohttp
 
@@ -133,7 +123,7 @@ async def run_safety_check(
         return {"status": "error", "message": f"Failed to run safety test: {e!s}"}
 
 
-async def set_led_brightness(device_id: str, brightness: int) -> Dict[str, Any]:
+async def set_led_brightness(device_id: str, brightness: int) -> dict[str, Any]:
     """Set LED brightness for a Nest Protect device."""
     import aiohttp
 
@@ -175,7 +165,7 @@ async def sound_alarm(
     alarm_type: Literal["smoke", "co", "security", "emergency"] = "smoke",
     duration_seconds: int = 10,
     volume: int = 100,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Sound an alarm on a Nest device for testing purposes."""
     import aiohttp
 
@@ -231,8 +221,8 @@ async def sound_alarm(
 async def arm_disarm_security(
     device_id: str,
     action: Literal["arm_home", "arm_away", "disarm"],
-    passcode: Optional[str] = None,
-) -> Dict[str, Any]:
+    passcode: str | None = None,
+) -> dict[str, Any]:
     """Arm or disarm Nest security system (Nest Guard/Secure)."""
     import aiohttp
 

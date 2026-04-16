@@ -2,7 +2,6 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ class CameraGroup:
     """Represents a group of cameras."""
 
     name: str
-    camera_names: Set[str] = field(default_factory=set)
+    camera_names: set[str] = field(default_factory=set)
 
     def add_camera(self, camera_name: str) -> bool:
         """Add a camera to the group."""
@@ -28,7 +27,7 @@ class CameraGroup:
             return True
         return False
 
-    def list_cameras(self) -> List[str]:
+    def list_cameras(self) -> list[str]:
         """List all cameras in the group."""
         return list(self.camera_names)
 
@@ -41,8 +40,8 @@ class CameraGroupManager:
     """Manages camera groups."""
 
     def __init__(self):
-        self._groups: Dict[str, CameraGroup] = {}
-        self._camera_groups: Dict[str, Set[str]] = {}
+        self._groups: dict[str, CameraGroup] = {}
+        self._camera_groups: dict[str, set[str]] = {}
 
     def create_group(self, group_name: str) -> bool:
         """Create a new camera group."""
@@ -102,17 +101,17 @@ class CameraGroupManager:
 
         return False
 
-    def get_camera_groups(self, camera_name: str) -> List[str]:
+    def get_camera_groups(self, camera_name: str) -> list[str]:
         """Get all groups a camera belongs to."""
         return list(self._camera_groups.get(camera_name, set()))
 
-    def get_group_cameras(self, group_name: str) -> List[str]:
+    def get_group_cameras(self, group_name: str) -> list[str]:
         """Get all cameras in a group."""
         if group_name not in self._groups:
             return []
         return self._groups[group_name].list_cameras()
 
-    def list_groups(self) -> List[str]:
+    def list_groups(self) -> list[str]:
         """List all group names."""
         return list(self._groups.keys())
 
@@ -123,7 +122,7 @@ class CameraGroupManager:
             for group_name in groups:
                 self.remove_camera_from_group(camera_name, group_name)
 
-    def get_group(self, group_name: str) -> Optional[CameraGroup]:
+    def get_group(self, group_name: str) -> CameraGroup | None:
         """Get a group by name."""
         return self._groups.get(group_name)
 

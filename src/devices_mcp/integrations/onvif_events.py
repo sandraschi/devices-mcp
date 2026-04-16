@@ -3,14 +3,14 @@
 import asyncio
 import contextlib
 import logging
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 # Store active event subscriptions
-_subscriptions: Dict[str, "ONVIFEventSubscription"] = {}
-_event_callbacks: List[Callable] = []
+_subscriptions: dict[str, "ONVIFEventSubscription"] = {}
+_event_callbacks: list[Callable] = []
 
 
 class ONVIFEventSubscription:
@@ -26,8 +26,8 @@ class ONVIFEventSubscription:
         self._events_service = None
         self._pullpoint = None
         self._running = False
-        self._task: Optional[asyncio.Task] = None
-        self._last_event_time: Optional[datetime] = None
+        self._task: asyncio.Task | None = None
+        self._last_event_time: datetime | None = None
 
     async def start(self) -> bool:
         """Start subscribing to ONVIF events."""
@@ -41,9 +41,7 @@ class ONVIFEventSubscription:
             )
 
             # Create events service
-            self._events_service = await loop.run_in_executor(
-                None, self._camera.create_events_service
-            )
+            self._events_service = await loop.run_in_executor(None, self._camera.create_events_service)
 
             # Create PullPointSubscription
             try:
@@ -133,7 +131,7 @@ class ONVIFEventSubscription:
             except Exception as e:
                 logger.debug("Failed to parse event: %s", e)
 
-    def _parse_event(self, msg) -> Optional[Dict]:
+    def _parse_event(self, msg) -> dict | None:
         """Parse ONVIF notification message."""
         try:
             # Check for motion detection event
@@ -169,7 +167,7 @@ class ONVIFEventSubscription:
         except Exception:
             return None
 
-    async def _notify_event(self, event_data: Dict):
+    async def _notify_event(self, event_data: dict):
         """Notify all registered callbacks of an event."""
         self._last_event_time = datetime.now()
 
@@ -200,9 +198,7 @@ def unregister_event_callback(callback: Callable):
         _event_callbacks.remove(callback)
 
 
-async def subscribe_to_camera(
-    camera_id: str, host: str, port: int, username: str, password: str
-) -> bool:
+async def subscribe_to_camera(camera_id: str, host: str, port: int, username: str, password: str) -> bool:
     """Subscribe to motion events from a camera."""
     if camera_id in _subscriptions:
         logger.warning("Already subscribed to %s", camera_id)
@@ -225,7 +221,7 @@ async def unsubscribe_from_camera(camera_id: str):
         del _subscriptions[camera_id]
 
 
-async def get_subscription_status() -> Dict:
+async def get_subscription_status() -> dict:
     """Get status of all event subscriptions."""
     return {
         "subscriptions": [
@@ -241,18 +237,18 @@ async def get_subscription_status() -> Dict:
 
 
 # Recent events storage
-_recent_events: List[Dict] = []
+_recent_events: list[dict] = []
 MAX_RECENT_EVENTS = 100
 
 
-async def _store_event(event_data: Dict):
+async def _store_event(event_data: dict):
     """Store event in recent events list."""
     _recent_events.insert(0, event_data)
     if len(_recent_events) > MAX_RECENT_EVENTS:
         _recent_events.pop()
 
 
-def get_recent_events(camera_id: Optional[str] = None, limit: int = 20) -> List[Dict]:
+def get_recent_events(camera_id: str | None = None, limit: int = 20) -> list[dict]:
     """Get recent motion events."""
     events = _recent_events
     if camera_id:

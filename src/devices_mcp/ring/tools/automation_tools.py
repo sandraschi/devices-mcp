@@ -10,7 +10,7 @@ tool registration for Claude Desktop stdio communication.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Literal
+from typing import Any, Literal
 
 from fastmcp import FastMCP
 
@@ -35,11 +35,11 @@ def register_tools(app: FastMCP) -> None:
     )
     async def create_security_automation(
         trigger_type: Literal["motion", "doorbell", "schedule", "alarm"],
-        trigger_conditions: Dict[str, Any],
-        response_actions: List[Dict[str, Any]],
+        trigger_conditions: dict[str, Any],
+        response_actions: list[dict[str, Any]],
         automation_name: str,
         enabled: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create custom security automation rule with triggers and responses.
 
         Establishes intelligent automation rules that respond to security events
@@ -71,9 +71,7 @@ def register_tools(app: FastMCP) -> None:
             automation_id = f"auto_{trigger_type}_{len(automation_name)}"
 
             # Validate automation configuration
-            validation_result = await validate_automation_config(
-                trigger_type, trigger_conditions, response_actions
-            )
+            validation_result = await validate_automation_config(trigger_type, trigger_conditions, response_actions)
 
             if not validation_result["valid"]:
                 return {
@@ -111,7 +109,7 @@ def register_tools(app: FastMCP) -> None:
         name="trigger_emergency_protocol",
         description="Activate emergency security protocol with full system response",
     )
-    async def trigger_emergency_protocol() -> Dict[str, Any]:
+    async def trigger_emergency_protocol() -> dict[str, Any]:
         """Activate emergency security protocol with full system response.
 
         Immediately activates comprehensive emergency response including:
@@ -176,9 +174,7 @@ def register_tools(app: FastMCP) -> None:
                         activated_measures.append(f"Activated camera: {camera['name']}")
                     except Exception as e:
                         logger.exception("Failed to activate camera {camera['id']}:")
-                        activated_measures.append(
-                            f"Failed to activate camera {camera['name']}: {e}"
-                        )
+                        activated_measures.append(f"Failed to activate camera {camera['name']}: {e}")
 
                 # Emergency contacts (in reality, this would integrate with notification services)
                 emergency_contacts_notified = [
@@ -212,8 +208,8 @@ def register_tools(app: FastMCP) -> None:
         description="Configure time-based security mode scheduling for automated protection",
     )
     async def schedule_security_modes(
-        schedule_config: Dict[str, Any], timezone: str = "Europe/Vienna"
-    ) -> Dict[str, Any]:
+        schedule_config: dict[str, Any], timezone: str = "Europe/Vienna"
+    ) -> dict[str, Any]:
         """Configure time-based security mode scheduling for automated protection.
 
         Sets up intelligent scheduling that automatically adjusts security modes
@@ -271,9 +267,7 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Error configuring security schedule:")
             return {"success": False, "error": str(e)}
 
-    async def validate_schedule_config(
-        schedule_config: Dict[str, Any], timezone: str
-    ) -> Dict[str, Any]:
+    async def validate_schedule_config(schedule_config: dict[str, Any], timezone: str) -> dict[str, Any]:
         """Validate schedule configuration for conflicts and feasibility."""
         errors = []
         warnings = []
@@ -301,7 +295,7 @@ def register_tools(app: FastMCP) -> None:
 
         return {"valid": len(errors) == 0, "errors": errors, "warnings": warnings}
 
-    async def timeframes_overlap(tf1: Dict[str, Any], tf2: Dict[str, Any], timezone: str) -> bool:
+    async def timeframes_overlap(tf1: dict[str, Any], tf2: dict[str, Any], timezone: str) -> bool:
         """Check if two timeframes overlap."""
         # Simplified overlap detection
         # In a real implementation, you'd parse actual time values
@@ -313,7 +307,7 @@ def register_tools(app: FastMCP) -> None:
         # Basic string comparison (very simplified)
         return start1 < end2 and end1 > start2
 
-    async def analyze_schedule(schedule_config: Dict[str, Any], timezone: str) -> Dict[str, Any]:
+    async def analyze_schedule(schedule_config: dict[str, Any], timezone: str) -> dict[str, Any]:
         """Analyze schedule configuration and provide summary."""
         modes = schedule_config.get("modes", [])
         timeframes = schedule_config.get("timeframes", [])
@@ -326,7 +320,7 @@ def register_tools(app: FastMCP) -> None:
             "schedule_complexity": "simple" if len(timeframes) <= 3 else "complex",
         }
 
-    async def calculate_next_mode_change(schedule_config: Dict[str, Any], timezone: str) -> str:
+    async def calculate_next_mode_change(schedule_config: dict[str, Any], timezone: str) -> str:
         """Calculate when the next mode change will occur."""
         # In a real implementation, this would calculate based on actual timeframes
         # For now, return a placeholder
@@ -335,9 +329,9 @@ def register_tools(app: FastMCP) -> None:
 
     async def validate_automation_config(
         trigger_type: str,
-        trigger_conditions: Dict[str, Any],
-        response_actions: List[Dict[str, Any]],
-    ) -> Dict[str, Any]:
+        trigger_conditions: dict[str, Any],
+        response_actions: list[dict[str, Any]],
+    ) -> dict[str, Any]:
         """Validate automation configuration for compatibility and safety."""
         errors = []
 
@@ -358,9 +352,7 @@ def register_tools(app: FastMCP) -> None:
         dangerous_actions = ["arm_system", "disarm_system", "trigger_alarm"]
         for action in response_actions:
             if action.get("action") in dangerous_actions and trigger_type == "schedule":
-                errors.append(
-                    f"Potentially dangerous automation: {action.get('action')} triggered by schedule"
-                )
+                errors.append(f"Potentially dangerous automation: {action.get('action')} triggered by schedule")
 
         return {
             "valid": len(errors) == 0,

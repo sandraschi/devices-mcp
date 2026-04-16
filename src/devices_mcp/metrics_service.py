@@ -8,7 +8,7 @@ import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ class PTZPosition:
     tilt: float = 0.0  # -1.0 (down) to 1.0 (up)
     zoom: float = 0.0  # 0.0 (wide) to 1.0 (tele)
     moving: bool = False
-    preset_id: Optional[int] = None
-    preset_name: Optional[str] = None
+    preset_id: int | None = None
+    preset_name: str | None = None
 
 
 @dataclass
@@ -42,26 +42,26 @@ class CameraMetrics:
     model: str = ""
     firmware: str = ""
     status: CameraStatus = CameraStatus.OFFLINE
-    last_seen: Optional[datetime] = None
+    last_seen: datetime | None = None
     uptime_seconds: int = 0
-    temperature: Optional[float] = None
+    temperature: float | None = None
     motion_detected: bool = False
-    motion_last_detected: Optional[datetime] = None
-    motion_zones: List[Dict[str, Any]] = field(default_factory=list)
-    cpu_usage: Optional[float] = None
-    memory_usage: Optional[float] = None
-    network_rx: Optional[int] = None  # bytes received
-    network_tx: Optional[int] = None  # bytes transmitted
-    signal_strength: Optional[int] = None  # WiFi signal strength in dBm
-    last_error: Optional[str] = None
-    custom_metadata: Dict[str, Any] = field(default_factory=dict)
+    motion_last_detected: datetime | None = None
+    motion_zones: list[dict[str, Any]] = field(default_factory=list)
+    cpu_usage: float | None = None
+    memory_usage: float | None = None
+    network_rx: int | None = None  # bytes received
+    network_tx: int | None = None  # bytes transmitted
+    signal_strength: int | None = None  # WiFi signal strength in dBm
+    last_error: str | None = None
+    custom_metadata: dict[str, Any] = field(default_factory=dict)
 
     # PTZ related fields
     ptz_supported: bool = False
     ptz_position: PTZPosition = field(default_factory=PTZPosition)
-    ptz_presets: Dict[int, str] = field(default_factory=dict)  # preset_id: preset_name
+    ptz_presets: dict[int, str] = field(default_factory=dict)  # preset_id: preset_name
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert metrics to dictionary for JSON serialization"""
         data = asdict(self)
         # Convert datetime to ISO format
@@ -82,7 +82,7 @@ class MetricsCollector:
 
     def __init__(self, tapo_client):
         self.tapo_client = tapo_client
-        self.metrics: Dict[str, CameraMetrics] = {}
+        self.metrics: dict[str, CameraMetrics] = {}
         self._running = False
         self._polling_task = None
 
@@ -136,7 +136,7 @@ class MetricsCollector:
             if metrics.status == CameraStatus.ONLINE:
                 metrics.last_seen = datetime.now()
 
-    def get_grafana_metrics(self) -> Dict[str, Any]:
+    def get_grafana_metrics(self) -> dict[str, Any]:
         """Format metrics for Grafana consumption"""
         timestamp = datetime.now().isoformat()
 
@@ -248,11 +248,11 @@ class MetricsCollector:
 
     def _add_metric(
         self,
-        metrics: Dict[str, Any],
+        metrics: dict[str, Any],
         metric_name: str,
-        labels: Dict[str, str],
+        labels: dict[str, str],
         timestamp: str,
-        value: Union[int, float],
+        value: int | float,
     ) -> None:
         """Add a metric to the Grafana response"""
         metric = {
@@ -304,10 +304,7 @@ class MetricsServer:
 
             @app.get("/api/cameras")
             async def list_cameras():
-                return {
-                    camera_id: metrics.to_dict()
-                    for camera_id, metrics in self.metrics_collector.metrics.items()
-                }
+                return {camera_id: metrics.to_dict() for camera_id, metrics in self.metrics_collector.metrics.items()}
 
             config = uvicorn.Config(app, host=self.host, port=self.port, log_level="info")
             self._server = uvicorn.Server(config)
@@ -315,9 +312,7 @@ class MetricsServer:
 
         except ImportError:
             logger.exception("Failed to start metrics server")
-            logger.exception(
-                "Please install the required dependencies with: pip install fastapi uvicorn"
-            )
+            logger.exception("Please install the required dependencies with: pip install fastapi uvicorn")
             raise
 
     async def stop(self):

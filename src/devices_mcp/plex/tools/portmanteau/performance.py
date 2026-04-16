@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -48,16 +48,16 @@ async def plex_performance(
         "get_server_status",
         "get_server_info",
     ],
-    profile_name: Optional[str] = None,
-    settings: Optional[Dict[str, Any]] = None,
-    quality: Optional[str] = None,
-    bitrate: Optional[int] = None,
-    enabled: Optional[bool] = None,
-    download_limit: Optional[int] = None,
-    upload_limit: Optional[int] = None,
+    profile_name: str | None = None,
+    settings: dict[str, Any] | None = None,
+    quality: str | None = None,
+    bitrate: int | None = None,
+    enabled: bool | None = None,
+    download_limit: int | None = None,
+    upload_limit: int | None = None,
     time_range: str = "day",
     is_default: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Comprehensive performance, quality, and server status operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -248,9 +248,7 @@ async def plex_performance(
                     "suggestions": ["Provide settings parameter with configuration dictionary"],
                 }
 
-            result = await plex.update_transcode_settings(
-                profile_name=profile_name, settings=settings
-            )
+            result = await plex.update_transcode_settings(profile_name=profile_name, settings=settings)
             return {
                 "success": result,
                 "operation": "update_transcode_settings",
@@ -294,9 +292,7 @@ async def plex_performance(
                     "suggestions": ["Provide quality parameter (e.g., '1080p', '720p', '480p')"],
                 }
 
-            result = await plex.set_stream_quality(
-                profile_name=profile_name, quality=quality, bitrate=bitrate
-            )
+            result = await plex.set_stream_quality(profile_name=profile_name, quality=quality, bitrate=bitrate)
             return {
                 "success": result,
                 "operation": "set_quality",
@@ -372,9 +368,7 @@ async def plex_performance(
                     "suggestions": ["Provide settings parameter with profile configuration"],
                 }
 
-            result = await plex.create_quality_profile(
-                name=profile_name, settings=settings, is_default=is_default
-            )
+            result = await plex.create_quality_profile(name=profile_name, settings=settings, is_default=is_default)
             return {
                 "success": result,
                 "operation": "create_profile",

@@ -1,7 +1,6 @@
 """Advanced image analysis tools using DINOv3."""
 
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 from .vision.dinov3 import DINOv3Processor
 
@@ -18,9 +17,7 @@ class ImageAnalyzer:
         self.model_name = model_name
         self.processor = DINOv3Processor(model_name)
 
-    async def analyze_image(
-        self, image_path: Union[str, Path], features_only: bool = False
-    ) -> Dict[str, any]:
+    async def analyze_image(self, image_path: str | Path, features_only: bool = False) -> dict[str, any]:
         """Analyze an image using DINOv3.
 
         Args:
@@ -58,11 +55,11 @@ class ImageAnalyzer:
 
     async def find_similar_images(
         self,
-        query_image: Union[str, Path],
-        search_dir: Union[str, Path],
-        extensions: Optional[List[str]] = None,
+        query_image: str | Path,
+        search_dir: str | Path,
+        extensions: list[str] | None = None,
         top_k: int = 5,
-    ) -> Dict[str, any]:
+    ) -> dict[str, any]:
         """Find similar images in a directory.
 
         Args:
@@ -98,9 +95,7 @@ class ImageAnalyzer:
 
         try:
             # Find similar images
-            similar = self.processor.find_similar(
-                query_image=query_image, image_paths=image_paths, top_k=top_k
-            )
+            similar = self.processor.find_similar(query_image=query_image, image_paths=image_paths, top_k=top_k)
 
             return {
                 "status": "success",

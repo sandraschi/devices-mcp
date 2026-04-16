@@ -24,6 +24,7 @@ _CO2_EXTREME = 2500
 async def _primary_netatmo_station_id() -> str | None:
     try:
         from devices_mcp.config import get_config
+
         from .netatmo_client import NetatmoService
 
         raw = get_config()

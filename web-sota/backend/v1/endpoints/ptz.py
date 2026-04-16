@@ -2,8 +2,6 @@
 PTZ (Pan-Tilt-Zoom) control API endpoints.
 """
 
-from typing import Optional
-
 from fastapi import APIRouter, HTTPException, status
 from pydantic import conint
 
@@ -40,7 +38,7 @@ async def move_ptz(camera_id: str, direction: PTZDirection, speed: conint(ge=1, 
 
 
 @router.post("/{camera_id}/preset/{preset_id}/save")
-async def save_ptz_preset(camera_id: str, preset_id: int, name: Optional[str] = None):
+async def save_ptz_preset(camera_id: str, preset_id: int, name: str | None = None):
     """Save the current PTZ position as a preset."""
     # This would typically save the preset through your camera manager
     return {

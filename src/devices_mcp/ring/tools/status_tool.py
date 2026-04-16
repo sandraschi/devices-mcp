@@ -15,7 +15,7 @@ tool registration for Claude Desktop stdio communication.
 import logging
 import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -39,9 +39,7 @@ def register_tools(app: FastMCP) -> None:
         name="get_system_status",
         description="Get comprehensive system status including authentication and device connectivity",
     )
-    async def get_system_status(
-        include_device_details: bool = True, check_connectivity: bool = True
-    ) -> Dict[str, Any]:
+    async def get_system_status(include_device_details: bool = True, check_connectivity: bool = True) -> dict[str, Any]:
         """Get comprehensive system status including authentication and device connectivity.
 
         Provides a complete overview of the Ring MCP system status including:
@@ -113,7 +111,7 @@ def register_tools(app: FastMCP) -> None:
         name="check_authentication_status",
         description="Check Ring API authentication status and token validity",
     )
-    async def check_authentication_status() -> Dict[str, Any]:
+    async def check_authentication_status() -> dict[str, Any]:
         """Check Ring API authentication status and token validity.
 
         Validates the current authentication state including:
@@ -180,9 +178,7 @@ def register_tools(app: FastMCP) -> None:
         name="check_device_connectivity",
         description="Test connectivity and status of all Ring devices",
     )
-    async def check_device_connectivity(
-        device_id: Optional[str] = None, test_commands: bool = False
-    ) -> Dict[str, Any]:
+    async def check_device_connectivity(device_id: str | None = None, test_commands: bool = False) -> dict[str, Any]:
         """Test connectivity and status of all Ring devices.
 
         Performs connectivity tests on Ring devices including:
@@ -274,11 +270,7 @@ def register_tools(app: FastMCP) -> None:
             # Calculate connectivity score
             if connectivity_results["devices_tested"] > 0:
                 connectivity_results["connectivity_score"] = int(
-                    (
-                        connectivity_results["devices_online"]
-                        / connectivity_results["devices_tested"]
-                    )
-                    * 100
+                    (connectivity_results["devices_online"] / connectivity_results["devices_tested"]) * 100
                 )
 
         except Exception as e:
@@ -288,12 +280,8 @@ def register_tools(app: FastMCP) -> None:
 
         return connectivity_results
 
-    @app.tool(
-        name="get_service_health", description="Get detailed service health and performance metrics"
-    )
-    async def get_service_health(
-        include_metrics: bool = True, history_minutes: int = 5
-    ) -> Dict[str, Any]:
+    @app.tool(name="get_service_health", description="Get detailed service health and performance metrics")
+    async def get_service_health(include_metrics: bool = True, history_minutes: int = 5) -> dict[str, Any]:
         """Get detailed service health and performance metrics.
 
         Provides comprehensive service health information including:
@@ -375,7 +363,7 @@ def register_tools(app: FastMCP) -> None:
         return health_info
 
 
-async def check_auth_component() -> Dict[str, Any]:
+async def check_auth_component() -> dict[str, Any]:
     """Check authentication component health."""
     try:
         auth_status = await check_authentication_status()
@@ -386,7 +374,7 @@ async def check_auth_component() -> Dict[str, Any]:
         return {"status": "error", "details": f"Auth check failed: {e!s}"}
 
 
-async def check_device_component() -> Dict[str, Any]:
+async def check_device_component() -> dict[str, Any]:
     """Check device management component health."""
     try:
         client = RingClient()
@@ -400,7 +388,7 @@ async def check_device_component() -> Dict[str, Any]:
         return {"status": "error", "details": f"Device check failed: {e!s}"}
 
 
-async def check_api_component() -> Dict[str, Any]:
+async def check_api_component() -> dict[str, Any]:
     """Check API connectivity component health."""
     try:
         # Test basic API connectivity
@@ -411,14 +399,12 @@ async def check_api_component() -> Dict[str, Any]:
         return {"status": "error", "details": f"API check failed: {e!s}"}
 
 
-async def check_tool_component() -> Dict[str, Any]:
+async def check_tool_component() -> dict[str, Any]:
     """Check tool system component health."""
     return {"status": "healthy", "details": "Tool system operational"}
 
 
-def determine_overall_status(
-    auth_status: Dict, device_status: Dict, connectivity_status: Dict
-) -> str:
+def determine_overall_status(auth_status: dict, device_status: dict, connectivity_status: dict) -> str:
     """Determine overall system status based on component statuses."""
     if not auth_status.get("authenticated", False):
         return "authentication_failed"
@@ -438,7 +424,7 @@ def determine_overall_status(
     return "poor_connectivity"
 
 
-def generate_diagnostics(status: Dict[str, Any]) -> Dict[str, Any]:
+def generate_diagnostics(status: dict[str, Any]) -> dict[str, Any]:
     """Generate diagnostic information."""
     return {
         "diagnostic_timestamp": datetime.now().isoformat(),
@@ -498,20 +484,18 @@ def get_average_response_time() -> float:
     return 0.0  # Placeholder
 
 
-def generate_health_alerts(components: Dict[str, Dict]) -> List[str]:
+def generate_health_alerts(components: dict[str, dict]) -> list[str]:
     """Generate health alerts based on component status."""
     alerts = []
 
     for component_name, component_status in components.items():
         if component_status["status"] == "error":
-            alerts.append(
-                f"{component_name} component is not working: {component_status['details']}"
-            )
+            alerts.append(f"{component_name} component is not working: {component_status['details']}")
 
     return alerts
 
 
-def generate_health_recommendations(components: Dict[str, Dict]) -> List[str]:
+def generate_health_recommendations(components: dict[str, dict]) -> list[str]:
     """Generate health recommendations."""
     recommendations = []
 

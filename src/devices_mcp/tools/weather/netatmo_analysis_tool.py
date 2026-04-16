@@ -9,7 +9,7 @@ Combines Netatmo analysis operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -42,30 +42,20 @@ class NetatmoAnalysisTool(BaseTool):
         category = ToolCategory.WEATHER
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Analysis operation: 'historical', 'alerts', 'health'"
-            )
-            station_id: Optional[str] = Field(
-                None, description="Station ID for analysis operations"
-            )
-            time_range: Optional[str] = Field(
-                "24h", description="Time range: '1h', '24h', '7d', '30d'"
-            )
-            alert_type: Optional[str] = Field(
-                None, description="Alert type: 'temperature', 'humidity', 'co2', 'noise'"
-            )
-            threshold: Optional[float] = Field(
-                None, description="Threshold value for alert configuration"
-            )
+            operation: str = Field(..., description="Analysis operation: 'historical', 'alerts', 'health'")
+            station_id: str | None = Field(None, description="Station ID for analysis operations")
+            time_range: str | None = Field("24h", description="Time range: '1h', '24h', '7d', '30d'")
+            alert_type: str | None = Field(None, description="Alert type: 'temperature', 'humidity', 'co2', 'noise'")
+            threshold: float | None = Field(None, description="Threshold value for alert configuration")
 
     async def execute(
         self,
         operation: str,
-        station_id: Optional[str] = None,
+        station_id: str | None = None,
         time_range: str = "24h",
-        alert_type: Optional[str] = None,
-        threshold: Optional[float] = None,
-    ) -> Dict[str, Any]:
+        alert_type: str | None = None,
+        threshold: float | None = None,
+    ) -> dict[str, Any]:
         """Execute Netatmo analysis operation."""
         try:
             logger.info(f"Netatmo analysis {operation} operation")
@@ -91,9 +81,7 @@ class NetatmoAnalysisTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_historical_data(
-        self, station_id: Optional[str], time_range: str
-    ) -> Dict[str, Any]:
+    async def _get_historical_data(self, station_id: str | None, time_range: str) -> dict[str, Any]:
         """Get Netatmo historical data."""
         # Simulate historical data based on time range
         time_ranges = {
@@ -145,8 +133,8 @@ class NetatmoAnalysisTool(BaseTool):
         }
 
     async def _manage_alerts(
-        self, _station_id: Optional[str], alert_type: Optional[str], threshold: Optional[float]
-    ) -> Dict[str, Any]:
+        self, _station_id: str | None, alert_type: str | None, threshold: float | None
+    ) -> dict[str, Any]:
         """Manage Netatmo alerts."""
         if not alert_type:
             # Return current alerts
@@ -218,7 +206,7 @@ class NetatmoAnalysisTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _get_health_report(self, station_id: Optional[str]) -> Dict[str, Any]:
+    async def _get_health_report(self, station_id: str | None) -> dict[str, Any]:
         """Get Netatmo health report."""
         # Simulate health report
         health_report = {

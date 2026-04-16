@@ -13,7 +13,6 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Union
 
 
 class JSONFormatter(logging.Formatter):
@@ -49,8 +48,8 @@ class JSONFormatter(logging.Formatter):
 
 
 def setup_logging(
-    log_level: Union[str, int] = "INFO",
-    log_file: Optional[Union[str, Path]] = None,
+    log_level: str | int = "INFO",
+    log_file: str | Path | None = None,
     max_bytes: int = 10 * 1024 * 1024,  # 10 MB
     backup_count: int = 5,
 ) -> None:

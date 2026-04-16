@@ -10,7 +10,7 @@ Combines multiple PTZ operations into a single, more efficient tool:
 import asyncio
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -44,25 +44,23 @@ class PTZControlTool(BaseTool):
         category = ToolCategory.PTZ
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="PTZ operation type: 'move', 'position', 'stop'"
-            )
+            operation: str = Field(..., description="PTZ operation type: 'move', 'position', 'stop'")
             camera_id: str = Field(..., description="Camera ID to control")
-            pan: Optional[float] = Field(None, description="Pan direction (-1 to 1)")
-            tilt: Optional[float] = Field(None, description="Tilt direction (-1 to 1)")
-            zoom: Optional[float] = Field(None, description="Zoom direction (-1 to 1)")
-            duration: Optional[float] = Field(None, description="Movement duration in seconds")
+            pan: float | None = Field(None, description="Pan direction (-1 to 1)")
+            tilt: float | None = Field(None, description="Tilt direction (-1 to 1)")
+            zoom: float | None = Field(None, description="Zoom direction (-1 to 1)")
+            duration: float | None = Field(None, description="Movement duration in seconds")
 
     async def execute(
         self,
         operation: str,
         camera_id: str,
-        pan: Optional[float] = None,
-        tilt: Optional[float] = None,
-        zoom: Optional[float] = None,
-        duration: Optional[float] = None,
-        speed: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        pan: float | None = None,
+        tilt: float | None = None,
+        zoom: float | None = None,
+        duration: float | None = None,
+        speed: int | None = None,
+    ) -> dict[str, Any]:
         """Execute PTZ control operation."""
         try:
             logger.info(f"PTZ {operation} operation for camera {camera_id}")
@@ -92,11 +90,11 @@ class PTZControlTool(BaseTool):
     async def _move_ptz(
         self,
         camera_id: str,
-        pan: Optional[float],
-        tilt: Optional[float],
-        zoom: Optional[float],
-        duration: Optional[float],
-    ) -> Dict[str, Any]:
+        pan: float | None,
+        tilt: float | None,
+        zoom: float | None,
+        duration: float | None,
+    ) -> dict[str, Any]:
         """Move PTZ camera."""
         # Validate parameters
         if pan is None and tilt is None and zoom is None:
@@ -138,7 +136,7 @@ class PTZControlTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _get_position(self, camera_id: str) -> Dict[str, Any]:
+    async def _get_position(self, camera_id: str) -> dict[str, Any]:
         """Get current PTZ position."""
         # Simulate position data
         import secrets
@@ -158,7 +156,7 @@ class PTZControlTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _stop_ptz(self, camera_id: str) -> Dict[str, Any]:
+    async def _stop_ptz(self, camera_id: str) -> dict[str, Any]:
         """Stop PTZ movement."""
         return {
             "success": True,

@@ -9,8 +9,6 @@ This module contains API endpoints specific to Vienna/Austria region,
 including local content recommendations and metadata.
 """
 
-from typing import List, Optional
-
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -30,7 +28,7 @@ class RecommendationRequest(BaseModel):
 
 
 @mcp.tool()
-async def get_vienna_recommendations(request: RecommendationRequest) -> List[WienerRecommendation]:
+async def get_vienna_recommendations(request: RecommendationRequest) -> list[WienerRecommendation]:
     """
     Get Vienna-specific content recommendations.
 
@@ -47,13 +45,13 @@ async def get_vienna_recommendations(request: RecommendationRequest) -> List[Wie
 class EuropeanContentRequest(BaseModel):
     """Request model for getting European content."""
 
-    country: Optional[str] = None
-    content_type: Optional[str] = None
+    country: str | None = None
+    content_type: str | None = None
     limit: int = 20
 
 
 @mcp.tool()
-async def get_european_content(request: EuropeanContentRequest) -> List[EuropeanContent]:
+async def get_european_content(request: EuropeanContentRequest) -> list[EuropeanContent]:
     """
     Get European content with Vienna-specific metadata.
 

@@ -10,7 +10,7 @@ import os
 
 # Robust import handling for both package and direct execution
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree as ET
 
 import requests
@@ -62,7 +62,7 @@ class PlexManager:
         if config.username and config.password:
             self.session.auth = HTTPBasicAuth(config.username, config.password)
 
-    def _xml_to_dict(self, xml_element) -> Dict[str, Any]:
+    def _xml_to_dict(self, xml_element) -> dict[str, Any]:
         """
         Convert XML element to dictionary recursively.
 
@@ -96,9 +96,7 @@ class PlexManager:
 
         return result
 
-    async def _make_request(
-        self, endpoint: str, params: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    async def _make_request(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Make HTTP request to Plex server with error handling.
 
@@ -143,11 +141,11 @@ class PlexManager:
         except requests.exceptions.RequestException as e:
             raise PlexAPIError(f"Request error: {e!s}")
 
-    async def get_server_status(self) -> Dict[str, Any]:
+    async def get_server_status(self) -> dict[str, Any]:
         """Get server status and identity information"""
         return await self._make_request("/")
 
-    async def get_libraries(self) -> List[Dict[str, Any]]:
+    async def get_libraries(self) -> list[dict[str, Any]]:
         """Get all media libraries"""
         response = await self._make_request("/library/sections")
 
@@ -158,9 +156,7 @@ class PlexManager:
 
         return directories
 
-    async def search_media(
-        self, query: str, library_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    async def search_media(self, query: str, library_id: str | None = None) -> list[dict[str, Any]]:
         """Search for media content"""
         if library_id:
             endpoint = f"/library/sections/{library_id}/search"
@@ -180,9 +176,7 @@ class PlexManager:
 
         return results
 
-    async def get_recently_added(
-        self, library_id: Optional[str] = None, limit: int = 20
-    ) -> List[Dict[str, Any]]:
+    async def get_recently_added(self, library_id: str | None = None, limit: int = 20) -> list[dict[str, Any]]:
         """Get recently added media"""
         if library_id:
             endpoint = f"/library/sections/{library_id}/recentlyAdded"
@@ -199,7 +193,7 @@ class PlexManager:
 
         return videos
 
-    async def get_media_info(self, media_key: str) -> Dict[str, Any]:
+    async def get_media_info(self, media_key: str) -> dict[str, Any]:
         """Get detailed information about specific media"""
         # Strip any leading slash and /children suffix from media_key
         clean_key = media_key.strip("/").replace("/library/metadata/", "").replace("/children", "")
@@ -230,7 +224,7 @@ class PlexManager:
             "updated_at": 0,
         }
 
-    async def get_library_content(self, library_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+    async def get_library_content(self, library_id: str, limit: int = 50) -> list[dict[str, Any]]:
         """Get content from specific library"""
         endpoint = f"/library/sections/{library_id}/all"
         params = {"X-Plex-Container-Size": str(limit)}
@@ -247,7 +241,7 @@ class PlexManager:
 
         return content
 
-    async def get_clients(self) -> List[Dict[str, Any]]:
+    async def get_clients(self) -> list[dict[str, Any]]:
         """Get available Plex clients"""
         response = await self._make_request("/clients")
 
@@ -257,7 +251,7 @@ class PlexManager:
 
         return clients
 
-    async def get_sessions(self) -> List[Dict[str, Any]]:
+    async def get_sessions(self) -> list[dict[str, Any]]:
         """Get active playback sessions"""
         response = await self._make_request("/status/sessions")
 
@@ -276,7 +270,7 @@ class PlexManager:
         except PlexAPIError:
             return False
 
-    async def get_users(self) -> List[Dict[str, Any]]:
+    async def get_users(self) -> list[dict[str, Any]]:
         """Get server users (admin function)"""
         response = await self._make_request("/accounts")
 

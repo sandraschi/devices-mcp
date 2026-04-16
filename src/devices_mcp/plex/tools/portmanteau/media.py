@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -35,19 +35,19 @@ def _get_plex_service():
 @mcp.tool()
 async def plex_media(
     operation: Literal["browse", "search", "get_details", "get_recent", "update_metadata"],
-    library_id: Optional[str] = None,
-    media_key: Optional[str] = None,
-    query: Optional[str] = None,
-    media_type: Optional[str] = None,
+    library_id: str | None = None,
+    media_key: str | None = None,
+    query: str | None = None,
+    media_type: str | None = None,
     limit: int = 100,
-    genre: Optional[str] = None,
-    year: Optional[int] = None,
-    actor: Optional[str] = None,
-    director: Optional[str] = None,
-    min_rating: Optional[float] = None,
-    unwatched: Optional[bool] = None,
-    metadata: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    genre: str | None = None,
+    year: int | None = None,
+    actor: str | None = None,
+    director: str | None = None,
+    min_rating: float | None = None,
+    unwatched: bool | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Comprehensive media management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:

@@ -9,7 +9,7 @@ Combines camera connection operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -36,26 +36,20 @@ class CameraConnectionTool(BaseTool):
 
     class Meta:
         name = "camera_connection"
-        description = (
-            "Unified camera connection management including connect, disconnect, and set active"
-        )
+        description = "Unified camera connection management including connect, disconnect, and set active"
         category = ToolCategory.CAMERA
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Connection operation: 'connect', 'disconnect', 'set_active'"
-            )
+            operation: str = Field(..., description="Connection operation: 'connect', 'disconnect', 'set_active'")
             camera_id: str = Field(..., description="Camera ID for connection operations")
-            connection_type: Optional[str] = Field(
-                "direct", description="Connection type: 'direct', 'cloud', 'local'"
-            )
+            connection_type: str | None = Field("direct", description="Connection type: 'direct', 'cloud', 'local'")
 
     async def execute(
         self,
         operation: str,
         camera_id: str,
         connection_type: str = "direct",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute camera connection operation."""
         try:
             logger.info(f"Camera connection {operation} operation for camera {camera_id}")
@@ -82,7 +76,7 @@ class CameraConnectionTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _connect_camera(self, camera_id: str, connection_type: str) -> Dict[str, Any]:
+    async def _connect_camera(self, camera_id: str, connection_type: str) -> dict[str, Any]:
         """Connect to a camera."""
         # Simulate connection process
         connection_status = {
@@ -103,7 +97,7 @@ class CameraConnectionTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _disconnect_camera(self, camera_id: str) -> Dict[str, Any]:
+    async def _disconnect_camera(self, camera_id: str) -> dict[str, Any]:
         """Disconnect from a camera."""
         return {
             "success": True,
@@ -113,7 +107,7 @@ class CameraConnectionTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _set_active_camera(self, camera_id: str) -> Dict[str, Any]:
+    async def _set_active_camera(self, camera_id: str) -> dict[str, Any]:
         """Set camera as active."""
         return {
             "success": True,

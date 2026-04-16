@@ -1,14 +1,16 @@
-import * as React from 'react'
-import { cva, type VariantProps } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
+import { cva, type VariantProps } from 'class-variance-authority';
+import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-slate-300',
   {
     variants: {
       variant: {
-        default: 'bg-slate-900 text-slate-50 hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200',
-        outline: 'border border-slate-200 bg-white hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800',
+        default:
+          'bg-slate-900 text-slate-50 hover:bg-slate-800 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-200',
+        outline:
+          'border border-slate-200 bg-white hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800',
         ghost: 'hover:bg-slate-100 dark:hover:bg-slate-800',
         link: 'text-slate-900 underline-offset-4 hover:underline dark:text-slate-50',
       },
@@ -23,8 +25,8 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
     },
-  }
-)
+  },
+);
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -33,8 +35,8 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => (
     <button className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
-  )
-)
-Button.displayName = 'Button'
+  ),
+);
+Button.displayName = 'Button';
 
-export { Button, buttonVariants }
+export { Button, buttonVariants };

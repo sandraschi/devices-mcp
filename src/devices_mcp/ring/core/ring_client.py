@@ -8,7 +8,7 @@ Provides unified interface for all Ring device types and operations.
 import logging
 import time
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import requests
 
@@ -22,9 +22,9 @@ class RingClient:
 
     def __init__(
         self,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        token: Optional[str] = None,
+        username: str | None = None,
+        password: str | None = None,
+        token: str | None = None,
     ):
         """Initialize Ring client with authentication."""
         self.base_url = "https://api.ring.com"
@@ -85,7 +85,7 @@ class RingClient:
             }
         )
 
-    def get_devices(self) -> List[Dict[str, Any]]:
+    def get_devices(self) -> list[dict[str, Any]]:
         """Get all Ring devices."""
         # Simplified implementation for now
         return [
@@ -100,12 +100,12 @@ class RingClient:
             }
         ]
 
-    def get_devices_by_type(self, device_type: str) -> List[Dict[str, Any]]:
+    def get_devices_by_type(self, device_type: str) -> list[dict[str, Any]]:
         """Get devices filtered by type."""
         all_devices = self.get_devices()
         return [device for device in all_devices if device["device_type"] == device_type]
 
-    def get_device(self, device_id: str) -> Optional[Dict[str, Any]]:
+    def get_device(self, device_id: str) -> dict[str, Any] | None:
         """Get specific device by ID."""
         all_devices = self.get_devices()
         for device in all_devices:
@@ -113,24 +113,24 @@ class RingClient:
                 return device
         return None
 
-    def get_device_details(self, device_id: str) -> Dict[str, Any]:
+    def get_device_details(self, device_id: str) -> dict[str, Any]:
         """Get detailed information for a specific device."""
         device = self.get_device(device_id)
         if not device:
             raise DeviceNotFoundError(f"Device {device_id} not found")
         return device
 
-    def get_system_status(self) -> Dict[str, Any]:
+    def get_system_status(self) -> dict[str, Any]:
         """Get overall system status."""
         return {"mode": "disarmed", "armed": False, "countdown": False, "emergency_mode": False}
 
-    def get_active_alerts(self) -> List[Dict[str, Any]]:
+    def get_active_alerts(self) -> list[dict[str, Any]]:
         """Get current active alerts."""
         return []
 
     def arm_system(
-        self, mode: str, bypass_sensors: List[str] = None, entry_delay_minutes: Optional[int] = None
-    ) -> Dict[str, Any]:
+        self, mode: str, bypass_sensors: list[str] = None, entry_delay_minutes: int | None = None
+    ) -> dict[str, Any]:
         """Arm the security system."""
         return {
             "success": True,
@@ -139,19 +139,17 @@ class RingClient:
             "entry_delay_minutes": entry_delay_minutes or 2,
         }
 
-    def disarm_system(
-        self, force: bool = False, disarm_code: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def disarm_system(self, force: bool = False, disarm_code: str | None = None) -> dict[str, Any]:
         """Disarm the security system."""
         return {"success": True, "user_authenticated": True}
 
     def get_events_history(
-        self, start_time: datetime, end_time: datetime, event_types: Optional[List[str]] = None
-    ) -> List[Dict[str, Any]]:
+        self, start_time: datetime, end_time: datetime, event_types: list[str] | None = None
+    ) -> list[dict[str, Any]]:
         """Get historical events."""
         return []
 
-    def get_motion_settings(self, device_id: str) -> Dict[str, Any]:
+    def get_motion_settings(self, device_id: str) -> dict[str, Any]:
         """Get motion detection settings."""
         return {
             "motion_detection_enabled": True,
@@ -160,22 +158,20 @@ class RingClient:
             "smart_alerts_enabled": True,
         }
 
-    def start_live_stream(
-        self, device_id: str, quality_settings: Dict[str, Any], max_duration: int
-    ) -> Dict[str, Any]:
+    def start_live_stream(self, device_id: str, quality_settings: dict[str, Any], max_duration: int) -> dict[str, Any]:
         """Start live video stream."""
         return {
             "stream_url": f"https://ring-streaming.com/live/{device_id}",
             "stream_id": f"stream_{device_id}_{int(time.time())}",
         }
 
-    def get_active_calls(self, device_id: str) -> List[Dict[str, Any]]:
+    def get_active_calls(self, device_id: str) -> list[dict[str, Any]]:
         """Get active doorbell calls."""
         return []
 
     def answer_call(
         self, call_id: str, enable_two_way_audio: bool = True, record_conversation: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Answer a doorbell call."""
         return {
             "session_id": f"call_{call_id}",
@@ -185,7 +181,7 @@ class RingClient:
 
     def get_doorbell_events(
         self, device_id: str, start_time: datetime, end_time: datetime, motion_only: bool = False
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Get doorbell events."""
         return []
 
@@ -197,16 +193,14 @@ class RingClient:
         """Get URL for thumbnail image."""
         return f"https://ring-snapshots.com/{snapshot_id}_thumb.jpg"
 
-    def update_motion_settings(self, device_id: str, settings: Dict[str, Any]) -> Dict[str, Any]:
+    def update_motion_settings(self, device_id: str, settings: dict[str, Any]) -> dict[str, Any]:
         """Update motion detection settings."""
         return {"success": True, "settings_applied": settings}
 
-    def get_recent_events(self, minutes: int) -> List[Dict[str, Any]]:
+    def get_recent_events(self, minutes: int) -> list[dict[str, Any]]:
         """Get recent events."""
         return []
 
-    def get_video_recordings(
-        self, start_time: datetime, end_time: datetime
-    ) -> List[Dict[str, Any]]:
+    def get_video_recordings(self, start_time: datetime, end_time: datetime) -> list[dict[str, Any]]:
         """Get video recordings."""
         return []

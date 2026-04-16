@@ -10,7 +10,7 @@ tool registration for Claude Desktop stdio communication.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -33,7 +33,7 @@ def register_tools(app: FastMCP) -> None:
         name="get_fire_alarm_status",
         description="Get comprehensive status of all Ring fire alarms and smoke detectors",
     )
-    async def get_fire_alarm_status() -> Dict[str, Any]:
+    async def get_fire_alarm_status() -> dict[str, Any]:
         """Get comprehensive status of all Ring fire alarms and smoke detectors.
 
         Provides detailed information about fire safety device health, battery levels,
@@ -54,8 +54,7 @@ def register_tools(app: FastMCP) -> None:
                 fire_devices = [
                     device
                     for device in all_devices
-                    if "smoke" in device.get("type", "").lower()
-                    or "fire" in device.get("type", "").lower()
+                    if "smoke" in device.get("type", "").lower() or "fire" in device.get("type", "").lower()
                 ]
 
                 # Enhanced fire safety device analysis
@@ -141,7 +140,7 @@ def register_tools(app: FastMCP) -> None:
         name="test_fire_safety_system",
         description="Perform comprehensive test of fire safety system",
     )
-    async def test_fire_safety_system() -> Dict[str, Any]:
+    async def test_fire_safety_system() -> dict[str, Any]:
         """Perform comprehensive test of fire safety system.
 
         Executes safety test protocols for all fire alarms and smoke detectors.
@@ -162,8 +161,7 @@ def register_tools(app: FastMCP) -> None:
                 fire_devices = [
                     device
                     for device in all_devices
-                    if "smoke" in device.get("type", "").lower()
-                    or "fire" in device.get("type", "").lower()
+                    if "smoke" in device.get("type", "").lower() or "fire" in device.get("type", "").lower()
                 ]
 
                 test_results = []
@@ -231,13 +229,9 @@ def register_tools(app: FastMCP) -> None:
                 # Generate recommendations
                 recommendations = []
                 if failed_tests > 0:
-                    recommendations.append(
-                        f"Immediate attention required for {failed_tests} failed devices"
-                    )
+                    recommendations.append(f"Immediate attention required for {failed_tests} failed devices")
                 if warning_tests > 0:
-                    recommendations.append(
-                        f"Maintenance needed for {warning_tests} devices with warnings"
-                    )
+                    recommendations.append(f"Maintenance needed for {warning_tests} devices with warnings")
 
                 # Calculate next test date (monthly tests recommended)
                 next_test_date = datetime.now() + timedelta(days=30)

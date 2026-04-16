@@ -1,7 +1,6 @@
 """USB Microscope API endpoints."""
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -53,7 +52,7 @@ class CreateVideoRequest(BaseModel):
     """Request to create a timelapse video."""
 
     session_dir: str
-    output_path: Optional[str] = None
+    output_path: str | None = None
     fps: int = 30
     add_timestamp: bool = True
 
@@ -75,9 +74,7 @@ async def _get_microscope_camera(camera_name: str):
 
     # Check if it's a microscope camera
     if not hasattr(camera, "set_magnification"):
-        raise HTTPException(
-            status_code=400, detail=f"Camera {camera_name} is not a microscope camera"
-        )
+        raise HTTPException(status_code=400, detail=f"Camera {camera_name} is not a microscope camera")
 
     return camera
 
@@ -215,9 +212,7 @@ async def start_timelapse(request: StartTimelapseRequest):
 
         # Check if camera supports timelapse
         if not hasattr(camera, "start_timelapse"):
-            raise HTTPException(
-                status_code=400, detail=f"Camera {request.camera_name} does not support timelapse"
-            )
+            raise HTTPException(status_code=400, detail=f"Camera {request.camera_name} does not support timelapse")
 
         session_info = await camera.start_timelapse(
             interval_minutes=request.interval_minutes,
@@ -246,9 +241,7 @@ async def stop_timelapse(camera_name: str, session_name: str):
         camera = await _get_microscope_camera(camera_name)
 
         if not hasattr(camera, "stop_timelapse"):
-            raise HTTPException(
-                status_code=400, detail=f"Camera {camera_name} does not support timelapse"
-            )
+            raise HTTPException(status_code=400, detail=f"Camera {camera_name} does not support timelapse")
 
         result = await camera.stop_timelapse(session_name)
 
@@ -272,9 +265,7 @@ async def get_timelapse_status(camera_name: str):
         camera = await _get_microscope_camera(camera_name)
 
         if not hasattr(camera, "get_timelapse_status"):
-            raise HTTPException(
-                status_code=400, detail=f"Camera {camera_name} does not support timelapse"
-            )
+            raise HTTPException(status_code=400, detail=f"Camera {camera_name} does not support timelapse")
 
         status = await camera.get_timelapse_status()
 

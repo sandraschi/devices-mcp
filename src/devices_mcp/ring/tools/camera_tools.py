@@ -10,7 +10,7 @@ tool registration for Claude Desktop stdio communication.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -33,7 +33,7 @@ def register_tools(app: FastMCP) -> None:
         name="get_camera_status",
         description="Get comprehensive status of all Ring security cameras",
     )
-    async def get_camera_status() -> Dict[str, Any]:
+    async def get_camera_status() -> dict[str, Any]:
         """Get comprehensive status of all Ring security cameras.
 
         Provides detailed information about camera health, connectivity, recording
@@ -101,10 +101,8 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Error getting camera status:")
             return {"success": False, "error": str(e)}
 
-    @app.tool(
-        name="stream_all_cameras", description="Start live streams from all available Ring cameras"
-    )
-    async def stream_all_cameras() -> Dict[str, Any]:
+    @app.tool(name="stream_all_cameras", description="Start live streams from all available Ring cameras")
+    async def stream_all_cameras() -> dict[str, Any]:
         """Start live streams from all available Ring cameras.
 
         Initiates simultaneous live video streams from all operational Ring cameras

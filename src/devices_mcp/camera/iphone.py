@@ -1,7 +1,6 @@
 """iPhone camera implementation for repurposed iPhones as webcams."""
 
 import logging
-from typing import Dict, Optional
 
 from .base import CameraFactory, CameraType
 from .webcam import Webcam
@@ -17,15 +16,9 @@ class IPhoneCamera(Webcam):
         super().__init__(config, mock_webcam)
         self._iphone_model = self.config.params.get("iphone_model", "Unknown iPhone")
         self._ios_version = self.config.params.get("ios_version", "Unknown")
-        self._connection_method = self.config.params.get(
-            "connection_method", "wifi"
-        )  # wifi, usb, continuity
-        self._webcam_app = self.config.params.get(
-            "webcam_app", "continuity"
-        )  # continuity, epoccam, manycam, etc.
-        self._camera_lens = self.config.params.get(
-            "camera_lens", "wide"
-        )  # wide, ultra_wide, telephoto
+        self._connection_method = self.config.params.get("connection_method", "wifi")  # wifi, usb, continuity
+        self._webcam_app = self.config.params.get("webcam_app", "continuity")  # continuity, epoccam, manycam, etc.
+        self._camera_lens = self.config.params.get("camera_lens", "wide")  # wide, ultra_wide, telephoto
 
         # iPhone-specific settings
         self._hdr_mode = self.config.params.get("hdr_mode", False)
@@ -33,7 +26,7 @@ class IPhoneCamera(Webcam):
         self._live_photos = self.config.params.get("live_photos", False)
         self._stabilization = self.config.params.get("stabilization", True)
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get iPhone camera status with device-specific capabilities."""
         status = await super().get_status()
         status.update(
@@ -51,18 +44,17 @@ class IPhoneCamera(Webcam):
                 "iphone_capable": True,
                 "ptz_capable": False,  # iPhones don't have PTZ
                 "digital_zoom_capable": True,  # Digital zoom always available
-                "optical_zoom_capable": self._camera_lens
-                == "telephoto",  # Only telephoto lens has optical zoom
+                "optical_zoom_capable": self._camera_lens == "telephoto",  # Only telephoto lens has optical zoom
             }
         )
         return status
 
     async def set_camera_mode(
         self,
-        hdr: Optional[bool] = None,
-        portrait: Optional[bool] = None,
-        live_photos: Optional[bool] = None,
-        stabilization: Optional[bool] = None,
+        hdr: bool | None = None,
+        portrait: bool | None = None,
+        live_photos: bool | None = None,
+        stabilization: bool | None = None,
     ) -> None:
         """Set iPhone camera modes."""
         if hdr is not None:
@@ -134,7 +126,7 @@ class IPhoneCamera(Webcam):
         await self.set_camera_mode(hdr=True)
         logger.info(f"iPhone {self.config.name}: HDR mode enabled")
 
-    async def get_iphone_info(self) -> Dict:
+    async def get_iphone_info(self) -> dict:
         """Get detailed information about the iPhone."""
         return {
             "model": self._iphone_model,
@@ -160,7 +152,7 @@ class IPhoneCamera(Webcam):
             },
         }
 
-    async def test_iphone_connection(self) -> Dict:
+    async def test_iphone_connection(self) -> dict:
         """Test the iPhone connection and capabilities."""
         try:
             status = await self.get_status()

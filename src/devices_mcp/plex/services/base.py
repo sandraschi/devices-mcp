@@ -6,8 +6,9 @@ This module contains abstract base classes for services in the PlexMCP applicati
 
 import asyncio
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, Callable, Coroutine, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 
@@ -25,7 +26,7 @@ class ServiceError(Exception):
         self,
         message: str,
         code: str = "service_error",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
         status_code: int = 500,
     ):
         self.message = message
@@ -34,7 +35,7 @@ class ServiceError(Exception):
         self.status_code = status_code
         super().__init__(self.message)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert the error to a dictionary for API responses."""
         return {"error": {"code": self.code, "message": self.message, "details": self.details}}
 
@@ -42,23 +43,21 @@ class ServiceError(Exception):
 class ServiceInitializationError(ServiceError):
     """Raised when a service fails to initialize."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
-        super().__init__(
-            message=message, code="service_initialization_error", details=details, status_code=500
-        )
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
+        super().__init__(message=message, code="service_initialization_error", details=details, status_code=500)
 
 
 class ServiceValidationError(ServiceError):
     """Raised when service input validation fails."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         super().__init__(message=message, code="validation_error", details=details, status_code=400)
 
 
 class ServiceOperationError(ServiceError):
     """Raised when a service operation fails."""
 
-    def __init__(self, message: str, details: Optional[Dict[str, Any]] = None):
+    def __init__(self, message: str, details: dict[str, Any] | None = None):
         super().__init__(message=message, code="operation_failed", details=details, status_code=400)
 
 
@@ -114,7 +113,7 @@ class BaseService(ABC):
     - Lifecycle management
     """
 
-    def __init__(self, logger_name: Optional[str] = None):
+    def __init__(self, logger_name: str | None = None):
         """Initialize the base service.
 
         Args:
@@ -221,11 +220,11 @@ class CRUDService(BaseService, Generic[T]):
         """Create a new item."""
 
     @abstractmethod
-    async def get(self, id: str) -> Optional[T]:
+    async def get(self, id: str) -> T | None:
         """Get an item by ID."""
 
     @abstractmethod
-    async def list(self, **filters) -> List[T]:
+    async def list(self, **filters) -> list[T]:
         """List items with optional filtering."""
 
     @abstractmethod

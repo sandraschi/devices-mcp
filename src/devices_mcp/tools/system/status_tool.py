@@ -5,7 +5,7 @@ Status tool for monitoring system health and camera status in Devices MCP.
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -38,8 +38,8 @@ class HealthStatus(BaseModel):
 
     overall: str = Field(..., description="Overall health status: healthy/warning/critical")
     server_status: str = Field(..., description="MCP server status")
-    camera_health: Dict[str, Any] = Field(..., description="Camera health information")
-    system_health: Dict[str, Any] = Field(..., description="System resource health")
+    camera_health: dict[str, Any] = Field(..., description="Camera health information")
+    system_health: dict[str, Any] = Field(..., description="System resource health")
     last_check: str = Field(..., description="Timestamp of health check")
 
 
@@ -91,7 +91,7 @@ class StatusTool(BaseTool):
                 self._camera_manager = server.camera_manager
         return self._camera_manager
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Return comprehensive system and camera status information with health monitoring."""
         try:
             # Get basic system status
@@ -115,9 +115,7 @@ class StatusTool(BaseTool):
                 if self.detail_level == "detailed":
                     result["system"] = await self._get_detailed_system_status()
 
-            logger.info(
-                f"Status check completed - Health: {health_status.get('overall', 'unknown')}"
-            )
+            logger.info(f"Status check completed - Health: {health_status.get('overall', 'unknown')}")
             return result
 
         except Exception as e:
@@ -128,7 +126,7 @@ class StatusTool(BaseTool):
                 "timestamp": datetime.utcnow().isoformat(),
             }
 
-    async def _get_comprehensive_health(self) -> Dict[str, Any]:
+    async def _get_comprehensive_health(self) -> dict[str, Any]:
         """Get comprehensive health status for Gold tier monitoring."""
         try:
             # System resource health
@@ -160,11 +158,7 @@ class StatusTool(BaseTool):
             server_status = await self._assess_server_health()
 
             # Overall health determination
-            all_warnings = (
-                system_warnings
-                + camera_health.get("warnings", [])
-                + server_status.get("warnings", [])
-            )
+            all_warnings = system_warnings + camera_health.get("warnings", []) + server_status.get("warnings", [])
             overall = (
                 "critical"
                 if any("critical" in warning.lower() for warning in all_warnings)
@@ -195,7 +189,7 @@ class StatusTool(BaseTool):
                 "last_check": datetime.utcnow().isoformat(),
             }
 
-    async def _assess_camera_health(self) -> Dict[str, Any]:
+    async def _assess_camera_health(self) -> dict[str, Any]:
         """Assess overall camera health."""
         camera_manager = self._get_camera_manager()
         if not camera_manager:
@@ -225,7 +219,7 @@ class StatusTool(BaseTool):
             logger.exception("Error assessing camera health")
             return {"status": "error", "warnings": [str(e)]}
 
-    async def _assess_server_health(self) -> Dict[str, Any]:
+    async def _assess_server_health(self) -> dict[str, Any]:
         """Assess MCP server health."""
         try:
             # Check if server is responsive
@@ -250,7 +244,7 @@ class StatusTool(BaseTool):
             logger.exception("Error assessing server health")
             return {"status": "error", "warnings": [str(e)]}
 
-    async def _get_system_status(self) -> Dict[str, Any]:
+    async def _get_system_status(self) -> dict[str, Any]:
         """Get basic system status information."""
         camera_manager = self._get_camera_manager()
 
@@ -275,7 +269,7 @@ class StatusTool(BaseTool):
             "last_updated": datetime.utcnow().isoformat(),
         }
 
-    async def _get_camera_statuses(self) -> List[Dict[str, Any]]:
+    async def _get_camera_statuses(self) -> list[dict[str, Any]]:
         """Get status for all cameras."""
         camera_manager = self._get_camera_manager()
         if not camera_manager:
@@ -297,7 +291,7 @@ class StatusTool(BaseTool):
             )
         return cameras_status
 
-    async def _get_detailed_system_status(self) -> Dict[str, Any]:
+    async def _get_detailed_system_status(self) -> dict[str, Any]:
         """Get detailed system status information."""
 
         if HAS_PSUTIL and psutil:
@@ -320,7 +314,7 @@ class StatusTool(BaseTool):
             "process_info": process_info,
         }
 
-    def _get_grafana_status(self) -> Dict[str, Any]:
+    def _get_grafana_status(self) -> dict[str, Any]:
         """Get Grafana integration status."""
         return {
             "plugin_installed": os.path.exists("/var/lib/grafana/plugins/tapo-camera-stream"),
@@ -328,7 +322,7 @@ class StatusTool(BaseTool):
             "api_accessible": self._check_grafana_api(),
         }
 
-    def _get_storage_status(self) -> Dict[str, Any]:
+    def _get_storage_status(self) -> dict[str, Any]:
         """Get storage usage information."""
         return {
             "total_recordings": self._count_recordings(),
@@ -336,7 +330,7 @@ class StatusTool(BaseTool):
             "retention_days": self._get_retention_days(),
         }
 
-    def _get_network_status(self) -> Dict[str, Any]:
+    def _get_network_status(self) -> dict[str, Any]:
         """Get network status information."""
         if HAS_PSUTIL and psutil:
             net_io = psutil.net_io_counters()
@@ -365,7 +359,7 @@ class StatusTool(BaseTool):
         minutes, _ = divmod(remainder, 60)
         return f"{days}d {hours}h {minutes}m"
 
-    def _find_grafana_dashboards(self) -> List[str]:
+    def _find_grafana_dashboards(self) -> list[str]:
         """Find all Grafana dashboards."""
         # Implementation depends on your dashboard storage
         return []

@@ -68,7 +68,7 @@ async def get_cameras():
             logger.debug("Ring integration not available or failed")
 
         return {"success": True, "initializing": False, "cameras": cameras}
-    except asyncio.TimeoutError:
+    except TimeoutError:
         # Clean warmup response: don't spam tracebacks while the singleton is still booting.
         init_state = {
             "initialized": bool(getattr(DevicesMCPServer, "_initialized", False)),
@@ -105,7 +105,7 @@ async def get_cameras_status():
             "cameras": cameras,
             "initializing": False,
         }
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return {"success": False, "initializing": True, "total": 0, "online": 0, "offline": 0, "cameras": []}
     except Exception as e:
         return {"success": False, "initializing": False, "error": str(e), "total": 0, "online": 0, "offline": 0}
@@ -171,20 +171,18 @@ async def get_camera_mjpeg_stream(camera_id: str):
                 # (see scripts/windows_camera_server.py: port 10715, GET /camera/{id}/mjpeg)
                 if camera_type in ("webcam", "microscope"):
                     device_id = int(camera.config.params.get("device_id", 0))
-                    base = os.environ.get(
-                        "WINDOWS_CAMERA_SERVER_URL", "http://127.0.0.1:10715"
-                    ).rstrip("/")
+                    base = os.environ.get("WINDOWS_CAMERA_SERVER_URL", "http://127.0.0.1:10715").rstrip("/")
                     proxy_url = f"{base}/camera/{device_id}/mjpeg"
-                    force_direct = os.environ.get(
-                        "WEBCAM_MJPEG_FORCE_DIRECT", ""
-                    ).strip().lower() in ("1", "true", "yes", "on")
+                    force_direct = os.environ.get("WEBCAM_MJPEG_FORCE_DIRECT", "").strip().lower() in (
+                        "1",
+                        "true",
+                        "yes",
+                        "on",
+                    )
 
                     # Prefer helper when it is running (single capture owner). Otherwise OpenCV in this
                     # process so USB preview still works without start_windows_camera_server / 10715.
-                    use_proxy = (
-                        not force_direct
-                        and await _windows_camera_server_has_device(base, device_id)
-                    )
+                    use_proxy = not force_direct and await _windows_camera_server_has_device(base, device_id)
 
                     if use_proxy:
                         logger.info(f"Proxying webcam MJPEG for {camera_id} to {proxy_url}")
@@ -194,9 +192,7 @@ async def get_camera_mjpeg_stream(camera_id: str):
                         async def stream_proxy():
                             async with httpx.AsyncClient() as client:
                                 try:
-                                    async with client.stream(
-                                        "GET", proxy_url, timeout=None
-                                    ) as response:
+                                    async with client.stream("GET", proxy_url, timeout=None) as response:
                                         if response.status_code != 200:
                                             logger.error(
                                                 "Webcam proxy failed with status %s",
@@ -258,7 +254,9 @@ async def get_camera_mjpeg_stream(camera_id: str):
                             password = camera.config.params.get("password", "")
                             if username and password:
                                 # Rebuild RTSP URL with credentials
-                                stream_url = f"rtsp://{username}:{password}@{parsed.hostname}:{parsed.port or 554}{parsed.path}"
+                                stream_url = (
+                                    f"rtsp://{username}:{password}@{parsed.hostname}:{parsed.port or 554}{parsed.path}"
+                                )
                                 logger.info(f"ONVIF MJPEG: Added auth for {camera_id}")
 
                         logger.info(f"Starting MJPEG stream for {camera_id} ({camera_type})")
@@ -270,7 +268,7 @@ async def get_camera_mjpeg_stream(camera_id: str):
                                 "Connection": "keep-alive",
                             },
                         )
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         logger.exception(f"Timeout getting stream for {camera_id}")
                         return Response(content="Stream timeout", status_code=504)
                     except Exception as e:

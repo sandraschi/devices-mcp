@@ -6,7 +6,7 @@ Supports Tapo smart lights with color control, brightness, effects, and animatio
 """
 
 import logging
-from typing import Any, List
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -38,7 +38,7 @@ def register_lighting_management_tool(mcp: FastMCP) -> None:
         brightness_percent: int | None = None,  # 0-100
         hue: int | None = None,  # 0-360
         saturation: int | None = None,  # 0-100
-        rgb: List[int] | None = None,  # [r, g, b] 0-255
+        rgb: list[int] | None = None,  # [r, g, b] 0-255
         effect: str | None = None,  # effect name
         animation_speed: int | None = None,  # 1-100
     ) -> dict[str, Any]:
@@ -320,7 +320,7 @@ async def _control_light(
     brightness_percent: int | None,
     hue: int | None,
     saturation: int | None,
-    rgb: List[int] | None,
+    rgb: list[int] | None,
     effect: str | None,
     animation_speed: int | None,
 ) -> dict[str, Any]:
@@ -565,7 +565,7 @@ async def _get_light_effects() -> dict[str, Any]:
         )
 
 
-async def _get_light_ids() -> List[str]:
+async def _get_light_ids() -> list[str]:
     """Helper function to get all light device IDs."""
     try:
         lights = await tapo_lighting_manager.get_all_lights()

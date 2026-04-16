@@ -7,7 +7,7 @@ including configuration, state, and command models.
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -68,19 +68,17 @@ class ProtectConfig(BaseModel):
     mqtt_enabled: bool = Field(False, description="Enable MQTT integration")
     mqtt_host: str = Field("localhost", description="MQTT broker host")
     mqtt_port: int = Field(1883, description="MQTT broker port")
-    mqtt_username: Optional[str] = Field(None, description="MQTT username")
-    mqtt_password: Optional[str] = Field(None, description="MQTT password")
+    mqtt_username: str | None = Field(None, description="MQTT username")
+    mqtt_password: str | None = Field(None, description="MQTT password")
     mqtt_topic_prefix: str = Field("nest/protect/", description="MQTT topic prefix")
 
     # Home Assistant settings (optional)
     homeassistant_discovery: bool = Field(False, description="Enable Home Assistant MQTT discovery")
-    homeassistant_prefix: str = Field(
-        "homeassistant", description="Home Assistant MQTT discovery prefix"
-    )
+    homeassistant_prefix: str = Field("homeassistant", description="Home Assistant MQTT discovery prefix")
 
     # Logging
     log_level: str = Field("INFO", description="Logging level")
-    log_file: Optional[str] = Field(None, description="Path to log file")
+    log_file: str | None = Field(None, description="Path to log file")
 
     model_config = ConfigDict(
         env_prefix="NEST_PROTECT_",
@@ -106,19 +104,19 @@ class ProtectDeviceState(BaseModel):
     heat_alarm_state: ProtectAlarmState = Field(..., description="Heat alarm state")
 
     # Sensors
-    battery_level: Optional[int] = Field(None, description="Battery level (0-100)", ge=0, le=100)
-    co_ppm: Optional[float] = Field(None, description="CO level in PPM", ge=0)
-    temperature: Optional[float] = Field(None, description="Temperature in °C")
-    humidity: Optional[float] = Field(None, description="Humidity percentage", ge=0, le=100)
+    battery_level: int | None = Field(None, description="Battery level (0-100)", ge=0, le=100)
+    co_ppm: float | None = Field(None, description="CO level in PPM", ge=0)
+    temperature: float | None = Field(None, description="Temperature in °C")
+    humidity: float | None = Field(None, description="Humidity percentage", ge=0, le=100)
 
     # Timestamps
-    last_connection: Optional[datetime] = Field(None, description="Last connection time")
-    last_manual_test: Optional[datetime] = Field(None, description="Last manual test time")
+    last_connection: datetime | None = Field(None, description="Last connection time")
+    last_manual_test: datetime | None = Field(None, description="Last manual test time")
 
     # Additional info
-    software_version: Optional[str] = Field(None, description="Firmware version")
-    wifi_ip: Optional[str] = Field(None, description="IP address on WiFi network")
-    wifi_ssid: Optional[str] = Field(None, description="Connected WiFi SSID")
+    software_version: str | None = Field(None, description="Firmware version")
+    wifi_ip: str | None = Field(None, description="IP address on WiFi network")
+    wifi_ssid: str | None = Field(None, description="Connected WiFi SSID")
 
     model_config = ConfigDict()
 
@@ -127,10 +125,8 @@ class ProtectCommand(BaseModel):
     """Command to send to a Nest Protect device."""
 
     command: str = Field(..., description="Command to execute")
-    device_id: Optional[str] = Field(
-        None, description="Target device ID (if not specified, applies to all)"
-    )
-    params: Dict[str, Any] = Field(default_factory=dict, description="Command parameters")
+    device_id: str | None = Field(None, description="Target device ID (if not specified, applies to all)")
+    params: dict[str, Any] = Field(default_factory=dict, description="Command parameters")
 
     @field_validator("command")
     @classmethod
@@ -149,6 +145,6 @@ class ProtectEvent(BaseModel):
     device_id: str = Field(..., description="Source device ID")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Event timestamp")
     event_type: str = Field(..., description="Type of event")
-    event_data: Dict[str, Any] = Field(default_factory=dict, description="Event data")
+    event_data: dict[str, Any] = Field(default_factory=dict, description="Event data")
 
     model_config = ConfigDict()

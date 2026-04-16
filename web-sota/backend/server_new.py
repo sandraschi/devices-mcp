@@ -7,7 +7,6 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Optional
 
 # Add src directory to path so webapp can import from MCP package
 repo_root = Path(__file__).parent.parent.parent
@@ -29,7 +28,7 @@ logger = logging.getLogger(__name__)
 class WebServer:
     """Clean, modular web server for Devices MCP."""
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: str | None = None):
         """Initialize the web server."""
         self.config = get_config()
         self.web_config = get_model(WebUISettings)

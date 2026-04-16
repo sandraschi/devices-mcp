@@ -6,7 +6,7 @@ and exporting metrics for Prometheus.
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
@@ -25,20 +25,20 @@ router = APIRouter(prefix="/api/messages", tags=["messages"])
 class AcknowledgeRequest(BaseModel):
     """Request to acknowledge messages."""
 
-    message_ids: Optional[List[str]] = None
-    severity: Optional[str] = None  # Acknowledge all of this severity
+    message_ids: list[str] | None = None
+    severity: str | None = None  # Acknowledge all of this severity
     acknowledge_all: bool = False
 
 
 @router.get("/")
 async def get_messages(
-    severity: Optional[str] = Query(None, description="Filter by severity (info, warning, alarm)"),
-    category: Optional[str] = Query(None, description="Filter by category"),
-    source: Optional[str] = Query(None, description="Filter by source device"),
+    severity: str | None = Query(None, description="Filter by severity (info, warning, alarm)"),
+    category: str | None = Query(None, description="Filter by category"),
+    source: str | None = Query(None, description="Filter by source device"),
     since_minutes: int = Query(60, description="Messages from last N minutes"),
     limit: int = Query(100, description="Max messages to return"),
     unacknowledged_only: bool = Query(False, description="Only unacknowledged messages"),
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Get messages with optional filtering.
 
@@ -73,7 +73,7 @@ async def get_messages(
 
 
 @router.get("/alarms")
-async def get_unacknowledged_alarms() -> Dict[str, Any]:
+async def get_unacknowledged_alarms() -> dict[str, Any]:
     """Get all unacknowledged ALARM messages."""
     try:
         messaging = get_messaging_service()
@@ -86,7 +86,7 @@ async def get_unacknowledged_alarms() -> Dict[str, Any]:
 
 
 @router.post("/acknowledge")
-async def acknowledge_messages(request: AcknowledgeRequest) -> Dict[str, Any]:
+async def acknowledge_messages(request: AcknowledgeRequest) -> dict[str, Any]:
     """
     Acknowledge one or more messages.
 
@@ -116,7 +116,7 @@ async def acknowledge_messages(request: AcknowledgeRequest) -> Dict[str, Any]:
 
 
 @router.get("/metrics")
-async def get_message_metrics() -> Dict[str, Any]:
+async def get_message_metrics() -> dict[str, Any]:
     """Get messaging metrics for monitoring."""
     try:
         messaging = get_messaging_service()

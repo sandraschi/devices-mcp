@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -33,15 +33,13 @@ class User(BaseModel):
     """Model representing a Plex user."""
 
     id: int = Field(..., description="Unique identifier for the user")
-    email: Optional[EmailStr] = Field(None, description="User's email address")
+    email: EmailStr | None = Field(None, description="User's email address")
     username: str = Field(..., description="User's username")
-    thumb: Optional[str] = Field(None, description="URL to user's avatar")
-    title: Optional[str] = Field(None, description="User's display name")
+    thumb: str | None = Field(None, description="URL to user's avatar")
+    title: str | None = Field(None, description="User's display name")
     role: UserRole = Field(UserRole.USER, description="User's role")
-    permissions: UserPermissions = Field(
-        default_factory=UserPermissions, description="User's permissions"
-    )
-    auth_token: Optional[str] = Field(
+    permissions: UserPermissions = Field(default_factory=UserPermissions, description="User's permissions")
+    auth_token: str | None = Field(
         None, description="Authentication token (only available for the current user)", exclude=True
     )
     server: bool = Field(False, description="Is a server owner/admin")
@@ -49,16 +47,14 @@ class User(BaseModel):
     home: bool = Field(False, description="Has access to home features")
     guest: bool = Field(False, description="Is a guest user")
     protected: bool = Field(False, description="Is a protected user")
-    last_seen: Optional[datetime] = Field(None, description="When the user was last active")
-    created_at: Optional[datetime] = Field(None, description="When the user was created")
-    updated_at: Optional[datetime] = Field(None, description="When the user was last updated")
-    extra_metadata: Dict[str, Any] = Field(
-        default_factory=dict, description="Additional metadata about the user"
-    )
+    last_seen: datetime | None = Field(None, description="When the user was last active")
+    created_at: datetime | None = Field(None, description="When the user was created")
+    updated_at: datetime | None = Field(None, description="When the user was last updated")
+    extra_metadata: dict[str, Any] = Field(default_factory=dict, description="Additional metadata about the user")
 
 
 class UserList(BaseModel):
     """Model representing a list of users."""
 
-    users: List[User] = Field(default_factory=list, description="List of users")
+    users: list[User] = Field(default_factory=list, description="List of users")
     total: int = Field(0, description="Total number of users")

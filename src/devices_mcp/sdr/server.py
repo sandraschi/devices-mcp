@@ -7,7 +7,6 @@ Provides real-time streaming of spectrum data to web clients.
 import asyncio
 import json
 import logging
-from typing import Optional, Set
 
 import websockets
 from websockets.exceptions import ConnectionClosed
@@ -26,9 +25,9 @@ class SDRWebSocketServer:
         self.port = port
         self.sdr_capture = SDRCapture()
         self.processor = SDRProcessor()
-        self.connected_clients: Set[websockets.WebSocketServerProtocol] = set()
+        self.connected_clients: set[websockets.WebSocketServerProtocol] = set()
         self.is_running = False
-        self.capture_task: Optional[asyncio.Task] = None
+        self.capture_task: asyncio.Task | None = None
 
     async def initialize_sdr(self) -> bool:
         """Initialize the SDR hardware."""
@@ -153,9 +152,7 @@ class SDRWebSocketServer:
         self.capture_task = asyncio.create_task(self.start_capture_loop())
 
         try:
-            server = await websockets.serve(
-                self.handle_client, self.host, self.port, ping_interval=30, ping_timeout=10
-            )
+            server = await websockets.serve(self.handle_client, self.host, self.port, ping_interval=30, ping_timeout=10)
 
             logger.info(f"SDR WebSocket server started on ws://{self.host}:{self.port}")
 

@@ -6,7 +6,7 @@ When you say "tapo list lights", this tool handles it.
 """
 
 import logging
-from typing import Any, Union
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -62,7 +62,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
         light_id: str | None = None,
         group_id: str | None = None,
         scene_id: str | None = None,
-        brightness_percent: Union[int, str] | None = None,
+        brightness_percent: int | str | None = None,
         power_state: str | None = None,
         effect: str | None = None,
     ) -> dict[str, Any]:
@@ -181,9 +181,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                         if action == "turn_on":
                             success = await hue_manager.set_light_state(light_id, on=True, **kwargs)
                         elif action == "turn_off":
-                            success = await hue_manager.set_light_state(
-                                light_id, on=False, **kwargs
-                            )
+                            success = await hue_manager.set_light_state(light_id, on=False, **kwargs)
                         elif action == "set_brightness":
                             success = await hue_manager.set_light_state(light_id, on=True, **kwargs)
                         elif action == "set_color":
@@ -216,21 +214,11 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                 if tapo_lighting_manager._initialized or await tapo_lighting_manager.initialize():
                     try:
                         if action == "turn_on":
-                            success = await tapo_lighting_manager.set_light_state(
-                                light_id, on=True, **kwargs
-                            )
+                            success = await tapo_lighting_manager.set_light_state(light_id, on=True, **kwargs)
                         elif action == "turn_off":
-                            success = await tapo_lighting_manager.set_light_state(
-                                light_id, on=False, **kwargs
-                            )
-                        elif (
-                            action == "set_brightness"
-                            or action == "set_color"
-                            or action == "set_effect"
-                        ):
-                            success = await tapo_lighting_manager.set_light_state(
-                                light_id, **kwargs
-                            )
+                            success = await tapo_lighting_manager.set_light_state(light_id, on=False, **kwargs)
+                        elif action == "set_brightness" or action == "set_color" or action == "set_effect":
+                            success = await tapo_lighting_manager.set_light_state(light_id, **kwargs)
                         else:
                             success = False
 
@@ -252,9 +240,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
             if action_lower in ["turn_on_light", "turn on light", "on light"]:
                 if not light_id:
                     return {"success": False, "error": "light_id is required to turn on a light"}
-                result = await _control_light(
-                    light_id, "turn_on", brightness_percent=brightness_percent
-                )
+                result = await _control_light(light_id, "turn_on", brightness_percent=brightness_percent)
                 if result["success"]:
                     return {
                         "success": True,
@@ -282,9 +268,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                     return {"success": False, "error": "light_id is required to set brightness"}
                 if brightness_percent is None:
                     return {"success": False, "error": "brightness_percent is required"}
-                result = await _control_light(
-                    light_id, "set_brightness", brightness_percent=brightness_percent
-                )
+                result = await _control_light(light_id, "set_brightness", brightness_percent=brightness_percent)
                 if result["success"]:
                     return {
                         "success": True,
@@ -479,11 +463,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                 # Find Zojirushi kettle
                 all_devices = await tapo_plug_manager.get_all_devices()
                 kettle = next(
-                    (
-                        d
-                        for d in all_devices
-                        if "zojirushi" in d.name.lower() or "kettle" in d.name.lower()
-                    ),
+                    (d for d in all_devices if "zojirushi" in d.name.lower() or "kettle" in d.name.lower()),
                     None,
                 )
                 if not kettle:
@@ -499,11 +479,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                 # Find Zojirushi kettle
                 all_devices = await tapo_plug_manager.get_all_devices()
                 kettle = next(
-                    (
-                        d
-                        for d in all_devices
-                        if "zojirushi" in d.name.lower() or "kettle" in d.name.lower()
-                    ),
+                    (d for d in all_devices if "zojirushi" in d.name.lower() or "kettle" in d.name.lower()),
                     None,
                 )
                 if not kettle:
@@ -548,8 +524,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
             similar_actions = [
                 key
                 for key in DEVICE_ACTIONS
-                if action_lower_normalized in key.replace("_", " ")
-                or key.replace("_", " ") in action_lower_normalized
+                if action_lower_normalized in key.replace("_", " ") or key.replace("_", " ") in action_lower_normalized
             ]
 
             error_msg = f"Unknown action '{action}'."
@@ -593,7 +568,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
         light_id: str | None = None,
         group_id: str | None = None,
         scene_id: str | None = None,
-        brightness_percent: Union[int, str] | None = None,
+        brightness_percent: int | str | None = None,
         power_state: str | None = None,
         effect: str | None = None,
     ) -> dict[str, Any]:

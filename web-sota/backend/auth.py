@@ -5,7 +5,6 @@ import logging
 import secrets
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from fastapi import HTTPException, Request
@@ -21,7 +20,7 @@ _sessions: dict[str, dict] = {}
 CONFIG_PATH = Path(__file__).parent.parent.parent.parent / "config.yaml"
 
 
-def hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
+def hash_password(password: str, salt: str | None = None) -> tuple[str, str]:
     """Hash password with salt using SHA-256.
 
     Returns (hashed_password, salt).
@@ -90,7 +89,7 @@ def create_session(username: str) -> str:
     return session_id
 
 
-def get_session(session_id: str) -> Optional[dict]:
+def get_session(session_id: str) -> dict | None:
     """Get session by ID."""
     if not session_id:
         return None
@@ -112,7 +111,7 @@ def delete_session(session_id: str) -> None:
     _sessions.pop(session_id, None)
 
 
-def get_current_user(request: Request) -> Optional[str]:
+def get_current_user(request: Request) -> str | None:
     """Get current user from session cookie."""
     session_id = request.cookies.get("session_id")
     session = get_session(session_id)

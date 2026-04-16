@@ -4,7 +4,7 @@ Sensor API endpoints for real-world ingestion data.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
@@ -105,7 +105,7 @@ async def get_tapo_p115_history(
     ]
 
     if not data_points and device.current_power is not None:
-        now = datetime.now(tz=timezone.utc).isoformat()
+        now = datetime.now(tz=UTC).isoformat()
         data_points = [
             {
                 "timestamp": now,

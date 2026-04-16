@@ -1,7 +1,6 @@
 """Audio streaming API for cameras."""
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
@@ -22,7 +21,7 @@ class AudioStreamRequest(BaseModel):
 _active_streams: dict = {}
 
 
-async def get_camera_rtsp_url(camera_id: str) -> Optional[str]:
+async def get_camera_rtsp_url(camera_id: str) -> str | None:
     """Get RTSP URL for a camera with authentication."""
     from devices_mcp.core.server import DevicesMCPServer
 
@@ -63,9 +62,7 @@ async def get_audio_info(camera_id: str):
     rtsp_url = await get_camera_rtsp_url(camera_id)
 
     if not rtsp_url:
-        raise HTTPException(
-            status_code=404, detail=f"Camera {camera_id} not found or not connected"
-        )
+        raise HTTPException(status_code=404, detail=f"Camera {camera_id} not found or not connected")
 
     # Mask password in response
     from urllib.parse import urlparse

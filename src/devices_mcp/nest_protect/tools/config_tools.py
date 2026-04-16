@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import toml
 from pydantic import BaseModel, Field
@@ -11,13 +11,13 @@ from pydantic import BaseModel, Field
 class ConfigSectionParams(BaseModel):
     """Parameters for getting config section."""
 
-    section: Optional[str] = Field(None, description="Specific section to retrieve (optional)")
+    section: str | None = Field(None, description="Specific section to retrieve (optional)")
 
 
 class UpdateConfigParams(BaseModel):
     """Parameters for updating config."""
 
-    updates: Dict[str, Any] = Field(..., description="Dictionary of configuration updates")
+    updates: dict[str, Any] = Field(..., description="Dictionary of configuration updates")
     save_to_file: bool = Field(True, description="Whether to save changes to config file")
 
 
@@ -30,9 +30,7 @@ class ResetConfigParams(BaseModel):
 class ExportConfigParams(BaseModel):
     """Parameters for exporting config."""
 
-    file_path: str = Field(
-        "config/exported_config.toml", description="Path to save the config file"
-    )
+    file_path: str = Field("config/exported_config.toml", description="Path to save the config file")
     format: str = Field("toml", description="Export format (toml, json)")
 
 
@@ -43,7 +41,7 @@ class ImportConfigParams(BaseModel):
     merge: bool = Field(True, description="Merge with existing config (True) or replace (False)")
 
 
-async def get_config(section: Optional[str] = None) -> Dict[str, Any]:
+async def get_config(section: str | None = None) -> dict[str, Any]:
     """Get current configuration or a specific section."""
     from ..state_manager import get_app_state
 
@@ -57,7 +55,7 @@ async def get_config(section: Optional[str] = None) -> Dict[str, Any]:
         return {"status": "error", "message": f"Failed to get config: {e!s}"}
 
 
-async def update_config(updates: Dict[str, Any], save_to_file: bool = True) -> Dict[str, Any]:
+async def update_config(updates: dict[str, Any], save_to_file: bool = True) -> dict[str, Any]:
     """Update configuration values."""
     from ..state_manager import get_app_state
 
@@ -68,11 +66,7 @@ async def update_config(updates: Dict[str, Any], save_to_file: bool = True) -> D
 
         # Apply updates
         for section, values in updates.items():
-            if (
-                section in current_config
-                and isinstance(current_config[section], dict)
-                and isinstance(values, dict)
-            ):
+            if section in current_config and isinstance(current_config[section], dict) and isinstance(values, dict):
                 current_config[section].update(values)
             else:
                 current_config[section] = values
@@ -99,7 +93,7 @@ async def update_config(updates: Dict[str, Any], save_to_file: bool = True) -> D
         return {"status": "error", "message": f"Failed to update config: {e!s}"}
 
 
-async def reset_config(confirm: bool = False) -> Dict[str, Any]:
+async def reset_config(confirm: bool = False) -> dict[str, Any]:
     """Reset configuration to default values."""
     if not confirm:
         return {
@@ -125,9 +119,7 @@ async def reset_config(confirm: bool = False) -> Dict[str, Any]:
         return {"status": "error", "message": f"Failed to reset config: {e!s}"}
 
 
-async def export_config(
-    file_path: str = "config/exported_config.toml", format: str = "toml"
-) -> Dict[str, Any]:
+async def export_config(file_path: str = "config/exported_config.toml", format: str = "toml") -> dict[str, Any]:
     """Export current configuration to a file."""
     from ..state_manager import get_app_state
 
@@ -153,7 +145,7 @@ async def export_config(
         return {"status": "error", "message": f"Failed to export config: {e!s}"}
 
 
-async def import_config(file_path: str, merge: bool = True) -> Dict[str, Any]:
+async def import_config(file_path: str, merge: bool = True) -> dict[str, Any]:
     """Import configuration from a file."""
     from ..models import ProtectConfig
     from ..state_manager import get_app_state

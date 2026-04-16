@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter
 
@@ -28,12 +28,12 @@ async def _get_security_manager() -> SecurityIntegrationManager:
     return _security_manager
 
 
-async def _compute_ring_status() -> Dict[str, Any]:
+async def _compute_ring_status() -> dict[str, Any]:
     """Get real Ring device status with battery monitoring."""
     cfg = get_model(SecuritySettings)
     enabled = bool(cfg.integrations.ring_mcp.get("enabled", False))
 
-    devices: list[Dict[str, Any]] = []
+    devices: list[dict[str, Any]] = []
     battery_warnings = 0
     battery_critical = 0
 
@@ -76,9 +76,7 @@ async def _compute_ring_status() -> Dict[str, Any]:
                         # Check if device is charging (if available in health data)
                         health_data = camera_info.get("health", {})
                         if isinstance(health_data, dict):
-                            is_charging = health_data.get("charging", False) or health_data.get(
-                                "powered", False
-                            )
+                            is_charging = health_data.get("charging", False) or health_data.get("powered", False)
 
                         devices.append(
                             {
@@ -119,12 +117,12 @@ async def _compute_ring_status() -> Dict[str, Any]:
     }
 
 
-async def _compute_nest_status() -> Dict[str, Any]:
+async def _compute_nest_status() -> dict[str, Any]:
     """Get real Nest Protect device status with battery monitoring."""
     cfg = get_model(SecuritySettings)
     enabled = bool(cfg.integrations.nest_protect.get("enabled", False))
 
-    devices: list[Dict[str, Any]] = []
+    devices: list[dict[str, Any]] = []
     battery_warnings = 0
     battery_critical = 0
 
@@ -185,17 +183,17 @@ async def _compute_nest_status() -> Dict[str, Any]:
 
 
 @router.get("/ring/status", summary="Get Ring integration status")
-async def get_ring_status() -> Dict[str, Any]:
+async def get_ring_status() -> dict[str, Any]:
     return await _compute_ring_status()
 
 
 @router.get("/nest/status", summary="Get Nest Protect integration status")
-async def get_nest_status() -> Dict[str, Any]:
+async def get_nest_status() -> dict[str, Any]:
     return await _compute_nest_status()
 
 
 @router.get("/nest/devices", summary="Get all Nest Protect devices")
-async def get_nest_devices() -> Dict[str, Any]:
+async def get_nest_devices() -> dict[str, Any]:
     """Get all Nest Protect devices with detailed status."""
     try:
         from devices_mcp.integrations.nest_client import get_nest_client
@@ -238,7 +236,7 @@ async def get_nest_devices() -> Dict[str, Any]:
 
 
 @router.get("/nest/alerts", summary="Get Nest Protect alerts")
-async def get_nest_alerts() -> Dict[str, Any]:
+async def get_nest_alerts() -> dict[str, Any]:
     """Get active alerts from Nest Protect devices (smoke, CO, offline)."""
     try:
         from devices_mcp.integrations.nest_client import get_nest_client
@@ -265,9 +263,7 @@ async def get_nest_alerts() -> Dict[str, Any]:
                         "location": device.location,
                         "type": "smoke",
                         "status": device.smoke_status.value,
-                        "severity": "emergency"
-                        if device.smoke_status.value == "emergency"
-                        else "warning",
+                        "severity": "emergency" if device.smoke_status.value == "emergency" else "warning",
                     }
                 )
 
@@ -280,9 +276,7 @@ async def get_nest_alerts() -> Dict[str, Any]:
                         "location": device.location,
                         "type": "co",
                         "status": device.co_status.value,
-                        "severity": "emergency"
-                        if device.co_status.value == "emergency"
-                        else "warning",
+                        "severity": "emergency" if device.co_status.value == "emergency" else "warning",
                     }
                 )
 
@@ -324,7 +318,7 @@ async def get_nest_alerts() -> Dict[str, Any]:
 
 
 @router.get("/nest/summary", summary="Get Nest Protect summary")
-async def get_nest_summary() -> Dict[str, Any]:
+async def get_nest_summary() -> dict[str, Any]:
     """Get comprehensive Nest Protect summary."""
     try:
         from devices_mcp.integrations.nest_client import get_nest_client
@@ -337,9 +331,7 @@ async def get_nest_summary() -> Dict[str, Any]:
                 "initialized": status.get("enabled", False),
                 "total_devices": status.get("devices_total", 0),
                 "devices": status.get("devices", []),
-                "message": "Using security manager"
-                if status.get("enabled")
-                else "Nest client not initialized",
+                "message": "Using security manager" if status.get("enabled") else "Nest client not initialized",
             }
 
         summary = await client.get_summary()

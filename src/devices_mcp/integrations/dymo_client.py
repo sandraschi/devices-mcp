@@ -1,7 +1,6 @@
 """Dymo label printer integration client."""
 
 import logging
-from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ class DymoClient:
             "blue_on_white",
         ]
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get printer status."""
         # Simulated status
         return {
@@ -33,7 +32,7 @@ class DymoClient:
             "firmware_version": "1.0.0",
         }
 
-    async def print_label(self, text: str, **kwargs) -> Dict:
+    async def print_label(self, text: str, **kwargs) -> dict:
         """Print a single label."""
         logger.info(f"Dymo: Printing label '{text}' with settings: {kwargs}")
         # In real implementation, this would communicate with Dymo HID/USB
@@ -44,7 +43,7 @@ class DymoClient:
             "estimated_length_mm": len(text) * 2,
         }
 
-    async def print_batch(self, labels: List[str], **kwargs) -> Dict:
+    async def print_batch(self, labels: list[str], **kwargs) -> dict:
         """Print multiple labels."""
         logger.info(f"Dymo: Printing batch of {len(labels)} labels")
         results = []
@@ -53,7 +52,7 @@ class DymoClient:
             results.append({**result, "batch_index": i})
         return {"success": True, "total_labels": len(labels), "results": results}
 
-    async def create_shopping_labels(self, items: List[str], **kwargs) -> Dict:
+    async def create_shopping_labels(self, items: list[str], **kwargs) -> dict:
         """Create formatted shopping list labels."""
         include_checkboxes = kwargs.get("include_checkboxes", True)
         formatted_labels = []
@@ -62,7 +61,7 @@ class DymoClient:
             formatted_labels.append(f"{prefix}{item}")
         return await self.print_batch(formatted_labels, **kwargs)
 
-    async def create_inventory_labels(self, items: List[Dict[str, str]], **kwargs) -> Dict:
+    async def create_inventory_labels(self, items: list[dict[str, str]], **kwargs) -> dict:
         """Create formatted inventory labels."""
         formatted_labels = []
         for item in items:

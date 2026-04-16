@@ -3,7 +3,7 @@ Log management API endpoints for manual log operations.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
@@ -14,9 +14,7 @@ router = APIRouter(prefix="/api/logs", tags=["log-management"])
 
 
 @router.post("/sanitize", summary="Sanitize log files")
-async def sanitize_logs(
-    background_tasks: BackgroundTasks, log_files: list[str] = None
-) -> Dict[str, Any]:
+async def sanitize_logs(background_tasks: BackgroundTasks, log_files: list[str] = None) -> dict[str, Any]:
     """
     Manually trigger log sanitization (rotation, compression, cleanup).
 
@@ -37,7 +35,7 @@ async def sanitize_logs(
 
 
 @router.get("/stats", summary="Get log statistics")
-async def get_logs_stats() -> Dict[str, Any]:
+async def get_logs_stats() -> dict[str, Any]:
     """
     Get statistics about log files in the managed directory.
 
@@ -52,7 +50,7 @@ async def get_logs_stats() -> Dict[str, Any]:
 
 
 @router.post("/rotate/{log_file}", summary="Rotate specific log file")
-async def rotate_log_file(log_file: str, background_tasks: BackgroundTasks) -> Dict[str, Any]:
+async def rotate_log_file(log_file: str, background_tasks: BackgroundTasks) -> dict[str, Any]:
     """
     Manually rotate a specific log file.
 

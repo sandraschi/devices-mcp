@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from .base import CameraConfig, CameraFactory
 from .groups import CameraGroupManager
@@ -14,13 +14,11 @@ class CameraManager:
     """Manages multiple camera instances and groups."""
 
     def __init__(self):
-        self.cameras: Dict[str, Any] = {}
+        self.cameras: dict[str, Any] = {}
         self._initialized = False
         self.groups = CameraGroupManager()
 
-    async def initialize(
-        self, configs: Optional[List[dict]] = None, auto_discover_usb: bool = True
-    ) -> None:
+    async def initialize(self, configs: list[dict] | None = None, auto_discover_usb: bool = True) -> None:
         """Initialize camera manager with configuration and optional USB camera discovery.
 
         Args:
@@ -78,9 +76,7 @@ class CameraManager:
                                 }
                             )
 
-                            logger.info(
-                                f"Auto-discovered USB camera at device {device_id}: {width}x{height}"
-                            )
+                            logger.info(f"Auto-discovered USB camera at device {device_id}: {width}x{height}")
                         cap.release()
                 except Exception as e:
                     logger.debug(f"Error checking camera device {device_id}: {e}")
@@ -135,9 +131,7 @@ class CameraManager:
                     logger.warning(f"Failed to auto-add USB camera: {camera_name}")
 
             if discovered_cameras:
-                logger.info(
-                    f"Auto-discovery complete: found {len(discovered_cameras)} USB camera(s)"
-                )
+                logger.info(f"Auto-discovery complete: found {len(discovered_cameras)} USB camera(s)")
             else:
                 logger.info("Auto-discovery complete: no USB cameras found")
 
@@ -257,7 +251,7 @@ class CameraManager:
 
         return await camera.disable_speakerphone()
 
-    async def get_camera_speakerphone_status(self, camera_name: str) -> Dict[str, Any]:
+    async def get_camera_speakerphone_status(self, camera_name: str) -> dict[str, Any]:
         """Get speakerphone status for a camera."""
         camera = await self.get_camera(camera_name)
         if not camera:
@@ -282,7 +276,7 @@ class CameraManager:
 
         return await camera.stop_surveillance()
 
-    async def get_camera_surveillance_events(self, camera_name: str, limit: int = 10) -> List[Dict]:
+    async def get_camera_surveillance_events(self, camera_name: str, limit: int = 10) -> list[dict]:
         """Get surveillance events for a camera."""
         camera = await self.get_camera(camera_name)
         if not camera:
@@ -295,7 +289,7 @@ class CameraManager:
 
         return await camera.get_surveillance_events(limit)
 
-    async def add_camera(self, config: Union[dict, CameraConfig]) -> bool:
+    async def add_camera(self, config: dict | CameraConfig) -> bool:
         """Add a new camera.
 
         Args:
@@ -323,15 +317,11 @@ class CameraManager:
                 # Reduced timeout to prevents server startup hang from slow cameras
                 connected = await asyncio.wait_for(camera.connect(), timeout=2.0)
                 logger.info(f"Camera {config.name} connected: {connected}")
-            except asyncio.TimeoutError:
-                logger.warning(
-                    f"Camera {config.name} connection timed out (2s) - will retry on stream access"
-                )
+            except TimeoutError:
+                logger.warning(f"Camera {config.name} connection timed out (2s) - will retry on stream access")
                 connected = False
             except Exception as e:
-                logger.warning(
-                    f"Camera {config.name} connection failed: {e} - will retry on stream access"
-                )
+                logger.warning(f"Camera {config.name} connection failed: {e} - will retry on stream access")
                 connected = False
 
             # Add camera even if connection failed - it will retry when needed
@@ -372,7 +362,7 @@ class CameraManager:
         """Get a camera instance by name."""
         return self.cameras.get(name)
 
-    async def list_cameras(self, group: Optional[str] = None) -> List[dict]:
+    async def list_cameras(self, group: str | None = None) -> list[dict]:
         """List all cameras and their status, optionally filtered by group.
 
         Args:
@@ -401,7 +391,7 @@ class CameraManager:
                     "status": status,
                     "groups": self.groups.get_camera_groups(name),
                 }
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning(f"Camera {name} status check timed out")
                 return {
                     "name": name,
@@ -420,9 +410,7 @@ class CameraManager:
                 }
 
         # Run checks in parallel
-        results = await asyncio.gather(
-            *[get_camera_info(name) for name in camera_names], return_exceptions=True
-        )
+        results = await asyncio.gather(*[get_camera_info(name) for name in camera_names], return_exceptions=True)
 
         # Filter out None results and handle exceptions in results
         final_results = []
@@ -435,9 +423,7 @@ class CameraManager:
 
         return final_results
 
-    async def capture_still(
-        self, camera_name: str, save_path: Optional[Union[str, Path]] = None
-    ) -> dict:
+    async def capture_still(self, camera_name: str, save_path: str | Path | None = None) -> dict:
         """Capture a still image from a camera."""
         if camera_name not in self.cameras:
             return {"status": "error", "message": f"Camera not found: {camera_name}"}
@@ -503,7 +489,7 @@ class CameraManager:
         """
         return self.groups.delete_group(group_name)
 
-    async def list_groups(self) -> List[Dict[str, Any]]:
+    async def list_groups(self) -> list[dict[str, Any]]:
         """List all camera groups with their cameras.
 
         Returns:

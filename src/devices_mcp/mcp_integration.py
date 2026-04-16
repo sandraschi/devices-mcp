@@ -7,7 +7,7 @@ This module provides base classes and utilities for FastMCP 3.1 compatibility.
 import inspect
 import logging
 from enum import Enum
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 from fastmcp.tools import Tool as FastMCPTool
 from pydantic import BaseModel, Field
@@ -65,15 +65,13 @@ class BaseTool(FastMCPTool):
             "name": getattr(cls, "name", cls.__name__),
             "description": cls.__doc__ or "",
             "meta": {
-                "category": (
-                    cls.Meta.category if hasattr(cls.Meta, "category") else ToolCategory.UTILITY
-                ),
+                "category": (cls.Meta.category if hasattr(cls.Meta, "category") else ToolCategory.UTILITY),
                 **getattr(cls.Meta, "meta", {}),
             },
         }
 
 
-def tool(name: Optional[str] = None, **kwargs):
+def tool(name: str | None = None, **kwargs):
     """Decorator for FastMCP 3.1+ tools.
 
     Args:

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import aiohttp
 
@@ -38,7 +38,7 @@ class NestProtectDevice:
     co_status: NestProtectStatus
     battery_health: str  # "ok", "replace"
     is_online: bool
-    last_manual_test: Optional[datetime]
+    last_manual_test: datetime | None
     software_version: str
     model: str  # "Nest Protect" or "Nest Protect (Wired)"
 
@@ -51,9 +51,7 @@ class NestProtectDevice:
             "co_status": self.co_status.value,
             "battery_health": self.battery_health,
             "is_online": self.is_online,
-            "last_manual_test": self.last_manual_test.isoformat()
-            if self.last_manual_test
-            else None,
+            "last_manual_test": self.last_manual_test.isoformat() if self.last_manual_test else None,
             "software_version": self.software_version,
             "model": self.model,
         }
@@ -79,7 +77,7 @@ class NestClient:
 
     def __init__(
         self,
-        refresh_token: Optional[str] = None,
+        refresh_token: str | None = None,
         token_file: str = "nest_token.cache",
         cache_ttl: int = 60,
     ):
@@ -88,12 +86,12 @@ class NestClient:
         self.token_file = self._adjust_token_path(token_file)
         self.cache_ttl = cache_ttl
 
-        self._session: Optional[aiohttp.ClientSession] = None
-        self._access_token: Optional[str] = None
-        self._jwt_token: Optional[str] = None
-        self._user_id: Optional[str] = None
+        self._session: aiohttp.ClientSession | None = None
+        self._access_token: str | None = None
+        self._jwt_token: str | None = None
+        self._user_id: str | None = None
         self._devices: dict[str, NestProtectDevice] = {}
-        self._cache_time: Optional[datetime] = None
+        self._cache_time: datetime | None = None
         self._initialized = False
 
     @staticmethod
@@ -269,17 +267,11 @@ class NestClient:
                     location=device_data.get("where_name", "Unknown"),
                     smoke_status=self._map_status(device_data.get("smoke_status", 0)),
                     co_status=self._map_status(device_data.get("co_status", 0)),
-                    battery_health="ok"
-                    if device_data.get("battery_health_state", 0) == 0
-                    else "replace",
+                    battery_health="ok" if device_data.get("battery_health_state", 0) == 0 else "replace",
                     is_online=device_data.get("component_wifi_test_passed", False),
-                    last_manual_test=self._parse_timestamp(
-                        device_data.get("last_manual_test_utc_secs")
-                    ),
+                    last_manual_test=self._parse_timestamp(device_data.get("last_manual_test_utc_secs")),
                     software_version=device_data.get("software_version", "unknown"),
-                    model="Nest Protect (Wired)"
-                    if device_data.get("line_power_present")
-                    else "Nest Protect",
+                    model="Nest Protect (Wired)" if device_data.get("line_power_present") else "Nest Protect",
                 )
                 self._devices[device_id] = device
 
@@ -295,7 +287,7 @@ class NestClient:
             return NestProtectStatus.EMERGENCY
         return NestProtectStatus.OFFLINE
 
-    def _parse_timestamp(self, ts: Optional[int]) -> Optional[datetime]:
+    def _parse_timestamp(self, ts: int | None) -> datetime | None:
         """Parse Unix timestamp to datetime."""
         if ts:
             return datetime.fromtimestamp(ts)
@@ -311,7 +303,7 @@ class NestClient:
 
         return list(self._devices.values())
 
-    async def get_device(self, device_id: str) -> Optional[NestProtectDevice]:
+    async def get_device(self, device_id: str) -> NestProtectDevice | None:
         """Get a specific device by ID."""
         await self.get_devices()  # Ensure fresh data
         return self._devices.get(device_id)
@@ -393,14 +385,14 @@ class NestClient:
 
 
 # Global client instance
-_nest_client: Optional[NestClient] = None
+_nest_client: NestClient | None = None
 
 
 async def init_nest_client(
-    refresh_token: Optional[str] = None,
+    refresh_token: str | None = None,
     token_file: str = "nest_token.cache",
     cache_ttl: int = 60,
-) -> Optional[NestClient]:
+) -> NestClient | None:
     """Initialize the global Nest client."""
     global _nest_client
 
@@ -418,6 +410,6 @@ async def init_nest_client(
     return None
 
 
-def get_nest_client() -> Optional[NestClient]:
+def get_nest_client() -> NestClient | None:
     """Get the global Nest client instance."""
     return _nest_client

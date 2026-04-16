@@ -17,7 +17,6 @@ SECURITY AUTOMATION WORKFLOWS:
 """
 
 import logging
-from typing import List, Optional
 
 from fastmcp import Context
 
@@ -69,9 +68,9 @@ except ImportError:
 @mcp.tool
 async def agentic_security_workflow(
     workflow_prompt: str,
-    available_tools: List[str],
+    available_tools: list[str],
     max_iterations: int = 5,
-    context: Optional[Context] = None,
+    context: Context | None = None,
 ) -> dict:
     """
     Execute agentic security workflows using FastMCP 3.1+ sampling with tools.

@@ -6,7 +6,7 @@ FastMCP 2.13+ compliant with comprehensive docstrings and AI-friendly error mess
 """
 
 import os
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -14,8 +14,8 @@ from ...utils import get_logger
 logger = get_logger(__name__)
 
 # In-memory storage for recent searches and saved searches
-_recent_searches: List[Dict[str, Any]] = []
-_saved_searches: Dict[str, Dict[str, Any]] = {}
+_recent_searches: list[dict[str, Any]] = []
+_saved_searches: dict[str, dict[str, Any]] = {}
 
 
 def _get_plex_service():
@@ -39,33 +39,33 @@ def _get_plex_service():
 @mcp.tool()
 async def plex_search(
     operation: Literal["search", "advanced_search", "suggest", "recent_searches", "save_search"],
-    query: Optional[str] = None,
-    library_id: Optional[str] = None,
-    media_type: Optional[str] = None,
+    query: str | None = None,
+    library_id: str | None = None,
+    media_type: str | None = None,
     limit: int = 100,
     offset: int = 0,
-    title: Optional[str] = None,
-    year: Optional[Union[int, List[int], str]] = None,
-    decade: Optional[int] = None,
-    genre: Optional[Union[str, List[str]]] = None,
-    actor: Optional[Union[str, List[str]]] = None,
-    director: Optional[Union[str, List[str]]] = None,
-    content_rating: Optional[Union[str, List[str]]] = None,
-    studio: Optional[Union[str, List[str]]] = None,
-    country: Optional[Union[str, List[str]]] = None,
-    language: Optional[Union[str, List[str]]] = None,
-    collection: Optional[Union[str, List[str]]] = None,
-    min_rating: Optional[float] = None,
-    max_rating: Optional[float] = None,
-    min_year: Optional[int] = None,
-    max_year: Optional[int] = None,
-    unwatched: Optional[bool] = None,
+    title: str | None = None,
+    year: int | list[int] | str | None = None,
+    decade: int | None = None,
+    genre: str | list[str] | None = None,
+    actor: str | list[str] | None = None,
+    director: str | list[str] | None = None,
+    content_rating: str | list[str] | None = None,
+    studio: str | list[str] | None = None,
+    country: str | list[str] | None = None,
+    language: str | list[str] | None = None,
+    collection: str | list[str] | None = None,
+    min_rating: float | None = None,
+    max_rating: float | None = None,
+    min_year: int | None = None,
+    max_year: int | None = None,
+    unwatched: bool | None = None,
     sort_by: str = "titleSort",
     sort_dir: str = "asc",
-    search_name: Optional[str] = None,
+    search_name: str | None = None,
     max_recent: int = 10,
-    summary_contains: Optional[str] = None,
-) -> Dict[str, Any]:
+    summary_contains: str | None = None,
+) -> dict[str, Any]:
     """Comprehensive search management tool for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -247,9 +247,7 @@ async def plex_search(
 
                 # Filter by summary - items are dicts from get_library_items
                 results = [
-                    item
-                    for item in all_items
-                    if item.get("summary") and search_term in item.get("summary", "").lower()
+                    item for item in all_items if item.get("summary") and search_term in item.get("summary", "").lower()
                 ][:limit]
             else:
                 results = await plex.search_media(query=query, limit=limit, library_id=library_id)
@@ -257,11 +255,7 @@ async def plex_search(
                 # Filter by summary if specified
                 if summary_contains and isinstance(results, list):
                     search_term = summary_contains.lower()
-                    results = [
-                        item
-                        for item in results
-                        if item.summary and search_term in item.summary.lower()
-                    ]
+                    results = [item for item in results if item.summary and search_term in item.summary.lower()]
 
             return {
                 "success": True,
@@ -339,9 +333,7 @@ async def plex_search(
                 }
 
             # Use search with limit=1 to get suggestions
-            suggestions = await plex.search_media(
-                query=query, limit=min(limit, 10), library_id=library_id
-            )
+            suggestions = await plex.search_media(query=query, limit=min(limit, 10), library_id=library_id)
             return {
                 "success": True,
                 "operation": "suggest",
@@ -407,9 +399,7 @@ async def plex_search(
             "success": False,
             "error": f"Unknown operation: {operation}",
             "error_code": "INVALID_OPERATION",
-            "suggestions": [
-                "Use one of: search, advanced_search, suggest, recent_searches, save_search"
-            ],
+            "suggestions": ["Use one of: search, advanced_search, suggest, recent_searches, save_search"],
         }
 
     except Exception as e:

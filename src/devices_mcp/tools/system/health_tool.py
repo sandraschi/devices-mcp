@@ -5,7 +5,7 @@ Dedicated health check tool for comprehensive system monitoring.
 import logging
 import time
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -18,7 +18,7 @@ class HealthCheckResult(BaseModel):
     """Result of a comprehensive health check."""
 
     status: str = Field(..., description="Overall health status: healthy/warning/critical")
-    checks: Dict[str, Any] = Field(..., description="Individual health check results")
+    checks: dict[str, Any] = Field(..., description="Individual health check results")
     response_time_ms: float = Field(..., description="Time taken for health check")
     timestamp: str = Field(..., description="Timestamp of health check")
 
@@ -33,12 +33,8 @@ class HealthCheckTool(BaseTool):
         category = ToolCategory.SYSTEM
 
         class Parameters:
-            include_cameras: bool = Field(
-                True, description="Whether to include camera health checks"
-            )
-            include_performance: bool = Field(
-                True, description="Whether to include performance metrics"
-            )
+            include_cameras: bool = Field(True, description="Whether to include camera health checks")
+            include_performance: bool = Field(True, description="Whether to include performance metrics")
 
     include_cameras: bool = True
     include_performance: bool = True
@@ -50,7 +46,7 @@ class HealthCheckTool(BaseTool):
             "last_reset": datetime.utcnow(),
         }
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Perform comprehensive health check."""
         start_time = time.time()
 
@@ -123,7 +119,7 @@ class HealthCheckTool(BaseTool):
                 timestamp=datetime.utcnow().isoformat(),
             ).dict()
 
-    async def _check_server_health(self) -> Dict[str, Any]:
+    async def _check_server_health(self) -> dict[str, Any]:
         """Check MCP server health."""
         try:
             # Check if server is responsive by testing basic operations
@@ -135,9 +131,7 @@ class HealthCheckTool(BaseTool):
             server_responsive = hasattr(server, "mcp") and server.mcp is not None
 
             # Check for registered tools - use _tools_registered flag instead of list_tools()
-            tools_registered = (
-                getattr(server, "_tools_registered", False) if server_responsive else False
-            )
+            tools_registered = getattr(server, "_tools_registered", False) if server_responsive else False
 
             issues = []
             if not server_responsive:
@@ -158,7 +152,7 @@ class HealthCheckTool(BaseTool):
             logger.exception("Server health check failed")
             return {"status": "critical", "error": str(e), "issues": [str(e)]}
 
-    async def _check_system_health(self) -> Dict[str, Any]:
+    async def _check_system_health(self) -> dict[str, Any]:
         """Check system resource health."""
         try:
             try:
@@ -221,7 +215,7 @@ class HealthCheckTool(BaseTool):
             logger.exception("System health check failed")
             return {"status": "critical", "error": str(e), "issues": [str(e)]}
 
-    async def _check_camera_health(self) -> Dict[str, Any]:
+    async def _check_camera_health(self) -> dict[str, Any]:
         """Check camera connectivity and health."""
         try:
             from devices_mcp.core.server import TapoCameraServer
@@ -239,9 +233,7 @@ class HealthCheckTool(BaseTool):
             if hasattr(camera_manager, "list_cameras"):
                 cameras_list = await camera_manager.list_cameras()
                 total_cameras = len(cameras_list)
-                online_cameras = sum(
-                    1 for cam in cameras_list if cam.get("status", {}).get("connected", False)
-                )
+                online_cameras = sum(1 for cam in cameras_list if cam.get("status", {}).get("connected", False))
             elif hasattr(camera_manager, "cameras"):
                 cameras_dict = camera_manager.cameras
                 total_cameras = len(cameras_dict)
@@ -284,7 +276,7 @@ class HealthCheckTool(BaseTool):
             logger.exception("Camera health check failed")
             return {"status": "critical", "error": str(e), "issues": [str(e)]}
 
-    async def _get_performance_metrics(self) -> Dict[str, Any]:
+    async def _get_performance_metrics(self) -> dict[str, Any]:
         """Get performance monitoring metrics."""
         try:
             # Calculate this health check response time (will be updated by caller)
@@ -304,15 +296,11 @@ class HealthCheckTool(BaseTool):
 
             # Clean old metrics (keep last 100)
             if len(self._performance_metrics["response_times"]) > 100:
-                self._performance_metrics["response_times"] = self._performance_metrics[
-                    "response_times"
-                ][-100:]
+                self._performance_metrics["response_times"] = self._performance_metrics["response_times"][-100:]
 
             # Calculate average response time
             response_times = self._performance_metrics["response_times"]
-            avg_response_time_ms = (
-                sum(response_times) / len(response_times) if response_times else 0
-            )
+            avg_response_time_ms = sum(response_times) / len(response_times) if response_times else 0
 
             try:
                 import psutil

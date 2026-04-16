@@ -7,7 +7,6 @@ operations for the Plex Media Server.
 
 import logging
 import random
-from typing import List, Optional
 
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -54,9 +53,7 @@ class PlaylistService(BaseService):
                 logger.warning("Smart playlist creation is not fully implemented")
 
                 # Create an empty playlist and add filtered items
-                playlist = self.plex.createPlaylist(
-                    title=request.name, items=[], smart=bool(request.smart_rules)
-                )
+                playlist = self.plex.createPlaylist(title=request.name, items=[], smart=bool(request.smart_rules))
 
                 # TODO: Apply smart rules to populate the playlist
                 # This would involve querying the library with the specified filters
@@ -96,9 +93,7 @@ class PlaylistService(BaseService):
             logger.exception(error_msg)
             raise ServiceError(error_msg, code="playlist_creation_failed") from e
 
-    async def get_playlists(
-        self, playlist_type: Optional[str] = None, user_playlists: bool = True
-    ) -> List[PlexPlaylist]:
+    async def get_playlists(self, playlist_type: str | None = None, user_playlists: bool = True) -> list[PlexPlaylist]:
         """Get all playlists from the Plex server.
 
         Args:
@@ -154,7 +149,7 @@ class PlaylistService(BaseService):
             logger.exception(error_msg)
             raise ServiceError(error_msg, code="get_playlist_failed") from e
 
-    async def get_playlist_items(self, playlist_id: str) -> List[MediaItem]:
+    async def get_playlist_items(self, playlist_id: str) -> list[MediaItem]:
         """Get all items in a playlist.
 
         Args:
@@ -195,9 +190,7 @@ class PlaylistService(BaseService):
             items = playlist.items()
 
             # Calculate basic statistics
-            total_duration = (
-                sum((item.duration or 0) for item in items) / 1000
-            )  # Convert to seconds
+            total_duration = sum((item.duration or 0) for item in items) / 1000  # Convert to seconds
             avg_rating = sum((item.userRating or 0) for item in items) / len(items) if items else 0
 
             # Generate some mock recommendations
@@ -205,9 +198,7 @@ class PlaylistService(BaseService):
             if len(items) < 10:
                 recommendations.append("Consider adding more items to this playlist")
             if total_duration > 4 * 3600:  # More than 4 hours
-                recommendations.append(
-                    "This is a long playlist - consider splitting it into multiple parts"
-                )
+                recommendations.append("This is a long playlist - consider splitting it into multiple parts")
 
             # Get most common genres (simplified)
             genres = {}
@@ -223,9 +214,7 @@ class PlaylistService(BaseService):
                 total_plays=random.randint(10, 1000),  # Mock data
                 unique_users=random.randint(1, 10),  # Mock data
                 avg_completion_rate=random.uniform(50, 100),  # Mock data
-                popular_items=[random.choice(items).title for _ in range(min(3, len(items)))]
-                if items
-                else [],
+                popular_items=[random.choice(items).title for _ in range(min(3, len(items)))] if items else [],
                 skip_rate=random.uniform(0, 30),  # Mock data
                 recommendations=recommendations,
                 last_played=random.randint(1600000000, 1700000000),  # Mock data
@@ -257,9 +246,7 @@ class PlaylistService(BaseService):
             title=playlist.title,
             type=playlist.playlistType,
             summary=getattr(playlist, "summary", ""),
-            duration=sum(item.duration for item in playlist.items())
-            if hasattr(playlist, "items")
-            else 0,
+            duration=sum(item.duration for item in playlist.items()) if hasattr(playlist, "items") else 0,
             item_count=len(playlist.items()) if hasattr(playlist, "items") else 0,
             smart=getattr(playlist, "smart", False),
             created_at=int(playlist.addedAt.timestamp()) if hasattr(playlist, "addedAt") else 0,

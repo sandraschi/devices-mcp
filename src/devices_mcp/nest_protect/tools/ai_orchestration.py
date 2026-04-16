@@ -1,6 +1,6 @@
 """Advanced AI orchestration tools using sampling capabilities for intelligent device management."""
 
-from typing import Any, Dict, List, Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -8,13 +8,11 @@ from pydantic import BaseModel, Field
 class HomeSafetyAssessmentParams(BaseModel):
     """Parameters for comprehensive home safety assessment."""
 
-    include_recommendations: bool = Field(
-        True, description="Include AI-generated safety recommendations"
-    )
+    include_recommendations: bool = Field(True, description="Include AI-generated safety recommendations")
     assessment_scope: Literal["basic", "comprehensive", "emergency"] = Field(
         "comprehensive", description="Scope of safety assessment"
     )
-    focus_areas: List[str] = Field(
+    focus_areas: list[str] = Field(
         ["smoke_detection", "co_detection", "battery_levels", "connectivity"],
         description="Specific areas to focus assessment on",
     )
@@ -26,7 +24,7 @@ class EmergencyResponseParams(BaseModel):
     emergency_type: Literal["smoke", "co", "security", "medical", "unknown"] = Field(
         ..., description="Type of emergency detected"
     )
-    affected_devices: List[str] = Field(..., description="Device IDs involved in emergency")
+    affected_devices: list[str] = Field(..., description="Device IDs involved in emergency")
     response_priority: Literal["low", "medium", "high", "critical"] = Field(
         "high", description="Response priority level"
     )
@@ -53,17 +51,15 @@ class SmartAutomationParams(BaseModel):
     learning_period: Literal["1_week", "2_weeks", "1_month"] = Field(
         "2_weeks", description="Period to learn user patterns"
     )
-    confidence_threshold: float = Field(
-        0.8, ge=0.5, le=0.95, description="Minimum confidence for automation triggers"
-    )
+    confidence_threshold: float = Field(0.8, ge=0.5, le=0.95, description="Minimum confidence for automation triggers")
 
 
 @mcp.tool()
 async def assess_home_safety(
     include_recommendations: bool = True,
     assessment_scope: str = "comprehensive",
-    focus_areas: List[str] = None,
-) -> Dict[str, Any]:
+    focus_areas: list[str] = None,
+) -> dict[str, Any]:
     """🧠 **AI-Powered Home Safety Assessment with Sampling Intelligence**
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -253,11 +249,8 @@ async def assess_home_safety(
 
             analysis = {
                 "device_id": device_id,
-                "name": traits.get("sdm.devices.traits.Info", {}).get(
-                    "customName", f"Device {device_id[:8]}"
-                ),
-                "online": traits.get("sdm.devices.traits.Connectivity", {}).get("status")
-                == "ONLINE",
+                "name": traits.get("sdm.devices.traits.Info", {}).get("customName", f"Device {device_id[:8]}"),
+                "online": traits.get("sdm.devices.traits.Connectivity", {}).get("status") == "ONLINE",
                 "battery_level": traits.get("sdm.devices.traits.Battery", {}).get("batteryLevel"),
                 "alarm_status": traits.get("sdm.devices.traits.SafetyAlarm", {}).get("alarmStatus"),
                 "smoke_status": traits.get("sdm.devices.traits.Smoke", {}).get("smokeStatus"),
@@ -309,9 +302,7 @@ async def assess_home_safety(
             ]
 
             # Signal for AI sampling - complex safety analysis needed
-            if len(safety_issues) > 3 or any(
-                issue["severity"] == "critical" for issue in safety_issues
-            ):
+            if len(safety_issues) > 3 or any(issue["severity"] == "critical" for issue in safety_issues):
                 return {
                     "success": True,
                     "operation": "assess_home_safety",
@@ -402,8 +393,8 @@ async def assess_home_safety(
 
 @mcp.tool()
 async def coordinate_emergency_response(
-    emergency_type: str, affected_devices: List[str], response_priority: str = "high"
-) -> Dict[str, Any]:
+    emergency_type: str, affected_devices: list[str], response_priority: str = "high"
+) -> dict[str, Any]:
     """🚨 **AI Emergency Response Coordination with Sampling**
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -556,7 +547,7 @@ async def predict_maintenance_needs(
     analysis_depth: str = "detailed",
     time_horizon: str = "1_month",
     include_cost_estimates: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Predict future maintenance needs using AI analysis and sampling.
 
     PORTMANTEAU PATTERN RATIONALE:
@@ -609,7 +600,7 @@ async def predict_maintenance_needs(
 
 async def setup_smart_automation(
     automation_type: str, learning_period: str = "2_weeks", confidence_threshold: float = 0.8
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Set up intelligent automation using AI learning and sampling.
 
     PORTMANTEAU PATTERN RATIONALE:

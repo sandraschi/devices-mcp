@@ -10,7 +10,7 @@ tool registration for Claude Desktop stdio communication.
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from fastmcp import FastMCP
 
@@ -34,7 +34,7 @@ def register_tools(app: FastMCP) -> None:
         name="get_doorbell_status",
         description="Get comprehensive status of all Ring doorbells in the system",
     )
-    async def get_doorbell_status() -> Dict[str, Any]:
+    async def get_doorbell_status() -> dict[str, Any]:
         """Get comprehensive status of all Ring doorbells in the system.
 
         Provides detailed information about doorbell health, connectivity, settings,
@@ -86,14 +86,12 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Error getting doorbell status:")
             return {"success": False, "error": str(e)}
 
-    @app.tool(
-        name="get_doorbell_live_stream", description="Get live video stream from Ring doorbell"
-    )
+    @app.tool(name="get_doorbell_live_stream", description="Get live video stream from Ring doorbell")
     def get_doorbell_live_stream(
-        doorbell_id: Optional[str] = None,
+        doorbell_id: str | None = None,
         quality: Literal["low", "medium", "high"] = "high",
         duration_seconds: int = 30,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Start live video stream from Ring doorbell with configurable quality.
 
         Initiates a live video stream from the specified doorbell for real-time monitoring.
@@ -172,10 +170,10 @@ def register_tools(app: FastMCP) -> None:
         description="Answer an active doorbell call with two-way audio communication",
     )
     def answer_doorbell_call(
-        doorbell_id: Optional[str] = None,
+        doorbell_id: str | None = None,
         enable_two_way_audio: bool = True,
         auto_record: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Answer an active doorbell call with two-way audio communication.
 
         Responds to an active doorbell press by establishing two-way audio communication
@@ -259,7 +257,7 @@ def register_tools(app: FastMCP) -> None:
     )
     def get_visitor_history(
         hours: int = 24, include_snapshots: bool = True, motion_only: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get comprehensive visitor history with snapshots and event details.
 
         Retrieves detailed history of doorbell activity including visitor events,
@@ -375,9 +373,7 @@ def register_tools(app: FastMCP) -> None:
                 "time_period_hours": hours,
                 "active_doorbells": len(doorbells),
                 "peak_activity_hours": peak_hours,
-                "busiest_hour": f"{hourly_activity.index(max_activity):02d}:00"
-                if max_activity > 0
-                else None,
+                "busiest_hour": f"{hourly_activity.index(max_activity):02d}:00" if max_activity > 0 else None,
                 "average_events_per_hour": round(len(all_events) / hours, 1) if hours > 0 else 0,
             }
 
@@ -407,12 +403,12 @@ def register_tools(app: FastMCP) -> None:
         description="Configure motion detection settings for Ring doorbell with advanced options",
     )
     def configure_motion_detection(
-        doorbell_id: Optional[str] = None,
+        doorbell_id: str | None = None,
         sensitivity: Literal["low", "medium", "high"] = "medium",
-        motion_zones: Optional[List[Dict[str, Any]]] = None,
+        motion_zones: list[dict[str, Any]] | None = None,
         smart_alerts: bool = True,
         schedule_enabled: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Configure motion detection settings for Ring doorbell with advanced options.
 
         Customizes motion detection behavior to optimize security coverage while
@@ -476,9 +472,7 @@ def register_tools(app: FastMCP) -> None:
                 new_config["motion_zones"] = valid_zones
 
             # Apply configuration
-            config_result = client.update_motion_settings(
-                device_id=doorbell.id, settings=new_config
-            )
+            config_result = client.update_motion_settings(device_id=doorbell.id, settings=new_config)
 
             # Generate optimization suggestions
             suggestions = []
@@ -518,11 +512,9 @@ def register_tools(app: FastMCP) -> None:
                 "previous_settings": current_settings,
                 "changes_made": {
                     "sensitivity_changed": current_settings.get("sensitivity") != sensitivity,
-                    "smart_alerts_changed": current_settings.get("smart_alerts_enabled")
-                    != smart_alerts,
+                    "smart_alerts_changed": current_settings.get("smart_alerts_enabled") != smart_alerts,
                     "zones_updated": motion_zones is not None,
-                    "schedule_changed": current_settings.get("schedule_enabled")
-                    != schedule_enabled,
+                    "schedule_changed": current_settings.get("schedule_enabled") != schedule_enabled,
                 },
                 "optimization_suggestions": suggestions,
                 "test_recommendations": [

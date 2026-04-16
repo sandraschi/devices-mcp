@@ -1,7 +1,6 @@
 """Digital camera implementation for repurposed digicams as webcams."""
 
 import logging
-from typing import Dict, Optional
 
 from .base import CameraFactory, CameraType
 from .webcam import Webcam
@@ -29,7 +28,7 @@ class DigicamCamera(Webcam):
         self._image_stabilization = self.config.params.get("image_stabilization", False)
         self._night_mode = self.config.params.get("night_mode", False)
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get digicam status with camera-specific capabilities."""
         status = await super().get_status()
         status.update(
@@ -54,9 +53,9 @@ class DigicamCamera(Webcam):
 
     async def set_camera_settings(
         self,
-        focus_mode: Optional[str] = None,
-        image_stabilization: Optional[bool] = None,
-        night_mode: Optional[bool] = None,
+        focus_mode: str | None = None,
+        image_stabilization: bool | None = None,
+        night_mode: bool | None = None,
     ) -> None:
         """Set digicam-specific camera settings."""
         if focus_mode in ["auto", "manual", "macro", "infinity"]:
@@ -85,11 +84,9 @@ class DigicamCamera(Webcam):
     async def toggle_night_mode(self) -> None:
         """Toggle night vision/low light mode."""
         self._night_mode = not self._night_mode
-        logger.info(
-            f"Digicam {self.config.name}: Night mode {'enabled' if self._night_mode else 'disabled'}"
-        )
+        logger.info(f"Digicam {self.config.name}: Night mode {'enabled' if self._night_mode else 'disabled'}")
 
-    async def get_camera_info(self) -> Dict:
+    async def get_camera_info(self) -> dict:
         """Get detailed information about the digicam."""
         return {
             "model": self._camera_model,
@@ -110,7 +107,7 @@ class DigicamCamera(Webcam):
             },
         }
 
-    async def test_camera_connection(self) -> Dict:
+    async def test_camera_connection(self) -> dict:
         """Test the digicam connection and capabilities."""
         try:
             # Test basic webcam functionality

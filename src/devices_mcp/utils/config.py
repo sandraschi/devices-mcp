@@ -4,7 +4,7 @@ Configuration loading and saving utilities.
 
 import json
 from pathlib import Path
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 import yaml
 
@@ -13,7 +13,7 @@ from ..config import CameraConfig, ServerConfig
 T = TypeVar("T")
 
 
-def load_config(config_file: str = "config.yaml", config_class: Type[T] = ServerConfig) -> T:
+def load_config(config_file: str = "config.yaml", config_class: type[T] = ServerConfig) -> T:
     """
     Load configuration from a YAML or JSON file.
 

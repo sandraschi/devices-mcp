@@ -9,7 +9,7 @@ tool registration for Claude Desktop stdio communication.
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastmcp import Client, FastMCP
 
@@ -26,8 +26,8 @@ class MCPServerComposition:
             base_server: The base FastMCP server to extend with composition features.
         """
         self.base_server = base_server
-        self.connected_servers: Dict[str, Client] = {}
-        self.namespace_mapping: Dict[str, str] = {}
+        self.connected_servers: dict[str, Client] = {}
+        self.namespace_mapping: dict[str, str] = {}
 
         # Register composition tools with the base server
         self._register_tools(base_server)
@@ -43,7 +43,7 @@ class MCPServerComposition:
         """
 
         @app.tool()
-        async def list_connected_servers() -> List[Dict[str, Any]]:
+        async def list_connected_servers() -> list[dict[str, Any]]:
             """List all connected MCP servers and their namespaces."""
             return [
                 {
@@ -55,9 +55,7 @@ class MCPServerComposition:
             ]
 
         @app.tool()
-        async def connect_server(
-            namespace: str, server_url: str, api_key: Optional[str] = None
-        ) -> Dict[str, Any]:
+        async def connect_server(namespace: str, server_url: str, api_key: str | None = None) -> dict[str, Any]:
             """Connect to another MCP server.
 
             Args:
@@ -99,7 +97,7 @@ class MCPServerComposition:
                 raise RuntimeError(f"Failed to connect to server: {e!s}")
 
         @self.base_server.tool()
-        async def disconnect_server(namespace: str) -> Dict[str, Any]:
+        async def disconnect_server(namespace: str) -> dict[str, Any]:
             """Disconnect from a connected MCP server.
 
             Args:
@@ -116,9 +114,7 @@ class MCPServerComposition:
                 await client.close()
 
                 # Remove all tools from this namespace
-                tools_to_remove = [
-                    name for name in self.namespace_mapping if name.startswith(f"{namespace}.")
-                ]
+                tools_to_remove = [name for name in self.namespace_mapping if name.startswith(f"{namespace}.")]
                 for tool_name in tools_to_remove:
                     self.namespace_mapping.pop(tool_name, None)
 
@@ -167,9 +163,7 @@ class MCPServerComposition:
             try:
                 return await client.call(actual_tool_name, **kwargs)
             except Exception as e:
-                logger.exception(
-                    "Error calling tool %s on server %s: %s", actual_tool_name, namespace, str(e)
-                )
+                logger.exception("Error calling tool %s on server %s: %s", actual_tool_name, namespace, str(e))
                 raise RuntimeError(f"Failed to call tool {tool_name}: {e!s}")
 
     async def close(self) -> None:

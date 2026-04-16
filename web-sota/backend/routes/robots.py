@@ -2,10 +2,9 @@
 
 import asyncio
 import logging
-import os
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, WebSocket
 from pydantic import BaseModel, Field
@@ -17,7 +16,7 @@ from devices_mcp.integrations.vbot_client import VbotClient
 from devices_mcp.integrations.yahboom_client import YahboomClient
 
 # Global vbot client instance
-_vbot_client: Optional[VbotClient] = None
+_vbot_client: VbotClient | None = None
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/robots", tags=["robots"])
@@ -62,8 +61,8 @@ class RobotCapabilities(BaseModel):
     can_navigate: bool = False
     has_voice: bool = False
     supports_autonomous: bool = False
-    battery_capacity: Optional[int] = None  # mAh
-    max_runtime: Optional[int] = None  # minutes
+    battery_capacity: int | None = None  # mAh
+    max_runtime: int | None = None  # minutes
 
 
 class RobotPosition(BaseModel):
@@ -80,11 +79,11 @@ class RobotTelemetry(BaseModel):
     """Real-time robot telemetry data."""
 
     battery_level: float = Field(..., ge=0, le=100)  # percentage
-    battery_voltage: Optional[float] = None
-    temperature: Optional[float] = None
-    cpu_usage: Optional[float] = None
-    memory_usage: Optional[float] = None
-    wifi_signal: Optional[int] = None  # dBm
+    battery_voltage: float | None = None
+    temperature: float | None = None
+    cpu_usage: float | None = None
+    memory_usage: float | None = None
+    wifi_signal: int | None = None  # dBm
     last_update: datetime
 
 
@@ -97,13 +96,13 @@ class Robot(BaseModel):
     status: RobotStatus
     capabilities: RobotCapabilities
     position: RobotPosition
-    telemetry: Optional[RobotTelemetry] = None
+    telemetry: RobotTelemetry | None = None
     last_seen: datetime
-    firmware_version: Optional[str] = None
-    ip_address: Optional[str] = None
-    connected_since: Optional[datetime] = None
+    firmware_version: str | None = None
+    ip_address: str | None = None
+    connected_since: datetime | None = None
     is_virtual: bool = False  # True for virtual robots (vbots)
-    platform: Optional[str] = None  # "unity" or "vrchat" for vbots
+    platform: str | None = None  # "unity" or "vrchat" for vbots
 
 
 class RobotCommand(str, Enum):
@@ -128,12 +127,12 @@ class RobotCommandRequest(BaseModel):
     """Request to execute a robot command."""
 
     command: RobotCommand
-    parameters: Optional[Dict[str, Any]] = None
+    parameters: dict[str, Any] | None = None
 
 
 # In-memory robot registry (would be database in production)
-_robots: Dict[str, Robot] = {}
-_active_connections: Dict[str, WebSocket] = {}
+_robots: dict[str, Robot] = {}
+_active_connections: dict[str, WebSocket] = {}
 
 
 def get_default_capabilities(robot_type: RobotType) -> RobotCapabilities:
@@ -184,9 +183,7 @@ def get_default_capabilities(robot_type: RobotType) -> RobotCapabilities:
             battery_capacity=3000,
             max_runtime=90,
         ),
-        RobotType.PETBOT: RobotCapabilities(
-            has_camera=True, has_voice=True, supports_autonomous=False
-        ),
+        RobotType.PETBOT: RobotCapabilities(has_camera=True, has_voice=True, supports_autonomous=False),
         # Virtual robots (vbots) - same capabilities but unlimited battery
         RobotType.VSCOUT: RobotCapabilities(
             has_camera=True,
@@ -288,9 +285,7 @@ def initialize_sample_robots():
                 id=device_id,
                 name=device_data.get("name", device_id),
                 type=robot_type,
-                status=RobotStatus.ONLINE
-                if robot_type == RobotType.YAHBOOM
-                else RobotStatus.OFFLINE,
+                status=RobotStatus.ONLINE if robot_type == RobotType.YAHBOOM else RobotStatus.OFFLINE,
                 capabilities=get_default_capabilities(robot_type),
                 position=RobotPosition(x=0, y=0, z=0, heading=0, floor="ground"),
                 last_seen=now,
@@ -460,9 +455,7 @@ async def execute_vbot_command(robot: Robot, command_request: RobotCommandReques
             result = await _vbot_client.stop_vbot(robot.id)
         elif command_request.command == RobotCommand.RETURN_HOME:
             # For virtual robots, return to origin
-            result = await _vbot_client.update_vbot(
-                robot.id, position={"x": 0.0, "y": 0.0, "z": 0.0}
-            )
+            result = await _vbot_client.update_vbot(robot.id, position={"x": 0.0, "y": 0.0, "z": 0.0})
         elif command_request.command == RobotCommand.STOP:
             result = await _vbot_client.stop_vbot(robot.id)
         elif command_request.command == RobotCommand.REBOOT:
@@ -509,9 +502,7 @@ async def get_robots():
                 RobotStatus.PATROLLING,
                 RobotStatus.CHARGING,
             ]
-            robot_dict["battery_percentage"] = (
-                robot.telemetry.battery_level if robot.telemetry else None
-            )
+            robot_dict["battery_percentage"] = robot.telemetry.battery_level if robot.telemetry else None
             robots_data.append(robot_dict)
 
         return {
@@ -539,9 +530,7 @@ async def get_robot(robot_id: str):
             RobotStatus.PATROLLING,
             RobotStatus.CHARGING,
         ]
-        robot_dict["battery_percentage"] = (
-            robot.telemetry.battery_level if robot.telemetry else None
-        )
+        robot_dict["battery_percentage"] = robot.telemetry.battery_level if robot.telemetry else None
 
         return {"success": True, "robot": robot_dict}
     except HTTPException:
@@ -600,9 +589,7 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
                 result = await scout_client.return_to_dock()
                 if result.get("success"):
                     robot.status = (
-                        RobotStatus.CHARGING
-                        if result.get("docking_status") == "success"
-                        else RobotStatus.DOCKED
+                        RobotStatus.CHARGING if result.get("docking_status") == "success" else RobotStatus.DOCKED
                     )
             elif command_request.command == RobotCommand.STOP:
                 result = await scout_client.stop()
@@ -641,9 +628,7 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
                 result = await go2_client.return_to_dock()
                 if result.get("success"):
                     robot.status = (
-                        RobotStatus.CHARGING
-                        if result.get("docking_status") == "success"
-                        else RobotStatus.DOCKED
+                        RobotStatus.CHARGING if result.get("docking_status") == "success" else RobotStatus.DOCKED
                     )
             elif command_request.command == RobotCommand.STOP:
                 result = await go2_client.stop()
@@ -666,11 +651,16 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
         elif robot.type == RobotType.DREAMBOT:
             # Use Dreame client via Home Assistant (devices-mcp integration).
             # NOTE: This uses HA entity_ids like "vacuum.dreame_*", not the robot_id in this UI.
-            from devices_mcp.config import get_config
             import os
 
+            from devices_mcp.config import get_config
+
             cfg = get_config()
-            ha_cfg = cfg.get("homeassistant", {}) or cfg.get("security", {}).get("integrations", {}).get("homeassistant", {}) or {}
+            ha_cfg = (
+                cfg.get("homeassistant", {})
+                or cfg.get("security", {}).get("integrations", {}).get("homeassistant", {})
+                or {}
+            )
             ha_url = ha_cfg.get("url") or ha_cfg.get("server_url") or "http://localhost:8123"
             ha_token = ha_cfg.get("access_token") or ha_cfg.get("token")
             dreame_mcp_url = os.getenv("DREAME_MCP_URL")
@@ -756,9 +746,7 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
 
         return {
             "success": result.get("success", True),
-            "message": result.get(
-                "message", f"Command {command_request.command} executed on {robot_id}"
-            ),
+            "message": result.get("message", f"Command {command_request.command} executed on {robot_id}"),
             "robot_id": robot_id,
             "command": command_request.command,
             "timestamp": robot.last_seen.isoformat(),
@@ -838,9 +826,7 @@ async def get_robot_telemetry(robot_id: str):
             # Update position from sensor data
             robot.position.x = status_data.get("position", {}).get("x", robot.position.x)
             robot.position.y = status_data.get("position", {}).get("y", robot.position.y)
-            robot.position.heading = status_data.get("position", {}).get(
-                "heading", robot.position.heading
-            )
+            robot.position.heading = status_data.get("position", {}).get("heading", robot.position.heading)
 
         elif robot.type == RobotType.GO2:
             # Use Go2 client
@@ -867,11 +853,16 @@ async def get_robot_telemetry(robot_id: str):
             robot.position.heading = pos_data.get("yaw", robot.position.heading)
 
         elif robot.type == RobotType.DREAMBOT:
-            from devices_mcp.config import get_config
             import os
 
+            from devices_mcp.config import get_config
+
             cfg = get_config()
-            ha_cfg = cfg.get("homeassistant", {}) or cfg.get("security", {}).get("integrations", {}).get("homeassistant", {}) or {}
+            ha_cfg = (
+                cfg.get("homeassistant", {})
+                or cfg.get("security", {}).get("integrations", {}).get("homeassistant", {})
+                or {}
+            )
             ha_url = ha_cfg.get("url") or ha_cfg.get("server_url") or "http://localhost:8123"
             ha_token = ha_cfg.get("access_token") or ha_cfg.get("token")
             dreame_mcp_url = os.getenv("DREAME_MCP_URL")
@@ -1011,7 +1002,7 @@ async def discover_robots():
 
 
 @router.post("/create_vbot")
-async def create_virtual_robot(request: Dict[str, Any]):
+async def create_virtual_robot(request: dict[str, Any]):
     """Create a new virtual robot."""
     try:
         global _vbot_client

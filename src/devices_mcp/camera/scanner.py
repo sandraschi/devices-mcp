@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Dict, Optional
 
 import cv2
 
@@ -19,12 +18,8 @@ class ScannerCamera(WebCamera):
 
     def __init__(self, config, mock_webcam=None):
         super().__init__(config, mock_webcam)
-        self._scanner_type = self.config.params.get(
-            "scanner_type", "flatbed"
-        )  # flatbed, slide, auto
-        self._color_mode = self.config.params.get(
-            "color_mode", "color"
-        )  # color, grayscale, monochrome
+        self._scanner_type = self.config.params.get("scanner_type", "flatbed")  # flatbed, slide, auto
+        self._color_mode = self.config.params.get("color_mode", "color")  # color, grayscale, monochrome
         self._dpi = int(self.config.params.get("dpi", 300))  # Default DPI
         self._output_dir = Path(self.config.params.get("output_dir", "scans"))
         self._output_dir.mkdir(parents=True, exist_ok=True)
@@ -35,7 +30,7 @@ class ScannerCamera(WebCamera):
         self._auto_crop = self.config.params.get("auto_crop", True)
         self._deskew = self.config.params.get("deskew", True)  # Auto-straighten
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get scanner camera status with detailed scanning capabilities."""
         status = await super().get_status()
         status.update(
@@ -58,7 +53,7 @@ class ScannerCamera(WebCamera):
         )
         return status
 
-    async def scan_document(self, filename: Optional[str] = None, format: str = "png") -> str:
+    async def scan_document(self, filename: str | None = None, format: str = "png") -> str:
         """Perform a document scan and save to file."""
         if not filename:
             timestamp = "current_timestamp"  # Would use actual timestamp
@@ -98,9 +93,7 @@ class ScannerCamera(WebCamera):
 
         # Apply brightness and contrast adjustments
         if self._brightness != 0 or self._contrast != 0:
-            frame = cv2.convertScaleAbs(
-                frame, alpha=1 + self._contrast / 100.0, beta=self._brightness
-            )
+            frame = cv2.convertScaleAbs(frame, alpha=1 + self._contrast / 100.0, beta=self._brightness)
 
         # Auto deskew (simplified)
         if self._deskew and len(frame.shape) > 2:  # Only for color images
@@ -132,10 +125,10 @@ class ScannerCamera(WebCamera):
 
     async def set_scan_settings(
         self,
-        dpi: Optional[int] = None,
-        color_mode: Optional[str] = None,
-        brightness: Optional[int] = None,
-        contrast: Optional[int] = None,
+        dpi: int | None = None,
+        color_mode: str | None = None,
+        brightness: int | None = None,
+        contrast: int | None = None,
     ) -> None:
         """Set scanner settings."""
         if dpi is not None:
@@ -192,7 +185,7 @@ class ScannerCamera(WebCamera):
             logger.exception("Scanner {self.config.name}: Failed to delete scan")
             return False
 
-    async def scan_to_ocr(self, filename: Optional[str] = None, language: str = "eng") -> Dict:
+    async def scan_to_ocr(self, filename: str | None = None, language: str = "eng") -> dict:
         """Scan document and perform OCR to extract text."""
         try:
             # First scan the document
@@ -228,9 +221,7 @@ class ScannerCamera(WebCamera):
                 # Small delay between scans
                 await asyncio.sleep(0.5)
 
-            logger.info(
-                f"Scanner {self.config.name}: Batch scan completed - {len(scanned_files)} pages"
-            )
+            logger.info(f"Scanner {self.config.name}: Batch scan completed - {len(scanned_files)} pages")
             return scanned_files
 
         except Exception as e:

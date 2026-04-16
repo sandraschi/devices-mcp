@@ -9,7 +9,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from pydantic import BaseModel, ValidationError, validator
 
@@ -47,7 +47,7 @@ class ServerConfig(BaseModel):
 
     host: str = "localhost"
     port: int = 32400
-    token: Optional[str] = None
+    token: str | None = None
     secure_connection: bool = False
     verify_ssl: bool = True
     timeout: int = 30
@@ -63,7 +63,7 @@ class LoggingConfig(BaseModel):
     """Logging configuration."""
 
     level: str = "INFO"
-    file: Optional[Path] = None
+    file: Path | None = None
     max_size_mb: int = 10
     backup_count: int = 5
 
@@ -98,7 +98,7 @@ class CacheConfig(BaseModel):
 class SecurityConfig(BaseModel):
     """Security configuration."""
 
-    secret_key: Optional[str] = None
+    secret_key: str | None = None
     password_salt_rounds: int = 10
 
     @validator("password_salt_rounds")
@@ -129,7 +129,7 @@ class AppConfig(BaseModel):
         json_encoders = {Path: str}
 
 
-def load_config(config_file: Union[str, Path] = None) -> Dict[str, Any]:
+def load_config(config_file: str | Path = None) -> dict[str, Any]:
     """Load configuration from file.
 
     Args:
@@ -165,7 +165,7 @@ def load_config(config_file: Union[str, Path] = None) -> Dict[str, Any]:
         return DEFAULT_CONFIG
 
 
-def save_config(config: Dict[str, Any], config_file: Union[str, Path] = None) -> bool:
+def save_config(config: dict[str, Any], config_file: str | Path = None) -> bool:
     """Save configuration to file.
 
     Args:
@@ -193,7 +193,7 @@ def save_config(config: Dict[str, Any], config_file: Union[str, Path] = None) ->
         return False
 
 
-def validate_config(config: Dict[str, Any]) -> bool:
+def validate_config(config: dict[str, Any]) -> bool:
     """Validate configuration against the schema.
 
     Args:
@@ -231,7 +231,7 @@ def get_config_dir() -> Path:
     return CONFIG_DIR
 
 
-def get_config_value(key: str, default: Any = None, config_file: Union[str, Path] = None) -> Any:
+def get_config_value(key: str, default: Any = None, config_file: str | Path = None) -> Any:
     """Get a specific configuration value.
 
     Args:
@@ -256,7 +256,7 @@ def get_config_value(key: str, default: Any = None, config_file: Union[str, Path
         return default
 
 
-def set_config_value(key: str, value: Any, config_file: Union[str, Path] = None) -> bool:
+def set_config_value(key: str, value: Any, config_file: str | Path = None) -> bool:
     """Set a specific configuration value.
 
     Args:

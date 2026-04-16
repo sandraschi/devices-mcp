@@ -10,7 +10,6 @@ Provides realistic mock data and behaviors for development without hardware.
 import random
 import time
 from datetime import datetime
-from typing import Dict, List
 
 
 class MockMoorebotScout:
@@ -25,7 +24,7 @@ class MockMoorebotScout:
         self.charging = False
         self.last_move_time = time.time()
 
-    def get_mock_status(self) -> Dict:
+    def get_mock_status(self) -> dict:
         """Generate realistic status data"""
         # Simulate battery drain
         if not self.charging and self.status == "moving":
@@ -49,7 +48,7 @@ class MockMoorebotScout:
             "mock_mode": True,
         }
 
-    def get_mock_sensors(self) -> Dict:
+    def get_mock_sensors(self) -> dict:
         """Generate realistic sensor data"""
         return {
             "tof_distance": round(random.uniform(0.2, 2.5), 3),
@@ -88,7 +87,7 @@ class MockMoorebotScout:
         self.status = "moving" if (linear != 0 or angular != 0) else "idle"
         self.last_move_time = time.time()
 
-    def simulate_patrol(self, route: str) -> Dict:
+    def simulate_patrol(self, route: str) -> dict:
         """Simulate patrol behavior"""
         waypoints = self._get_patrol_waypoints(route)
         return {
@@ -100,7 +99,7 @@ class MockMoorebotScout:
             "mock_mode": True,
         }
 
-    def simulate_docking(self) -> Dict:
+    def simulate_docking(self) -> dict:
         """Simulate docking attempt (sometimes fails!)"""
         # 70% success rate (realistic based on reports)
         success = random.random() > 0.3
@@ -129,7 +128,7 @@ class MockMoorebotScout:
             return "kitchen"
         return "unknown"
 
-    def _get_patrol_waypoints(self, route: str) -> List[Dict]:
+    def _get_patrol_waypoints(self, route: str) -> list[dict]:
         """Get waypoints for patrol route"""
         routes = {
             "default": [

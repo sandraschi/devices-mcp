@@ -7,7 +7,7 @@ including Tapo P115 smart plugs, Nest Protect devices, Ring alarms, and USB webc
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -20,15 +20,13 @@ class DiscoveredDevice(BaseModel):
     """Model for discovered devices during onboarding."""
 
     device_id: str = Field(..., description="Unique device identifier")
-    device_type: str = Field(
-        ..., description="Type of device (tapo_p115, nest_protect, ring, webcam)"
-    )
+    device_type: str = Field(..., description="Type of device (tapo_p115, nest_protect, ring, webcam)")
     display_name: str = Field(..., description="User-friendly display name")
-    ip_address: Optional[str] = Field(None, description="IP address if applicable")
-    mac_address: Optional[str] = Field(None, description="MAC address if available")
+    ip_address: str | None = Field(None, description="IP address if applicable")
+    mac_address: str | None = Field(None, description="MAC address if available")
     model: str = Field(..., description="Device model information")
-    location: Optional[str] = Field(None, description="Suggested location")
-    capabilities: List[str] = Field(default_factory=list, description="Device capabilities")
+    location: str | None = Field(None, description="Suggested location")
+    capabilities: list[str] = Field(default_factory=list, description="Device capabilities")
     requires_auth: bool = Field(default=False, description="Whether device requires authentication")
     status: str = Field(default="discovered", description="Current status")
 
@@ -37,9 +35,9 @@ class OnboardingState(BaseModel):
     """Model for onboarding state persistence."""
 
     step: int = Field(default=0, description="Current onboarding step")
-    discovered_devices: List[DiscoveredDevice] = Field(default_factory=list)
-    configured_devices: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
-    completed_steps: List[str] = Field(default_factory=list)
+    discovered_devices: list[DiscoveredDevice] = Field(default_factory=list)
+    configured_devices: dict[str, dict[str, Any]] = Field(default_factory=dict)
+    completed_steps: list[str] = Field(default_factory=list)
     onboarding_complete: bool = Field(default=False)
     last_updated: str = Field(default_factory=lambda: datetime.now().isoformat())
 
@@ -48,10 +46,10 @@ class DeviceDiscoveryManager:
     """Manager for device discovery and onboarding."""
 
     def __init__(self):
-        self.discovered_devices: List[DiscoveredDevice] = []
+        self.discovered_devices: list[DiscoveredDevice] = []
         self.onboarding_state = OnboardingState()
 
-    async def discover_all_devices(self) -> Dict[str, List[DiscoveredDevice]]:
+    async def discover_all_devices(self) -> dict[str, list[DiscoveredDevice]]:
         """Discover all available devices on the network."""
         try:
             discovery_results = {
@@ -75,7 +73,7 @@ class DeviceDiscoveryManager:
             logger.exception("Device discovery failed")
             return {"error": str(e)}
 
-    async def _discover_tapo_p115_devices(self) -> List[DiscoveredDevice]:
+    async def _discover_tapo_p115_devices(self) -> list[DiscoveredDevice]:
         """Discover Tapo P115 smart plugs on the network."""
         devices = []
 
@@ -144,7 +142,7 @@ class DeviceDiscoveryManager:
 
         return devices
 
-    async def _discover_usb_webcams(self) -> List[DiscoveredDevice]:
+    async def _discover_usb_webcams(self) -> list[DiscoveredDevice]:
         """Discover USB webcams connected to the system."""
         devices = []
 
@@ -185,9 +183,7 @@ class DeviceDiscoveryManager:
                             }
 
                             discovered_cameras.append(device_info)
-                            logger.info(
-                                f"Found working USB camera at device {device_id}: {width}x{height}"
-                            )
+                            logger.info(f"Found working USB camera at device {device_id}: {width}x{height}")
 
                         cap.release()
                     # Try to detect if camera exists but is in use
@@ -207,9 +203,7 @@ class DeviceDiscoveryManager:
                                         "in_use": True,
                                     }
                                 )
-                                logger.info(
-                                    f"Found USB camera at device {device_id} (appears to be in use)"
-                                )
+                                logger.info(f"Found USB camera at device {device_id} (appears to be in use)")
                             temp_cap.release()
                         except Exception:
                             pass
@@ -333,7 +327,7 @@ class DeviceDiscoveryManager:
         except (ValueError, AttributeError):
             return "webcam"  # Default fallback
 
-    async def _discover_nest_protect_devices(self) -> List[DiscoveredDevice]:
+    async def _discover_nest_protect_devices(self) -> list[DiscoveredDevice]:
         """Discover Nest Protect devices (requires authentication)."""
         devices = []
 
@@ -383,7 +377,7 @@ class DeviceDiscoveryManager:
 
         return devices
 
-    async def _discover_ring_devices(self) -> List[DiscoveredDevice]:
+    async def _discover_ring_devices(self) -> list[DiscoveredDevice]:
         """Discover Ring devices (requires authentication)."""
         devices = []
 
@@ -432,7 +426,7 @@ class DeviceDiscoveryManager:
 
         return devices
 
-    def get_onboarding_progress(self) -> Dict[str, Any]:
+    def get_onboarding_progress(self) -> dict[str, Any]:
         """Get current onboarding progress."""
         return {
             "current_step": self.onboarding_state.step,
@@ -465,7 +459,7 @@ class DiscoverDevicesTool(BaseTool):
         description = "Discover all available devices for onboarding"
         category = ToolCategory.UTILITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute device discovery."""
         try:
             discovery_results = await discovery_manager.discover_all_devices()
@@ -474,9 +468,7 @@ class DiscoverDevicesTool(BaseTool):
                 return {"error": discovery_results["error"]}
 
             # Count devices by type
-            device_counts = {
-                device_type: len(devices) for device_type, devices in discovery_results.items()
-            }
+            device_counts = {device_type: len(devices) for device_type, devices in discovery_results.items()}
 
             return {
                 "status": "success",
@@ -523,11 +515,9 @@ class ConfigureDeviceTool(BaseTool):
             device_id: str = Field(..., description="ID of the device to configure")
             display_name: str = Field(..., description="User-friendly name for the device")
             location: str = Field(..., description="Physical location of the device")
-            settings: Dict[str, Any] = Field(
-                default_factory=dict, description="Device-specific settings"
-            )
+            settings: dict[str, Any] = Field(default_factory=dict, description="Device-specific settings")
 
-    async def execute(self, **kwargs) -> Dict[str, Any]:
+    async def execute(self, **kwargs) -> dict[str, Any]:
         """Execute device configuration."""
         try:
             device_id = kwargs.get("device_id")
@@ -587,7 +577,7 @@ class GetOnboardingProgressTool(BaseTool):
         description = "Get current onboarding progress and status"
         category = ToolCategory.UTILITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute onboarding progress retrieval."""
         try:
             progress = discovery_manager.get_onboarding_progress()
@@ -607,9 +597,7 @@ class GetOnboardingProgressTool(BaseTool):
                 "status": "success",
                 "progress": progress,
                 "device_summary": device_summary,
-                "discovered_devices": [
-                    device.dict() for device in discovery_manager.discovered_devices
-                ],
+                "discovered_devices": [device.dict() for device in discovery_manager.discovered_devices],
                 "configured_devices": discovery_manager.onboarding_state.configured_devices,
                 "completion_percentage": self._calculate_completion_percentage(),
                 "next_recommended_steps": self._get_next_steps(),
@@ -628,15 +616,13 @@ class GetOnboardingProgressTool(BaseTool):
         configured_devices = len(discovery_manager.onboarding_state.configured_devices)
         return (configured_devices / total_devices) * 100
 
-    def _get_next_steps(self) -> List[str]:
+    def _get_next_steps(self) -> list[str]:
         """Get recommended next steps based on current progress."""
         steps = []
 
         # Check if devices need configuration
         unconfigured_devices = [
-            device
-            for device in discovery_manager.discovered_devices
-            if device.status == "discovered"
+            device for device in discovery_manager.discovered_devices if device.status == "discovered"
         ]
 
         if unconfigured_devices:
@@ -675,14 +661,12 @@ class CompleteOnboardingTool(BaseTool):
         description = "Complete the device onboarding process"
         category = ToolCategory.UTILITY
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self) -> dict[str, Any]:
         """Execute onboarding completion."""
         try:
             # Validate that all discovered devices are configured
             unconfigured_devices = [
-                device
-                for device in discovery_manager.discovered_devices
-                if device.status == "discovered"
+                device for device in discovery_manager.discovered_devices if device.status == "discovered"
             ]
 
             if unconfigured_devices:
@@ -710,9 +694,7 @@ class CompleteOnboardingTool(BaseTool):
                 "onboarding_complete": True,
                 "total_devices_configured": len(discovery_manager.discovered_devices),
                 "device_summary": device_summary,
-                "configured_devices": [
-                    device.dict() for device in discovery_manager.discovered_devices
-                ],
+                "configured_devices": [device.dict() for device in discovery_manager.discovered_devices],
                 "next_steps": [
                     "Start using your configured devices",
                     "Set up automation rules if desired",

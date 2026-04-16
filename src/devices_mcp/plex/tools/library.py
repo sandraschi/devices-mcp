@@ -2,7 +2,7 @@
 
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +30,7 @@ class ScanLibraryRequest(BaseModel):
 
 
 @mcp.tool()
-async def scan_library(request: ScanLibraryRequest) -> Dict[str, Any]:
+async def scan_library(request: ScanLibraryRequest) -> dict[str, Any]:
     """Scan a library for new or updated files.
 
     Args:
@@ -114,7 +114,7 @@ class GetLibraryRequest(BaseModel):
 
 
 @mcp.tool()
-async def get_library(request: GetLibraryRequest) -> Optional[LibrarySection]:
+async def get_library(request: GetLibraryRequest) -> LibrarySection | None:
     """Get information about a specific library.
 
     Args:
@@ -136,7 +136,7 @@ async def get_library(request: GetLibraryRequest) -> Optional[LibrarySection]:
 
 
 @mcp.tool()
-async def list_libraries() -> List[LibrarySection]:
+async def list_libraries() -> list[LibrarySection]:
     """List all libraries.
 
     Returns:
@@ -166,11 +166,11 @@ class AddLibraryRequest(BaseModel):
     scanner: str = Field(..., description="Scanner to use")
     language: str = Field("en", description="Language for metadata")
     location: str = Field(..., description="Path to the library content")
-    thumb: Optional[str] = Field(None, description="URL to a thumbnail image")
+    thumb: str | None = Field(None, description="URL to a thumbnail image")
 
 
 @mcp.tool()
-async def add_library(request: AddLibraryRequest) -> Optional[LibrarySection]:
+async def add_library(request: AddLibraryRequest) -> LibrarySection | None:
     """Add a new library.
 
     Args:
@@ -195,15 +195,15 @@ class UpdateLibraryRequest(BaseModel):
     """Request model for updating a library."""
 
     library_id: str = Field(..., description="ID of the library to update")
-    name: Optional[str] = Field(None, description="New name for the library")
-    agent: Optional[str] = Field(None, description="New metadata agent")
-    scanner: Optional[str] = Field(None, description="New scanner")
-    language: Optional[str] = Field(None, description="New language for metadata")
-    thumb: Optional[str] = Field(None, description="New thumbnail URL")
+    name: str | None = Field(None, description="New name for the library")
+    agent: str | None = Field(None, description="New metadata agent")
+    scanner: str | None = Field(None, description="New scanner")
+    language: str | None = Field(None, description="New language for metadata")
+    thumb: str | None = Field(None, description="New thumbnail URL")
 
 
 @mcp.tool()
-async def update_library(request: UpdateLibraryRequest) -> Optional[LibrarySection]:
+async def update_library(request: UpdateLibraryRequest) -> LibrarySection | None:
     """Update a library's settings.
 
     Args:
@@ -291,12 +291,12 @@ class GetLibraryItemsRequest(BaseModel):
     library_id: str = Field(..., description="ID of the library")
     limit: int = Field(100, description="Maximum number of items to return")
     offset: int = Field(0, description="Offset for pagination")
-    sort: Optional[str] = Field(None, description="Sort field")
-    filter: Optional[Dict[str, Any]] = Field(None, description="Filter criteria")
+    sort: str | None = Field(None, description="Sort field")
+    filter: dict[str, Any] | None = Field(None, description="Filter criteria")
 
 
 @mcp.tool()
-async def get_library_items(request: GetLibraryItemsRequest) -> List[MediaItem]:
+async def get_library_items(request: GetLibraryItemsRequest) -> list[MediaItem]:
     """Get items from a library.
 
     Args:
@@ -338,11 +338,11 @@ async def empty_trash(request: EmptyTrashRequest) -> bool:
 class CleanBundlesRequest(BaseModel):
     """Request model for cleaning bundles."""
 
-    library_id: Optional[str] = Field(None, description="ID of the library (optional)")
+    library_id: str | None = Field(None, description="ID of the library (optional)")
 
 
 @mcp.tool()
-async def clean_bundles(request: CleanBundlesRequest) -> Dict[str, Any]:
+async def clean_bundles(request: CleanBundlesRequest) -> dict[str, Any]:
     """Clean old bundles for a library or all libraries.
 
     Args:

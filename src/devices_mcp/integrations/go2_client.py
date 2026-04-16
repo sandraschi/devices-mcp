@@ -12,7 +12,6 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +33,12 @@ class Go2Status(str, Enum):
 class Go2SensorData:
     """Sensor readings from Go2"""
 
-    imu_orientation: Tuple[float, float, float, float]  # quaternion (x, y, z, w)
-    imu_angular_velocity: Tuple[float, float, float]  # rad/s
-    imu_linear_acceleration: Tuple[float, float, float]  # m/s^2
-    joint_positions: Dict[str, float]  # Joint angles in radians
-    joint_velocities: Dict[str, float]  # Joint velocities
-    foot_force: Dict[str, float]  # Foot contact forces (FL, FR, RL, RR)
+    imu_orientation: tuple[float, float, float, float]  # quaternion (x, y, z, w)
+    imu_angular_velocity: tuple[float, float, float]  # rad/s
+    imu_linear_acceleration: tuple[float, float, float]  # m/s^2
+    joint_positions: dict[str, float]  # Joint angles in radians
+    joint_velocities: dict[str, float]  # Joint velocities
+    foot_force: dict[str, float]  # Foot contact forces (FL, FR, RL, RR)
     battery_soc: float  # State of charge (0-100%)
     battery_voltage: float  # Battery voltage
     timestamp: datetime
@@ -55,7 +54,7 @@ class Go2Position:
     roll: float  # degrees
     pitch: float  # degrees
     yaw: float  # degrees (heading)
-    room: Optional[str] = None
+    room: str | None = None
 
 
 class UnitreeGo2Client:
@@ -106,7 +105,7 @@ class UnitreeGo2Client:
 
         logger.info(f"Unitree Go2 client initialized: {ip_address}:{port} (mock_mode={mock_mode})")
 
-    async def connect(self) -> Dict:
+    async def connect(self) -> dict:
         """
         Connect to Unitree Go2 robot.
 
@@ -143,7 +142,7 @@ class UnitreeGo2Client:
         self._status = Go2Status.OFFLINE
         logger.info("Disconnected from Unitree Go2")
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """
         Get comprehensive robot status.
 
@@ -181,7 +180,7 @@ class UnitreeGo2Client:
         # TODO: Real status from SDK
         return {"success": True, "mock_mode": False}
 
-    async def stand(self) -> Dict:
+    async def stand(self) -> dict:
         """
         Make robot stand up.
 
@@ -200,7 +199,7 @@ class UnitreeGo2Client:
         # TODO: SDK stand command
         return {"success": True}
 
-    async def sit(self) -> Dict:
+    async def sit(self) -> dict:
         """
         Make robot sit down.
 
@@ -225,7 +224,7 @@ class UnitreeGo2Client:
         linear_y: float = 0.0,
         angular_z: float = 0.0,
         gait: str = "trot",
-    ) -> Dict:
+    ) -> dict:
         """
         Move robot with specified velocities.
 
@@ -270,11 +269,11 @@ class UnitreeGo2Client:
         # TODO: SDK movement command
         return {"success": True}
 
-    async def stop(self) -> Dict:
+    async def stop(self) -> dict:
         """Emergency stop - halt all movement"""
         return await self.move(0.0, 0.0, 0.0)
 
-    async def start_patrol(self, route: str = "perimeter") -> Dict:
+    async def start_patrol(self, route: str = "perimeter") -> dict:
         """
         Start autonomous patrol route.
 
@@ -301,7 +300,7 @@ class UnitreeGo2Client:
         # TODO: SDK patrol command
         return {"success": True}
 
-    async def stop_patrol(self) -> Dict:
+    async def stop_patrol(self) -> dict:
         """Stop current patrol"""
         if self.mock_mode:
             self._status = Go2Status.STANDING
@@ -310,7 +309,7 @@ class UnitreeGo2Client:
         # TODO: SDK stop patrol
         return {"success": True}
 
-    async def return_to_dock(self) -> Dict:
+    async def return_to_dock(self) -> dict:
         """
         Return to charging dock.
 
@@ -363,7 +362,7 @@ class UnitreeGo2Client:
         """
         return f"rtsp://{self.ip_address}:8554/stream"
 
-    async def get_lidar_data(self) -> Dict:
+    async def get_lidar_data(self) -> dict:
         """
         Get 4D LiDAR point cloud data.
 

@@ -8,7 +8,7 @@ Combines system control operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -41,21 +41,17 @@ class SystemControlTool(BaseTool):
 
         class Parameters(BaseModel):
             operation: str = Field(..., description="Control operation: 'reboot_camera', 'status'")
-            camera_id: Optional[str] = Field(None, description="Camera ID for reboot operations")
-            reboot_type: Optional[str] = Field(
-                "soft", description="Reboot type: 'soft', 'hard', 'factory_reset'"
-            )
-            status_type: Optional[str] = Field(
-                "overview", description="Status type: 'overview', 'detailed', 'services'"
-            )
+            camera_id: str | None = Field(None, description="Camera ID for reboot operations")
+            reboot_type: str | None = Field("soft", description="Reboot type: 'soft', 'hard', 'factory_reset'")
+            status_type: str | None = Field("overview", description="Status type: 'overview', 'detailed', 'services'")
 
     async def execute(
         self,
         operation: str,
-        camera_id: Optional[str] = None,
+        camera_id: str | None = None,
         reboot_type: str = "soft",
         status_type: str = "overview",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute system control operation."""
         try:
             logger.info(f"System control {operation} operation")
@@ -79,7 +75,7 @@ class SystemControlTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _reboot_camera(self, camera_id: Optional[str], reboot_type: str) -> Dict[str, Any]:
+    async def _reboot_camera(self, camera_id: str | None, reboot_type: str) -> dict[str, Any]:
         """Reboot camera."""
         if not camera_id:
             return {
@@ -123,7 +119,7 @@ class SystemControlTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _get_system_status(self, status_type: str) -> Dict[str, Any]:
+    async def _get_system_status(self, status_type: str) -> dict[str, Any]:
         """Get system status."""
         valid_status_types = ["overview", "detailed", "services"]
         if status_type not in valid_status_types:

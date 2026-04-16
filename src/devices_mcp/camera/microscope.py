@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from typing import Dict, Optional
 
 from .base import CameraFactory, CameraType
 from .webcam import WebCamera
@@ -31,7 +30,7 @@ class MicroscopeCamera(WebCamera):
         # Track active background tasks
         self._active_tasks: set[asyncio.Task] = set()
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get microscope camera status with enhanced microscope info."""
         status = await super().get_status()
 
@@ -84,7 +83,7 @@ class MicroscopeCamera(WebCamera):
             logger.exception("Failed to calibrate microscope")
             return False
 
-    async def measure_distance(self, pixel_distance: int) -> Optional[float]:
+    async def measure_distance(self, pixel_distance: int) -> float | None:
         """Convert pixel distance to actual distance using calibration."""
         try:
             if self._calibration_factor > 0:
@@ -106,7 +105,7 @@ class MicroscopeCamera(WebCamera):
             logger.exception("Auto-focus failed")
             return False
 
-    def get_microscope_info(self) -> Dict:
+    def get_microscope_info(self) -> dict:
         """Get detailed microscope information."""
         return {
             "type": "usb_microscope",
@@ -124,7 +123,7 @@ class MicroscopeCamera(WebCamera):
 
     async def start_timelapse(
         self, interval_minutes: int, duration_hours: int, session_name: str, auto_focus: bool = True
-    ) -> Dict:
+    ) -> dict:
         """Start a time-lapse photography session for plant growth monitoring."""
         import os
         from datetime import datetime, timedelta
@@ -166,7 +165,7 @@ class MicroscopeCamera(WebCamera):
 
         return session_info
 
-    async def _run_timelapse(self, session_info: Dict) -> None:
+    async def _run_timelapse(self, session_info: dict) -> None:
         """Run the timelapse capture loop in background."""
         import time
         from datetime import datetime
@@ -194,9 +193,7 @@ class MicroscopeCamera(WebCamera):
                 filename = f"{session_name}_{timestamp}_{shots_taken:04d}.jpg"
                 image_path = await self.capture_image(filename, save_path=session_dir)
 
-                logger.info(
-                    f"Timelapse {session_name}: Captured shot {shots_taken + 1}/{total_shots} - {image_path}"
-                )
+                logger.info(f"Timelapse {session_name}: Captured shot {shots_taken + 1}/{total_shots} - {image_path}")
 
                 shots_taken += 1
                 session_info["shots_taken"] = shots_taken
@@ -214,7 +211,7 @@ class MicroscopeCamera(WebCamera):
             session_info["error"] = str(e)
             logger.exception(f"Timelapse {session_name}: Session failed")
 
-    async def stop_timelapse(self, session_name: str) -> Dict:
+    async def stop_timelapse(self, session_name: str) -> dict:
         """Stop a running timelapse session."""
         # In a real implementation, we'd need to track running tasks
         # For now, we'll just log and return status
@@ -225,7 +222,7 @@ class MicroscopeCamera(WebCamera):
             "message": "Timelapse session stop requested",
         }
 
-    async def get_timelapse_status(self) -> Dict:
+    async def get_timelapse_status(self) -> dict:
         """Get status of any running timelapse sessions."""
         # In a real implementation, we'd track active sessions
         return {
@@ -237,7 +234,7 @@ class MicroscopeCamera(WebCamera):
     async def create_growth_video(
         self,
         session_dir: str,
-        output_path: Optional[str] = None,
+        output_path: str | None = None,
         fps: int = 30,
         add_timestamp: bool = True,
     ) -> str:
@@ -274,12 +271,8 @@ class MicroscopeCamera(WebCamera):
 
                 if add_timestamp:
                     # Add timestamp overlay
-                    timestamp = Path(image_file).stem.split("_")[
-                        -2
-                    ]  # Extract timestamp from filename
-                    readable_time = (
-                        f"{timestamp[:8]} {timestamp[8:10]}:{timestamp[10:12]}:{timestamp[12:14]}"
-                    )
+                    timestamp = Path(image_file).stem.split("_")[-2]  # Extract timestamp from filename
+                    readable_time = f"{timestamp[:8]} {timestamp[8:10]}:{timestamp[10:12]}:{timestamp[12:14]}"
                     cv2.putText(
                         frame,
                         readable_time,
@@ -298,7 +291,7 @@ class MicroscopeCamera(WebCamera):
         finally:
             video_writer.release()
 
-    async def analyze_growth(self, session_dir: str) -> Dict:
+    async def analyze_growth(self, session_dir: str) -> dict:
         """Analyze plant growth patterns from timelapse images."""
         import glob
         from pathlib import Path

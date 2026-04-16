@@ -17,7 +17,7 @@ import logging
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class MCPClient:
     """Client for communicating with MCP servers via stdio."""
 
-    def __init__(self, server_command: List[str], cwd: Optional[str] = None):
+    def __init__(self, server_command: list[str], cwd: str | None = None):
         """
         Initialize MCP client.
 
@@ -35,7 +35,7 @@ class MCPClient:
         """
         self.server_command = server_command
         self.cwd = cwd or str(Path.cwd())
-        self.process: Optional[subprocess.Popen] = None
+        self.process: subprocess.Popen | None = None
         self._initialized = False
         self._request_id = 0
 
@@ -82,9 +82,7 @@ class MCPClient:
         self._request_id += 1
         return self._request_id
 
-    async def _send_request(
-        self, method: str, params: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    async def _send_request(self, method: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         """Send a JSON-RPC request to the MCP server."""
         if not self.process or not self._initialized:
             raise RuntimeError("MCP server not started")
@@ -113,7 +111,7 @@ class MCPClient:
 
         raise RuntimeError("No response received from MCP server")
 
-    async def initialize(self) -> Dict[str, Any]:
+    async def initialize(self) -> dict[str, Any]:
         """Initialize the MCP connection."""
         return await self._send_request(
             "initialize",
@@ -124,24 +122,22 @@ class MCPClient:
             },
         )
 
-    async def list_tools(self) -> List[Dict[str, Any]]:
+    async def list_tools(self) -> list[dict[str, Any]]:
         """List available tools from the MCP server."""
         response = await self._send_request("tools/list", {})
         return response.get("result", {}).get("tools", [])
 
-    async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    async def call_tool(self, tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         """Call a tool on the MCP server."""
-        response = await self._send_request(
-            "tools/call", {"name": tool_name, "arguments": arguments}
-        )
+        response = await self._send_request("tools/call", {"name": tool_name, "arguments": arguments})
         return response.get("result", {})
 
-    async def list_resources(self) -> List[Dict[str, Any]]:
+    async def list_resources(self) -> list[dict[str, Any]]:
         """List available resources from the MCP server."""
         response = await self._send_request("resources/list", {})
         return response.get("result", {}).get("resources", [])
 
-    async def read_resource(self, uri: str) -> Dict[str, Any]:
+    async def read_resource(self, uri: str) -> dict[str, Any]:
         """Read a resource from the MCP server."""
         response = await self._send_request("resources/read", {"uri": uri})
         return response.get("result", {})
@@ -151,8 +147,8 @@ class MCPClientManager:
     """Manager for multiple MCP client connections."""
 
     def __init__(self):
-        self.clients: Dict[str, MCPClient] = {}
-        self._default_client: Optional[str] = None
+        self.clients: dict[str, MCPClient] = {}
+        self._default_client: str | None = None
 
     def add_client(self, name: str, client: MCPClient, set_default: bool = False) -> None:
         """Add an MCP client."""
@@ -161,7 +157,7 @@ class MCPClientManager:
             self._default_client = name
         logger.info(f"Added MCP client '{name}'")
 
-    def get_client(self, name: Optional[str] = None) -> MCPClient:
+    def get_client(self, name: str | None = None) -> MCPClient:
         """Get an MCP client by name."""
         client_name = name or self._default_client
         if not client_name or client_name not in self.clients:
@@ -188,8 +184,8 @@ class MCPClientManager:
                 logger.exception("Error stopping MCP client '{name}':")
 
     async def call_tool(
-        self, tool_name: str, arguments: Dict[str, Any], client_name: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, tool_name: str, arguments: dict[str, Any], client_name: str | None = None
+    ) -> dict[str, Any]:
         """Call a tool on the specified MCP client."""
         client = self.get_client(client_name)
         return await client.call_tool(tool_name, arguments)
@@ -199,14 +195,12 @@ class MCPClientManager:
 mcp_clients = MCPClientManager()
 
 
-async def get_mcp_client(name: Optional[str] = None) -> MCPClient:
+async def get_mcp_client(name: str | None = None) -> MCPClient:
     """Get an MCP client instance."""
     return mcp_clients.get_client(name)
 
 
-async def call_mcp_tool(
-    tool_name: str, arguments: Dict[str, Any], client_name: Optional[str] = None
-) -> Dict[str, Any]:
+async def call_mcp_tool(tool_name: str, arguments: dict[str, Any], client_name: str | None = None) -> dict[str, Any]:
     """Call an MCP tool through the client manager."""
     return await mcp_clients.call_tool(tool_name, arguments, client_name)
 
@@ -242,33 +236,33 @@ def setup_default_clients() -> None:
 
 
 # Convenience functions for common operations
-async def list_tapo_lights() -> Dict[str, Any]:
+async def list_tapo_lights() -> dict[str, Any]:
     """List all lights via MCP."""
     return await call_mcp_tool("tapo", {"action": "list_lights"})
 
 
-async def list_tapo_plugs() -> Dict[str, Any]:
+async def list_tapo_plugs() -> dict[str, Any]:
     """List all smart plugs via MCP."""
     return await call_mcp_tool("tapo", {"action": "list_plugs"})
 
 
-async def get_tapo_status() -> Dict[str, Any]:
+async def get_tapo_status() -> dict[str, Any]:
     """Get system status via MCP."""
     return await call_mcp_tool("tapo", {"action": "status"})
 
 
 # Plex convenience functions
-async def plex_library_browse(operation: str = "list", **kwargs) -> Dict[str, Any]:
+async def plex_library_browse(operation: str = "list", **kwargs) -> dict[str, Any]:
     """Browse Plex media libraries via MCP."""
     return await call_mcp_tool("plex_library_browse", {"operation": operation, **kwargs})
 
 
-async def plex_media_search(query: str, **kwargs) -> Dict[str, Any]:
+async def plex_media_search(query: str, **kwargs) -> dict[str, Any]:
     """Search Plex media via MCP."""
     return await call_mcp_tool("plex_media_search", {"query": query, **kwargs})
 
 
-async def get_plex_status() -> Dict[str, Any]:
+async def get_plex_status() -> dict[str, Any]:
     """Get Plex system status via MCP."""
     try:
         return await call_mcp_tool("plex_server", {"operation": "status"})

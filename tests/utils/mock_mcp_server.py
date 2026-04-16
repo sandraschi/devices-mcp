@@ -17,7 +17,7 @@ import json
 import logging
 import sys
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class MockMCPServer:
     Simulates the stdio-based MCP protocol with configurable responses.
     """
 
-    def __init__(self, response_config: Optional[Dict[str, Any]] = None):
+    def __init__(self, response_config: dict[str, Any] | None = None):
         """
         Initialize the mock MCP server.
 
@@ -42,7 +42,7 @@ class MockMCPServer:
         self.running = False
         self.request_count = 0
 
-    def _get_default_config(self) -> Dict[str, Any]:
+    def _get_default_config(self) -> dict[str, Any]:
         """Get default response configuration."""
         return {
             "tools": {
@@ -220,7 +220,7 @@ class MockMCPServer:
             "errors": {},  # Tool -> error response for testing error handling
         }
 
-    def configure_response(self, tool: str, action: str, response: Dict[str, Any]):
+    def configure_response(self, tool: str, action: str, response: dict[str, Any]):
         """Configure a specific tool/action response."""
         if tool not in self.response_config["tools"]:
             self.response_config["tools"][tool] = {}
@@ -231,12 +231,12 @@ class MockMCPServer:
         key = f"{tool}.{action}"
         self.response_config["delays"][key] = delay
 
-    def configure_error(self, tool: str, action: str, error: Dict[str, Any]):
+    def configure_error(self, tool: str, action: str, error: dict[str, Any]):
         """Configure an error response for a specific tool/action."""
         key = f"{tool}.{action}"
         self.response_config["errors"][key] = error
 
-    def get_response(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def get_response(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
         """Get the appropriate response for a request."""
         self.request_count += 1
         request_info = {
@@ -318,9 +318,7 @@ class MockMCPServer:
             }
         elif method == "resources/read":
             uri = params.get("uri", "")
-            resource = self.response_config["resources"].get(
-                uri, {"error": f"Resource not found: {uri}"}
-            )
+            resource = self.response_config["resources"].get(uri, {"error": f"Resource not found: {uri}"})
             response = {"jsonrpc": "2.0", "id": self.request_count, "result": resource}
         else:
             response = {
@@ -329,9 +327,7 @@ class MockMCPServer:
                 "error": {"code": -32601, "message": f"Method not found: {method}"},
             }
 
-        self.responses_sent.append(
-            {"request": request_info, "response": response, "timestamp": time.time()}
-        )
+        self.responses_sent.append({"request": request_info, "response": response, "timestamp": time.time()})
 
         return response
 
@@ -378,13 +374,12 @@ class MockMCPServer:
             self.running = False
             logger.info("Mock MCP server stopped")
 
-    def get_statistics(self) -> Dict[str, Any]:
+    def get_statistics(self) -> dict[str, Any]:
         """Get server statistics."""
         return {
             "requests_received": len(self.requests_received),
             "responses_sent": len(self.responses_sent),
-            "uptime": time.time()
-            - (self.requests_received[0]["timestamp"] if self.requests_received else time.time()),
+            "uptime": time.time() - (self.requests_received[0]["timestamp"] if self.requests_received else time.time()),
             "running": self.running,
         }
 
@@ -400,7 +395,7 @@ class MockMCPClient:
         self.server = server
         self.responses_received = []
 
-    async def call_tool(self, tool: str, action: str, **arguments) -> Dict[str, Any]:
+    async def call_tool(self, tool: str, action: str, **arguments) -> dict[str, Any]:
         """Call a tool on the mock server."""
         method = "tools/call"
         params = {"name": f"{tool}.{action}", "arguments": arguments}
@@ -413,7 +408,7 @@ class MockMCPClient:
 
         return response.get("result", {})
 
-    async def list_tools(self) -> List[Dict[str, Any]]:
+    async def list_tools(self) -> list[dict[str, Any]]:
         """List available tools."""
         response = self.server.get_response("tools/list", {})
         self.responses_received.append(response)
@@ -423,7 +418,7 @@ class MockMCPClient:
 
         return response.get("result", {}).get("tools", [])
 
-    async def list_resources(self) -> List[Dict[str, Any]]:
+    async def list_resources(self) -> list[dict[str, Any]]:
         """List available resources."""
         response = self.server.get_response("resources/list", {})
         self.responses_received.append(response)
@@ -433,7 +428,7 @@ class MockMCPClient:
 
         return response.get("result", {}).get("resources", [])
 
-    async def read_resource(self, uri: str) -> Dict[str, Any]:
+    async def read_resource(self, uri: str) -> dict[str, Any]:
         """Read a resource."""
         response = self.server.get_response("resources/read", {"uri": uri})
         self.responses_received.append(response)
@@ -491,8 +486,8 @@ def create_slow_mock_server(delay: float = 2.0) -> MockMCPServer:
 
 
 async def run_mcp_test_scenario(
-    server: MockMCPServer, client: MockMCPClient, scenario: List[Dict[str, Any]]
-) -> Dict[str, Any]:
+    server: MockMCPServer, client: MockMCPClient, scenario: list[dict[str, Any]]
+) -> dict[str, Any]:
     """
     Run a test scenario with the mock server and client.
 
@@ -511,9 +506,7 @@ async def run_mcp_test_scenario(
 
         try:
             if step_type == "tool_call":
-                response = await client.call_tool(
-                    step["tool"], step["action"], **step.get("arguments", {})
-                )
+                response = await client.call_tool(step["tool"], step["action"], **step.get("arguments", {}))
                 results["responses"].append(response)
             elif step_type == "list_tools":
                 response = await client.list_tools()

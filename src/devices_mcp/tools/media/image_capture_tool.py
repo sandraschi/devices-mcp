@@ -9,7 +9,7 @@ Combines image capture operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -43,20 +43,12 @@ class ImageCaptureTool(BaseTool):
         category = ToolCategory.MEDIA
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Image operation: 'capture', 'still', 'analyze'"
-            )
+            operation: str = Field(..., description="Image operation: 'capture', 'still', 'analyze'")
             camera_id: str = Field(..., description="Camera ID for image operations")
-            image_format: Optional[str] = Field(
-                "jpeg", description="Image format: 'jpeg', 'png', 'raw'"
-            )
-            resolution: Optional[str] = Field(
-                "1080p", description="Resolution: '720p', '1080p', '4k'"
-            )
-            quality: Optional[int] = Field(85, description="Image quality (1-100)")
-            analysis_type: Optional[str] = Field(
-                "objects", description="Analysis type: 'objects', 'faces', 'motion'"
-            )
+            image_format: str | None = Field("jpeg", description="Image format: 'jpeg', 'png', 'raw'")
+            resolution: str | None = Field("1080p", description="Resolution: '720p', '1080p', '4k'")
+            quality: int | None = Field(85, description="Image quality (1-100)")
+            analysis_type: str | None = Field("objects", description="Analysis type: 'objects', 'faces', 'motion'")
 
     async def execute(
         self,
@@ -68,8 +60,8 @@ class ImageCaptureTool(BaseTool):
         analysis_type: str = "objects",
         save_to_temp: bool = False,
         analyze: bool = False,
-        prompt: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        prompt: str | None = None,
+    ) -> dict[str, Any]:
         """Execute image capture operation."""
         try:
             logger.info(f"Image {operation} operation for camera {camera_id}")
@@ -96,9 +88,7 @@ class ImageCaptureTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _capture_image(
-        self, camera_id: str, image_format: str, resolution: str, quality: int
-    ) -> Dict[str, Any]:
+    async def _capture_image(self, camera_id: str, image_format: str, resolution: str, quality: int) -> dict[str, Any]:
         """Capture regular image."""
         # Validate parameters
         if quality < 1 or quality > 100:
@@ -136,9 +126,7 @@ class ImageCaptureTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _capture_still(
-        self, camera_id: str, image_format: str, resolution: str, quality: int
-    ) -> Dict[str, Any]:
+    async def _capture_still(self, camera_id: str, image_format: str, resolution: str, quality: int) -> dict[str, Any]:
         """Capture still image (high quality)."""
         # Simulate still image capture with enhanced quality
         import secrets
@@ -170,7 +158,7 @@ class ImageCaptureTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _analyze_image(self, camera_id: str, analysis_type: str) -> Dict[str, Any]:
+    async def _analyze_image(self, camera_id: str, analysis_type: str) -> dict[str, Any]:
         """Analyze captured image."""
         # Simulate image analysis
         import secrets

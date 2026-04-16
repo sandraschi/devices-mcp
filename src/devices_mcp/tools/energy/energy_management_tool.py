@@ -10,7 +10,7 @@ Combines energy monitoring and control operations:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -38,26 +38,24 @@ class EnergyManagementTool(BaseTool):
 
     class Meta:
         name = "energy_management"
-        description = "Unified energy management for smart plugs including status, control, consumption, and cost analysis"
+        description = (
+            "Unified energy management for smart plugs including status, control, consumption, and cost analysis"
+        )
         category = ToolCategory.ENERGY
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Energy operation: 'status', 'control', 'consumption', 'cost'"
-            )
-            device_id: Optional[str] = Field(None, description="Smart plug device ID")
-            action: Optional[str] = Field(None, description="Control action: 'on', 'off', 'toggle'")
-            time_range: Optional[str] = Field(
-                "24h", description="Time range for analysis: '1h', '24h', '7d', '30d'"
-            )
+            operation: str = Field(..., description="Energy operation: 'status', 'control', 'consumption', 'cost'")
+            device_id: str | None = Field(None, description="Smart plug device ID")
+            action: str | None = Field(None, description="Control action: 'on', 'off', 'toggle'")
+            time_range: str | None = Field("24h", description="Time range for analysis: '1h', '24h', '7d', '30d'")
 
     async def execute(
         self,
         operation: str,
-        device_id: Optional[str] = None,
-        action: Optional[str] = None,
+        device_id: str | None = None,
+        action: str | None = None,
         time_range: str = "24h",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Execute energy management operation."""
         try:
             logger.info(f"Energy {operation} operation")
@@ -85,7 +83,7 @@ class EnergyManagementTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_status(self, device_id: Optional[str]) -> Dict[str, Any]:
+    async def _get_status(self, device_id: str | None) -> dict[str, Any]:
         """Get smart plug status from real devices."""
         try:
             # Import the Tapo plug manager
@@ -162,9 +160,7 @@ class EnergyManagementTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _control_device(
-        self, device_id: Optional[str], action: Optional[str]
-    ) -> Dict[str, Any]:
+    async def _control_device(self, device_id: str | None, action: str | None) -> dict[str, Any]:
         """Control smart plug device."""
         if not device_id:
             return {
@@ -253,7 +249,7 @@ class EnergyManagementTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_consumption(self, time_range: str) -> Dict[str, Any]:
+    async def _get_consumption(self, time_range: str) -> dict[str, Any]:
         """Get energy consumption data from real devices."""
         try:
             # Import the Tapo plug manager
@@ -307,9 +303,7 @@ class EnergyManagementTool(BaseTool):
                 if time_range == "24h":
                     device_consumption = device.daily_energy
                 elif time_range in ["7d", "30d"]:
-                    device_consumption = (
-                        device.monthly_energy * (7 if time_range == "7d" else 30) / 30
-                    )
+                    device_consumption = device.monthly_energy * (7 if time_range == "7d" else 30) / 30
                 else:  # 1h
                     device_consumption = device.daily_energy / 24
 
@@ -367,7 +361,7 @@ class EnergyManagementTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _get_cost_analysis(self, time_range: str) -> Dict[str, Any]:
+    async def _get_cost_analysis(self, time_range: str) -> dict[str, Any]:
         """Get energy cost analysis from real devices."""
         try:
             # Import the Tapo plug manager

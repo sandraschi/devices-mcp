@@ -31,7 +31,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import aiohttp
 
@@ -55,7 +55,7 @@ class CrashproofRunner:
 
     def __init__(
         self,
-        command: List[str],
+        command: list[str],
         cwd: str = None,
         max_restarts: int = 10,
         restart_delay: float = 1.0,
@@ -102,9 +102,7 @@ class CrashproofRunner:
                 preexec_fn=None if os.name == "nt" else os.setsid,
             )
 
-            logger.info(
-                f"✓ Started Devices MCP WebApp process: {' '.join(self.command)} (PID: {self.process.pid})"
-            )
+            logger.info(f"✓ Started Devices MCP WebApp process: {' '.join(self.command)} (PID: {self.process.pid})")
             return True
 
         except Exception:
@@ -168,19 +166,13 @@ class CrashproofRunner:
                             try:
                                 stderr_data = await self.process.stderr.read()
                                 if stderr_data:
-                                    crash_info["stderr"] = stderr_data.decode(
-                                        "utf-8", errors="ignore"
-                                    ).strip()
+                                    crash_info["stderr"] = stderr_data.decode("utf-8", errors="ignore").strip()
                             except:
                                 pass
 
-                        logger.warning(
-                            f"CRASH: Devices MCP WebApp crashed with exit code {self.process.returncode}"
-                        )
+                        logger.warning(f"CRASH: Devices MCP WebApp crashed with exit code {self.process.returncode}")
                         logger.info(f"UPTIME: Uptime before crash: {self.uptime_total:.1f}s")
-                        logger.info(
-                            f"RESTART: Restart attempt {self.restart_count + 1}/{self.max_restarts}"
-                        )
+                        logger.info(f"RESTART: Restart attempt {self.restart_count + 1}/{self.max_restarts}")
 
                         if self.notify_on_crash:
                             await self.notify_crash(crash_info)
@@ -236,11 +228,9 @@ class CrashproofRunner:
 
         # Start new process
         if not await self.start_process():
-            logger.error(
-                "Failed to restart Devices MCP WebApp - will retry on next monitoring cycle"
-            )
+            logger.error("Failed to restart Devices MCP WebApp - will retry on next monitoring cycle")
 
-    async def notify_crash(self, crash_info: Dict[str, Any]):
+    async def notify_crash(self, crash_info: dict[str, Any]):
         """Send crash notification (extend this for email/SMS/etc)."""
         try:
             # For now, just log the crash details
@@ -256,10 +246,7 @@ class CrashproofRunner:
                 error_lines = [
                     line
                     for line in stderr_lines
-                    if any(
-                        keyword in line.upper()
-                        for keyword in ["ERROR", "EXCEPTION", "FAILED", "CRASH", "FATAL"]
-                    )
+                    if any(keyword in line.upper() for keyword in ["ERROR", "EXCEPTION", "FAILED", "CRASH", "FATAL"])
                 ]
                 if error_lines:
                     logger.error(f"   Error Output: {'; '.join(error_lines[:3])}...")
@@ -306,7 +293,7 @@ class CrashproofRunner:
         except Exception:
             logger.exception("Error saving crash report:")
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get current runner statistics."""
         return {
             "process_running": self.process is not None and self.process.returncode is None,
@@ -369,7 +356,7 @@ class CrashproofRunner:
             logger.info("👋 Devices MCP WebApp Crashproof Runner stopped")
 
 
-def load_config() -> Dict[str, Any]:
+def load_config() -> dict[str, Any]:
     """Load configuration from environment variables."""
     return {
         "host": os.getenv("TAPO_WEBAPP_HOST", "0.0.0.0"),

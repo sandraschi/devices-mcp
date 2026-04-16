@@ -3,7 +3,6 @@ Ring doorbell and alarm API endpoints.
 """
 
 import logging
-from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
@@ -37,9 +36,9 @@ class RingSummaryResponse(BaseModel):
     two_fa_pending: bool = False
     doorbells: list = []
     doorbell_count: int = 0
-    alarm: Optional[dict] = None
+    alarm: dict | None = None
     recent_events: list = []
-    last_event: Optional[dict] = None
+    last_event: dict | None = None
 
 
 @router.get("/status")
@@ -91,10 +90,7 @@ async def get_ring_status():
             "message": "Ring is connected and ready",
         }
     last_err = client.last_error
-    msg = (
-        last_err
-        or "Ring initialization incomplete. Click Initialize to retry, or install ring-doorbell if missing."
-    )
+    msg = last_err or "Ring initialization incomplete. Click Initialize to retry, or install ring-doorbell if missing."
     return {
         "connected": False,
         "initialized": False,
@@ -123,14 +119,10 @@ async def initialize_ring():
     cache_ttl = ring_cfg.get("cache_ttl", 60)
 
     if not email or not password:
-        raise HTTPException(
-            status_code=400, detail="Ring email/password not configured in config.yaml"
-        )
+        raise HTTPException(status_code=400, detail="Ring email/password not configured in config.yaml")
 
     try:
-        client = await init_ring_client(
-            email=email, password=password, token_file=token_file, cache_ttl=cache_ttl
-        )
+        client = await init_ring_client(email=email, password=password, token_file=token_file, cache_ttl=cache_ttl)
 
         if client.is_2fa_pending:
             return {
@@ -338,15 +330,11 @@ async def test_siren(request: RingSirenTestRequest):
     if request.duration > 10:
         raise HTTPException(status_code=400, detail="Max test duration is 10 seconds (have mercy)")
     if request.countdown < 3:
-        raise HTTPException(
-            status_code=400, detail="Min countdown is 3 seconds (warn your girlfriend!)"
-        )
+        raise HTTPException(status_code=400, detail="Min countdown is 3 seconds (warn your girlfriend!)")
     if request.countdown > 30:
         raise HTTPException(status_code=400, detail="Max countdown is 30 seconds")
 
-    logger.warning(
-        f"[ALARM] SIREN TEST INITIATED - {request.countdown}s countdown, {request.duration}s duration"
-    )
+    logger.warning(f"[ALARM] SIREN TEST INITIATED - {request.countdown}s countdown, {request.duration}s duration")
 
     # Wait for countdown
     await asyncio.sleep(request.countdown)
@@ -927,9 +915,7 @@ async def download_event_video(device_id: str, recording_id: str, request: Reque
 
 
 @router.post("/events/auto-download")
-async def auto_download_recent_events(
-    hours_back: int = 24, save_path: str = "./ring_videos", max_videos: int = 10
-):
+async def auto_download_recent_events(hours_back: int = 24, save_path: str = "./ring_videos", max_videos: int = 10):
     """Automatically download recent Ring event videos for local storage.
 
     FREE alternative to Ring Protect cloud storage!

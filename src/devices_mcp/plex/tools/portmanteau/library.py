@@ -6,7 +6,7 @@ FastMCP 3.1 compliant with conversational tool returns and sampling capabilities
 """
 
 import os
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal
 
 from ...app import mcp
 from ...utils import get_logger
@@ -48,16 +48,16 @@ async def plex_library(
         "remove_location",
         "clean_bundles",
     ],
-    library_id: Optional[str] = None,
-    name: Optional[str] = None,
-    library_type: Optional[Literal["movie", "show", "music", "photo"]] = None,
-    path: Optional[str] = None,
-    agent: Optional[str] = None,
-    scanner: Optional[str] = None,
-    language: Optional[str] = "en",
-    thumb: Optional[str] = None,
+    library_id: str | None = None,
+    name: str | None = None,
+    library_type: Literal["movie", "show", "music", "photo"] | None = None,
+    path: str | None = None,
+    agent: str | None = None,
+    scanner: str | None = None,
+    language: str | None = "en",
+    thumb: str | None = None,
     force: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Comprehensive library management operations for Plex Media Server.
 
     PORTMANTEAU PATTERN RATIONALE:

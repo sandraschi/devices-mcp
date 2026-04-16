@@ -2,7 +2,6 @@
 
 import logging
 import os
-from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -27,10 +26,10 @@ class CreatePlaylistRequest(BaseModel):
     """Request model for creating a new playlist."""
 
     title: str = Field(..., min_length=1, max_length=255, description="Title of the playlist")
-    items: List[str] = Field(..., description="List of media item IDs to include in the playlist")
-    description: Optional[str] = Field(None, description="Optional description for the playlist")
+    items: list[str] = Field(..., description="List of media item IDs to include in the playlist")
+    description: str | None = Field(None, description="Optional description for the playlist")
     public: bool = Field(False, description="Whether the playlist should be publicly visible")
-    sort: Optional[str] = Field(None, description="Sort order for playlist items")
+    sort: str | None = Field(None, description="Sort order for playlist items")
 
 
 @mcp.tool()
@@ -75,9 +74,7 @@ async def create_playlist(request: CreatePlaylistRequest) -> PlexPlaylist:
         item_count=len(playlist.items()),
         smart=playlist.smart,
         created_at=int(playlist.addedAt.timestamp()),
-        updated_at=int(playlist.updatedAt.timestamp())
-        if playlist.updatedAt
-        else int(playlist.addedAt.timestamp()),
+        updated_at=int(playlist.updatedAt.timestamp()) if playlist.updatedAt else int(playlist.addedAt.timestamp()),
         owner=playlist.username,
     )
 
@@ -89,7 +86,7 @@ class GetPlaylistRequest(BaseModel):
 
 
 @mcp.tool()
-async def get_playlist(request: GetPlaylistRequest) -> Optional[PlexPlaylist]:
+async def get_playlist(request: GetPlaylistRequest) -> PlexPlaylist | None:
     """Get a specific playlist by ID.
 
     Args:
@@ -113,9 +110,7 @@ async def get_playlist(request: GetPlaylistRequest) -> Optional[PlexPlaylist]:
             item_count=len(playlist.items()),
             smart=playlist.smart,
             created_at=int(playlist.addedAt.timestamp()),
-            updated_at=int(playlist.updatedAt.timestamp())
-            if playlist.updatedAt
-            else int(playlist.addedAt.timestamp()),
+            updated_at=int(playlist.updatedAt.timestamp()) if playlist.updatedAt else int(playlist.addedAt.timestamp()),
             owner=playlist.username,
         )
     except Exception:
@@ -124,7 +119,7 @@ async def get_playlist(request: GetPlaylistRequest) -> Optional[PlexPlaylist]:
 
 
 @mcp.tool()
-async def list_playlists() -> List[PlexPlaylist]:
+async def list_playlists() -> list[PlexPlaylist]:
     """List all playlists.
 
     Returns:
@@ -162,14 +157,10 @@ class UpdatePlaylistRequest(BaseModel):
     """Request model for updating a playlist."""
 
     playlist_id: str = Field(..., description="ID of the playlist to update")
-    title: Optional[str] = Field(
-        None, min_length=1, max_length=255, description="New title for the playlist"
-    )
-    description: Optional[str] = Field(None, description="New description for the playlist")
-    public: Optional[bool] = Field(
-        None, description="Whether the playlist should be publicly visible"
-    )
-    sort: Optional[str] = Field(None, description="New sort order for playlist items")
+    title: str | None = Field(None, min_length=1, max_length=255, description="New title for the playlist")
+    description: str | None = Field(None, description="New description for the playlist")
+    public: bool | None = Field(None, description="Whether the playlist should be publicly visible")
+    sort: str | None = Field(None, description="New sort order for playlist items")
 
 
 @mcp.tool()
@@ -212,9 +203,7 @@ async def update_playlist(request: UpdatePlaylistRequest) -> PlexPlaylist:
             item_count=len(playlist.items()),
             smart=playlist.smart,
             created_at=int(playlist.addedAt.timestamp()),
-            updated_at=int(playlist.updatedAt.timestamp())
-            if playlist.updatedAt
-            else int(playlist.addedAt.timestamp()),
+            updated_at=int(playlist.updatedAt.timestamp()) if playlist.updatedAt else int(playlist.addedAt.timestamp()),
             owner=playlist.username,
         )
     except Exception:
@@ -254,7 +243,7 @@ class AddToPlaylistRequest(BaseModel):
     """Request model for adding items to a playlist."""
 
     playlist_id: str = Field(..., description="ID of the playlist to add items to")
-    items: List[str] = Field(..., description="List of media item IDs to add to the playlist")
+    items: list[str] = Field(..., description="List of media item IDs to add to the playlist")
 
 
 @mcp.tool()
@@ -300,9 +289,7 @@ async def add_to_playlist(request: AddToPlaylistRequest) -> PlexPlaylist:
             item_count=len(playlist.items()),
             smart=playlist.smart,
             created_at=int(playlist.addedAt.timestamp()),
-            updated_at=int(playlist.updatedAt.timestamp())
-            if playlist.updatedAt
-            else int(playlist.addedAt.timestamp()),
+            updated_at=int(playlist.updatedAt.timestamp()) if playlist.updatedAt else int(playlist.addedAt.timestamp()),
             owner=playlist.username,
         )
     except Exception:
@@ -314,7 +301,7 @@ class RemoveFromPlaylistRequest(BaseModel):
     """Request model for removing items from a playlist."""
 
     playlist_id: str = Field(..., description="ID of the playlist to remove items from")
-    items: List[str] = Field(..., description="List of media item IDs to remove from the playlist")
+    items: list[str] = Field(..., description="List of media item IDs to remove from the playlist")
 
 
 @mcp.tool()
@@ -361,9 +348,7 @@ async def remove_from_playlist(request: RemoveFromPlaylistRequest) -> PlexPlayli
             item_count=len(playlist.items()),
             smart=playlist.smart,
             created_at=int(playlist.addedAt.timestamp()),
-            updated_at=int(playlist.updatedAt.timestamp())
-            if playlist.updatedAt
-            else int(playlist.addedAt.timestamp()),
+            updated_at=int(playlist.updatedAt.timestamp()) if playlist.updatedAt else int(playlist.addedAt.timestamp()),
             owner=playlist.username,
         )
     except Exception:
@@ -396,9 +381,7 @@ async def get_playlist_analytics(request: GetPlaylistAnalyticsRequest) -> Playli
 
         # Get view counts and other metrics (simplified example)
         total_plays = sum(getattr(item, "viewCount", 0) for item in items)
-        unique_users = len(
-            set(item.lastViewedAt for item in items if hasattr(item, "lastViewedAt"))
-        )
+        unique_users = len(set(item.lastViewedAt for item in items if hasattr(item, "lastViewedAt")))
 
         # Get popular items (top 3 most played)
         popular_items = sorted(
@@ -416,12 +399,8 @@ async def get_playlist_analytics(request: GetPlaylistAnalyticsRequest) -> Playli
             popular_items=[str(item.ratingKey) for item in popular_items],
             skip_rate=10.0,  # This would require more detailed tracking
             recommendations=[
-                "Consider adding more recent content"
-                if len(items) > 10
-                else "Add more items to this playlist",
-                "Create a themed playlist"
-                if "mix" not in playlist.title.lower()
-                else "Great themed playlist!",
+                "Consider adding more recent content" if len(items) > 10 else "Add more items to this playlist",
+                "Create a themed playlist" if "mix" not in playlist.title.lower() else "Great themed playlist!",
             ],
             last_played=max(
                 [

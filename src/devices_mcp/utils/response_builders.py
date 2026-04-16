@@ -4,17 +4,17 @@ These functions provide structured, conversational responses that enable rich di
 between MCP tools and AI assistants, following FastMCP 3.1+ enhanced response patterns.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 def build_success_response(
     operation: str,
     summary: str,
-    result: Optional[Dict[str, Any]] = None,
-    recommendations: Optional[List[str]] = None,
-    next_steps: Optional[List[str]] = None,
+    result: dict[str, Any] | None = None,
+    recommendations: list[str] | None = None,
+    next_steps: list[str] | None = None,
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Build structured success response for MCP clients.
 
     Args:
@@ -49,10 +49,10 @@ def build_error_response(
     error: str,
     error_code: str,
     message: str,
-    recovery_options: Optional[List[str]] = None,
-    suggestions: Optional[List[str]] = None,
+    recovery_options: list[str] | None = None,
+    suggestions: list[str] | None = None,
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Build structured error response with recovery guidance for MCP clients.
 
     Args:
@@ -86,9 +86,9 @@ def build_hardware_error_response(
     error: str,
     device_type: str,
     device_id: str,
-    recovery_options: Optional[List[str]] = None,
+    recovery_options: list[str] | None = None,
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Build hardware-specific error response with intelligent recovery recommendations.
 
     Args:
@@ -122,11 +122,11 @@ def build_hardware_error_response(
 
 def build_network_error_response(
     error: str,
-    port: Optional[int] = None,
-    service: Optional[str] = None,
-    recovery_options: Optional[List[str]] = None,
+    port: int | None = None,
+    service: str | None = None,
+    recovery_options: list[str] | None = None,
     **kwargs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Build network-specific error response with intelligent recovery recommendations.
 
     Args:
@@ -146,9 +146,7 @@ def build_network_error_response(
     ]
 
     if port:
-        base_recovery.insert(
-            0, f"Check if port {port} is available (might be used by previous server instance)"
-        )
+        base_recovery.insert(0, f"Check if port {port} is available (might be used by previous server instance)")
         base_recovery.insert(
             1,
             f"Kill any process using port {port}: 'netstat -ano | findstr :{port}' then 'taskkill /PID <pid>'",
@@ -171,8 +169,8 @@ def build_network_error_response(
 
 
 def build_configuration_error_response(
-    error: str, config_field: str, recovery_options: Optional[List[str]] = None, **kwargs
-) -> Dict[str, Any]:
+    error: str, config_field: str, recovery_options: list[str] | None = None, **kwargs
+) -> dict[str, Any]:
     """Build configuration-specific error response.
 
     Args:

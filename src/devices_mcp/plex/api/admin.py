@@ -5,7 +5,7 @@ This module contains administrative API endpoints for user management
 and server maintenance.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Import the shared FastMCP instance from the package level
 # Import models
@@ -18,7 +18,7 @@ from ..utils import get_logger
 logger = get_logger(__name__)
 
 
-async def get_users() -> List[UserPermissions]:
+async def get_users() -> list[UserPermissions]:
     """
     Get server users (admin function).
 
@@ -43,19 +43,13 @@ async def get_users() -> List[UserPermissions]:
             sections = []
             if hasattr(user, "sections"):
                 sections = (
-                    [section.key for section in user.sections()]
-                    if callable(getattr(user, "sections", None))
-                    else []
+                    [section.key for section in user.sections()] if callable(getattr(user, "sections", None)) else []
                 )
 
             # Get restrictions
             restrictions = []
             if hasattr(user, "restrictions"):
-                restrictions = (
-                    [str(r) for r in user.restrictions]
-                    if hasattr(user.restrictions, "__iter__")
-                    else []
-                )
+                restrictions = [str(r) for r in user.restrictions] if hasattr(user.restrictions, "__iter__") else []
 
             user_permissions.append(
                 UserPermissions(
@@ -81,7 +75,7 @@ async def get_users() -> List[UserPermissions]:
         raise RuntimeError(f"Error fetching users: {e!s}") from e
 
 
-async def update_user_permissions(user_id: str, permissions: Dict[str, Any]) -> UserPermissions:
+async def update_user_permissions(user_id: str, permissions: dict[str, Any]) -> UserPermissions:
     """
     Update user permissions and restrictions.
 
@@ -117,9 +111,7 @@ async def update_user_permissions(user_id: str, permissions: Dict[str, Any]) -> 
         restrictions = []
         if hasattr(updated_user, "restrictions"):
             restrictions = (
-                [str(r) for r in updated_user.restrictions]
-                if hasattr(updated_user.restrictions, "__iter__")
-                else []
+                [str(r) for r in updated_user.restrictions] if hasattr(updated_user.restrictions, "__iter__") else []
             )
 
         return UserPermissions(
@@ -134,9 +126,7 @@ async def update_user_permissions(user_id: str, permissions: Dict[str, Any]) -> 
             sharing_enabled=getattr(updated_user, "allowSync", False),
             sync_enabled=getattr(updated_user, "allowSync", False),
             home_user=getattr(updated_user, "home", False),
-            last_seen=getattr(updated_user, "lastSeenAt", 0)
-            if hasattr(updated_user, "lastSeenAt")
-            else 0,
+            last_seen=getattr(updated_user, "lastSeenAt", 0) if hasattr(updated_user, "lastSeenAt") else 0,
             restrictions=restrictions,
         )
 
@@ -144,9 +134,7 @@ async def update_user_permissions(user_id: str, permissions: Dict[str, Any]) -> 
         raise RuntimeError(f"Error updating user permissions: {e!s}") from e
 
 
-async def run_server_maintenance(
-    operation: str, options: Optional[Dict[str, Any]] = None
-) -> ServerMaintenanceResult:
+async def run_server_maintenance(operation: str, options: dict[str, Any] | None = None) -> ServerMaintenanceResult:
     """
     Run server maintenance operations.
 
@@ -201,7 +189,7 @@ async def run_server_maintenance(
         raise RuntimeError(f"Error running maintenance operation: {e!s}") from e
 
 
-async def get_server_health() -> Dict[str, Any]:
+async def get_server_health() -> dict[str, Any]:
     """
     Get detailed server health and performance metrics.
 

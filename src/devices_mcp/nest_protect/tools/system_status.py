@@ -3,7 +3,7 @@
 import os
 import platform
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 import psutil
 from pydantic import BaseModel, Field
@@ -12,10 +12,10 @@ from pydantic import BaseModel, Field
 class ProcessStatusParams(BaseModel):
     """Parameters for process status."""
 
-    pid: Optional[int] = Field(None, description="Process ID to check (default: current process)")
+    pid: int | None = Field(None, description="Process ID to check (default: current process)")
 
 
-async def get_system_status() -> Dict[str, Any]:
+async def get_system_status() -> dict[str, Any]:
     """Get system status and metrics."""
     try:
         # CPU
@@ -50,9 +50,7 @@ async def get_system_status() -> Dict[str, Any]:
             "cpu": {
                 "usage_percent": cpu_percent,
                 "cores": cpu_count,
-                "load_avg": [x / cpu_count * 100 for x in os.getloadavg()]
-                if hasattr(os, "getloadavg")
-                else None,
+                "load_avg": [x / cpu_count * 100 for x in os.getloadavg()] if hasattr(os, "getloadavg") else None,
             },
             "memory": {
                 "total_gb": round(mem.total / (1024**3), 2),
@@ -82,7 +80,7 @@ async def get_system_status() -> Dict[str, Any]:
         return {"status": "error", "message": f"Failed to get system status: {e!s}"}
 
 
-async def get_process_status(pid: int = None) -> Dict[str, Any]:
+async def get_process_status(pid: int = None) -> dict[str, Any]:
     """Get status of the Nest Protect MCP process."""
     try:
         if pid is None:
@@ -126,7 +124,7 @@ async def get_process_status(pid: int = None) -> Dict[str, Any]:
         return {"status": "error", "message": f"Failed to get process status: {e!s}"}
 
 
-async def get_api_status() -> Dict[str, Any]:
+async def get_api_status() -> dict[str, Any]:
     """Get status of the Nest API connection."""
     import aiohttp
 
@@ -145,9 +143,10 @@ async def get_api_status() -> Dict[str, Any]:
         url = f"https://smartdevicemanagement.googleapis.com/v1/enterprises/{state.config.project_id}/devices"
         headers = {"Authorization": f"Bearer {state.access_token}"}
 
-        async with aiohttp.ClientSession() as session, session.get(
-            url, headers=headers, params={"pageSize": 1}
-        ) as response:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(url, headers=headers, params={"pageSize": 1}) as response,
+        ):
             if response.status == 200:
                 return {
                     "status": "success",

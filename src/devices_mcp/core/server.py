@@ -10,7 +10,6 @@ if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
 # Now import after path manipulation
-from typing import Optional
 
 from fastmcp import FastMCP
 
@@ -38,53 +37,33 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def _register_fastmcp_31_providers_and_prompts(mcp: FastMCP) -> None:
-    """Register FastMCP 3.1+ skills provider and prompts (sampling, skills, prompts)."""
+def _register_fastmcp_32_parity(mcp: FastMCP) -> None:
+    """Register FastMCP 3.2.0 features: native prompts, stylized skills, and agentic workflows."""
     try:
-        from pathlib import Path as P
+        from devices_mcp.prompts import register_prompts
+
+        register_prompts(mcp)
+        logger.info("FastMCP 3.2 native prompts registered")
+    except Exception as e:
+        logger.debug("Native prompts registration skipped: %s", e)
+
+    try:
+        from pathlib import Path
 
         from fastmcp.server.providers.skills import SkillsDirectoryProvider
 
         roots = []
-        # Repo-local skills (fleet: ship skills next to the server)
-        try:
-            _repo_root = P(__file__).resolve().parents[3]
-            for rel in (".cursor/skills", "skills"):
-                rp = _repo_root / rel
-                if rp.is_dir():
-                    roots.append(rp)
-        except (IndexError, OSError):
-            pass
-        for path in (
-            P.home() / ".cursor" / "skills-cursor",
-            P.home() / ".codex" / "skills",
-        ):
-            if path.exists():
-                roots.append(path)
+        repo_root = Path(__file__).resolve().parents[3]
+        for rel in (".cursor/skills", "skills"):
+            rp = repo_root / rel
+            if rp.is_dir():
+                roots.append(rp)
+
         if roots:
             mcp.add_provider(SkillsDirectoryProvider(roots=roots))
-            logger.info("FastMCP 3.1 skills provider registered (roots=%s)", [str(r) for r in roots])
+            logger.info("FastMCP 3.2 skills provider registered (roots=%s)", [str(r) for r in roots])
     except Exception as e:
-        logger.debug("Skills provider not registered: %s", e)
-
-    try:
-        from fastmcp.prompts import Message
-
-        def device_status() -> Message:
-            """Ask for a full device status summary across cameras, lighting, energy, Ring, and alarms."""
-            return Message(
-                "Summarize the status of all my smart home devices: cameras, lights, energy plugs, Ring doorbell, and alarms. List what is on/off and any issues."
-            )
-
-        def list_cameras() -> Message:
-            """Ask to list all cameras and their connection status."""
-            return Message("List all configured cameras and their current connection status.")
-
-        mcp.add_prompt(device_status)
-        mcp.add_prompt(list_cameras)
-        logger.info("FastMCP 3.1 prompts registered (device_status, list_cameras)")
-    except Exception as e:
-        logger.debug("Prompts not registered: %s", e)
+        logger.debug("Skills provider registration skipped: %s", e)
 
 
 class DevicesMCPServer:
@@ -157,9 +136,7 @@ class DevicesMCPServer:
                     await asyncio.sleep(0.1)
                     elapsed += 0.1
                     if elapsed >= timeout:
-                        logger.error(
-                            f"Initialization timeout after {timeout}s - returning uninitialized instance"
-                        )
+                        logger.error(f"Initialization timeout after {timeout}s - returning uninitialized instance")
                         break
 
         return cls._instance
@@ -215,7 +192,7 @@ class DevicesMCPServer:
             # Initialize FastMCP server (only if not already initialized)
             if not hasattr(self, "mcp") or self.mcp is None:
                 self.mcp = FastMCP("devices-mcp")
-                _register_fastmcp_31_providers_and_prompts(self.mcp)
+                _register_fastmcp_32_parity(self.mcp)
             else:
                 logger.debug("FastMCP instance already exists, reusing")
 
@@ -326,12 +303,10 @@ class DevicesMCPServer:
                         initialize_all_hardware(self.camera_manager), timeout=20.0
                     )
                     # Log summary
-                    successful = sum(
-                        1 for r in hardware_results.values() if r.get("success", False)
-                    )
+                    successful = sum(1 for r in hardware_results.values() if r.get("success", False))
                     total = len(hardware_results)
                     logger.info(f"Hardware initialization: {successful}/{total} components ready")
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     logger.warning(
                         "Hardware initialization timed out after 10s - continuing anyway (hardware will initialize on first use)"
                     )
@@ -388,7 +363,7 @@ class DevicesMCPServer:
         self._tools_registered = True
         logger.info(f"Tools registered successfully (mode: {tool_mode})")
 
-    async def _analyze_image(self, image_data, prompt: Optional[str] = None) -> dict:
+    async def _analyze_image(self, image_data, prompt: str | None = None) -> dict:
         """Analyze image data for security and object detection."""
         try:
             import base64
@@ -429,7 +404,7 @@ class DevicesMCPServer:
             logger.exception("Image analysis failed")
             return {"error": str(e)}
 
-    async def capture_still(self, params: Optional[dict] = None) -> dict:
+    async def capture_still(self, params: dict | None = None) -> dict:
         """Capture a still image from the camera."""
         try:
             if not params:
@@ -525,7 +500,7 @@ class DevicesMCPServer:
             logger.exception("Still capture failed")
             return {"error": str(e)}
 
-    async def connect(self, camera_name: Optional[str] = None) -> dict:
+    async def connect(self, camera_name: str | None = None) -> dict:
         """Connect to a camera."""
         try:
             if camera_name:
@@ -558,7 +533,7 @@ class DevicesMCPServer:
             logger.exception("Camera connection failed")
             return {"error": str(e)}
 
-    async def security_scan(self, params: Optional[dict] = None) -> dict:
+    async def security_scan(self, params: dict | None = None) -> dict:
         """Perform security scan with threat detection."""
         try:
             if not params:

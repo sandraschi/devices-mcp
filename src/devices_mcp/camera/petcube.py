@@ -2,7 +2,6 @@
 
 import logging
 from pathlib import Path
-from typing import Dict, Optional
 
 import aiohttp
 from PIL import Image, ImageDraw
@@ -113,9 +112,7 @@ class PetcubeAPI:
         session = await self._get_session()
 
         try:
-            async with session.post(
-                f"{self.BASE_URL}/devices/{device_id}/treat", json={"amount": amount}
-            ) as response:
+            async with session.post(f"{self.BASE_URL}/devices/{device_id}/treat", json={"amount": amount}) as response:
                 if response.status not in [200, 201]:
                     raise ValueError(f"Failed to dispense treat: HTTP {response.status}")
 
@@ -190,7 +187,7 @@ class PetcubeCamera(BaseCamera):
         self._is_connected = False
         self._stream_url = None
 
-    async def capture_still(self, save_path: Optional[str] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image from the camera."""
         if not await self.is_connected():
             await self.connect()
@@ -230,7 +227,7 @@ class PetcubeCamera(BaseCamera):
         else:
             return img
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Get the video stream URL."""
         if not await self.is_connected():
             await self.connect()
@@ -243,7 +240,7 @@ class PetcubeCamera(BaseCamera):
         else:
             return self._stream_url
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get camera status with detailed capabilities."""
         if not await self.is_connected():
             await self.connect()
@@ -294,7 +291,7 @@ class PetcubeCamera(BaseCamera):
                 "details": result,
             }
 
-    async def get_info(self) -> Dict:
+    async def get_info(self) -> dict:
         """Get comprehensive Petcube camera information."""
         try:
             info = {

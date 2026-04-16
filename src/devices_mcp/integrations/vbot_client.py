@@ -8,10 +8,9 @@ Communicates with FastMCP server via HTTP API calls.
 **Status**: Integration for virtual robots in robotics webapp
 """
 
-import asyncio
 import logging
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 import aiohttp
 
@@ -80,7 +79,7 @@ class VbotClient:
     def __init__(self, mcp_server_url: str, timeout: int = 30):
         self.mcp_server_url = mcp_server_url.rstrip("/")
         self.timeout = timeout
-        self.session: Optional[aiohttp.ClientSession] = None
+        self.session: aiohttp.ClientSession | None = None
 
         logger.info(f"VbotClient initialized: {mcp_server_url}")
 
@@ -93,7 +92,7 @@ class VbotClient:
         """Async context manager exit"""
         await self.disconnect()
 
-    async def connect(self) -> Dict:
+    async def connect(self) -> dict:
         """
         Connect to the robotics-mcp server.
 
@@ -125,7 +124,7 @@ class VbotClient:
             await self.session.close()
         logger.info("Disconnected from robotics-mcp server")
 
-    async def _call_mcp_tool(self, tool_name: str, arguments: Dict) -> Dict:
+    async def _call_mcp_tool(self, tool_name: str, arguments: dict) -> dict:
         """
         Call an MCP tool via HTTP API.
 
@@ -151,7 +150,7 @@ class VbotClient:
                 logger.error(f"MCP tool call failed: {response.status} - {error_text}")
                 return {"success": False, "error": f"HTTP {response.status}: {error_text}"}
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.exception("MCP tool call timed out:")
             return {"success": False, "error": "Request timeout"}
         except Exception as e:
@@ -164,11 +163,11 @@ class VbotClient:
         self,
         robot_type: str,
         platform: str = "unity",
-        position: Optional[Dict[str, float]] = None,
-        scale: Optional[float] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        model_path: Optional[str] = None,
-    ) -> Dict:
+        position: dict[str, float] | None = None,
+        scale: float | None = None,
+        metadata: dict[str, Any] | None = None,
+        model_path: str | None = None,
+    ) -> dict:
         """
         Create a new virtual robot.
 
@@ -203,7 +202,7 @@ class VbotClient:
 
         return result
 
-    async def read_vbot(self, robot_id: str) -> Dict:
+    async def read_vbot(self, robot_id: str) -> dict:
         """
         Get details of a virtual robot.
 
@@ -221,10 +220,10 @@ class VbotClient:
     async def update_vbot(
         self,
         robot_id: str,
-        position: Optional[Dict[str, float]] = None,
-        scale: Optional[float] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict:
+        position: dict[str, float] | None = None,
+        scale: float | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict:
         """
         Update virtual robot properties.
 
@@ -255,7 +254,7 @@ class VbotClient:
 
         return result
 
-    async def delete_vbot(self, robot_id: str) -> Dict:
+    async def delete_vbot(self, robot_id: str) -> dict:
         """
         Delete a virtual robot.
 
@@ -276,7 +275,7 @@ class VbotClient:
 
         return result
 
-    async def list_physical_robots(self) -> Dict:
+    async def list_physical_robots(self) -> dict:
         """
         List all available physical robots from the robotics MCP.
 
@@ -287,7 +286,7 @@ class VbotClient:
         result = await self._call_mcp_tool("robot_physical", args)
         return result
 
-    async def list_vbots(self, robot_type: Optional[str] = None) -> Dict:
+    async def list_vbots(self, robot_type: str | None = None) -> dict:
         """
         List all virtual robots.
 
@@ -311,9 +310,9 @@ class VbotClient:
         self,
         robot_type: str,
         platform: str = "unity",
-        position: Optional[Dict[str, float]] = None,
-        scale: Optional[float] = None,
-    ) -> Dict:
+        position: dict[str, float] | None = None,
+        scale: float | None = None,
+    ) -> dict:
         """
         Spawn a virtual robot (alias for create).
 
@@ -328,7 +327,7 @@ class VbotClient:
         """
         return await self.create_vbot(robot_type, platform, position, scale)
 
-    async def get_vbot_status(self, robot_id: str) -> Dict:
+    async def get_vbot_status(self, robot_id: str) -> dict:
         """
         Get virtual robot status.
 
@@ -343,7 +342,7 @@ class VbotClient:
         result = await self._call_mcp_tool("robot_virtual", args)
         return result
 
-    async def get_vbot_lidar(self, robot_id: str) -> Dict:
+    async def get_vbot_lidar(self, robot_id: str) -> dict:
         """
         Get virtual LiDAR scan data.
 
@@ -358,7 +357,7 @@ class VbotClient:
         result = await self._call_mcp_tool("robot_virtual", args)
         return result
 
-    async def set_vbot_scale(self, robot_id: str, scale: float) -> Dict:
+    async def set_vbot_scale(self, robot_id: str, scale: float) -> dict:
         """
         Set virtual robot scale.
 
@@ -380,7 +379,7 @@ class VbotClient:
 
         return result
 
-    async def test_vbot_navigation(self, robot_id: str) -> Dict:
+    async def test_vbot_navigation(self, robot_id: str) -> dict:
         """
         Test pathfinding for virtual robot.
 
@@ -395,7 +394,7 @@ class VbotClient:
         result = await self._call_mcp_tool("robot_virtual", args)
         return result
 
-    async def sync_vbot_with_physical(self, robot_id: str) -> Dict:
+    async def sync_vbot_with_physical(self, robot_id: str) -> dict:
         """
         Sync virtual robot state with physical robot.
 
@@ -417,8 +416,8 @@ class VbotClient:
         return result
 
     async def load_environment(
-        self, environment: str, environment_path: Optional[str] = None, platform: str = "unity"
-    ) -> Dict:
+        self, environment: str, environment_path: str | None = None, platform: str = "unity"
+    ) -> dict:
         """
         Load environment into virtual scene.
 
@@ -446,9 +445,7 @@ class VbotClient:
 
     # Control Operations (via robot_behavior tool)
 
-    async def move_vbot(
-        self, robot_id: str, linear: float = 0.0, angular: float = 0.0, duration: float = 0.0
-    ) -> Dict:
+    async def move_vbot(self, robot_id: str, linear: float = 0.0, angular: float = 0.0, duration: float = 0.0) -> dict:
         """
         Move virtual robot.
 
@@ -485,7 +482,7 @@ class VbotClient:
 
         return result
 
-    async def start_vbot_patrol(self, robot_id: str, route: str = "default") -> Dict:
+    async def start_vbot_patrol(self, robot_id: str, route: str = "default") -> dict:
         """
         Start virtual robot patrol.
 
@@ -512,7 +509,7 @@ class VbotClient:
 
         return result
 
-    async def stop_vbot(self, robot_id: str) -> Dict:
+    async def stop_vbot(self, robot_id: str) -> dict:
         """
         Stop virtual robot movement.
 
@@ -533,7 +530,7 @@ class VbotClient:
 
         return result
 
-    async def get_vbot_camera_feed(self, robot_id: str) -> Dict:
+    async def get_vbot_camera_feed(self, robot_id: str) -> dict:
         """
         Get virtual robot camera feed.
 

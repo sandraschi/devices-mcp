@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class YahboomClient:
         self.is_connected = True
         logger.info("Yahboom connected (MOCK).")
 
-    async def get_status(self) -> Dict[str, Any]:
+    async def get_status(self) -> dict[str, Any]:
         """Return the current status of the robot."""
         # Simulate slight battery drain
         self.battery_level = max(0.0, self.battery_level - 0.01)

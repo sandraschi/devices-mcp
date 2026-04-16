@@ -5,7 +5,7 @@ import contextlib
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import cv2
 import numpy as np
@@ -33,17 +33,13 @@ class WebCamera(BaseCamera):
         # Lazy connection management to avoid hogging camera
         self._last_activity = None
         self._idle_timeout = self.config.params.get("idle_timeout", 30)  # Configurable idle timeout
-        self._lazy_loading = self.config.params.get(
-            "lazy_loading", True
-        )  # Enable/disable lazy loading
+        self._lazy_loading = self.config.params.get("lazy_loading", True)  # Enable/disable lazy loading
         self._activity_check_task = None
 
         # Surveillance mode settings
         self._surveillance_mode = self.config.params.get("surveillance_mode", False)
         self._surveillance_interval = self.config.params.get("surveillance_interval", 30)  # seconds
-        self._motion_threshold = self.config.params.get(
-            "motion_threshold", 0.05
-        )  # 5% change threshold
+        self._motion_threshold = self.config.params.get("motion_threshold", 0.05)  # 5% change threshold
         self._surveillance_task = None
         self._last_surveillance_frame = None
         self._surveillance_events = []  # Store recent events
@@ -91,10 +87,7 @@ class WebCamera(BaseCamera):
                         )
 
                         # Try to reconnect if we've had too many failures
-                        if (
-                            self._consecutive_failures >= self._max_consecutive_failures
-                            and self._auto_reconnect
-                        ):
+                        if self._consecutive_failures >= self._max_consecutive_failures and self._auto_reconnect:
                             await self._attempt_reconnect()
                 # Camera not opened, try to reconnect
                 elif self._auto_reconnect:
@@ -104,10 +97,7 @@ class WebCamera(BaseCamera):
                 logger.debug(f"Error in capture loop for camera {self._device_id}: {e}")
                 self._consecutive_failures += 1
 
-                if (
-                    self._consecutive_failures >= self._max_consecutive_failures
-                    and self._auto_reconnect
-                ):
+                if self._consecutive_failures >= self._max_consecutive_failures and self._auto_reconnect:
                     await self._attempt_reconnect()
             finally:
                 # Always sleep to prevent tight polling loops
@@ -147,9 +137,7 @@ class WebCamera(BaseCamera):
                         self._in_use_by_another_app = False
                         self._in_use_error_message = None
                         return
-                    logger.warning(
-                        f"Reconnected to camera {self._device_id} but cannot read frames"
-                    )
+                    logger.warning(f"Reconnected to camera {self._device_id} but cannot read frames")
                     self._cap.release()
                     self._cap = None
                 else:
@@ -181,11 +169,7 @@ class WebCamera(BaseCamera):
         self._is_connected = False
 
         # Cancel idle timeout checker
-        if (
-            hasattr(self, "_activity_check_task")
-            and self._activity_check_task
-            and not self._activity_check_task.done()
-        ):
+        if hasattr(self, "_activity_check_task") and self._activity_check_task and not self._activity_check_task.done():
             self._activity_check_task.cancel()
             try:
                 await self._activity_check_task
@@ -193,11 +177,7 @@ class WebCamera(BaseCamera):
                 pass
 
         # Cancel surveillance task
-        if (
-            hasattr(self, "_surveillance_task")
-            and self._surveillance_task
-            and not self._surveillance_task.done()
-        ):
+        if hasattr(self, "_surveillance_task") and self._surveillance_task and not self._surveillance_task.done():
             self._surveillance_task.cancel()
             try:
                 await self._surveillance_task
@@ -224,11 +204,7 @@ class WebCamera(BaseCamera):
                 pass
 
         # Stop speakerphone
-        if (
-            hasattr(self, "_audio_output_task")
-            and self._audio_output_task
-            and not self._audio_output_task.done()
-        ):
+        if hasattr(self, "_audio_output_task") and self._audio_output_task and not self._audio_output_task.done():
             self._audio_output_task.cancel()
             try:
                 await self._audio_output_task
@@ -241,7 +217,7 @@ class WebCamera(BaseCamera):
         self._led_control_enabled = False
         self._speakerphone_enabled = False
 
-    async def capture_still(self, save_path: Optional[str] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image from the webcam."""
         if self._lazy_loading:
             # Lazy loading mode - open camera only when needed
@@ -249,13 +225,11 @@ class WebCamera(BaseCamera):
         # Legacy mode - assume camera is already open
         return await self._capture_still_legacy(save_path)
 
-    async def _capture_still_lazy(self, save_path: Optional[str] = None) -> Image.Image:
+    async def _capture_still_lazy(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image with lazy loading."""
         # Ensure camera is open for capture
         if not await self._ensure_camera_open():
-            raise ConnectionError(
-                f"Cannot access camera {self._device_id} - may be in use by another application"
-            )
+            raise ConnectionError(f"Cannot access camera {self._device_id} - may be in use by another application")
 
         try:
             ret, frame = self._cap.read()
@@ -283,7 +257,7 @@ class WebCamera(BaseCamera):
             # Always close camera after capture to free it for other applications
             await self._close_camera_connection()
 
-    async def _capture_still_legacy(self, save_path: Optional[str] = None) -> Image.Image:
+    async def _capture_still_legacy(self, save_path: str | None = None) -> Image.Image:
         """Legacy still capture - assumes camera is already open."""
         if not await self.is_connected():
             await self.connect()
@@ -291,9 +265,7 @@ class WebCamera(BaseCamera):
         try:
             async with self._frame_lock:
                 # Use current frame if available, otherwise try last successful frame
-                frame_to_use = (
-                    self._frame if self._frame is not None else self._last_successful_frame
-                )
+                frame_to_use = self._frame if self._frame is not None else self._last_successful_frame
 
                 if frame_to_use is None:
                     raise RuntimeError("No frame available from webcam")
@@ -331,19 +303,19 @@ class WebCamera(BaseCamera):
                             ret, frame = self._cap.read()
                             if not ret:
                                 self._in_use_by_another_app = True
-                                self._in_use_error_message = f"USB camera device {self._device_id} is in use by another application"
+                                self._in_use_error_message = (
+                                    f"USB camera device {self._device_id} is in use by another application"
+                                )
                                 self._cap.release()
                                 self._cap = None
                                 return False
                         except Exception as read_error:
                             error_str = str(read_error).lower()
-                            if (
-                                "access" in error_str
-                                or "busy" in error_str
-                                or "in use" in error_str
-                            ):
+                            if "access" in error_str or "busy" in error_str or "in use" in error_str:
                                 self._in_use_by_another_app = True
-                                self._in_use_error_message = f"USB camera device {self._device_id} is locked by another application"
+                                self._in_use_error_message = (
+                                    f"USB camera device {self._device_id} is locked by another application"
+                                )
                                 if self._cap:
                                     self._cap.release()
                                     self._cap = None
@@ -378,9 +350,7 @@ class WebCamera(BaseCamera):
 
         # Ensure camera is open for streaming
         if not await self._ensure_camera_open():
-            logger.error(
-                f"Cannot start streaming for camera {self._device_id} - may be in use by another application"
-            )
+            logger.error(f"Cannot start streaming for camera {self._device_id} - may be in use by another application")
             return
 
         try:
@@ -407,20 +377,14 @@ class WebCamera(BaseCamera):
                     yield (
                         b"--frame\r\n"
                         b"Content-Type: image/jpeg\r\n"
-                        b"Content-Length: "
-                        + str(len(frame_bytes)).encode()
-                        + b"\r\n\r\n"
-                        + frame_bytes
-                        + b"\r\n"
+                        b"Content-Length: " + str(len(frame_bytes)).encode() + b"\r\n\r\n" + frame_bytes + b"\r\n"
                     )
 
                     # Control frame rate (roughly 30 FPS)
                     await asyncio.sleep(1 / 30)
 
                 except Exception as e:
-                    logger.exception(
-                        f"Error during streaming frame generation for camera {self._device_id}: {e}"
-                    )
+                    logger.exception(f"Error during streaming frame generation for camera {self._device_id}: {e}")
                     await asyncio.sleep(0.1)  # Brief pause before retry
 
         finally:
@@ -436,11 +400,11 @@ class WebCamera(BaseCamera):
         if False:  # This is legacy code, not currently used
             yield b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: 0\r\n\r\n\r\n"
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Webcams typically don't have a stream URL."""
         return None
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get webcam status with detailed capabilities."""
         connected = await self.is_connected()
 
@@ -509,8 +473,7 @@ class WebCamera(BaseCamera):
             status["in_use_by_another_app"] = True
             status["status"] = "locked"  # Override status to show as locked, not offline
             status["in_use_error"] = (
-                self._in_use_error_message
-                or f"USB camera device {self._device_id} is in use by another application"
+                self._in_use_error_message or f"USB camera device {self._device_id} is in use by another application"
             )
 
             # Try to detect which app is using the camera (Windows only)
@@ -600,13 +563,11 @@ class WebCamera(BaseCamera):
                                 return False
                         except Exception as read_error:
                             error_str = str(read_error).lower()
-                            if (
-                                "access" in error_str
-                                or "busy" in error_str
-                                or "in use" in error_str
-                            ):
+                            if "access" in error_str or "busy" in error_str or "in use" in error_str:
                                 self._in_use_by_another_app = True
-                                self._in_use_error_message = f"USB camera device {self._device_id} is locked by another application."
+                                self._in_use_error_message = (
+                                    f"USB camera device {self._device_id} is locked by another application."
+                                )
                                 logger.warning(self._in_use_error_message)
                                 if self._cap:
                                     self._cap.release()
@@ -648,13 +609,8 @@ class WebCamera(BaseCamera):
                     break  # Camera already closed
 
                 current_time = asyncio.get_event_loop().time()
-                if (
-                    self._last_activity
-                    and (current_time - self._last_activity) > self._idle_timeout
-                ):
-                    logger.info(
-                        f"Closing idle USB camera {self._device_id} (inactive for {self._idle_timeout}s)"
-                    )
+                if self._last_activity and (current_time - self._last_activity) > self._idle_timeout:
+                    logger.info(f"Closing idle USB camera {self._device_id} (inactive for {self._idle_timeout}s)")
                     await self._close_camera_connection()
                     break
 
@@ -766,7 +722,7 @@ class WebCamera(BaseCamera):
                 logger.exception("Error in surveillance loop for camera {self._device_id}:")
                 await asyncio.sleep(5)  # Brief pause before retry
 
-    async def _capture_surveillance_frame(self) -> Optional[np.ndarray]:
+    async def _capture_surveillance_frame(self) -> np.ndarray | None:
         """Capture a frame for surveillance (lazy loading compatible)."""
         try:
             # Ensure camera is open
@@ -852,7 +808,7 @@ class WebCamera(BaseCamera):
         except Exception:
             logger.exception("Error creating motion event for camera {self._device_id}:")
 
-    async def get_surveillance_events(self, limit: int = 10) -> List[Dict]:
+    async def get_surveillance_events(self, limit: int = 10) -> list[dict]:
         """Get recent surveillance events."""
         events = []
         for event in self._surveillance_events[-limit:]:
@@ -874,9 +830,7 @@ class WebCamera(BaseCamera):
 
         return events
 
-    async def enable_led_control(
-        self, flash_interval: int = 5, flash_duration: float = 0.5
-    ) -> bool:
+    async def enable_led_control(self, flash_interval: int = 5, flash_duration: float = 0.5) -> bool:
         """Enable LED control for surveillance mode."""
         self._led_control_enabled = True
         self._led_flash_interval = flash_interval
@@ -978,8 +932,7 @@ class WebCamera(BaseCamera):
             # Check if LGS or Logitech G Hub is running
             logitech_apps = ["lghub.exe", "lcore.exe", "lvcomsx.exe"]
             lgs_running = any(
-                any(proc.info["name"].lower() == app for app in logitech_apps)
-                for proc in psutil.process_iter(["name"])
+                any(proc.info["name"].lower() == app for app in logitech_apps) for proc in psutil.process_iter(["name"])
             )
 
             if not lgs_running:
@@ -1017,9 +970,7 @@ class WebCamera(BaseCamera):
                                     green = 100 if on else 0
                                     blue = 100 if on else 0
 
-                                    result = led_dll.Logitech_SetLighting(
-                                        0, red, green, blue
-                                    )  # 0 = all devices
+                                    result = led_dll.Logitech_SetLighting(0, red, green, blue)  # 0 = all devices
                                     if result:
                                         logger.debug(f"Logitech LED SDK: {'ON' if on else 'OFF'}")
                                         return True
@@ -1053,10 +1004,7 @@ class WebCamera(BaseCamera):
 
                         # Look for Logitech webcam control dialogs
                         if "logitech" in window_text.lower() or "webcam" in window_text.lower():
-                            if (
-                                "control" in window_text.lower()
-                                or "settings" in window_text.lower()
-                            ):
+                            if "control" in window_text.lower() or "settings" in window_text.lower():
                                 results.append((hwnd, window_text, class_name))
 
                     results = []
@@ -1075,9 +1023,7 @@ class WebCamera(BaseCamera):
                             result = win32api.SendMessage(hwnd, msg, 0, 0)
 
                             if result == 1:  # Success
-                                logger.debug(
-                                    f"Logitech webcam LED via window message: {'ON' if on else 'OFF'}"
-                                )
+                                logger.debug(f"Logitech webcam LED via window message: {'ON' if on else 'OFF'}")
                                 return True
 
                         except Exception as e:
@@ -1133,9 +1079,7 @@ class WebCamera(BaseCamera):
 
                             # Check if Logitech Webcam Software is installed
                             program_files = os.environ.get("PROGRAMFILES", "C:\\Program Files")
-                            lws_path = os.path.join(
-                                program_files, "Logitech", "Logitech Webcam Software", "LWS.exe"
-                            )
+                            lws_path = os.path.join(program_files, "Logitech", "Logitech Webcam Software", "LWS.exe")
 
                             if os.path.exists(lws_path):
                                 # Logitech Webcam Software is installed
@@ -1236,9 +1180,7 @@ class WebCamera(BaseCamera):
         # Useful for development, testing, or when Logitech SDK isn't installed
 
         led_state = "🔴 FLASH" if on else "⚫ OFF"
-        logger.info(
-            f"{led_state} LED SIMULATION - Camera {self._device_id}: {'ON' if on else 'OFF'}"
-        )
+        logger.info(f"{led_state} LED SIMULATION - Camera {self._device_id}: {'ON' if on else 'OFF'}")
 
         # Check if this is a Logitech device for better simulation
         device_name = getattr(self.config.params, "friendly_name", "").lower()
@@ -1247,9 +1189,7 @@ class WebCamera(BaseCamera):
                 f"Logitech webcam {self._device_id} LED simulation: {'ACTIVATED' if on else 'DEACTIVATED'} (surveillance mode)"
             )
         else:
-            logger.info(
-                f"Generic webcam {self._device_id} LED simulation: {'ACTIVATED' if on else 'DEACTIVATED'}"
-            )
+            logger.info(f"Generic webcam {self._device_id} LED simulation: {'ACTIVATED' if on else 'DEACTIVATED'}")
 
         # Could also trigger system notifications or external indicators
         # For example, system tray icon, external LED via serial, etc.
@@ -1345,7 +1285,7 @@ class WebCamera(BaseCamera):
                 logger.exception("Error in speakerphone loop for camera {self._device_id}:")
                 await asyncio.sleep(1)  # Brief pause before retry
 
-    async def get_speakerphone_status(self) -> Dict[str, Any]:
+    async def get_speakerphone_status(self) -> dict[str, Any]:
         """Get speakerphone status and capabilities."""
         return {
             "speakerphone_capable": self._speakerphone_capable,
@@ -1372,9 +1312,7 @@ class WebCamera(BaseCamera):
                 return bool(has_microphone)
 
             # Device-specific detection based on type and model
-            device_type = getattr(
-                self, "_device_type", self.config.params.get("device_type", "")
-            ).lower()
+            device_type = getattr(self, "_device_type", self.config.params.get("device_type", "")).lower()
             friendly_name = self.config.params.get("friendly_name", "").lower()
 
             # Microscopes typically don't have microphones
@@ -1398,7 +1336,7 @@ class WebCamera(BaseCamera):
             logger.debug(f"Error detecting microphone capability: {e}")
             return False
 
-    def _detect_locking_application(self) -> Optional[str]:
+    def _detect_locking_application(self) -> str | None:
         """Try to detect which application is locking the camera."""
         try:
             import platform
@@ -1484,7 +1422,7 @@ class WebCamera(BaseCamera):
 
         return app_names.get(exe_name, exe_name.replace(".exe", "").title())
 
-    async def get_info(self) -> Dict:
+    async def get_info(self) -> dict:
         """Get comprehensive webcam information."""
         try:
             info = {

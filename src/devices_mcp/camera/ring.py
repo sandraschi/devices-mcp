@@ -4,7 +4,6 @@ import asyncio
 import io
 import logging
 from pathlib import Path
-from typing import Dict, Optional
 
 from oauthlib.oauth2 import MissingTokenError
 from PIL import Image
@@ -59,15 +58,11 @@ class RingCamera(BaseCamera):
 
                 # Authenticate
                 try:
-                    await asyncio.get_event_loop().run_in_executor(
-                        None, lambda: self._ring.update_data()
-                    )
+                    await asyncio.get_event_loop().run_in_executor(None, lambda: self._ring.update_data())
                 except MissingTokenError:
                     # If no token, try to authenticate with username/password
                     if not all(k in self.config.params for k in ["username", "password"]):
-                        raise ValueError(
-                            "Ring authentication requires either a token or username/password"
-                        ) from None
+                        raise ValueError("Ring authentication requires either a token or username/password") from None
 
                     await asyncio.get_event_loop().run_in_executor(
                         None,
@@ -101,16 +96,14 @@ class RingCamera(BaseCamera):
         self._device = None
         self._ring = None
 
-    async def capture_still(self, save_path: Optional[str] = None) -> Image.Image:
+    async def capture_still(self, save_path: str | None = None) -> Image.Image:
         """Capture a still image from the camera."""
         if not await self.is_connected():
             await self.connect()
 
         try:
             # Get snapshot from Ring
-            snapshot = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: self._device.get_snapshot()
-            )
+            snapshot = await asyncio.get_event_loop().run_in_executor(None, lambda: self._device.get_snapshot())
 
             if not snapshot:
                 raise RuntimeError("Failed to capture snapshot from Ring")
@@ -131,7 +124,7 @@ class RingCamera(BaseCamera):
         else:
             return image
 
-    async def get_stream_url(self) -> Optional[str]:
+    async def get_stream_url(self) -> str | None:
         """Get the stream URL for the camera.
 
         Ring doorbells use WebRTC for live streaming, not HTTP URLs.
@@ -145,16 +138,14 @@ class RingCamera(BaseCamera):
         logger.info("Ring doorbell live streaming requires WebRTC - no HTTP URL available")
         return None
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get camera status."""
         if not await self.is_connected():
             return {"connected": False, "error": "Not connected to Ring"}
 
         try:
             # Get device health
-            health = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: self._device.health
-            )
+            health = await asyncio.get_event_loop().run_in_executor(None, lambda: self._device.health)
 
             return {
                 "connected": True,
@@ -164,9 +155,7 @@ class RingCamera(BaseCamera):
                 "streaming": await self.is_streaming(),
                 "speakerphone_capable": self._speakerphone_capable,
                 "speakerphone_enabled": self._speakerphone_enabled,
-                "doorbell_events": len(
-                    await self.get_doorbell_events(limit=5)
-                ),  # Recent events count
+                "doorbell_events": len(await self.get_doorbell_events(limit=5)),  # Recent events count
             }
 
         except Exception as e:
@@ -180,7 +169,7 @@ class RingCamera(BaseCamera):
                 "doorbell_events": 0,
             }
 
-    async def get_info(self) -> Dict:
+    async def get_info(self) -> dict:
         """Get comprehensive Ring camera information."""
         try:
             info = {
@@ -199,9 +188,7 @@ class RingCamera(BaseCamera):
             # Add Ring-specific information if connected
             if await self.is_connected():
                 try:
-                    health = await asyncio.get_event_loop().run_in_executor(
-                        None, lambda: self._device.health
-                    )
+                    health = await asyncio.get_event_loop().run_in_executor(None, lambda: self._device.health)
 
                     info.update(
                         {
@@ -262,7 +249,7 @@ class RingCamera(BaseCamera):
             logger.exception("Failed to disable speakerphone on Ring camera:")
             return False
 
-    async def get_speakerphone_status(self) -> Dict[str, any]:
+    async def get_speakerphone_status(self) -> dict[str, any]:
         """Get speakerphone status for Ring cameras."""
         return {
             "speakerphone_capable": self._speakerphone_capable,
@@ -276,16 +263,14 @@ class RingCamera(BaseCamera):
 
     # Doorbell detection functionality
 
-    async def get_doorbell_events(self, limit: int = 10) -> list[Dict]:
+    async def get_doorbell_events(self, limit: int = 10) -> list[dict]:
         """Get recent doorbell events (dings)."""
         if not await self.is_connected():
             return []
 
         try:
             # Get doorbell history from Ring API
-            history = await asyncio.get_event_loop().run_in_executor(
-                None, lambda: self._device.history(limit=limit)
-            )
+            history = await asyncio.get_event_loop().run_in_executor(None, lambda: self._device.history(limit=limit))
 
             events = []
             for event in history:
@@ -296,9 +281,7 @@ class RingCamera(BaseCamera):
                             "timestamp": event.get("created_at"),
                             "event_type": "doorbell_press",
                             "answered": event.get("answered", False),
-                            "recording_available": bool(
-                                event.get("recording", {}).get("status") == "ready"
-                            ),
+                            "recording_available": bool(event.get("recording", {}).get("status") == "ready"),
                             "recording_id": event.get("recording", {}).get("id"),
                             "device_id": str(self._device.id),
                             "device_name": self._device.name,
@@ -311,7 +294,7 @@ class RingCamera(BaseCamera):
             logger.exception("Failed to get doorbell events:")
             return []
 
-    async def get_last_doorbell_event(self) -> Optional[Dict]:
+    async def get_last_doorbell_event(self) -> dict | None:
         """Get the most recent doorbell event."""
         events = await self.get_doorbell_events(limit=1)
         return events[0] if events else None

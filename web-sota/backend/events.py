@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, Body, Query, Request
 
@@ -9,10 +9,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/events", tags=["events"])
 
 
-@router.get("", response_model=Dict[str, Any])
-async def get_events(
-    request: Request, limit: int = Query(50, ge=1, le=1000), type: Optional[str] = None
-):
+@router.get("", response_model=dict[str, Any])
+async def get_events(request: Request, limit: int = Query(50, ge=1, le=1000), type: str | None = None):
     """Get system events."""
     server = request.app.state.server
     # events are stored in server.events usually, or a DB.
@@ -37,7 +35,7 @@ async def get_recent_events(request: Request):
 
 
 @router.post("")
-async def create_event(request: Request, event: Dict[str, Any] = Body(...)):
+async def create_event(request: Request, event: dict[str, Any] = Body(...)):
     """Manually create an event (e.g. from webhook)."""
     server = request.app.state.server
 

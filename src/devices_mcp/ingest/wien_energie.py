@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from ..config import get_config
 from ..db import TimeSeriesDB
@@ -66,11 +66,7 @@ class WienEnergieIngestionService:
 
         # Adapter configuration
         self._adapter_type = self._adapter_cfg.get("type", "ir")
-        self._adapter_port = (
-            self._adapter_cfg.get("port")
-            or os.getenv("WIEN_ENERGIE_ADAPTER_PORT")
-            or "/dev/ttyUSB0"
-        )
+        self._adapter_port = self._adapter_cfg.get("port") or os.getenv("WIEN_ENERGIE_ADAPTER_PORT") or "/dev/ttyUSB0"
         self._baudrate = self._adapter_cfg.get("baudrate", 9600)
         self._timeout = self._adapter_cfg.get("timeout", 5)
 
@@ -126,9 +122,7 @@ class WienEnergieIngestionService:
                         logger.info(f"Connected to Wien Energie adapter at {self._adapter_port}")
                     except Exception as e:
                         logger.exception("Failed to connect to adapter:")
-                        raise IngestionUnavailableError(
-                            f"Cannot connect to adapter at {self._adapter_port}: {e}"
-                        )
+                        raise IngestionUnavailableError(f"Cannot connect to adapter at {self._adapter_port}: {e}")
 
     async def _read_obis_code(self, obis_code: str) -> float | None:
         """
@@ -175,7 +169,7 @@ class WienEnergieIngestionService:
                 "adapter_port": self._adapter_port,
                 "adapter_type": self._adapter_type,
                 "protocol": "IEC 62056-21 (DLMS/COSEM)",
-                "last_seen": datetime.now(tz=timezone.utc).isoformat(),
+                "last_seen": datetime.now(tz=UTC).isoformat(),
             }
 
             logger.info(f"Discovered Wien Energie smart meter: {meter_info}")
@@ -203,7 +197,7 @@ class WienEnergieIngestionService:
             power_factor = await self._read_obis_code(self.OBIS_POWER_FACTOR)
             frequency = await self._read_obis_code(self.OBIS_FREQUENCY)
 
-            timestamp = datetime.now(tz=timezone.utc)
+            timestamp = datetime.now(tz=UTC)
 
             reading_data = {
                 "timestamp": timestamp.isoformat(),
@@ -242,9 +236,7 @@ class WienEnergieIngestionService:
             logger.warning(f"Unable to fetch Wien Energie smart meter reading: {exc}")
             return None
 
-    async def fetch_historical_data(
-        self, start_date: datetime, end_date: datetime
-    ) -> list[dict[str, object]]:
+    async def fetch_historical_data(self, start_date: datetime, end_date: datetime) -> list[dict[str, object]]:
         """
         Fetch historical energy consumption data.
 

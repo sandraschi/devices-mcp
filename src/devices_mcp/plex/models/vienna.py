@@ -6,7 +6,6 @@ that was referenced in the project's models/__init__.py file.
 """
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -18,8 +17,8 @@ class WienerRecommendation(BaseModel):
     description: str = Field(..., description="Description of the recommendation")
     category: str = Field(..., description="Category of the recommendation")
     location: str = Field(..., description="Location in Vienna")
-    start_date: Optional[datetime] = Field(None, description="Start date and time")
-    end_date: Optional[datetime] = Field(None, description="End date and time")
+    start_date: datetime | None = Field(None, description="Start date and time")
+    end_date: datetime | None = Field(None, description="End date and time")
 
 
 class EuropeanContent(BaseModel):

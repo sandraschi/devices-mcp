@@ -4,7 +4,7 @@ Plugin module for Devices MCP.
 This module provides the necessary hooks for FastMCP to discover and load the Devices MCP plugin.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastmcp import FastMCP, McpMessage
 from pydantic import BaseModel
@@ -16,13 +16,13 @@ class TapoCameraPluginConfig(BaseModel):
     """Configuration model for the Devices MCP plugin."""
 
     enabled: bool = True
-    config: Optional[Dict[str, Any]] = None
+    config: dict[str, Any] | None = None
 
 
 class TapoCameraPlugin:
     """Devices MCP plugin for FastMCP."""
 
-    def __init__(self, mcp: FastMCP, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, mcp: FastMCP, config: dict[str, Any] | None = None):
         """Initialize the plugin.
 
         Args:
@@ -31,7 +31,7 @@ class TapoCameraPlugin:
         """
         self.mcp = mcp
         self.config = TapoCameraPluginConfig(**(config or {}))
-        self.tapo_camera: Optional[TapoCameraMCP] = None
+        self.tapo_camera: TapoCameraMCP | None = None
 
     async def on_startup(self):
         """Called when the FastMCP server starts up."""
@@ -77,7 +77,7 @@ class TapoCameraPlugin:
         # Add a custom handler for plugin-specific messages
         self.mcp.register_message_handler("tapo_camera_plugin_status", self._handle_plugin_status)
 
-    async def _handle_plugin_status(self, _message: McpMessage) -> Dict[str, Any]:
+    async def _handle_plugin_status(self, _message: McpMessage) -> dict[str, Any]:
         """Handle plugin status requests."""
         return {
             "status": "enabled" if self.config.enabled else "disabled",
@@ -86,7 +86,7 @@ class TapoCameraPlugin:
         }
 
 
-def register_plugin(mcp: FastMCP, config: Optional[Dict[str, Any]] = None) -> TapoCameraPlugin:
+def register_plugin(mcp: FastMCP, config: dict[str, Any] | None = None) -> TapoCameraPlugin:
     """Register the Devices MCP plugin with FastMCP.
 
     This is the entry point that FastMCP uses to load the plugin.

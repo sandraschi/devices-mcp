@@ -7,7 +7,7 @@ Provides mock implementations of all camera types that don't require real hardwa
 import asyncio
 import io
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from PIL import Image, ImageDraw
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class MockTapoCamera:
     """Mock Tapo camera that simulates real camera behavior without hardware."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.host = config.get("host", "192.168.1.100")
         self.username = config.get("username", "admin")
         self.password = config.get("password", "password")
@@ -34,7 +34,7 @@ class MockTapoCamera:
         self._connected = True
         logger.debug(f"Mock Tapo camera login successful for {self.host}")
 
-    async def getBasicInfo(self):  # noqa: N802 - matches pytapo API naming
+    async def getBasicInfo(self):
         """Mock getBasicInfo - returns simulated device info."""
         if not self._connected:
             await self.login()
@@ -70,7 +70,7 @@ class MockTapoCamera:
 class MockWebCamera:
     """Mock webcam that simulates USB/webcam behavior without hardware."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.device_id = config.get("device_id", 0)
         self._connected = False
         self._streaming = False
@@ -114,13 +114,9 @@ class MockWebCamera:
 
         # Add test content
         draw.text((100, 100), f"Mock Webcam {self.device_id}", fill="black")
-        draw.text(
-            (100, 150), f"Resolution: {self._resolution[0]}x{self._resolution[1]}", fill="black"
-        )
+        draw.text((100, 150), f"Resolution: {self._resolution[0]}x{self._resolution[1]}", fill="black")
         draw.text((100, 200), f"FPS: {self._fps}", fill="black")
-        draw.rectangle(
-            [50, 50, self._resolution[0] - 50, self._resolution[1] - 50], outline="blue", width=3
-        )
+        draw.rectangle([50, 50, self._resolution[0] - 50, self._resolution[1] - 50], outline="blue", width=3)
 
         return img
 
@@ -136,7 +132,7 @@ class MockWebCamera:
 class MockRingCamera:
     """Mock Ring camera that simulates Ring doorbell behavior without hardware."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.username = config.get("username", "test@example.com")
         self.password = config.get("password", "password")
         self._connected = False
@@ -179,7 +175,7 @@ class MockRingCamera:
 class MockPetcubeCamera:
     """Mock Petcube camera that simulates Petcube behavior without hardware."""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.email = config.get("email", "test@example.com")
         self.password = config.get("password", "password")
         self.device_id = config.get("device_id", "mock_petcube_1")

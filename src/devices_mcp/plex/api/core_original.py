@@ -4,7 +4,7 @@ Core API endpoints for PlexMCP.
 This module contains the core API endpoints for Plex server interaction.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Import services (will be implemented later)
 # from ..services.plex_service import PlexService
@@ -50,7 +50,7 @@ async def get_plex_status() -> PlexServerStatus:
 
 
 @mcp.tool()
-async def get_libraries() -> List[MediaLibrary]:
+async def get_libraries() -> list[MediaLibrary]:
     """
     Get all media libraries available on the Plex server.
 
@@ -85,7 +85,7 @@ async def get_libraries() -> List[MediaLibrary]:
 
 
 @mcp.tool()
-async def search_media(query: str, library_id: Optional[str] = None) -> List[MediaItem]:
+async def search_media(query: str, library_id: str | None = None) -> list[MediaItem]:
     """
     Search for media content across libraries or within specific library.
 
@@ -126,7 +126,7 @@ async def search_media(query: str, library_id: Optional[str] = None) -> List[Med
 
 
 @mcp.tool()
-async def get_recently_added(library_id: Optional[str] = None, limit: int = 20) -> List[MediaItem]:
+async def get_recently_added(library_id: str | None = None, limit: int = 20) -> list[MediaItem]:
     """
     Get recently added media from all libraries or specific library.
 
@@ -167,7 +167,7 @@ async def get_recently_added(library_id: Optional[str] = None, limit: int = 20) 
 
 
 @mcp.tool()
-async def get_media_info(media_key: str) -> Dict[str, Any]:
+async def get_media_info(media_key: str) -> dict[str, Any]:
     """
     Get detailed information about a specific media item.
 

@@ -1,7 +1,6 @@
 """Otoscope camera API — TBD: verify OtoscopeCamera bindings and workflows before clinical use."""
 
 import logging
-from typing import Dict, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -60,14 +59,14 @@ class CaptureMedicalImageRequest(OtoscopeControlRequest):
     """Request model for capturing medical images."""
 
     filename: str
-    metadata: Optional[Dict] = None
+    metadata: dict | None = None
 
 
 class StartRecordingRequest(OtoscopeControlRequest):
     """Request model for starting medical recording."""
 
     filename: str
-    duration_seconds: Optional[int] = None
+    duration_seconds: int | None = None
 
 
 class ApplyPresetRequest(OtoscopeControlRequest):
@@ -83,13 +82,11 @@ async def _get_otoscope_camera(camera_name: str) -> OtoscopeCamera:
     if not camera:
         raise HTTPException(status_code=404, detail=f"Camera not found: {camera_name}")
     if not isinstance(camera, OtoscopeCamera):
-        raise HTTPException(
-            status_code=400, detail=f"Camera '{camera_name}' is not an otoscope camera."
-        )
+        raise HTTPException(status_code=400, detail=f"Camera '{camera_name}' is not an otoscope camera.")
     return camera
 
 
-@router.get("/info/{camera_name}", response_model=Dict)
+@router.get("/info/{camera_name}", response_model=dict)
 async def get_otoscope_info(camera_name: str):
     """Get detailed information about an otoscope camera."""
     camera = await _get_otoscope_camera(camera_name)
@@ -219,9 +216,7 @@ async def start_medical_recording(request: StartRecordingRequest):
     """Start recording a medical examination video."""
     camera = await _get_otoscope_camera(request.camera_name)
     try:
-        recording_id = await camera.start_medical_recording(
-            request.filename, request.duration_seconds
-        )
+        recording_id = await camera.start_medical_recording(request.filename, request.duration_seconds)
         return {"success": True, "message": f"Medical recording started: {recording_id}"}
     except Exception as e:
         logger.exception("Failed to start medical recording")

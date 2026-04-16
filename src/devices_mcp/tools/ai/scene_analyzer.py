@@ -8,7 +8,7 @@ contextual insights.
 
 import logging
 import time
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
@@ -23,12 +23,10 @@ class SceneAnalysisResult(BaseModel):
     timestamp: float = Field(..., description="Analysis timestamp")
     scene_type: str = Field(..., description="Type of scene detected")
     confidence: float = Field(..., description="Confidence score (0-1)")
-    objects_detected: List[Dict[str, Any]] = Field(
-        default_factory=list, description="Detected objects"
-    )
-    activities: List[str] = Field(default_factory=list, description="Detected activities")
+    objects_detected: list[dict[str, Any]] = Field(default_factory=list, description="Detected objects")
+    activities: list[str] = Field(default_factory=list, description="Detected activities")
     scene_description: str = Field(..., description="Human-readable scene description")
-    recommendations: List[str] = Field(default_factory=list, description="Action recommendations")
+    recommendations: list[str] = Field(default_factory=list, description="Action recommendations")
 
 
 @tool("scene_analyzer")
@@ -59,15 +57,11 @@ class SceneAnalyzerTool(BaseTool):
             camera_id: str = Field(..., description="ID of the camera to analyze")
             analysis_type: str = Field(default="comprehensive", description="Type of analysis")
             include_objects: bool = Field(default=True, description="Whether to detect objects")
-            include_activities: bool = Field(
-                default=True, description="Whether to detect activities"
-            )
-            confidence_threshold: float = Field(
-                default=0.7, description="Minimum confidence threshold"
-            )
+            include_activities: bool = Field(default=True, description="Whether to detect activities")
+            confidence_threshold: float = Field(default=0.7, description="Minimum confidence threshold")
 
     # Scene type database
-    SCENE_TYPES: ClassVar[Dict[str, List[str]]] = {
+    SCENE_TYPES: ClassVar[dict[str, list[str]]] = {
         "indoor": ["living_room", "kitchen", "bedroom", "office", "hallway"],
         "outdoor": ["garden", "driveway", "patio", "street", "parking"],
         "activity": ["person_present", "vehicle_movement", "pet_activity", "motion_detected"],
@@ -81,7 +75,7 @@ class SceneAnalyzerTool(BaseTool):
         include_objects: bool = True,
         include_activities: bool = True,
         confidence_threshold: float = 0.7,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute scene analysis on camera feed.
 
@@ -128,7 +122,7 @@ class SceneAnalyzerTool(BaseTool):
             logger.exception("Scene analysis failed for camera %s", camera_id)
             return {"error": str(e)}
 
-    async def _get_camera_snapshot(self, _camera_id: str) -> Optional[bytes]:
+    async def _get_camera_snapshot(self, _camera_id: str) -> bytes | None:
         """Get snapshot from camera for analysis."""
         try:
             # This would integrate with the actual camera system
@@ -148,24 +142,14 @@ class SceneAnalyzerTool(BaseTool):
         """Perform comprehensive scene analysis."""
         # Simulate AI analysis
         scene_type = await self._detect_scene_type(image_data)
-        objects_detected = (
-            await self._detect_objects(image_data, confidence_threshold) if include_objects else []
-        )
-        activities = (
-            await self._detect_activities(image_data, confidence_threshold)
-            if include_activities
-            else []
-        )
+        objects_detected = await self._detect_objects(image_data, confidence_threshold) if include_objects else []
+        activities = await self._detect_activities(image_data, confidence_threshold) if include_activities else []
 
         # Generate scene description
-        scene_description = self._generate_scene_description(
-            scene_type, objects_detected, activities
-        )
+        scene_description = self._generate_scene_description(scene_type, objects_detected, activities)
 
         # Generate recommendations
-        recommendations = self._generate_scene_recommendations(
-            scene_type, objects_detected, activities
-        )
+        recommendations = self._generate_scene_recommendations(scene_type, objects_detected, activities)
 
         return SceneAnalysisResult(
             timestamp=time.time(),
@@ -177,9 +161,7 @@ class SceneAnalyzerTool(BaseTool):
             recommendations=recommendations,
         )
 
-    async def _objects_only_analysis(
-        self, image_data: bytes, confidence_threshold: float
-    ) -> SceneAnalysisResult:
+    async def _objects_only_analysis(self, image_data: bytes, confidence_threshold: float) -> SceneAnalysisResult:
         """Perform objects-only analysis."""
         objects_detected = await self._detect_objects(image_data, confidence_threshold)
 
@@ -193,9 +175,7 @@ class SceneAnalyzerTool(BaseTool):
             recommendations=self._generate_object_recommendations(objects_detected),
         )
 
-    async def _activities_only_analysis(
-        self, image_data: bytes, confidence_threshold: float
-    ) -> SceneAnalysisResult:
+    async def _activities_only_analysis(self, image_data: bytes, confidence_threshold: float) -> SceneAnalysisResult:
         """Perform activities-only analysis."""
         activities = await self._detect_activities(image_data, confidence_threshold)
 
@@ -209,9 +189,7 @@ class SceneAnalyzerTool(BaseTool):
             recommendations=self._generate_activity_recommendations(activities),
         )
 
-    async def _scene_type_analysis(
-        self, image_data: bytes, _confidence_threshold: float
-    ) -> SceneAnalysisResult:
+    async def _scene_type_analysis(self, image_data: bytes, _confidence_threshold: float) -> SceneAnalysisResult:
         """Perform scene type classification."""
         scene_type = await self._detect_scene_type(image_data)
 
@@ -231,9 +209,7 @@ class SceneAnalyzerTool(BaseTool):
         # In real implementation, this would use a trained model
         return "living_room"  # Default for simulation
 
-    async def _detect_objects(
-        self, _image_data: bytes, confidence_threshold: float
-    ) -> List[Dict[str, Any]]:
+    async def _detect_objects(self, _image_data: bytes, confidence_threshold: float) -> list[dict[str, Any]]:
         """Detect objects in the scene."""
         # Simulate object detection
         objects = [
@@ -245,9 +221,7 @@ class SceneAnalyzerTool(BaseTool):
         # Filter by confidence threshold
         return [obj for obj in objects if obj["confidence"] >= confidence_threshold]
 
-    async def _detect_activities(
-        self, _image_data: bytes, confidence_threshold: float
-    ) -> List[str]:
+    async def _detect_activities(self, _image_data: bytes, confidence_threshold: float) -> list[str]:
         """Detect activities in the scene."""
         # Simulate activity detection
         activities = [
@@ -260,7 +234,7 @@ class SceneAnalyzerTool(BaseTool):
         return [act["activity"] for act in activities if act["confidence"] >= confidence_threshold]
 
     def _generate_scene_description(
-        self, scene_type: str, objects_detected: List[Dict[str, Any]], activities: List[str]
+        self, scene_type: str, objects_detected: list[dict[str, Any]], activities: list[str]
     ) -> str:
         """Generate human-readable scene description."""
         description_parts = [f"A {scene_type} scene"]
@@ -275,8 +249,8 @@ class SceneAnalyzerTool(BaseTool):
         return ". ".join(description_parts) + "."
 
     def _generate_scene_recommendations(
-        self, scene_type: str, objects_detected: List[Dict[str, Any]], activities: List[str]
-    ) -> List[str]:
+        self, scene_type: str, objects_detected: list[dict[str, Any]], activities: list[str]
+    ) -> list[str]:
         """Generate recommendations based on scene analysis."""
         recommendations = []
 
@@ -296,7 +270,7 @@ class SceneAnalyzerTool(BaseTool):
 
         return recommendations
 
-    def _generate_object_recommendations(self, objects_detected: List[Dict[str, Any]]) -> List[str]:
+    def _generate_object_recommendations(self, objects_detected: list[dict[str, Any]]) -> list[str]:
         """Generate recommendations based on detected objects."""
         recommendations = []
 
@@ -306,13 +280,11 @@ class SceneAnalyzerTool(BaseTool):
             # Check for specific objects
             person_count = len([obj for obj in objects_detected if obj["name"] == "person"])
             if person_count > 0:
-                recommendations.append(
-                    f"{person_count} person(s) detected - consider privacy settings"
-                )
+                recommendations.append(f"{person_count} person(s) detected - consider privacy settings")
 
         return recommendations
 
-    def _generate_activity_recommendations(self, activities: List[str]) -> List[str]:
+    def _generate_activity_recommendations(self, activities: list[str]) -> list[str]:
         """Generate recommendations based on detected activities."""
         recommendations = []
 
@@ -326,7 +298,7 @@ class SceneAnalyzerTool(BaseTool):
 
         return recommendations
 
-    def _generate_scene_type_recommendations(self, scene_type: str) -> List[str]:
+    def _generate_scene_type_recommendations(self, scene_type: str) -> list[str]:
         """Generate recommendations based on scene type."""
         recommendations = []
 
@@ -339,7 +311,7 @@ class SceneAnalyzerTool(BaseTool):
 
         return recommendations
 
-    def _generate_analysis_summary(self, result: SceneAnalysisResult) -> Dict[str, Any]:
+    def _generate_analysis_summary(self, result: SceneAnalysisResult) -> dict[str, Any]:
         """Generate analysis summary."""
         return {
             "scene_classification": result.scene_type,

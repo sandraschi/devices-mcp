@@ -1,7 +1,6 @@
 """Otoscope camera implementation for USB otoscope devices."""
 
 import logging
-from typing import Dict, Optional
 
 from .base import CameraFactory, CameraType
 from .webcam import WebCamera
@@ -15,17 +14,13 @@ class OtoscopeCamera(WebCamera):
 
     def __init__(self, config, mock_webcam=None):
         super().__init__(config, mock_webcam)
-        self._light_intensity = int(
-            self.config.params.get("light_intensity", 80)
-        )  # Default 80% brightness
+        self._light_intensity = int(self.config.params.get("light_intensity", 80))  # Default 80% brightness
         self._focus_mode = self.config.params.get("focus_mode", "auto")
-        self._specimen_type = self.config.params.get(
-            "specimen_type", "ear"
-        )  # ear, throat, nose, etc.
+        self._specimen_type = self.config.params.get("specimen_type", "ear")  # ear, throat, nose, etc.
         self._magnification = float(self.config.params.get("magnification", 1.0))
         self._calibration_data = self.config.params.get("calibration_data", {})
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get otoscope camera status with detailed medical capabilities."""
         status = await super().get_status()
         status.update(
@@ -100,7 +95,7 @@ class OtoscopeCamera(WebCamera):
         pixels_per_mm = self._calibration_data.get("pixels_per_mm", 1.0)
         return pixels_area / (pixels_per_mm**2)
 
-    async def capture_medical_image(self, filename: str, metadata: Optional[Dict] = None) -> str:
+    async def capture_medical_image(self, filename: str, metadata: dict | None = None) -> str:
         """Capture a medical image with embedded metadata."""
         # This would capture an image and embed medical metadata
         metadata = metadata or {}
@@ -110,14 +105,10 @@ class OtoscopeCamera(WebCamera):
         # - timestamp and other metadata
 
         # In a real implementation, this would save the image with metadata
-        logger.info(
-            f"Otoscope {self.config.name}: Captured medical image '{filename}' with metadata"
-        )
+        logger.info(f"Otoscope {self.config.name}: Captured medical image '{filename}' with metadata")
         return f"medical_capture_{filename}"
 
-    async def start_medical_recording(
-        self, filename: str, duration_seconds: Optional[int] = None
-    ) -> str:
+    async def start_medical_recording(self, filename: str, duration_seconds: int | None = None) -> str:
         """Start recording a medical examination video."""
         logger.info(
             f"Otoscope {self.config.name}: Started medical recording '{filename}'"
@@ -131,7 +122,7 @@ class OtoscopeCamera(WebCamera):
         """Stop the current medical recording."""
         logger.info(f"Otoscope {self.config.name}: Stopped medical recording")
 
-    async def get_medical_presets(self) -> Dict[str, Dict]:
+    async def get_medical_presets(self) -> dict[str, dict]:
         """Get predefined medical examination presets."""
         return {
             "ear_exam": {

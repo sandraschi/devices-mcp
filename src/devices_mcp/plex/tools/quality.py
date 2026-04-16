@@ -1,7 +1,7 @@
 """Plex quality and transcoding tools for FastMCP 2.10.1."""
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -22,11 +22,11 @@ def _get_plex_service():
 class GetTranscodeSettingsRequest(BaseModel):
     """Request model for getting transcode settings."""
 
-    profile_name: Optional[str] = Field(None, description="Name of the quality profile to retrieve")
+    profile_name: str | None = Field(None, description="Name of the quality profile to retrieve")
 
 
 @mcp.tool()
-async def get_transcode_settings(request: GetTranscodeSettingsRequest) -> Dict[str, Any]:
+async def get_transcode_settings(request: GetTranscodeSettingsRequest) -> dict[str, Any]:
     """Get current transcode settings for a quality profile.
 
     Args:
@@ -43,7 +43,7 @@ class UpdateTranscodeSettingsRequest(BaseModel):
     """Request model for updating transcode settings."""
 
     profile_name: str = Field(..., description="Name of the quality profile to update")
-    settings: Dict[str, Any] = Field(..., description="Dictionary of settings to update")
+    settings: dict[str, Any] = Field(..., description="Dictionary of settings to update")
 
 
 @mcp.tool()
@@ -57,9 +57,7 @@ async def update_transcode_settings(request: UpdateTranscodeSettingsRequest) -> 
         True if update was successful, False otherwise
     """
     plex = _get_plex_service()
-    return await plex.update_transcode_settings(
-        profile_name=request.profile_name, settings=request.settings
-    )
+    return await plex.update_transcode_settings(profile_name=request.profile_name, settings=request.settings)
 
 
 @mcp.tool()
@@ -76,9 +74,7 @@ async def get_transcoding_status() -> TranscodingStatus:
 class GetBandwidthUsageRequest(BaseModel):
     """Request model for getting bandwidth usage."""
 
-    time_range: str = Field(
-        "day", description="Time range for bandwidth data (hour, day, week, month)"
-    )
+    time_range: str = Field("day", description="Time range for bandwidth data (hour, day, week, month)")
 
 
 @mcp.tool()
@@ -100,7 +96,7 @@ class SetStreamQualityRequest(BaseModel):
 
     profile_name: str = Field(..., description="Name of the quality profile")
     quality: str = Field(..., description="Quality setting (e.g., '1080p', '720p', '480p')")
-    bitrate: Optional[int] = Field(None, description="Maximum bitrate in kbps")
+    bitrate: int | None = Field(None, description="Maximum bitrate in kbps")
 
 
 @mcp.tool()
@@ -122,11 +118,11 @@ async def set_stream_quality(request: SetStreamQualityRequest) -> bool:
 class GetThrottlingStatusRequest(BaseModel):
     """Request model for getting throttling status."""
 
-    profile_name: Optional[str] = Field(None, description="Name of the quality profile")
+    profile_name: str | None = Field(None, description="Name of the quality profile")
 
 
 @mcp.tool()
-async def get_throttling_status(request: GetThrottlingStatusRequest) -> Dict[str, Any]:
+async def get_throttling_status(request: GetThrottlingStatusRequest) -> dict[str, Any]:
     """Get current throttling status and settings.
 
     Args:
@@ -144,8 +140,8 @@ class SetThrottlingRequest(BaseModel):
 
     profile_name: str = Field(..., description="Name of the quality profile")
     enabled: bool = Field(..., description="Whether to enable throttling")
-    download_limit: Optional[int] = Field(None, description="Download limit in kbps")
-    upload_limit: Optional[int] = Field(None, description="Upload limit in kbps")
+    download_limit: int | None = Field(None, description="Download limit in kbps")
+    upload_limit: int | None = Field(None, description="Upload limit in kbps")
 
 
 @mcp.tool()
@@ -168,7 +164,7 @@ async def set_throttling(request: SetThrottlingRequest) -> bool:
 
 
 @mcp.tool()
-async def list_quality_profiles() -> List[QualityProfile]:
+async def list_quality_profiles() -> list[QualityProfile]:
     """List all available quality profiles.
 
     Returns:
@@ -182,7 +178,7 @@ class CreateQualityProfileRequest(BaseModel):
     """Request model for creating a quality profile."""
 
     name: str = Field(..., description="Name of the new profile")
-    settings: Dict[str, Any] = Field(..., description="Profile settings")
+    settings: dict[str, Any] = Field(..., description="Profile settings")
     is_default: bool = Field(False, description="Set as default profile")
 
 

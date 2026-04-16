@@ -3,7 +3,6 @@ Data models for devices-mcp.
 """
 
 from enum import Enum
-from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress, field_validator
 
@@ -65,19 +64,17 @@ class CameraStatus(BaseModel):
     led_enabled: bool = Field(True, description="Whether the status LED is enabled")
     firmware_version: str = Field(..., description="Camera firmware version")
     uptime: int = Field(0, description="Uptime in seconds")
-    storage: Dict[str, Union[int, str]] = Field(
-        default_factory=dict, description="Storage information"
-    )
+    storage: dict[str, int | str] = Field(default_factory=dict, description="Storage information")
 
 
 class CameraConfig(BaseModel):
     """Configuration for a Tapo camera."""
 
     # Connection settings - now optional with defaults
-    host: Optional[str] = Field(None, description="Camera IP address or hostname")
+    host: str | None = Field(None, description="Camera IP address or hostname")
     port: int = Field(443, description="Camera port (usually 443 for HTTPS)")
-    username: Optional[str] = Field(None, description="Camera username (usually admin)")
-    password: Optional[str] = Field(None, description="Camera password")
+    username: str | None = Field(None, description="Camera username (usually admin)")
+    password: str | None = Field(None, description="Camera password")
     use_https: bool = Field(True, description="Use HTTPS for API calls")
     verify_ssl: bool = Field(True, description="Verify SSL certificate")
     timeout: int = Field(10, description="Request timeout in seconds")
@@ -96,7 +93,7 @@ class CameraConfig(BaseModel):
     motion_sensitivity: MotionDetectionSensitivity = Field(
         MotionDetectionSensitivity.MEDIUM, description="Motion detection sensitivity"
     )
-    motion_zones: List[Dict] = Field(default_factory=list, description="Motion detection zones")
+    motion_zones: list[dict] = Field(default_factory=list, description="Motion detection zones")
 
     # Privacy settings
     privacy_mode: bool = Field(False, description="Enable privacy mode")
@@ -144,9 +141,9 @@ class MotionEvent(BaseModel):
 
     timestamp: float = Field(..., description="Event timestamp")
     confidence: float = Field(..., description="Detection confidence (0.0 to 1.0)")
-    zones: List[Dict] = Field(default_factory=list, description="Triggered zones")
-    snapshot_url: Optional[HttpUrl] = Field(None, description="URL to snapshot of the event")
-    video_clip_url: Optional[HttpUrl] = Field(None, description="URL to video clip of the event")
+    zones: list[dict] = Field(default_factory=list, description="Triggered zones")
+    snapshot_url: HttpUrl | None = Field(None, description="URL to snapshot of the event")
+    video_clip_url: HttpUrl | None = Field(None, description="URL to video clip of the event")
 
 
 class RecordingConfig(BaseModel):
@@ -172,4 +169,4 @@ class CameraInfo(BaseModel):
     uptime: int
     ip_address: IPvAnyAddress
     wifi_signal: int = Field(ge=0, le=100, description="WiFi signal strength (0-100)")
-    wifi_ssid: Optional[str] = Field(None, description="Connected WiFi SSID")
+    wifi_ssid: str | None = Field(None, description="Connected WiFi SSID")

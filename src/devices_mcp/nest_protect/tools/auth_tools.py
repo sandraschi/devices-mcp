@@ -1,7 +1,7 @@
 """Authentication tools for Nest Protect MCP."""
 
 import webbrowser
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.parse import urlencode
 
 from pydantic import BaseModel, Field
@@ -10,10 +10,8 @@ from pydantic import BaseModel, Field
 class OAuthFlowParams(BaseModel):
     """Parameters for OAuth flow initiation."""
 
-    redirect_uri: str = Field(
-        "http://localhost:8000/auth/callback", description="Redirect URI for auth code"
-    )
-    state: Optional[str] = Field(None, description="CSRF protection state")
+    redirect_uri: str = Field("http://localhost:8000/auth/callback", description="Redirect URI for auth code")
+    state: str | None = Field(None, description="CSRF protection state")
     open_browser: bool = Field(True, description="Open auth URL in browser")
 
 
@@ -22,7 +20,7 @@ class OAuthCallbackParams(BaseModel):
 
     code: str = Field(..., description="Auth code from OAuth callback")
     state: str = Field(..., description="State param from OAuth")
-    expected_state: Optional[str] = Field(None, description="Expected CSRF state")
+    expected_state: str | None = Field(None, description="Expected CSRF state")
     redirect_uri: str = Field(
         "http://localhost:8000/auth/callback",
         description="Redirect URI used in auth request",
@@ -37,9 +35,9 @@ class RefreshTokenParams(BaseModel):
 
 async def initiate_oauth_flow(
     redirect_uri: str = "http://localhost:8000/auth/callback",
-    state: Optional[str] = None,
+    state: str | None = None,
     open_browser: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Initiate OAuth 2.0 flow for Nest API."""
     from ..state_manager import get_app_state
 
@@ -76,9 +74,9 @@ async def initiate_oauth_flow(
 async def handle_oauth_callback(
     code: str,
     state: str,
-    expected_state: Optional[str] = None,
+    expected_state: str | None = None,
     redirect_uri: str = "http://localhost:8000/auth/callback",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handle OAuth 2.0 callback from Nest API."""
     import aiohttp
 
@@ -121,8 +119,7 @@ async def handle_oauth_callback(
                 return {
                     "status": "success",
                     "message": "Successfully authenticated with Nest API",
-                    "access_token": "****"
-                    + (app_state.access_token[-4:] if app_state.access_token else ""),
+                    "access_token": "****" + (app_state.access_token[-4:] if app_state.access_token else ""),
                     "token_type": token_data.get("token_type"),
                     "expires_in": token_data.get("expires_in"),
                     "scope": token_data.get("scope"),
@@ -136,7 +133,7 @@ async def handle_oauth_callback(
         }
 
 
-async def refresh_access_token(force: bool = False) -> Dict[str, Any]:
+async def refresh_access_token(force: bool = False) -> dict[str, Any]:
     """Refresh OAuth 2.0 access token using refresh token."""
     import aiohttp
 
@@ -181,8 +178,7 @@ async def refresh_access_token(force: bool = False) -> Dict[str, Any]:
                 return {
                     "status": "success",
                     "message": "Access token refreshed",
-                    "access_token": "****"
-                    + (app_state.access_token[-4:] if app_state.access_token else ""),
+                    "access_token": "****" + (app_state.access_token[-4:] if app_state.access_token else ""),
                     "token_type": token_data.get("token_type"),
                     "expires_in": token_data.get("expires_in"),
                     "scope": token_data.get("scope"),

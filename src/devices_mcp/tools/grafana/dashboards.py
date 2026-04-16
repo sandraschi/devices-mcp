@@ -2,7 +2,7 @@
 
 import secrets
 from datetime import datetime, timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 from ..base_tool import BaseTool, ToolCategory
 
@@ -12,12 +12,10 @@ class ViennaDashboardTool(BaseTool):
 
     class Meta:
         name: str = "get_vienna_security_dashboard"
-        description: str = (
-            "Get formatted data for Vienna-specific security dashboard with German labels"
-        )
+        description: str = "Get formatted data for Vienna-specific security dashboard with German labels"
         category: ToolCategory = ToolCategory.UTILITY
 
-    async def execute(self, **_kwargs) -> Dict[str, Any]:
+    async def execute(self, **_kwargs) -> dict[str, Any]:
         """Generate dashboard data with Vienna context."""
         try:
             # Get camera manager instance
@@ -28,10 +26,7 @@ class ViennaDashboardTool(BaseTool):
 
             # Generate time series data for the last 24 hours
             hours = 24
-            timestamps = [
-                (vienna_time - timedelta(hours=i)).strftime("%H:%M")
-                for i in range(hours - 1, -1, -1)
-            ]
+            timestamps = [(vienna_time - timedelta(hours=i)).strftime("%H:%M") for i in range(hours - 1, -1, -1)]
 
             # Generate mock data for demonstration
             motion_events = self._generate_mock_motion_data(hours)
@@ -46,9 +41,7 @@ class ViennaDashboardTool(BaseTool):
                 "metrics": {
                     "total_cameras": len(camera_manager.cameras),
                     "active_cameras": sum(
-                        1
-                        for cam in camera_manager.cameras.values()
-                        if cam.get_status().get("online", False)
+                        1 for cam in camera_manager.cameras.values() if cam.get_status().get("online", False)
                     ),
                     "alerts_last_24h": sum(motion_events),
                     "avg_response_time_sec": 2.3,
@@ -59,10 +52,7 @@ class ViennaDashboardTool(BaseTool):
                     "motion_events": motion_events,
                     "camera_activity": camera_activity,
                 },
-                "cameras": [
-                    self._format_camera_data(cam_id, cam)
-                    for cam_id, cam in camera_manager.cameras.items()
-                ],
+                "cameras": [self._format_camera_data(cam_id, cam) for cam_id, cam in camera_manager.cameras.items()],
                 "alerts": self._get_recent_alerts(hours),
                 "weather": self._get_weather_data(vienna_time),
             }
@@ -80,20 +70,16 @@ class ViennaDashboardTool(BaseTool):
                 "content_type": "application/json",
             }
 
-    def _generate_mock_motion_data(self, hours: int) -> List[int]:
+    def _generate_mock_motion_data(self, hours: int) -> list[int]:
         """Generate mock motion event data for the last N hours."""
 
         # More activity during typical business hours (9-17)
         return [
-            (
-                secrets.randbelow(6)
-                if 9 <= (datetime.now().hour - i) % 24 < 17
-                else secrets.randbelow(3)
-            )
+            (secrets.randbelow(6) if 9 <= (datetime.now().hour - i) % 24 < 17 else secrets.randbelow(3))
             for i in range(hours - 1, -1, -1)
         ]
 
-    def _generate_camera_activity(self, camera_manager) -> Dict[str, List[int]]:
+    def _generate_camera_activity(self, camera_manager) -> dict[str, list[int]]:
         """Generate camera activity data."""
         activity = {}
         for cam_id in camera_manager.cameras:
@@ -110,7 +96,7 @@ class ViennaDashboardTool(BaseTool):
             return secrets.randbelow(41) + 30  # 30-70% activity
         return secrets.randbelow(31)  # 0-30% activity at night
 
-    def _format_camera_data(self, cam_id: str, camera) -> Dict[str, Any]:
+    def _format_camera_data(self, cam_id: str, camera) -> dict[str, Any]:
         """Format camera data for the dashboard."""
         status = camera.get_status()
         return {
@@ -124,7 +110,7 @@ class ViennaDashboardTool(BaseTool):
             "battery_level": status.get("battery_level", 0),
         }
 
-    def _get_recent_alerts(self, hours: int) -> List[Dict[str, Any]]:
+    def _get_recent_alerts(self, hours: int) -> list[dict[str, Any]]:
         """Get recent security alerts."""
         alerts = []
         alert_types = [
@@ -160,7 +146,7 @@ class ViennaDashboardTool(BaseTool):
 
         return round((total_used / total_capacity) * 100, 1)
 
-    def _get_weather_data(self, timestamp: datetime) -> Dict[str, Any]:
+    def _get_weather_data(self, timestamp: datetime) -> dict[str, Any]:
         """Get mock weather data for Vienna."""
         # This would typically call a weather API in a real implementation
         conditions = ["Sonnig", "Bewölkt", "Regnerisch", "Gewitter", "Nebel"]

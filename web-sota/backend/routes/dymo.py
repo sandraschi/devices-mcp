@@ -1,7 +1,6 @@
 """Dymo label printer API — TBD: hardware/SDK wiring and production validation not complete."""
 
 import logging
-from typing import Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -28,7 +27,7 @@ class PrintLabelRequest(DymoRequest):
 class BatchLabelsRequest(DymoRequest):
     """Request model for printing multiple labels."""
 
-    labels: List[str]
+    labels: list[str]
     tape_size: str = "12mm"
     tape_color: str = "black_on_white"
 
@@ -36,8 +35,8 @@ class BatchLabelsRequest(DymoRequest):
 class CreateShoppingLabelsRequest(DymoRequest):
     """Request model for creating shopping list labels."""
 
-    items: List[str]
-    categories: Optional[Dict[str, List[str]]] = None  # Category -> items
+    items: list[str]
+    categories: dict[str, list[str]] | None = None  # Category -> items
     include_checkboxes: bool = True
     tape_size: str = "12mm"
 
@@ -45,7 +44,7 @@ class CreateShoppingLabelsRequest(DymoRequest):
 class CreateInventoryLabelsRequest(DymoRequest):
     """Request model for creating inventory labels."""
 
-    items: List[Dict[str, str]]  # [{"name": "Item", "location": "Shelf A", "quantity": "5"}]
+    items: list[dict[str, str]]  # [{"name": "Item", "location": "Shelf A", "quantity": "5"}]
     include_barcodes: bool = False
     tape_size: str = "19mm"  # Wider for inventory
 
@@ -54,7 +53,7 @@ class LabelTemplateRequest(DymoRequest):
     """Request model for creating custom label templates."""
 
     template_name: str
-    fields: List[Dict[str, str]]  # [{"name": "field1", "value": "text", "style": "bold"}]
+    fields: list[dict[str, str]]  # [{"name": "field1", "value": "text", "style": "bold"}]
     layout: str = "horizontal"  # horizontal, vertical, multi_line
 
 
@@ -78,7 +77,7 @@ class MockDymoPrinter:
         self.tape_sizes = ["6mm", "9mm", "12mm", "19mm", "24mm"]
         self.tape_colors = ["black_on_white", "white_on_black", "red_on_white", "blue_on_white"]
 
-    async def print_label(self, text: str, **kwargs) -> Dict:
+    async def print_label(self, text: str, **kwargs) -> dict:
         """Print a single label."""
         logger.info(f"Dymo: Printing label '{text}' with settings: {kwargs}")
         # In real implementation, this would communicate with Dymo SDK
@@ -89,7 +88,7 @@ class MockDymoPrinter:
             "estimated_length": len(text) * 2,  # Rough estimate in mm
         }
 
-    async def print_batch_labels(self, labels: List[str], **kwargs) -> Dict:
+    async def print_batch_labels(self, labels: list[str], **kwargs) -> dict:
         """Print multiple labels."""
         logger.info(f"Dymo: Printing batch of {len(labels)} labels with settings: {kwargs}")
         results = []
@@ -98,7 +97,7 @@ class MockDymoPrinter:
             results.append({**result, "batch_index": i})
         return {"success": True, "total_labels": len(labels), "results": results}
 
-    async def get_status(self) -> Dict:
+    async def get_status(self) -> dict:
         """Get printer status."""
         return {
             "connected": self.connected,
@@ -109,7 +108,7 @@ class MockDymoPrinter:
             "firmware_version": "1.2.3",
         }
 
-    async def create_shopping_labels(self, items: List[str], **kwargs) -> Dict:
+    async def create_shopping_labels(self, items: list[str], **kwargs) -> dict:
         """Create formatted shopping list labels."""
         categories = kwargs.get("categories", {})
         include_checkboxes = kwargs.get("include_checkboxes", True)
@@ -132,7 +131,7 @@ class MockDymoPrinter:
 
         return await self.print_batch_labels(formatted_labels, **kwargs)
 
-    async def create_inventory_labels(self, items: List[Dict[str, str]], **kwargs) -> Dict:
+    async def create_inventory_labels(self, items: list[dict[str, str]], **kwargs) -> dict:
         """Create formatted inventory labels."""
         formatted_labels = []
         for item in items:
@@ -151,9 +150,7 @@ class MockDymoPrinter:
 
         return await self.print_batch_labels(formatted_labels, **kwargs)
 
-    async def create_custom_template(
-        self, template_name: str, fields: List[Dict[str, str]], **kwargs
-    ) -> Dict:
+    async def create_custom_template(self, template_name: str, fields: list[dict[str, str]], **kwargs) -> dict:
         """Create labels from custom template."""
         formatted_labels = []
         layout = kwargs.get("layout", "horizontal")
@@ -177,16 +174,12 @@ class MockDymoPrinter:
 
         return await self.print_batch_labels(formatted_labels, **kwargs)
 
-    async def generate_humorous_labels(
-        self, theme: str, count: int, style: str, category: str, **kwargs
-    ) -> Dict:
+    async def generate_humorous_labels(self, theme: str, count: int, style: str, category: str, **kwargs) -> dict:
         """Generate and print humorous labels for the fridge."""
         # Limit count to prevent abuse
         count = min(count, 100)
 
-        logger.info(
-            f"Dymo: Generating {count} humorous labels (theme: {theme}, category: {category}, style: {style})"
-        )
+        logger.info(f"Dymo: Generating {count} humorous labels (theme: {theme}, category: {category}, style: {style})")
 
         # Generate humorous texts based on theme and category
         humorous_texts = await self._generate_humorous_texts(theme, count, style, category)
@@ -202,9 +195,7 @@ class MockDymoPrinter:
             "generated_texts": humorous_texts,
         }
 
-    async def _generate_humorous_texts(
-        self, theme: str, count: int, style: str, category: str
-    ) -> List[str]:
+    async def _generate_humorous_texts(self, theme: str, count: int, style: str, category: str) -> list[str]:
         """Generate humorous texts for labels."""
         # Pre-defined humorous texts by category and theme
         humor_templates = {
@@ -481,9 +472,7 @@ class MockDymoPrinter:
             templates = humor_templates[category][theme]
         elif category in humor_templates:
             # Fallback to random if specific theme not found
-            templates = humor_templates[category].get(
-                "random", humor_templates["general"]["random"]
-            )
+            templates = humor_templates[category].get("random", humor_templates["general"]["random"])
         else:
             # Ultimate fallback
             templates = humor_templates["general"]["random"]
@@ -682,16 +671,12 @@ async def generate_humorous_labels(request: GenerateHumorousLabelsRequest):
         # Validate theme
         valid_themes = ["random", "dad_jokes", "puns", "sarcastic", "motivational", "absurd"]
         if request.theme not in valid_themes:
-            raise HTTPException(
-                status_code=400, detail=f"Theme must be one of: {', '.join(valid_themes)}"
-            )
+            raise HTTPException(status_code=400, detail=f"Theme must be one of: {', '.join(valid_themes)}")
 
         # Validate category
         valid_categories = ["general", "food", "chores", "pets", "tech", "life"]
         if request.category not in valid_categories:
-            raise HTTPException(
-                status_code=400, detail=f"Category must be one of: {', '.join(valid_categories)}"
-            )
+            raise HTTPException(status_code=400, detail=f"Category must be one of: {', '.join(valid_categories)}")
 
         result = await _dymo_printer.generate_humorous_labels(
             theme=request.theme,

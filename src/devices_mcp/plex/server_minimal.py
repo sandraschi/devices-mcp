@@ -7,7 +7,6 @@ Provides 22 tools: 10 core + 3 playlist + 2 remote + 2 performance + 2 admin + 3
 
 import os
 import sys
-from typing import Dict, Optional
 
 from dotenv import load_dotenv
 from fastmcp import FastMCP
@@ -59,7 +58,7 @@ console = Console(file=sys.stderr)
 mcp = FastMCP("PlexMCP 🎬")
 
 # Global Plex manager (initialized on startup)
-plex_manager: Optional[PlexManager] = None
+plex_manager: PlexManager | None = None
 
 
 async def get_plex_manager() -> PlexManager:
@@ -80,7 +79,7 @@ async def get_plex_manager() -> PlexManager:
 
 
 @mcp.tool()
-async def test_connection() -> Dict[str, str]:
+async def test_connection() -> dict[str, str]:
     """Test basic Plex connection and return server info"""
     try:
         await get_plex_manager()

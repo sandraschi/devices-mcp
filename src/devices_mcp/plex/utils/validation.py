@@ -8,7 +8,8 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Pattern, Type, TypeVar, Union
+from re import Pattern
+from typing import Any, TypeVar
 from urllib.parse import urlparse
 
 import pytz
@@ -18,9 +19,7 @@ from pydantic import BaseModel
 T = TypeVar("T")
 
 # Common regex patterns
-UUID_PATTERN = re.compile(
-    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
-)
+UUID_PATTERN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
 
 # Plex-specific patterns
 PLEX_TOKEN_PATTERN = re.compile(r"^[a-zA-Z0-9_-]{20,}$")
@@ -30,7 +29,7 @@ PLEX_CLIENT_IDENTIFIER_PATTERN = re.compile(r"^[a-z0-9]{20,}$")
 class ValidationError(Exception):
     """Custom validation error class."""
 
-    def __init__(self, message: str, field: Optional[str] = None, code: Optional[str] = None):
+    def __init__(self, message: str, field: str | None = None, code: str | None = None):
         self.message = message
         self.field = field
         self.code = code or "validation_error"
@@ -51,7 +50,7 @@ def validate_required(value: Any, field: str = "field") -> None:
         raise ValidationError(f"{field} is required", field=field, code="required")
 
 
-def validate_type(value: Any, expected_type: Type[T], field: str = "field") -> None:
+def validate_type(value: Any, expected_type: type[T], field: str = "field") -> None:
     """Validate that a value is of the expected type.
 
     Args:
@@ -71,9 +70,9 @@ def validate_type(value: Any, expected_type: Type[T], field: str = "field") -> N
 
 
 def validate_length(
-    value: Union[str, list, dict],
-    min_length: Optional[int] = None,
-    max_length: Optional[int] = None,
+    value: str | list | dict,
+    min_length: int | None = None,
+    max_length: int | None = None,
     field: str = "field",
 ) -> None:
     """Validate the length of a string, list, or dictionary.
@@ -90,21 +89,17 @@ def validate_length(
     length = len(value)
 
     if min_length is not None and length < min_length:
-        raise ValidationError(
-            f"{field} must be at least {min_length} characters long", field=field, code="min_length"
-        )
+        raise ValidationError(f"{field} must be at least {min_length} characters long", field=field, code="min_length")
 
     if max_length is not None and length > max_length:
-        raise ValidationError(
-            f"{field} must be at most {max_length} characters long", field=field, code="max_length"
-        )
+        raise ValidationError(f"{field} must be at most {max_length} characters long", field=field, code="max_length")
 
 
 def validate_regex(
     value: str,
-    pattern: Union[str, Pattern],
+    pattern: str | Pattern,
     field: str = "field",
-    error_message: Optional[str] = None,
+    error_message: str | None = None,
 ) -> None:
     """Validate a string against a regular expression pattern.
 
@@ -122,7 +117,7 @@ def validate_regex(
         raise ValidationError(msg, field=field, code="invalid_format")
 
 
-def validate_enum(value: Any, allowed_values: List[Any], field: str = "field") -> None:
+def validate_enum(value: Any, allowed_values: list[Any], field: str = "field") -> None:
     """Validate that a value is one of the allowed values.
 
     Args:
@@ -135,15 +130,13 @@ def validate_enum(value: Any, allowed_values: List[Any], field: str = "field") -
     """
     if value not in allowed_values:
         allowed = ", ".join(str(v) for v in allowed_values)
-        raise ValidationError(
-            f"{field} must be one of: {allowed}", field=field, code="invalid_choice"
-        )
+        raise ValidationError(f"{field} must be one of: {allowed}", field=field, code="invalid_choice")
 
 
 def validate_range(
-    value: Union[int, float],
-    min_value: Optional[Union[int, float]] = None,
-    max_value: Optional[Union[int, float]] = None,
+    value: int | float,
+    min_value: int | float | None = None,
+    max_value: int | float | None = None,
     field: str = "field",
 ) -> None:
     """Validate that a numeric value is within a specified range.
@@ -158,16 +151,14 @@ def validate_range(
         ValidationError: If the value is outside the specified range.
     """
     if min_value is not None and value < min_value:
-        raise ValidationError(
-            f"{field} must be at least {min_value}", field=field, code="min_value"
-        )
+        raise ValidationError(f"{field} must be at least {min_value}", field=field, code="min_value")
 
     if max_value is not None and value > max_value:
         raise ValidationError(f"{field} must be at most {max_value}", field=field, code="max_value")
 
 
 def validate_datetime(
-    value: Union[str, datetime],
+    value: str | datetime,
     timezone_aware: bool = False,
     future_only: bool = False,
     past_only: bool = False,
@@ -212,9 +203,7 @@ def validate_datetime(
                     continue
 
             if dt is None:
-                raise ValidationError(
-                    f"{field} must be a valid datetime string", field=field, code="invalid_datetime"
-                )
+                raise ValidationError(f"{field} must be a valid datetime string", field=field, code="invalid_datetime")
     elif isinstance(value, datetime):
         dt = value
     else:
@@ -226,9 +215,7 @@ def validate_datetime(
 
     # Check timezone awareness
     if timezone_aware and dt.tzinfo is None:
-        raise ValidationError(
-            f"{field} must be timezone-aware", field=field, code="timezone_required"
-        )
+        raise ValidationError(f"{field} must be timezone-aware", field=field, code="timezone_required")
 
     # Check if datetime is in the future/past if required
     now = datetime.now(pytz.UTC)
@@ -278,9 +265,7 @@ def validate_plex_token(value: str, field: str = "token") -> None:
     validate_length(value, min_length=20, field=field)
 
     if not PLEX_TOKEN_PATTERN.match(value):
-        raise ValidationError(
-            f"{field} is not a valid Plex token", field=field, code="invalid_plex_token"
-        )
+        raise ValidationError(f"{field} is not a valid Plex token", field=field, code="invalid_plex_token")
 
 
 def validate_plex_client_identifier(value: str, field: str = "client_identifier") -> None:
@@ -306,7 +291,7 @@ def validate_plex_client_identifier(value: str, field: str = "client_identifier"
 
 
 def validate_file_path(
-    path: Union[str, Path],
+    path: str | Path,
     must_exist: bool = False,
     must_be_file: bool = False,
     must_be_dir: bool = False,
@@ -332,9 +317,7 @@ def validate_file_path(
         ValidationError: If the path is invalid or doesn't meet the criteria.
     """
     if not isinstance(path, (str, Path)):
-        raise ValidationError(
-            f"{field} must be a string or Path object", field=field, code="invalid_type"
-        )
+        raise ValidationError(f"{field} must be a string or Path object", field=field, code="invalid_type")
 
     path_obj = Path(path).expanduser().resolve()
 
@@ -345,9 +328,7 @@ def validate_file_path(
         raise ValidationError(f"{field} is not a file: {path}", field=field, code="not_a_file")
 
     if must_be_dir and path_obj.exists() and not path_obj.is_dir():
-        raise ValidationError(
-            f"{field} is not a directory: {path}", field=field, code="not_a_directory"
-        )
+        raise ValidationError(f"{field} is not a directory: {path}", field=field, code="not_a_directory")
 
     if readable and path_obj.exists() and not os.access(path_obj, os.R_OK):
         raise ValidationError(f"{field} is not readable: {path}", field=field, code="not_readable")
@@ -359,8 +340,8 @@ def validate_file_path(
 
 
 def validate_pydantic_model(
-    model_class: Type[BaseModel], data: Dict[str, Any], context: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+    model_class: type[BaseModel], data: dict[str, Any], context: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Validate data against a Pydantic model.
 
     Args:
@@ -388,14 +369,10 @@ def validate_pydantic_model(
             field = ".".join(str(loc) for loc in error["loc"])
             errors.append(f"{field}: {error['msg']}")
 
-        raise ValidationError(
-            f"Validation failed: {', '.join(errors)}", code="validation_error"
-        ) from e
+        raise ValidationError(f"Validation failed: {', '.join(errors)}", code="validation_error") from e
 
 
-def validate_with_schema(
-    schema: Dict[str, Any], data: Dict[str, Any], allow_extra: bool = False
-) -> Dict[str, Any]:
+def validate_with_schema(schema: dict[str, Any], data: dict[str, Any], allow_extra: bool = False) -> dict[str, Any]:
     """Validate data against a JSON Schema.
 
     Args:
@@ -437,9 +414,7 @@ def validate_with_schema(
         ) from e
 
 
-def validate_condition(
-    condition: bool, message: str, field: Optional[str] = None, code: str = "validation_error"
-) -> None:
+def validate_condition(condition: bool, message: str, field: str | None = None, code: str = "validation_error") -> None:
     """Validate a custom condition.
 
     Args:
@@ -484,24 +459,18 @@ def validate_plex_url(value: str, field: str = "url") -> None:
 
     # Check if scheme is valid
     if parsed.scheme not in ["http", "https"]:
-        raise ValidationError(
-            f"{field} must use http:// or https:// scheme", field=field, code="invalid_scheme"
-        )
+        raise ValidationError(f"{field} must use http:// or https:// scheme", field=field, code="invalid_scheme")
 
     # Check if hostname is provided
     if not parsed.hostname:
-        raise ValidationError(
-            f"{field} must include a hostname", field=field, code="missing_hostname"
-        )
+        raise ValidationError(f"{field} must include a hostname", field=field, code="missing_hostname")
 
     # Check if port is valid (if provided)
     if parsed.port is not None and (parsed.port < 1 or parsed.port > 65535):
-        raise ValidationError(
-            f"{field} port must be between 1 and 65535", field=field, code="invalid_port"
-        )
+        raise ValidationError(f"{field} port must be between 1 and 65535", field=field, code="invalid_port")
 
 
-def validate_media_item(data: Dict[str, Any], field: str = "media_item") -> None:
+def validate_media_item(data: dict[str, Any], field: str = "media_item") -> None:
     """
     Validate a Plex media item data structure.
 
@@ -564,7 +533,7 @@ def validate_media_item(data: Dict[str, Any], field: str = "media_item") -> None
             )
 
 
-def validate_playlist(data: Dict[str, Any], field: str = "playlist") -> None:
+def validate_playlist(data: dict[str, Any], field: str = "playlist") -> None:
     """
     Validate a Plex playlist data structure.
 
@@ -611,9 +580,7 @@ def validate_playlist(data: Dict[str, Any], field: str = "playlist") -> None:
     if "items" in data:
         items = data["items"]
         if not isinstance(items, list):
-            raise ValidationError(
-                f"{field} items must be a list", field=f"{field}.items", code="invalid_items_type"
-            )
+            raise ValidationError(f"{field} items must be a list", field=f"{field}.items", code="invalid_items_type")
 
         # Validate each item in the playlist
         for i, item in enumerate(items):
@@ -621,9 +588,7 @@ def validate_playlist(data: Dict[str, Any], field: str = "playlist") -> None:
                 validate_media_item(item, f"{field}.items[{i}]")
             except ValidationError as e:
                 # Re-raise with more context
-                raise ValidationError(
-                    f"{field} item {i}: {e.message}", field=e.field, code=e.code
-                ) from e
+                raise ValidationError(f"{field} item {i}: {e.message}", field=e.field, code=e.code) from e
 
     # Optional validation for playlist type
     if "playlistType" in data:

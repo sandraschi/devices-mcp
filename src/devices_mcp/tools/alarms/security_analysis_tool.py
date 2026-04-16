@@ -8,7 +8,7 @@ Combines security analysis operations:
 
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -41,26 +41,20 @@ class SecurityAnalysisTool(BaseTool):
         category = ToolCategory.ALARMS
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Security operation: 'test_device', 'correlate_events'"
-            )
-            device_id: Optional[str] = Field(None, description="Device ID for test operations")
-            test_type: Optional[str] = Field(
-                None, description="Test type: 'smoke', 'co', 'connectivity'"
-            )
-            correlation_window: Optional[int] = Field(
-                60, description="Correlation window in minutes"
-            )
-            event_types: Optional[List[str]] = Field(None, description="Event types to correlate")
+            operation: str = Field(..., description="Security operation: 'test_device', 'correlate_events'")
+            device_id: str | None = Field(None, description="Device ID for test operations")
+            test_type: str | None = Field(None, description="Test type: 'smoke', 'co', 'connectivity'")
+            correlation_window: int | None = Field(60, description="Correlation window in minutes")
+            event_types: list[str] | None = Field(None, description="Event types to correlate")
 
     async def execute(
         self,
         operation: str,
-        device_id: Optional[str] = None,
-        test_type: Optional[str] = None,
+        device_id: str | None = None,
+        test_type: str | None = None,
         correlation_window: int = 60,
-        event_types: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        event_types: list[str] | None = None,
+    ) -> dict[str, Any]:
         """Execute security analysis operation."""
         try:
             logger.info(f"Security analysis {operation} operation")
@@ -84,9 +78,7 @@ class SecurityAnalysisTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _test_device(
-        self, device_id: Optional[str], test_type: Optional[str]
-    ) -> Dict[str, Any]:
+    async def _test_device(self, device_id: str | None, test_type: str | None) -> dict[str, Any]:
         """Test Nest Protect device."""
         if not device_id:
             return {
@@ -155,9 +147,7 @@ class SecurityAnalysisTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _correlate_events(
-        self, correlation_window: int, event_types: Optional[List[str]]
-    ) -> Dict[str, Any]:
+    async def _correlate_events(self, correlation_window: int, event_types: list[str] | None) -> dict[str, Any]:
         """Correlate events across Nest devices."""
         # Simulate event correlation
         import secrets
@@ -229,18 +219,14 @@ class SecurityAnalysisTool(BaseTool):
                                 "event_2": other_event,
                                 "time_difference": time_diff,
                                 "correlation_score": round(correlation_score, 2),
-                                "correlation_type": self._determine_correlation_type(
-                                    event, other_event
-                                ),
+                                "correlation_type": self._determine_correlation_type(event, other_event),
                             }
                         )
 
         # Generate insights
         insights = []
         if len(correlations) > 0:
-            insights.append(
-                f"Found {len(correlations)} event correlations in {correlation_window} minute window"
-            )
+            insights.append(f"Found {len(correlations)} event correlations in {correlation_window} minute window")
 
         high_correlation_events = [c for c in correlations if c["correlation_score"] > 0.7]
         if high_correlation_events:
@@ -264,7 +250,7 @@ class SecurityAnalysisTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    def _determine_correlation_type(self, event1: Dict[str, Any], event2: Dict[str, Any]) -> str:
+    def _determine_correlation_type(self, event1: dict[str, Any], event2: dict[str, Any]) -> str:
         """Determine the type of correlation between two events."""
         if event1["type"] == event2["type"]:
             return f"same_type_{event1['type']}"

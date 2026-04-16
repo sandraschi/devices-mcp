@@ -1,7 +1,7 @@
 """Plex media tools for FastMCP 2.10.1."""
 
 import os
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -34,70 +34,48 @@ class MediaSearchRequest(BaseModel):
         "",
         description="General search term that searches across multiple fields (title, description, etc.)",
     )
-    limit: int = Field(
-        100, ge=1, le=1000, description="Maximum number of results to return (1-1000)"
-    )
-    offset: int = Field(
-        0, ge=0, description="Pagination offset for retrieving subsequent pages of results"
-    )
-    library_id: Optional[str] = Field(
-        None, description="Optional library ID to search within a specific library"
-    )
+    limit: int = Field(100, ge=1, le=1000, description="Maximum number of results to return (1-1000)")
+    offset: int = Field(0, ge=0, description="Pagination offset for retrieving subsequent pages of results")
+    library_id: str | None = Field(None, description="Optional library ID to search within a specific library")
 
     # Media type and basic filters
-    media_type: Optional[
-        Literal["movie", "show", "season", "episode", "artist", "album", "track", "photo"]
-    ] = Field(None, description="Filter by specific media type")
-    title: Optional[str] = Field(
-        None, description="Filter by title (supports wildcards with * for partial matches)"
+    media_type: Literal["movie", "show", "season", "episode", "artist", "album", "track", "photo"] | None = Field(
+        None, description="Filter by specific media type"
     )
+    title: str | None = Field(None, description="Filter by title (supports wildcards with * for partial matches)")
 
     # Date/Year filters
-    year: Optional[Union[int, List[int], str]] = Field(
+    year: int | list[int] | str | None = Field(
         None,
         description="Filter by specific year, list of years, or year range (e.g., '2020-2022')",
     )
-    decade: Optional[int] = Field(
-        None, ge=1900, le=2100, description="Filter by decade (e.g., 2020 for 2020s)"
-    )
-    min_year: Optional[int] = Field(
-        None, ge=1900, le=2100, description="Minimum release year (inclusive)"
-    )
-    max_year: Optional[int] = Field(
-        None, ge=1900, le=2100, description="Maximum release year (inclusive)"
-    )
+    decade: int | None = Field(None, ge=1900, le=2100, description="Filter by decade (e.g., 2020 for 2020s)")
+    min_year: int | None = Field(None, ge=1900, le=2100, description="Minimum release year (inclusive)")
+    max_year: int | None = Field(None, ge=1900, le=2100, description="Maximum release year (inclusive)")
 
     # People filters
-    actor: Optional[Union[str, List[str]]] = Field(None, description="Filter by actor name(s)")
-    director: Optional[Union[str, List[str]]] = Field(
-        None, description="Filter by director name(s)"
-    )
+    actor: str | list[str] | None = Field(None, description="Filter by actor name(s)")
+    director: str | list[str] | None = Field(None, description="Filter by director name(s)")
 
     # Content classification
-    genre: Optional[Union[str, List[str]]] = Field(None, description="Filter by genre(s)")
-    content_rating: Optional[Union[str, List[str]]] = Field(
+    genre: str | list[str] | None = Field(None, description="Filter by genre(s)")
+    content_rating: str | list[str] | None = Field(
         None, description="Filter by content rating(s) (e.g., 'PG', 'R', 'TV-MA')"
     )
-    studio: Optional[Union[str, List[str]]] = Field(None, description="Filter by studio(s)")
-    country: Optional[Union[str, List[str]]] = Field(
-        None, description="Filter by country/countries of origin"
-    )
-    language: Optional[Union[str, List[str]]] = Field(
-        None, description="Filter by language code(s) (e.g., 'en', 'ja', 'es')"
-    )
-    collection: Optional[Union[str, List[str]]] = Field(
-        None, description="Filter by collection name(s)"
-    )
+    studio: str | list[str] | None = Field(None, description="Filter by studio(s)")
+    country: str | list[str] | None = Field(None, description="Filter by country/countries of origin")
+    language: str | list[str] | None = Field(None, description="Filter by language code(s) (e.g., 'en', 'ja', 'es')")
+    collection: str | list[str] | None = Field(None, description="Filter by collection name(s)")
 
     # Rating filters
-    min_rating: Optional[float] = Field(None, ge=0, le=10, description="Minimum user rating (0-10)")
-    max_rating: Optional[float] = Field(None, ge=0, le=10, description="Maximum user rating (0-10)")
+    min_rating: float | None = Field(None, ge=0, le=10, description="Minimum user rating (0-10)")
+    max_rating: float | None = Field(None, ge=0, le=10, description="Maximum user rating (0-10)")
 
     # Status filters
-    unwatched: Optional[bool] = Field(None, description="If True, only return unwatched items")
+    unwatched: bool | None = Field(None, description="If True, only return unwatched items")
 
     # Sorting
-    sort_by: Optional[
+    sort_by: (
         Literal[
             "titleSort",
             "title",
@@ -113,14 +91,15 @@ class MediaSearchRequest(BaseModel):
             "mediaWidth",
             "mediaBitrate",
         ]
-    ] = Field("titleSort", description="Field to sort results by")
-    sort_dir: Optional[Literal["asc", "desc"]] = Field(
+        | None
+    ) = Field("titleSort", description="Field to sort results by")
+    sort_dir: Literal["asc", "desc"] | None = Field(
         "asc", description="Sort direction: 'asc' for ascending, 'desc' for descending"
     )
 
 
 @mcp.tool()
-async def search_media(request: MediaSearchRequest) -> Dict[str, Any]:
+async def search_media(request: MediaSearchRequest) -> dict[str, Any]:
     """Search for media items in the Plex library with advanced filtering.
 
     Advanced Search Parameters:
@@ -225,7 +204,7 @@ class MediaInfoRequest(BaseModel):
 
 
 @mcp.tool()
-async def get_media_info(request: MediaInfoRequest) -> Optional[MediaItem]:
+async def get_media_info(request: MediaInfoRequest) -> MediaItem | None:
     """Get detailed information about a specific media item.
 
     Args:
@@ -247,7 +226,7 @@ class LibraryItemsRequest(BaseModel):
 
 
 @mcp.tool()
-async def get_library_items(request: LibraryItemsRequest) -> List[MediaItem]:
+async def get_library_items(request: LibraryItemsRequest) -> list[MediaItem]:
     """Get items from a specific library.
 
     Args:
@@ -257,6 +236,4 @@ async def get_library_items(request: LibraryItemsRequest) -> List[MediaItem]:
         List of media items in the specified library
     """
     plex = _get_plex_service()
-    return await plex.get_library_items(
-        library_id=request.library_id, limit=request.limit, offset=request.offset
-    )
+    return await plex.get_library_items(library_id=request.library_id, limit=request.limit, offset=request.offset)

@@ -10,7 +10,7 @@ Combines PTZ preset operations into a single tool:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -38,28 +38,22 @@ class PTZPresetTool(BaseTool):
 
     class Meta:
         name = "ptz_preset"
-        description = (
-            "PTZ preset management including listing, saving, recalling, and home position"
-        )
+        description = "PTZ preset management including listing, saving, recalling, and home position"
         category = ToolCategory.PTZ
 
         class Parameters(BaseModel):
-            operation: str = Field(
-                ..., description="Preset operation: 'list', 'save', 'recall', 'home'"
-            )
+            operation: str = Field(..., description="Preset operation: 'list', 'save', 'recall', 'home'")
             camera_id: str = Field(..., description="Camera ID to control")
-            preset_name: Optional[str] = Field(
-                None, description="Preset name for save/recall operations"
-            )
-            preset_id: Optional[int] = Field(None, description="Preset ID for recall operations")
+            preset_name: str | None = Field(None, description="Preset name for save/recall operations")
+            preset_id: int | None = Field(None, description="Preset ID for recall operations")
 
     async def execute(
         self,
         operation: str,
         camera_id: str,
-        preset_name: Optional[str] = None,
-        preset_id: Optional[int] = None,
-    ) -> Dict[str, Any]:
+        preset_name: str | None = None,
+        preset_id: int | None = None,
+    ) -> dict[str, Any]:
         """Execute PTZ preset operation."""
         try:
             logger.info(f"PTZ preset {operation} operation for camera {camera_id}")
@@ -88,7 +82,7 @@ class PTZPresetTool(BaseTool):
                 "timestamp": time.time(),
             }
 
-    async def _list_presets(self, camera_id: str) -> Dict[str, Any]:
+    async def _list_presets(self, camera_id: str) -> dict[str, Any]:
         """List all PTZ presets."""
         # Simulate preset data
         presets = [
@@ -108,7 +102,7 @@ class PTZPresetTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _save_preset(self, camera_id: str, preset_name: Optional[str]) -> Dict[str, Any]:
+    async def _save_preset(self, camera_id: str, preset_name: str | None) -> dict[str, Any]:
         """Save current PTZ position as preset."""
         if not preset_name:
             return {
@@ -140,8 +134,8 @@ class PTZPresetTool(BaseTool):
         }
 
     async def _recall_preset(
-        self, camera_id: str, preset_id: Optional[int], preset_name: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, camera_id: str, preset_id: int | None, preset_name: str | None = None
+    ) -> dict[str, Any]:
         """Recall PTZ preset by ID or name."""
         # If preset_id is not provided but preset_name is, try to find the ID
         if preset_id is None and preset_name:
@@ -187,7 +181,7 @@ class PTZPresetTool(BaseTool):
             "timestamp": time.time(),
         }
 
-    async def _go_home(self, camera_id: str) -> Dict[str, Any]:
+    async def _go_home(self, camera_id: str) -> dict[str, Any]:
         """Move PTZ to home position."""
         home_position = {"pan": 0.0, "tilt": 0.0, "zoom": 25.0}
 

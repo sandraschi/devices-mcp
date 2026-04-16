@@ -7,7 +7,7 @@ device discovery, configuration, and progress tracking.
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel, Field
@@ -28,7 +28,7 @@ class DeviceConfigurationRequest(BaseModel):
     device_id: str = Field(..., description="ID of the device to configure")
     display_name: str = Field(..., description="User-friendly name for the device")
     location: str = Field(..., description="Physical location of the device")
-    settings: Dict[str, Any] = Field(default_factory=dict, description="Device-specific settings")
+    settings: dict[str, Any] = Field(default_factory=dict, description="Device-specific settings")
 
 
 class OnboardingProgressResponse(BaseModel):
@@ -38,14 +38,14 @@ class OnboardingProgressResponse(BaseModel):
     current_step: int
     total_devices_discovered: int
     devices_configured: int
-    completed_steps: List[str]
+    completed_steps: list[str]
     onboarding_complete: bool
     last_updated: str
-    device_summary: Dict[str, Dict[str, int]]
-    discovered_devices: List[Dict[str, Any]]
-    configured_devices: Dict[str, Dict[str, Any]]
+    device_summary: dict[str, dict[str, int]]
+    discovered_devices: list[dict[str, Any]]
+    configured_devices: dict[str, dict[str, Any]]
     completion_percentage: float
-    next_recommended_steps: List[str]
+    next_recommended_steps: list[str]
 
 
 @router.post("/discover")
@@ -120,30 +120,20 @@ async def get_discovery_results():
 
         discovery_results = {
             "tapo_p115": [
-                device.dict()
-                for device in discovery_manager.discovered_devices
-                if device.device_type == "tapo_p115"
+                device.dict() for device in discovery_manager.discovered_devices if device.device_type == "tapo_p115"
             ],
             "usb_webcams": [
-                device.dict()
-                for device in discovery_manager.discovered_devices
-                if device.device_type == "webcam"
+                device.dict() for device in discovery_manager.discovered_devices if device.device_type == "webcam"
             ],
             "nest_protect": [
-                device.dict()
-                for device in discovery_manager.discovered_devices
-                if device.device_type == "nest_protect"
+                device.dict() for device in discovery_manager.discovered_devices if device.device_type == "nest_protect"
             ],
             "ring_devices": [
-                device.dict()
-                for device in discovery_manager.discovered_devices
-                if device.device_type == "ring"
+                device.dict() for device in discovery_manager.discovered_devices if device.device_type == "ring"
             ],
         }
 
-        device_counts = {
-            device_type: len(devices) for device_type, devices in discovery_results.items()
-        }
+        device_counts = {device_type: len(devices) for device_type, devices in discovery_results.items()}
 
         return {
             "status": "success",
@@ -170,9 +160,7 @@ async def configure_device(config: DeviceConfigurationRequest):
                 break
 
         if not device:
-            raise HTTPException(
-                status_code=404, detail=f"Device {config.device_id} not found in discovered devices"
-            )
+            raise HTTPException(status_code=404, detail=f"Device {config.device_id} not found in discovered devices")
 
         # Update device configuration
         device.display_name = config.display_name
@@ -191,9 +179,7 @@ async def configure_device(config: DeviceConfigurationRequest):
             "status": "success",
             "message": f"Device {config.display_name} configured successfully",
             "device": device.dict(),
-            "configuration": discovery_manager.onboarding_state.configured_devices[
-                config.device_id
-            ],
+            "configuration": discovery_manager.onboarding_state.configured_devices[config.device_id],
         }
 
     except HTTPException:
@@ -230,9 +216,7 @@ async def get_onboarding_progress():
         # Get next recommended steps
         next_steps = []
         unconfigured_devices = [
-            device
-            for device in discovery_manager.discovered_devices
-            if device.status == "discovered"
+            device for device in discovery_manager.discovered_devices if device.status == "discovered"
         ]
 
         if unconfigured_devices:
@@ -276,9 +260,7 @@ async def complete_onboarding():
     try:
         # Validate that all discovered devices are configured
         unconfigured_devices = [
-            device
-            for device in discovery_manager.discovered_devices
-            if device.status == "discovered"
+            device for device in discovery_manager.discovered_devices if device.status == "discovered"
         ]
 
         if unconfigured_devices:
@@ -307,9 +289,7 @@ async def complete_onboarding():
             "onboarding_complete": True,
             "total_devices_configured": len(discovery_manager.discovered_devices),
             "device_summary": device_summary,
-            "configured_devices": [
-                device.dict() for device in discovery_manager.discovered_devices
-            ],
+            "configured_devices": [device.dict() for device in discovery_manager.discovered_devices],
             "next_steps": [
                 "Start using your configured devices",
                 "Set up automation rules if desired",
