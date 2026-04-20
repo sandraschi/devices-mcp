@@ -1,5 +1,7 @@
 # Home Security MCP Platform
 
+[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2.0-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/version-1.20.0-blue.svg)](https://github.com/sandraschi/devices-mcp/releases)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
@@ -317,7 +319,7 @@ security_integrations:
 - ** Real-time Status**: Camera connection health and diagnostics
 
 ####  **CORE MCP FEATURES**
-- **MCP 3.1 Protocol**: Full Model Context Protocol compliance (FastMCP 3.1)
+- **MCP 3.1 Protocol**: Full Model Context Protocol compliance (FastMCP 3.2.0)
 - **Modular Camera Types**: Extensible architecture for new camera brands
 - **Asynchronous Operations**: High-performance async I/O
 - **Type-Safe APIs**: Full type hints and Pydantic validation
@@ -646,7 +648,7 @@ python start.py dashboard
 -  **USB Webcam Detection**: Auto-discovered on dashboard load
 -  **Real-time Status**: Camera connection monitoring
 -  **Professional UI**: Clean, responsive dashboard interface
--  **MCP Tools**: 30+ tools available in Claude Desktop (FastMCP 3.1 compliant)
+-  **MCP Tools**: 30+ tools available in Claude Desktop (FastMCP 3.2.0 compliant)
   - **Device Onboarding**: Progressive discovery and configuration tools
   - **Energy Management**: Tapo P115 smart plug control and monitoring
   - **Lighting Control**: Philips Hue Bridge integration (18 lights, 11 scenes)
@@ -1357,6 +1359,17 @@ This project supports **MCPB (MCP Bundle)** packaging for one-click installation
 - Full guide in [docs/mcpb-packaging/](docs/mcpb-packaging/)
 
 ---
+
+
+## 🛡️ Industrial Quality Stack
+
+This project adheres to **SOTA 14.1** industrial standards for high-fidelity agentic orchestration:
+
+- **Python (Core)**: [Ruff](https://astral.sh/ruff) for linting and formatting. Zero-tolerance for `print` statements in core handlers (`T201`).
+- **Webapp (UI)**: [Biome](https://biomejs.dev/) for sub-millisecond linting. Strict `noConsoleLog` enforcement.
+- **Protocol Compliance**: Hardened `stdout/stderr` isolation to ensure crash-resistant JSON-RPC communication.
+- **Automation**: [Justfile](./justfile) recipes for all fleet operations (`just lint`, `just fix`, `just dev`).
+- **Security**: Automated audits via `bandit` and `safety`.
 
 ## License
 
