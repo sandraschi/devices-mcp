@@ -1,0 +1,122 @@
+server:
+  host: 0.0.0.0
+  port: 10716
+  debug: false
+  log_level: INFO
+auth:
+  enabled: false
+  username: admin
+  password: change-this-in-production
+  users:
+    admin:
+      password_hash: ""
+      salt: ""
+      role: admin
+cameras:
+  tapo_camera_1:
+    type: onvif
+    params:
+      host: 192.168.0.XXX
+      onvif_port: 2020
+      username: your_username
+      password: your_password
+  usb_camera_1:
+    type: webcam
+    params:
+      device_id: 0
+      resolution: 1920x1080
+      fps: 30
+web:
+  enabled: true
+  host: 0.0.0.0
+  port: 10716
+  theme: dark
+  show_ptz_controls: true
+  video_streaming:
+    enabled: true
+    default_fps: 30
+    quality: 80
+    max_streams: 10
+logging:
+  file: devices_mcp.log
+  max_size: 10
+  backup_count: 5
+energy:
+  electricity_rate_eur_per_kwh: 0.30
+  tapo_p115:
+    account:
+      username: your_email@example.com
+      password: your_password
+    devices:
+      - host: 192.168.0.XXX
+        device_id: tapo_p115_device
+        name: Device Name
+        location: Room
+        readonly: false
+public_webcams:
+  enabled: false
+  vienna_webcams:
+    stephansdom:
+      name: Stephansdom Cathedral
+      type: public_webcam
+      url: https://example.com/webcam.jpg
+      location: Vienna
+      description: Live view
+lighting:
+  philips_hue:
+    enabled: false
+    bridge_ip: 192.168.0.XXX
+    username: your_hue_username
+    auto_discover: true
+  tapo_lighting:
+    enabled: false
+    account:
+      email: your_email@example.com
+      password: your_password
+    devices:
+      - host: 192.168.0.XXX
+        device_id: tapo_l900_lightstrip
+        name: Lightstrip
+        location: Room
+        readonly: false
+weather:
+  integrations:
+    netatmo:
+      enabled: false
+      client_id: your_client_id
+      client_secret: your_client_secret
+      refresh_token: your_refresh_token
+ring:
+  enabled: false
+  email: your_email@example.com
+  password: your_password
+  token_file: ring_token.cache
+  cache_ttl: 60
+security:
+  integrations:
+    homeassistant:
+      enabled: false
+      url: http://localhost:8123
+      access_token: your_ha_access_token
+      cache_ttl: 30
+alerts:
+  enabled: true
+  regions:
+    - Wien
+  cache_ttl: 300
+  sources:
+    geosphere:
+      enabled: true
+    meteoalarm:
+      enabled: true
+robotics_mcp:
+  enabled: false
+  server_url: http://localhost:12230
+  timeout: 30
+  auto_discover_robots: true
+  devices:
+    dreame_d20:
+      type: dreame
+      name: "Dreame D20 Pro"
+      host: 192.168.0.XXX
+      token: ${DREAME_VACUUM_TOKEN}
