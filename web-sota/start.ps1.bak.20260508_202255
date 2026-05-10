@@ -93,14 +93,8 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd -Windo
 # Wait for backend
 $backendUrl = "http://127.0.0.1:$BackendPort/"
 $waited = 0
-$maxBackendWait = 30
-while ($waited -lt $maxBackendWait) {
+while ($waited -lt 15) {
     try { $null = Invoke-WebRequest -Uri $backendUrl -TimeoutSec 2 -UseBasicParsing -ErrorAction Stop; break } catch { Start-Sleep -Seconds 1; $waited++ }
-}
-if ($waited -ge $maxBackendWait) {
-    Write-Host "ERROR: Backend on $BackendPort did not become ready in ${maxBackendWait}s. Check the backend window for errors." -ForegroundColor Red
-    Write-Host "Press any key to continue anyway..." -ForegroundColor Yellow
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }
 
 # Launch browser polling task

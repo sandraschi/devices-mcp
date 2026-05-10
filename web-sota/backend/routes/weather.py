@@ -528,67 +528,201 @@ async def get_current_weather() -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@router.get("/api/weather/modules")
+async def get_weather_modules() -> dict[str, Any]:
+    """Per-module current data from Netatmo (indoor, outdoor, extra indoor)."""
+    try:
+        from devices_mcp.tools.weather.netatmo_weather_tool import NetatmoWeatherTool
+
+        tool = NetatmoWeatherTool()
+        station_id = await _primary_netatmo_station_id()
+        result = await tool.execute(operation="data", station_id=station_id)
+
+        if not result.get("success"):
+            return {"success": False, "error": result.get("error", "Netatmo unavailable"), "modules": {}}
+
+        wd = result.get("weather_data") or {}
+        modules: dict[str, Any] = {}
+
+        indoor = wd.get("indoor")
+        if indoor and indoor.get("temperature") is not None:
+            modules["indoor"] = {
+                "name": "Indoor",
+                "temperature": indoor.get("temperature"),
+                "humidity": indoor.get("humidity"),
+                "co2": indoor.get("co2"),
+                "noise": indoor.get("noise"),
+                "pressure": indoor.get("pressure"),
+                "temp_trend": indoor.get("temp_trend"),
+                "pressure_trend": indoor.get("pressure_trend"),
+                "health_index": indoor.get("health_index", "Unknown"),
+            }
+
+        outdoor = wd.get("outdoor")
+        if outdoor and outdoor.get("temperature") is not None:
+            modules["outdoor"] = {
+                "name": "Outdoor",
+                "temperature": outdoor.get("temperature"),
+                "humidity": outdoor.get("humidity"),
+                "temp_trend": outdoor.get("temp_trend"),
+            }
+
+        extra = wd.get("extra_indoor")
+        if extra:
+            extras = extra if isinstance(extra, list) else [extra]
+            for ex in extras:
+                if ex.get("temperature") is not None:
+                    name = ex.get("name", "Extra")
+                    key = f"extra_{name.lower().replace(' ', '_')}"
+                    modules[key] = {
+                        "name": str(name).title(),
+                        "temperature": ex.get("temperature"),
+                        "humidity": ex.get("humidity"),
+                        "co2": ex.get("co2"),
+                        "battery": ex.get("battery_percent"),
+                        "temp_trend": ex.get("temp_trend"),
+                    }
+
+        return {
+            "success": True,
+            "station_id": wd.get("station_id"),
+            "modules": modules,
+            "timestamp": wd.get("timestamp"),
+        }
+    except Exception as e:
+        logger.exception("Error in get_weather_modules: %s", e)
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
 @router.get("/api/weather/forecast")
-async def get_weather_forecast(days: int = 5) -> dict[str, Any]:
-    """Netatmo does not expose a multi-day public forecast here; return empty list."""
-    return {
-        "forecast": [],
-        "days": days,
-        "success": True,
-        "message": "No forecast source wired for this dashboard (Netatmo is station data, not a forecast API).",
-    }
+async def get_weather_forecast(days: int = 7) -> dict[str, Any]:
+    """7-day Vienna forecast from Open-Meteo (free, no API key)."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": 48.2082,
+                    "longitude": 16.3738,
+                    "daily": ["temperature_2m_max", "temperature_2m_min", "precipitation_sum", "wind_speed_10m_max"],
+                    "hourly": ["temperature_2m", "relative_humidity_2m"],
+                    "timezone": "Europe/Vienna",
+                    "forecast_days": min(days, 16),
+                },
+            )
+            r.raise_for_status()
+            data = r.json()
+
+        daily = data.get("daily", {})
+        dates = daily.get("time", [])
+        tmax = daily.get("temperature_2m_max", [])
+        tmin = daily.get("temperature_2m_min", [])
+        precip = daily.get("precipitation_sum", [])
+        wind = daily.get("wind_speed_10m_max", [])
+
+        forecast = []
+        for i, date in enumerate(dates):
+            forecast.append(
+                {
+                    "date": date,
+                    "temp_max": tmax[i] if i < len(tmax) else None,
+                    "temp_min": tmin[i] if i < len(tmin) else None,
+                    "precipitation": precip[i] if i < len(precip) else None,
+                    "wind_max": wind[i] if i < len(wind) else None,
+                }
+            )
+
+        hourly = data.get("hourly", {})
+        h_times = hourly.get("time", [])
+        h_temp = hourly.get("temperature_2m", [])
+        h_hum = hourly.get("relative_humidity_2m", [])
+
+        today = dates[0] if dates else None
+        today_hourly = []
+        for i, t in enumerate(h_times):
+            if today and t.startswith(today):
+                today_hourly.append(
+                    {
+                        "time": t.split("T")[1] if "T" in t else t,
+                        "temperature": h_temp[i] if i < len(h_temp) else None,
+                        "humidity": h_hum[i] if i < len(h_hum) else None,
+                    }
+                )
+
+        return {
+            "success": True,
+            "location": "Vienna",
+            "forecast": forecast,
+            "today_hourly": today_hourly,
+            "days": days,
+        }
+    except Exception as e:
+        logger.exception("Failed to fetch Vienna forecast")
+        return {"success": False, "error": str(e), "forecast": [], "days": days}
 
 
 @router.get("/api/weather/history")
-async def get_weather_history(days: int = 7) -> dict[str, Any]:
-    """Daily indoor temperature from local SQLite (filled when Netatmo updates)."""
+async def get_weather_history(days: int = 7, module: str | None = None) -> dict[str, Any]:
+    """Daily averages from local SQLite per module (indoor, outdoor, extra_*)."""
     try:
         from devices_mcp.db import TimeSeriesDB
 
         station_id = await _primary_netatmo_station_id()
         if not station_id:
-            return {
-                "history": [],
-                "days": days,
-                "success": True,
-                "message": "No Netatmo station id; history unavailable.",
-            }
+            return {"history": {}, "days": days, "success": True, "message": "No station id"}
 
         db = TimeSeriesDB()
         hours = max(24, days * 24)
-        rows = db.get_weather_history(
-            station_id=station_id,
-            module_type="indoor",
-            data_type="temperature",
-            hours=hours,
-        )
+        module_types = [module] if module else ["indoor", "outdoor"]
 
-        by_day: dict[str, list[float]] = defaultdict(list)
-        for row in rows:
-            ts = row.get("timestamp")
-            val = row.get("value")
-            if ts is None or val is None:
-                continue
-            sec = float(ts)
-            if sec > 1e12:
-                sec /= 1000.0
-            dt = datetime.datetime.fromtimestamp(sec, tz=datetime.UTC)
-            by_day[dt.strftime("%Y-%m-%d")].append(float(val))
+        history_by_module: dict[str, Any] = {}
 
-        history: list[dict[str, Any]] = []
-        for date_key in sorted(by_day.keys())[-days:]:
-            temps = by_day[date_key]
-            avg = sum(temps) / len(temps)
-            history.append(
-                {
-                    "date": date_key,
-                    "day": date_key,
-                    "temp": round(avg, 1),
-                    "temperature": round(avg, 1),
-                }
+        for mt in module_types:
+            temp_rows = db.get_weather_history(
+                station_id=station_id,
+                module_type=mt,
+                data_type="temperature",
+                hours=hours,
+            )
+            hum_rows = db.get_weather_history(
+                station_id=station_id,
+                module_type=mt,
+                data_type="humidity",
+                hours=hours,
             )
 
-        return {"history": history, "days": days, "success": True}
+            def _group_daily(rows):
+                by_day: dict[str, list[float]] = defaultdict(list)
+                for row in rows:
+                    ts = row.get("timestamp")
+                    val = row.get("value")
+                    if ts is None or val is None:
+                        continue
+                    sec = float(ts)
+                    if sec > 1e12:
+                        sec /= 1000.0
+                    dt = datetime.datetime.fromtimestamp(sec, tz=datetime.UTC)
+                    by_day[dt.strftime("%Y-%m-%d")].append(float(val))
+                return by_day
+
+            temp_by_day = _group_daily(temp_rows)
+            hum_by_day = _group_daily(hum_rows)
+
+            all_dates = sorted(set(temp_by_day.keys()) | set(hum_by_day.keys()))[-days:]
+            daily: list[dict[str, Any]] = []
+            for d in all_dates:
+                temps = temp_by_day.get(d, [])
+                hums = hum_by_day.get(d, [])
+                daily.append(
+                    {
+                        "date": d,
+                        "temperature": round(sum(temps) / len(temps), 1) if temps else None,
+                        "humidity": round(sum(hums) / len(hums), 1) if hums else None,
+                    }
+                )
+            history_by_module[mt] = daily
+
+        return {"history": history_by_module, "days": days, "success": True}
     except Exception as e:
         logger.exception("Error in get_weather_history: %s", e)
         raise HTTPException(status_code=500, detail=str(e)) from e

@@ -19,6 +19,9 @@ $CamServerJob = Start-Job -Name "WinCamServer" -ScriptBlock {
 }
 Write-Host "  Camera server started (job id: $($CamServerJob.Id))" -ForegroundColor DarkGray
 
+# Brief pause for camera server to initialize (auto-discover + HTTP server start)
+Start-Sleep -Seconds 3
+
 try {
     uv run -m schip_mcp_devices
 } finally {

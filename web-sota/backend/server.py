@@ -146,6 +146,7 @@ class WebServer:
                 auth,
                 camera_names,
                 cameras,
+                config_editor,
                 custom_presets,
                 dashboard_api,
                 dymo,
@@ -204,6 +205,7 @@ class WebServer:
             self.app.include_router(appliance_monitor.router, tags=["Appliance Monitor"])
             self.app.include_router(audio.router, tags=["Audio"])
             self.app.include_router(camera_names.router, tags=["Camera Names"])
+            self.app.include_router(config_editor.router, tags=["Config"])
             self.app.include_router(custom_presets.router, tags=["Custom Presets"])
             self.app.include_router(dymo.router, tags=["Dymo Labels"])
             self.app.include_router(health.router, tags=["Health"])

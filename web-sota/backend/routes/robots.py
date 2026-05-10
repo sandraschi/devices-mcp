@@ -2,42 +2,44 @@
 
 import asyncio
 import logging
+import os
 from datetime import datetime
 from enum import Enum
 from typing import Any
 
+import httpx
 from fastapi import APIRouter, HTTPException, WebSocket
 from pydantic import BaseModel, Field
 
-from devices_mcp.integrations.dreame_client import DreameClient
-from devices_mcp.integrations.go2_client import UnitreeGo2Client
-from devices_mcp.integrations.moorebot_client import MoorebotScoutClient
-from devices_mcp.integrations.vbot_client import VbotClient
-from devices_mcp.integrations.yahboom_client import YahboomClient
-
-# Global vbot client instance
-_vbot_client: VbotClient | None = None
+# MCP server URLs (from registry: yahboom-mcp=10892, dreame-mcp=10894)
+YAHBOOM_MCP_URL = os.environ.get("YAHBOOM_MCP_URL", "http://127.0.0.1:10892")
+DREAME_MCP_URL = os.environ.get("DREAME_MCP_URL", "http://127.0.0.1:10894")
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/robots", tags=["robots"])
 
 
+async def _call_mcp(url: str, method: str = "GET") -> dict[str, Any]:
+    """Call an MCP server endpoint and return JSON, or error dict on failure."""
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            if method == "GET":
+                r = await client.get(url)
+            else:
+                r = await client.post(url)
+            r.raise_for_status()
+            return r.json()
+    except httpx.RequestError as e:
+        return {"success": False, "error": f"MCP server unreachable: {e}"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 class RobotType(str, Enum):
     """Supported robot types."""
 
-    SCOUT = "scout"  # Moorebot Scout (physical)
-    SCOUT_E = "scout_e"  # Moorebot Scout E (physical)
-    GO2 = "go2"  # Unitree Go2 (physical)
-    G1 = "g1"  # Unitree G1 (physical)
-    ROOMBOT = "roombot"  # Roomba/iRobot (physical)
-    PETBOT = "petbot"  # Petbot Loona (physical)
-    VSCOUT = "vscout"  # Virtual Moorebot Scout
-    VSCOUT_E = "vscout_e"  # Virtual Moorebot Scout E
-    VGO2 = "vgo2"  # Virtual Unitree Go2
-    VG1 = "vg1"  # Virtual Unitree G1
-    VROBBIE = "vrobbie"  # Virtual Robbie
-    DREAMBOT = "dreame"  # Dreame D20 Pro (Home Assistant)
-    YAHBOOM = "yahboom"  # Yahboom ROS 2 Robot Car
+    DREAMBOT = "dreame"  # Dreame D20 Pro (via dreame-mcp)
+    YAHBOOM = "yahboom"  # Yahboom ROS 2 Robot Car (via yahboom-mcp)
 
 
 class RobotStatus(str, Enum):
@@ -114,13 +116,10 @@ class RobotCommand(str, Enum):
     STOP_CLEANING = "stop_cleaning"
     RETURN_HOME = "return_home"
     DOCK = "dock"
-    UNDOCK = "undock"
     PAUSE = "pause"
-    RESUME = "resume"
-    REBOOT = "reboot"
-    UPDATE_FIRMWARE = "update_firmware"
-    DELETE_VBOT = "delete_vbot"
     STOP = "stop"
+    FIND_ROBOT = "find_robot"
+    FLASH_LIGHTS = "flash_lights"
 
 
 class RobotCommandRequest(BaseModel):
@@ -297,196 +296,9 @@ def initialize_sample_robots():
     except Exception as e:
         logger.error(f"Error loading robots from config: {e}")
 
-    # Add default samples if not present
-    if "scout_01" not in _robots:
-        scout = Robot(
-            id="scout_01",
-            name="Living Room Scout",
-            type=RobotType.SCOUT,
-            status=RobotStatus.OFFLINE,
-            capabilities=get_default_capabilities(RobotType.SCOUT),
-            position=RobotPosition(x=0, y=0, z=0, heading=0, floor="ground"),
-            last_seen=now,
-            firmware_version="1.4.2",
-            ip_address="192.168.1.150",
-        )
-        _robots[scout.id] = scout
 
-    if "go2_01" not in _robots:
-        go2 = Robot(
-            id="go2_01",
-            name="Patrol Go2",
-            type=RobotType.GO2,
-            status=RobotStatus.OFFLINE,
-            capabilities=get_default_capabilities(RobotType.GO2),
-            position=RobotPosition(x=0, y=0, z=0, heading=0, floor="ground"),
-            last_seen=now,
-            firmware_version=None,
-            ip_address="192.168.1.120",
-        )
-        _robots[go2.id] = go2
-
-
-# Initialize sample data
+# Initialize robot status from config only (no hardcoded samples)
 initialize_sample_robots()
-
-
-# Initialize vbot client and load virtual robots
-async def initialize_vbot_integration():
-    """Initialize virtual robot integration with robotics-mcp server."""
-    global _vbot_client
-
-    try:
-        # Get config for robotics MCP integration
-        from devices_mcp.config import get_config
-
-        config = get_config()
-        robotics_config = config.get("robotics_mcp", {})
-
-        if not robotics_config.get("enabled", False):
-            logger.info("Robotics MCP integration disabled")
-            return
-
-        server_url = robotics_config.get("server_url", "http://localhost:8080")
-        timeout = robotics_config.get("timeout", 30)
-        auto_discover = robotics_config.get("auto_discover_robots", True)
-
-        if not auto_discover:
-            logger.info("Auto-discovery of robots disabled")
-            return
-
-        # Initialize vbot client
-        _vbot_client = VbotClient(server_url, timeout)
-
-        # Connect to robotics-mcp server
-        connection_result = await _vbot_client.connect()
-        if not connection_result.get("success"):
-            logger.error(f"Failed to connect to robotics-mcp server: {connection_result}")
-            return
-
-        logger.info("Connected to robotics-mcp server for virtual robot integration")
-
-        # Load virtual robots from robotics-mcp server
-        if auto_discover:
-            await load_virtual_robots_from_server()
-
-    except Exception as e:
-        logger.exception(f"Error initializing vbot integration: {e}")
-
-
-async def load_virtual_robots_from_server():
-    """Load virtual robots from the robotics-mcp server."""
-    global _vbot_client
-
-    if not _vbot_client:
-        return
-
-    try:
-        # Get list of virtual robots from robotics-mcp
-        vbot_list = await _vbot_client.list_vbots()
-        if not vbot_list.get("success"):
-            logger.error(f"Failed to list vbots: {vbot_list}")
-            return
-
-        virtual_robots = vbot_list.get("robots", [])
-        logger.info(f"Found {len(virtual_robots)} virtual robots on robotics-mcp server")
-
-        # Add virtual robots to our registry
-        for vbot_data in virtual_robots:
-            robot_id = vbot_data.get("robot_id")
-            if not robot_id:
-                continue
-
-            # Skip if we already have this robot
-            if robot_id in _robots:
-                continue
-
-            # Map vbot types to our robot types
-            vbot_type = vbot_data.get("robot_type", "scout")
-            robot_type_map = {
-                "scout": RobotType.VSCOUT,
-                "scout_e": RobotType.VSCOUT_E,
-                "go2": RobotType.VGO2,
-                "g1": RobotType.VG1,
-                "robbie": RobotType.VROBBIE,
-            }
-            robot_type = robot_type_map.get(vbot_type, RobotType.VSCOUT)
-
-            # Create robot entry
-            robot = Robot(
-                id=robot_id,
-                name=f"Virtual {vbot_type.title()} ({robot_id})",
-                type=robot_type,
-                status=RobotStatus.IDLE,  # Assume idle initially
-                capabilities=get_default_capabilities(robot_type),
-                position=RobotPosition(
-                    x=vbot_data.get("position", {}).get("x", 0.0),
-                    y=vbot_data.get("position", {}).get("y", 0.0),
-                    z=vbot_data.get("position", {}).get("z", 0.0),
-                    heading=0.0,
-                    floor="virtual",
-                ),
-                last_seen=datetime.now(),
-                firmware_version=f"vbot-{vbot_type}",
-                ip_address=None,  # Virtual robots don't have IPs
-                connected_since=datetime.now(),
-                is_virtual=True,
-                platform=vbot_data.get("platform", "unity"),
-            )
-
-            _robots[robot_id] = robot
-            logger.info(f"Added virtual robot: {robot_id} ({robot_type.value})")
-
-    except Exception as e:
-        logger.exception(f"Error loading virtual robots from server: {e}")
-
-
-async def execute_vbot_command(robot: Robot, command_request: RobotCommandRequest):
-    """Execute command on a virtual robot."""
-    global _vbot_client
-
-    if not _vbot_client:
-        raise HTTPException(status_code=500, detail="Virtual robot client not available")
-
-    try:
-        if command_request.command == RobotCommand.START_PATROL:
-            result = await _vbot_client.start_vbot_patrol(robot.id)
-        elif command_request.command == RobotCommand.STOP_PATROL:
-            result = await _vbot_client.stop_vbot(robot.id)
-        elif command_request.command == RobotCommand.RETURN_HOME:
-            # For virtual robots, return to origin
-            result = await _vbot_client.update_vbot(robot.id, position={"x": 0.0, "y": 0.0, "z": 0.0})
-        elif command_request.command == RobotCommand.STOP:
-            result = await _vbot_client.stop_vbot(robot.id)
-        elif command_request.command == RobotCommand.REBOOT:
-            # Simulate reboot for virtual robot
-            robot.status = RobotStatus.OFFLINE
-            await asyncio.sleep(2)
-            robot.status = RobotStatus.IDLE
-            result = {"success": True, "message": "Virtual robot rebooted"}
-        elif command_request.command == RobotCommand.DELETE_VBOT:
-            # Delete virtual robot
-            result = await _vbot_client.delete_vbot(robot.id)
-            if result.get("success"):
-                # Remove from our registry
-                if robot.id in _robots:
-                    del _robots[robot.id]
-        else:
-            result = {
-                "success": True,
-                "message": f"Command {command_request.command} not implemented for virtual robots",
-            }
-
-        if not result.get("success"):
-            logger.error(f"Virtual robot command failed: {result}")
-            raise HTTPException(status_code=500, detail=result.get("error", "Command failed"))
-
-    except Exception as e:
-        logger.exception(f"Error executing virtual robot command: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# Vbot integration will be initialized when the server starts up
 
 
 @router.get("/")
@@ -556,174 +368,81 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
             RobotCommand.RETURN_HOME,
             RobotCommand.DOCK,
         ]:
-            if robot.status == RobotStatus.OFFLINE and not robot.is_virtual:
+            if robot.status == RobotStatus.OFFLINE:
                 raise HTTPException(status_code=400, detail=f"Robot {robot_id} is offline")
 
         logger.info(f"Executing command {command_request.command} on robot {robot_id}")
 
         # Execute command based on robot type
-        if robot.is_virtual:
-            # Handle virtual robot commands
-            await execute_vbot_command(robot, command_request)
-            result = {
-                "success": True,
-                "message": f"Virtual robot command {command_request.command} executed",
-            }
-
-        elif robot.type == RobotType.SCOUT:
-            # Use Moorebot client
-            scout_client = MoorebotScoutClient(
-                robot.ip_address or "192.168.1.150",
-                mock_mode=_robot_hardware_mock_mode(robot),
-            )
-
-            if command_request.command == RobotCommand.START_PATROL:
-                result = await scout_client.start_patrol()
-                if result.get("success"):
-                    robot.status = RobotStatus.PATROLLING
-            elif command_request.command == RobotCommand.STOP_PATROL:
-                result = await scout_client.stop_patrol()
-                if result.get("success"):
-                    robot.status = RobotStatus.ONLINE
-            elif command_request.command == RobotCommand.RETURN_HOME:
-                result = await scout_client.return_to_dock()
-                if result.get("success"):
-                    robot.status = (
-                        RobotStatus.CHARGING if result.get("docking_status") == "success" else RobotStatus.DOCKED
-                    )
-            elif command_request.command == RobotCommand.STOP:
-                result = await scout_client.stop()
-                if result.get("success"):
-                    robot.status = RobotStatus.IDLE
-            elif command_request.command == RobotCommand.REBOOT:
-                # Simulate reboot
-                robot.status = RobotStatus.OFFLINE
-                await asyncio.sleep(2)
-                robot.status = RobotStatus.ONLINE
-                result = {"success": True, "message": "Reboot completed"}
-
-            # For unsupported commands, simulate success
-            if "result" not in locals():
-                result = {
-                    "success": True,
-                    "message": f"Command {command_request.command} simulated",
-                }
-
-        elif robot.type == RobotType.GO2:
-            # Use Go2 client
-            go2_client = UnitreeGo2Client(
-                robot.ip_address or "192.168.1.120",
-                mock_mode=_robot_hardware_mock_mode(robot),
-            )
-
-            if command_request.command == RobotCommand.START_PATROL:
-                result = await go2_client.start_patrol()
-                if result.get("success"):
-                    robot.status = RobotStatus.PATROLLING
-            elif command_request.command == RobotCommand.STOP_PATROL:
-                result = await go2_client.stop_patrol()
-                if result.get("success"):
-                    robot.status = RobotStatus.IDLE
-            elif command_request.command == RobotCommand.RETURN_HOME:
-                result = await go2_client.return_to_dock()
-                if result.get("success"):
-                    robot.status = (
-                        RobotStatus.CHARGING if result.get("docking_status") == "success" else RobotStatus.DOCKED
-                    )
-            elif command_request.command == RobotCommand.STOP:
-                result = await go2_client.stop()
-                if result.get("success"):
-                    robot.status = RobotStatus.IDLE
-            elif command_request.command == RobotCommand.REBOOT:
-                # Simulate reboot
-                robot.status = RobotStatus.OFFLINE
-                await asyncio.sleep(3)  # Go2 takes longer to reboot
-                robot.status = RobotStatus.IDLE
-                result = {"success": True, "message": "Go2 reboot completed"}
-
-            # For unsupported commands, simulate success
-            if "result" not in locals():
-                result = {
-                    "success": True,
-                    "message": f"Go2 command {command_request.command} simulated",
-                }
-
-        elif robot.type == RobotType.DREAMBOT:
-            # Use Dreame client via Home Assistant (devices-mcp integration).
-            # NOTE: This uses HA entity_ids like "vacuum.dreame_*", not the robot_id in this UI.
-            import os
-
-            from devices_mcp.config import get_config
-
-            cfg = get_config()
-            ha_cfg = (
-                cfg.get("homeassistant", {})
-                or cfg.get("security", {}).get("integrations", {}).get("homeassistant", {})
-                or {}
-            )
-            ha_url = ha_cfg.get("url") or ha_cfg.get("server_url") or "http://localhost:8123"
-            ha_token = ha_cfg.get("access_token") or ha_cfg.get("token")
-            dreame_mcp_url = os.getenv("DREAME_MCP_URL")
-            dreame_client = DreameClient(
-                str(ha_url),
-                token=str(ha_token) if ha_token else None,
-                dreame_mcp_url=dreame_mcp_url,
-            )
-            await dreame_client.connect()
-            entity_id = None
-            if getattr(dreame_client, "entities", None):
-                entity_id = (dreame_client.entities[0] or {}).get("entity_id")
-            if not entity_id and getattr(dreame_client, "_mode", "") == "ha":
-                raise HTTPException(status_code=503, detail="No Dreame vacuum entity found in Home Assistant")
-
+        if robot.type == RobotType.DREAMBOT:
             if command_request.command == RobotCommand.START_CLEANING:
-                result = await dreame_client.start_cleaning(str(entity_id or ""))
+                result = await _call_mcp(f"{DREAME_MCP_URL}/api/v1/control/start_clean", method="POST")
                 if result.get("success"):
                     robot.status = RobotStatus.CLEANING
             elif command_request.command == RobotCommand.STOP_CLEANING:
-                result = await dreame_client.stop_cleaning(str(entity_id or ""))
+                result = await _call_mcp(f"{DREAME_MCP_URL}/api/v1/control/stop", method="POST")
                 if result.get("success"):
                     robot.status = RobotStatus.ONLINE
             elif command_request.command == RobotCommand.RETURN_HOME:
-                result = await dreame_client.return_to_dock(str(entity_id or ""))
+                result = await _call_mcp(f"{DREAME_MCP_URL}/api/v1/control/go_home", method="POST")
                 if result.get("success"):
                     robot.status = RobotStatus.DOCKED
             elif command_request.command == RobotCommand.PAUSE:
-                result = await dreame_client.pause_cleaning(str(entity_id or ""))
+                result = await _call_mcp(f"{DREAME_MCP_URL}/api/v1/control/pause", method="POST")
+                if result.get("success"):
+                    robot.status = RobotStatus.ONLINE
+            elif command_request.command == RobotCommand.FIND_ROBOT:
+                result = await _call_mcp(f"{DREAME_MCP_URL}/api/v1/control/find_robot", method="POST")
                 if result.get("success"):
                     robot.status = RobotStatus.ONLINE
             else:
-                result = {
-                    "success": True,
-                    "message": f"Dreame command {command_request.command} simulated",
-                }
+                result = {"success": False, "error": f"Unknown dreame command: {command_request.command}"}
 
         elif robot.type == RobotType.YAHBOOM:
-            # Use Yahboom client
-            yahboom_client = YahboomClient(robot.ip_address or "192.168.1.60")
-            await yahboom_client.connect()
-
-            if command_request.command == RobotCommand.START_PATROL:
-                result = await yahboom_client.start_patrol()
+            cmd = command_request.command
+            params = command_request.parameters or {}
+            if cmd == RobotCommand.START_PATROL:
+                linear = params.get("linear", 0.15)
+                angular = params.get("angular", 0)
+                result = await _call_mcp(
+                    f"{YAHBOOM_MCP_URL}/api/v1/control/move?linear={linear}&angular={angular}",
+                    method="POST",
+                )
                 if result.get("success"):
                     robot.status = RobotStatus.PATROLLING
-            elif command_request.command == RobotCommand.STOP_PATROL:
-                result = await yahboom_client.stop()
+            elif cmd == RobotCommand.STOP_PATROL:
+                result = await _call_mcp(f"{YAHBOOM_MCP_URL}/api/v1/missions/stop", method="POST")
                 if result.get("success"):
                     robot.status = RobotStatus.IDLE
-            elif command_request.command == RobotCommand.RETURN_HOME:
-                result = await yahboom_client.return_to_dock()
+            elif cmd == RobotCommand.RETURN_HOME:
+                linear = params.get("linear", -0.15)
+                result = await _call_mcp(
+                    f"{YAHBOOM_MCP_URL}/api/v1/control/move?linear={linear}&angular=0",
+                    method="POST",
+                )
                 if result.get("success"):
                     robot.status = RobotStatus.DOCKED
-            elif command_request.command == RobotCommand.STOP:
-                result = await yahboom_client.stop()
+            elif cmd == RobotCommand.STOP:
+                result = await _call_mcp(f"{YAHBOOM_MCP_URL}/api/v1/stop_all", method="POST")
                 if result.get("success"):
                     robot.status = RobotStatus.IDLE
+            elif cmd == RobotCommand.FLASH_LIGHTS:
+                r = params.get("r", 255)
+                g = params.get("g", 255)
+                b = params.get("b", 255)
+                try:
+                    async with httpx.AsyncClient(timeout=5.0) as client:
+                        resp = await client.post(
+                            f"{YAHBOOM_MCP_URL}/api/v1/control/lightstrip",
+                            json={"operation": "set", "r": r, "g": g, "b": b},
+                        )
+                        result = resp.json() if resp.status_code == 200 else {"success": False}
+                except httpx.RequestError as e:
+                    result = {"success": False, "error": str(e)}
+            elif cmd in ("start_cleaning", "stop_cleaning"):
+                result = {"success": False, "error": "Yahboom robot car has no cleaning function"}
             else:
-                result = {
-                    "success": True,
-                    "message": f"Yahboom command {command_request.command} simulated",
-                }
+                result = {"success": False, "error": f"Unknown yahboom command: {cmd}"}
 
         else:
             # Simulate commands for other robot types
@@ -768,31 +487,27 @@ async def get_robot_telemetry(robot_id: str):
         robot = _robots[robot_id]
 
         # Get telemetry based on robot type
-        if robot.is_virtual:
-            # Get virtual robot telemetry
-            global _vbot_client
-            if _vbot_client:
-                status_result = await _vbot_client.get_vbot_status(robot.id)
-                if status_result.get("success"):
-                    telemetry = RobotTelemetry(
-                        battery_level=100.0,  # Virtual robots don't drain battery
-                        battery_voltage=0.0,
-                        temperature=25.0,  # Room temperature
-                        cpu_usage=10.0,  # Low usage for virtual
-                        memory_usage=25.0,  # Memory usage in Unity/VRChat
-                        wifi_signal=-30,  # Virtual connection
-                        last_update=datetime.now(),
-                    )
-                else:
-                    telemetry = RobotTelemetry(
-                        battery_level=0.0,
-                        battery_voltage=0.0,
-                        temperature=0.0,
-                        cpu_usage=0.0,
-                        memory_usage=0.0,
-                        wifi_signal=0,
-                        last_update=datetime.now(),
-                    )
+        if robot.type == RobotType.DREAMBOT:
+            telemetry_data = await _call_mcp(f"{DREAME_MCP_URL}/api/v1/status")
+            if telemetry_data.get("success"):
+                telemetry = RobotTelemetry(
+                    battery_level=telemetry_data.get("battery", 85.0),
+                    battery_voltage=14.4,
+                    temperature=30.0,
+                    cpu_usage=20.0,
+                    memory_usage=40.0,
+                    wifi_signal=-55,
+                    last_update=datetime.now(),
+                )
+                robot.status = (
+                    RobotStatus.CHARGING
+                    if telemetry_data.get("is_charging")
+                    else RobotStatus.CLEANING
+                    if telemetry_data.get("is_cleaning")
+                    else RobotStatus.DOCKED
+                    if telemetry_data.get("state") in ("idle", "charging_completed")
+                    else RobotStatus.ONLINE
+                )
             else:
                 telemetry = RobotTelemetry(
                     battery_level=0.0,
@@ -804,108 +519,31 @@ async def get_robot_telemetry(robot_id: str):
                     last_update=datetime.now(),
                 )
 
-        elif robot.type == RobotType.SCOUT:
-            # Use Moorebot client
-            scout_client = MoorebotScoutClient(
-                robot.ip_address or "192.168.1.150",
-                mock_mode=_robot_hardware_mock_mode(robot),
-            )
-            status_data = await scout_client.get_status()
-            sensor_data = await scout_client.get_sensor_data()
-
-            telemetry = RobotTelemetry(
-                battery_level=status_data.get("battery_level", 85.0),
-                battery_voltage=12.6,  # Typical LiPo voltage
-                temperature=35.0,  # Estimated CPU temperature
-                cpu_usage=45.0,  # Estimated
-                memory_usage=60.0,  # Estimated
-                wifi_signal=status_data.get("wifi_signal", -45),
-                last_update=datetime.now(),
-            )
-
-            # Update position from sensor data
-            robot.position.x = status_data.get("position", {}).get("x", robot.position.x)
-            robot.position.y = status_data.get("position", {}).get("y", robot.position.y)
-            robot.position.heading = status_data.get("position", {}).get("heading", robot.position.heading)
-
-        elif robot.type == RobotType.GO2:
-            # Use Go2 client
-            go2_client = UnitreeGo2Client(
-                robot.ip_address or "192.168.1.120",
-                mock_mode=_robot_hardware_mock_mode(robot),
-            )
-            status_data = await go2_client.get_status()
-
-            telemetry = RobotTelemetry(
-                battery_level=status_data.get("battery_level", 85.0),
-                battery_voltage=24.0,  # Go2 uses higher voltage battery
-                temperature=status_data.get("temperature", 45.0),  # CPU temperature
-                cpu_usage=55.0,  # Estimated for Go2
-                memory_usage=65.0,  # Estimated for Go2
-                wifi_signal=status_data.get("wifi_signal", -50),
-                last_update=datetime.now(),
-            )
-
-            # Update position from status data
-            pos_data = status_data.get("position", {})
-            robot.position.x = pos_data.get("x", robot.position.x)
-            robot.position.y = pos_data.get("y", robot.position.y)
-            robot.position.heading = pos_data.get("yaw", robot.position.heading)
-
-        elif robot.type == RobotType.DREAMBOT:
-            import os
-
-            from devices_mcp.config import get_config
-
-            cfg = get_config()
-            ha_cfg = (
-                cfg.get("homeassistant", {})
-                or cfg.get("security", {}).get("integrations", {}).get("homeassistant", {})
-                or {}
-            )
-            ha_url = ha_cfg.get("url") or ha_cfg.get("server_url") or "http://localhost:8123"
-            ha_token = ha_cfg.get("access_token") or ha_cfg.get("token")
-            dreame_mcp_url = os.getenv("DREAME_MCP_URL")
-            dreame_client = DreameClient(
-                str(ha_url),
-                token=str(ha_token) if ha_token else None,
-                dreame_mcp_url=dreame_mcp_url,
-            )
-            await dreame_client.connect()
-            status_obj = await dreame_client.get_status()
-            status_data = status_obj.__dict__ if status_obj else {}
-
-            telemetry = RobotTelemetry(
-                battery_level=status_data.get("battery_level", 85.0),
-                battery_voltage=14.4,  # Typical vacuum voltage
-                temperature=30.0,
-                cpu_usage=20.0,
-                memory_usage=40.0,
-                wifi_signal=-55,
-                last_update=datetime.now(),
-            )
-
         elif robot.type == RobotType.YAHBOOM:
-            # Use Yahboom client
-            yahboom_client = YahboomClient(robot.ip_address or "192.168.1.60")
-            await yahboom_client.connect()
-            status_data = await yahboom_client.get_status()
-
-            telemetry = RobotTelemetry(
-                battery_level=status_data.get("battery_level", 95.0),
-                battery_voltage=12.0,
-                temperature=status_data.get("temperature", 38.0),
-                cpu_usage=15.0,
-                memory_usage=30.0,
-                wifi_signal=-40,
-                last_update=datetime.now(),
-            )
-
-            # Update position
-            pos = status_data.get("position", {})
-            robot.position.x = pos.get("x", robot.position.x)
-            robot.position.y = pos.get("y", robot.position.y)
-            robot.position.heading = pos.get("yaw", robot.position.heading)
+            telem_data = await _call_mcp(f"{YAHBOOM_MCP_URL}/api/v1/telemetry")
+            if telem_data.get("status") in ("live",):
+                telemetry = RobotTelemetry(
+                    battery_level=telem_data.get("battery", 95.0),
+                    battery_voltage=telem_data.get("voltage", 12.0),
+                    temperature=38.0,
+                    cpu_usage=15.0,
+                    memory_usage=30.0,
+                    wifi_signal=-40,
+                    last_update=datetime.now(),
+                )
+                robot.position.x = telem_data.get("position", {}).get("x", robot.position.x)
+                robot.position.y = telem_data.get("position", {}).get("y", robot.position.y)
+                robot.position.heading = telem_data.get("imu", {}).get("heading", robot.position.heading)
+            else:
+                telemetry = RobotTelemetry(
+                    battery_level=0.0,
+                    battery_voltage=0.0,
+                    temperature=0.0,
+                    cpu_usage=0.0,
+                    memory_usage=0.0,
+                    wifi_signal=0,
+                    last_update=datetime.now(),
+                )
 
         else:
             # Generate mock telemetry for other robots
@@ -971,70 +609,6 @@ async def robot_websocket(websocket: WebSocket, robot_id: str):
         logger.exception(f"WebSocket error for robot {robot_id}: {e}")
     finally:
         _active_connections.pop(robot_id, None)
-
-
-@router.post("/discover")
-async def discover_robots():
-    """Discover robots on the network."""
-    try:
-        # This would implement actual network discovery
-        # For now, return current registered robots
-        discovered = []
-        for robot in _robots.values():
-            discovered.append(
-                {
-                    "id": robot.id,
-                    "name": robot.name,
-                    "type": robot.type,
-                    "ip_address": robot.ip_address,
-                    "discovered_at": datetime.now().isoformat(),
-                }
-            )
-
-        return {
-            "success": True,
-            "discovered_robots": discovered,
-            "message": f"Discovered {len(discovered)} robots",
-        }
-    except Exception as e:
-        logger.exception("Failed to discover robots")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/create_vbot")
-async def create_virtual_robot(request: dict[str, Any]):
-    """Create a new virtual robot."""
-    try:
-        global _vbot_client
-
-        if not _vbot_client:
-            raise HTTPException(status_code=500, detail="Virtual robot client not available")
-
-        robot_type = request.get("robot_type", "scout")
-        platform = request.get("platform", "unity")
-
-        # Create virtual robot via robotics-mcp server
-        result = await _vbot_client.create_vbot(robot_type, platform=platform)
-
-        if result.get("success"):
-            robot_id = result.get("robot_id")
-            if robot_id:
-                # Add to our local registry
-                await load_virtual_robots_from_server()
-                return {
-                    "success": True,
-                    "message": f"Virtual robot {robot_id} created successfully",
-                    "robot_id": robot_id,
-                }
-
-        return {
-            "success": False,
-            "message": result.get("message", "Failed to create virtual robot"),
-        }
-
-    except Exception as e:
-        logger.exception("Error creating virtual robot")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/types/capabilities")

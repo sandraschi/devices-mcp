@@ -1,4 +1,4 @@
-import { AlertCircle, AlertTriangle, Bell, CheckCircle, Loader2, Shield } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Bell, CheckCircle, CloudRain, Loader2, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +38,8 @@ interface AlarmStatus {
 export function Alarms() {
   const [ringStatus, setRingStatus] = useState<RingStatus | null>(null);
   const [alarm, setAlarm] = useState<AlarmStatus | null>(null);
-  const [airAlerts, setAirAlerts] = useState<PublicAlert[]>([]);
+  const [indoorAlerts, setIndoorAlerts] = useState<PublicAlert[]>([]);
+  const [weatherAlerts, setWeatherAlerts] = useState<PublicAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [settingMode, setSettingMode] = useState<string | null>(null);
@@ -65,15 +66,21 @@ export function Alarms() {
       if (alertsRes.status === 'fulfilled' && alertsRes.value.ok) {
         const data = (await alertsRes.value.json()) as { alerts?: PublicAlert[] };
         const all = data.alerts ?? [];
-        setAirAlerts(
+        setIndoorAlerts(
           all.filter(
             (a) =>
               a.source === 'netatmo' ||
               (typeof a.id === 'string' && a.id.startsWith('netatmo_co2')),
           ),
         );
+        setWeatherAlerts(
+          all.filter(
+            (a) => a.source === 'meteoalarm',
+          ),
+        );
       } else {
-        setAirAlerts([]);
+        setIndoorAlerts([]);
+        setWeatherAlerts([]);
       }
       setError(null);
     } catch (e) {
@@ -130,7 +137,7 @@ export function Alarms() {
         </div>
       )}
 
-      {airAlerts.length > 0 && (
+      {indoorAlerts.length > 0 && (
         <Card className='border-orange-300 dark:border-orange-800'>
           <CardHeader className='pb-2'>
             <CardTitle className='flex items-center gap-2 text-base font-medium'>
@@ -143,7 +150,7 @@ export function Alarms() {
             </p>
           </CardHeader>
           <CardContent className='space-y-3'>
-            {airAlerts.map((a) => (
+            {indoorAlerts.map((a) => (
               <div
                 key={a.id}
                 className='rounded-lg border border-slate-200 p-3 dark:border-slate-700'
@@ -165,6 +172,36 @@ export function Alarms() {
               <code className='rounded bg-slate-100 px-1 dark:bg-slate-800'>/alerts/summary</code>{' '}
               with weather alerts. Ventilate and recheck the Weather page for live ppm.
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {weatherAlerts.length > 0 && (
+        <Card className='border-sky-300 dark:border-sky-800'>
+          <CardHeader className='pb-2'>
+            <CardTitle className='flex items-center gap-2 text-base font-medium'>
+              <CloudRain className='h-5 w-5 text-sky-600 dark:text-sky-400' />
+              Vienna weather warnings (Meteoalarm)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className='space-y-3'>
+            {weatherAlerts.map((a) => (
+              <div
+                key={a.id}
+                className='rounded-lg border border-slate-200 p-3 dark:border-slate-700'
+                style={
+                  a.severity_color
+                    ? { borderLeftWidth: 4, borderLeftColor: a.severity_color }
+                    : undefined
+                }
+              >
+                <p className='text-sm font-semibold text-slate-900 dark:text-slate-100'>
+                  {a.title}
+                </p>
+                <p className='mt-1 text-sm text-slate-600 dark:text-slate-400'>{a.description}</p>
+                {a.region && <p className='mt-1 text-xs text-slate-500'>{a.region}</p>}
+              </div>
+            ))}
           </CardContent>
         </Card>
       )}
@@ -254,12 +291,11 @@ export function Alarms() {
         <CardContent className='flex items-start gap-3 pt-6'>
           <Bell className='h-5 w-5 shrink-0 text-slate-500' />
           <div className='text-sm text-slate-600 dark:text-slate-400'>
-            <p className='font-medium text-slate-800 dark:text-slate-200'>Security alarms</p>
+            <p className='font-medium text-slate-800 dark:text-slate-200'>Alarms overview</p>
             <p>
-              Ring Alarm mode (disarm / home / away) and sensors are shown above when Ring is
-              connected. For doorbell and motion events, see the Ring Doorbell page. Netatmo CO₂
-              warnings (when configured) appear above as indoor-air alerts and share the public
-              alerts feed.
+              Weather warnings for Vienna (Meteoalarm) and Netatmo CO₂ indoor-air alerts are shown
+              above. Ring Alarm mode (disarm / home / away) and sensors appear when Ring is
+              connected. For doorbell and motion events, see the Ring Doorbell page.
             </p>
           </div>
         </CardContent>

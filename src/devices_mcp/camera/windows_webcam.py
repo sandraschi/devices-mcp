@@ -27,47 +27,43 @@ class WindowsWebCamera(BaseCamera):
         self._session = None
 
     async def connect(self) -> bool:
-        """Connect to Windows camera server."""
-        try:
-            logger.info(f"WindowsWebCamera.connect() called for device {self._device_id}")
+        """Connect to Windows camera server with retries for slow startup."""
+        import asyncio
 
-            if self._mock_webcam:
-                # Use mock camera for testing
-                await self._mock_webcam.connect()
-                self._is_connected = True
-                return True
+        if self._mock_webcam:
+            await self._mock_webcam.connect()
+            self._is_connected = True
+            return True
 
-            # Create HTTP session
-            self._session = aiohttp.ClientSession()
-            logger.info(f"Created HTTP session for Windows camera {self._device_id}")
+        self._session = aiohttp.ClientSession()
+        status_url = urljoin(self._windows_server_url, "/status")
 
-            # Test connection to Windows camera server
-            status_url = urljoin(self._windows_server_url, "/status")
-            logger.info(f"Checking Windows camera server status at: {status_url}")
+        for attempt in range(1, 4):
+            try:
+                async with self._session.get(status_url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        cameras = data.get("cameras", {})
+                        cam_key = str(self._device_id)
 
-            async with self._session.get(status_url) as response:
-                logger.info(f"Windows camera server response status: {response.status}")
-                if response.status == 200:
-                    data = await response.json()
-                    logger.info(f"Windows camera server status data: {data}")
-                    cameras = data.get("cameras", {})
-                    cam_key = str(self._device_id)
+                        if cam_key in cameras and cameras[cam_key].get("has_frame"):
+                            self._is_connected = True
+                            logger.info(f"Connected to Windows camera {self._device_id}")
+                            return True
+                        logger.warning(
+                            f"Camera {self._device_id} not available on Windows server. Available: {list(cameras.keys())}"
+                        )
+                        return False
+                    logger.warning(f"Camera server returned {response.status} (attempt {attempt}/3)")
+            except Exception:
+                if attempt < 3:
+                    logger.debug(f"Camera server not ready (attempt {attempt}/3), retrying in 1.5s...")
+                    await asyncio.sleep(1.5)
+                else:
+                    logger.warning("Failed to connect to Windows camera server after 3 attempts")
 
-                    if cam_key in cameras and cameras[cam_key].get("has_frame"):
-                        self._is_connected = True
-                        logger.info(f"Connected to Windows camera {self._device_id}")
-                        return True
-                    logger.warning(
-                        f"Camera {self._device_id} not available on Windows server. Available cameras: {list(cameras.keys())}"
-                    )
-                    return False
-                logger.error(f"Windows camera server status check failed: {response.status}")
-                return False
-
-        except Exception:
-            logger.exception("Failed to connect to Windows camera server")
-            self._is_connected = False
-            return False
+        self._is_connected = False
+        return False
 
     async def disconnect(self):
         """Disconnect from camera."""

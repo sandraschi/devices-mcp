@@ -1,6 +1,7 @@
-import { AlertCircle, Loader2, Shield, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertCircle, Check, Edit3, Loader2, Save, Shield, User, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { type CapabilitiesResponse, getCapabilities } from '@/common/api';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AuthStatus {
@@ -9,11 +10,40 @@ interface AuthStatus {
   auth_enabled: boolean;
 }
 
+interface ConfigData {
+  success: boolean;
+  path?: string;
+  yaml?: string;
+  json?: Record<string, unknown>;
+  error?: string;
+}
+
 export function Settings() {
   const [auth, setAuth] = useState<AuthStatus | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
+  const [config, setConfig] = useState<ConfigData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [editing, setEditing] = useState(false);
+  const [editYaml, setEditYaml] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const loadConfig = useCallback(async () => {
+    try {
+      const res = await fetch('/api/config');
+      const data: ConfigData = await res.json();
+      if (data.success) {
+        setConfig(data);
+        setEditYaml(data.yaml ?? '');
+      } else {
+        setError(data.error ?? 'Failed to load config');
+      }
+    } catch (e) {
+      setError(String(e));
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,17 +52,13 @@ export function Settings() {
         r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
       ),
       getCapabilities(),
+      loadConfig(),
     ])
       .then(([authResult, capsResult]) => {
         if (cancelled) return;
-        if (authResult.status === 'fulfilled') {
-          setAuth(authResult.value);
-        } else {
-          setError(String(authResult.reason));
-        }
-        if (capsResult.status === 'fulfilled') {
-          setCapabilities(capsResult.value);
-        }
+        if (authResult.status === 'fulfilled') setAuth(authResult.value);
+        else setError(String(authResult.reason));
+        if (capsResult.status === 'fulfilled') setCapabilities(capsResult.value);
       })
       .catch((e) => {
         if (!cancelled) setError(String(e));
@@ -43,7 +69,37 @@ export function Settings() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadConfig]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveMsg(null);
+    try {
+      const res = await fetch('/api/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ yaml: editYaml }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSaveMsg('Config saved. Restart backend to apply changes.');
+        setEditing(false);
+        setConfig((prev) => (prev ? { ...prev, yaml: editYaml } : prev));
+      } else {
+        setSaveMsg(data.error ?? 'Save failed');
+      }
+    } catch (e) {
+      setSaveMsg(String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditing(false);
+    setEditYaml(config?.yaml ?? '');
+    setSaveMsg(null);
+  };
 
   if (loading) {
     return (
@@ -62,6 +118,7 @@ export function Settings() {
           {error}
         </div>
       )}
+
       <Card>
         <CardHeader className='flex flex-row items-center justify-between pb-2'>
           <CardTitle className='text-base'>Authentication</CardTitle>
@@ -69,10 +126,12 @@ export function Settings() {
         </CardHeader>
         <CardContent className='space-y-2 text-sm'>
           <p>
-            Auth enabled: <span className='font-medium'>{auth?.auth_enabled ? 'Yes' : 'No'}</span>
+            Auth enabled:{' '}
+            <span className='font-medium'>{auth?.auth_enabled ? 'Yes' : 'No'}</span>
           </p>
           <p>
-            Logged in: <span className='font-medium'>{auth?.authenticated ? 'Yes' : 'No'}</span>
+            Logged in:{' '}
+            <span className='font-medium'>{auth?.authenticated ? 'Yes' : 'No'}</span>
           </p>
           {auth?.user && (
             <p className='flex items-center gap-1'>
@@ -82,19 +141,64 @@ export function Settings() {
           )}
         </CardContent>
       </Card>
+
       <Card>
-        <CardHeader className='pb-2'>
-          <CardTitle className='text-base'>Configuration</CardTitle>
+        <CardHeader className='flex flex-row items-center justify-between pb-2'>
+          <CardTitle className='text-base'>
+            Configuration{config?.path ? ` — ${config.path}` : ''}
+          </CardTitle>
+          <div className='flex items-center gap-2'>
+            {saveMsg && (
+              <span
+                className={`flex items-center gap-1 text-xs ${saveMsg.startsWith('Config saved') ? 'text-emerald-600' : 'text-red-600'}`}
+              >
+                {saveMsg.startsWith('Config saved') ? (
+                  <Check className='h-3 w-3' />
+                ) : (
+                  <AlertCircle className='h-3 w-3' />
+                )}
+                {saveMsg}
+              </span>
+            )}
+            {editing ? (
+              <>
+                <Button size='sm' variant='outline' onClick={handleCancelEdit} disabled={saving}>
+                  <X className='mr-1 h-3 w-3' />
+                  Cancel
+                </Button>
+                <Button size='sm' onClick={handleSave} disabled={saving}>
+                  {saving ? (
+                    <Loader2 className='mr-1 h-3 w-3 animate-spin' />
+                  ) : (
+                    <Save className='mr-1 h-3 w-3' />
+                  )}
+                  Save
+                </Button>
+              </>
+            ) : (
+              <Button size='sm' variant='outline' onClick={() => setEditing(true)}>
+                <Edit3 className='mr-1 h-3 w-3' />
+                Edit
+              </Button>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className='space-y-2 text-sm text-slate-600 dark:text-slate-400'>
-          <p>
-            Devices MCP is configured via{' '}
-            <code className='rounded bg-slate-100 px-1 dark:bg-slate-800'>config.yaml</code> in the
-            project root. Edit cameras, Ring, Tapo P115, Hue, Netatmo, and other integrations there.
-          </p>
-          <p>Restart the backend after changing config.</p>
+        <CardContent>
+          {editing ? (
+            <textarea
+              className='h-[60vh] w-full resize-none rounded-md border border-slate-300 bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200'
+              value={editYaml}
+              onChange={(e) => setEditYaml(e.target.value)}
+              spellCheck={false}
+            />
+          ) : (
+            <pre className='max-h-[60vh] overflow-auto rounded-md border border-slate-200 bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'>
+              {config?.yaml || 'No config loaded.'}
+            </pre>
+          )}
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader className='pb-2'>
           <CardTitle className='text-base'>Runtime capabilities</CardTitle>

@@ -1,4 +1,4 @@
-import { AlertCircle, Bell, Loader2, Puzzle, Video, Zap } from 'lucide-react';
+import { AlertCircle, Bell, CloudRain, Loader2, Puzzle, Video, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { type CapabilitiesResponse, getCapabilities } from '@/common/api';
@@ -30,23 +30,55 @@ interface SensorsResponse {
   count: number;
 }
 
+interface AlertSummary {
+  total_alerts: number;
+  highest_severity: string;
+  highest_severity_color: string;
+  status: string;
+  alerts: Array<{
+    id: string;
+    title: string;
+    severity: string;
+    severity_color: string;
+    source: string;
+    alert_type: string;
+    description: string;
+  }>;
+}
+
 export function Dashboard() {
   const [cameras, setCameras] = useState<CameraStatus | null>(null);
   const [ring, setRing] = useState<RingStatus | null>(null);
   const [sensors, setSensors] = useState<SensorsResponse | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
+  const [alerts, setAlerts] = useState<AlertSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    const fetchCameras = async () => {
+      try {
+        const r = await fetch('/api/cameras/status');
+        if (!cancelled && r.ok) {
+          const data = await r.json();
+          setCameras({
+            total: data.total ?? 0,
+            online: data.online ?? 0,
+            offline: data.offline ?? 0,
+          });
+        }
+      } catch { /* ignore poll errors */ }
+    };
+
     const load = async () => {
       try {
-        const [camRes, ringRes, sensorsRes, capabilitiesRes] = await Promise.allSettled([
+        const [camRes, ringRes, sensorsRes, capabilitiesRes, alertsRes] = await Promise.allSettled([
           fetch('/api/cameras/status'),
           fetch('/api/ring/status'),
           fetch('/api/sensors/tapo-p115'),
           getCapabilities(),
+          fetch('/alerts/summary'),
         ]);
         if (cancelled) return;
         if (camRes.status === 'fulfilled' && camRes.value.ok) {
@@ -66,6 +98,9 @@ export function Dashboard() {
         if (capabilitiesRes.status === 'fulfilled') {
           setCapabilities(capabilitiesRes.value);
         }
+        if (alertsRes.status === 'fulfilled' && alertsRes.value.ok) {
+          setAlerts(await alertsRes.value.json());
+        }
       } catch (e) {
         if (!cancelled) setError(String(e));
       } finally {
@@ -73,8 +108,10 @@ export function Dashboard() {
       }
     };
     load();
+    const interval = setInterval(fetchCameras, 15000);
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, []);
 
@@ -93,6 +130,24 @@ export function Dashboard() {
         <div className='flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200'>
           <AlertCircle className='h-5 w-5 shrink-0' />
           {error}
+        </div>
+      )}
+      {alerts && alerts.total_alerts > 0 && alerts.status !== 'ok' && (
+        <div className={`rounded-lg border p-4 text-sm ${
+          alerts.highest_severity === 'extreme' || alerts.highest_severity === 'severe'
+            ? 'border-red-300 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200'
+            : 'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200'
+        }`}>
+          <div className='flex items-center gap-2 font-medium'>
+            <CloudRain className='h-4 w-4' />
+            {alerts.total_alerts} active alert{alerts.total_alerts !== 1 ? 's' : ''}
+            {alerts.alerts.slice(0, 3).map((a) => (
+              <span key={a.id} className='font-normal text-xs ml-2'>{a.title}</span>
+            ))}
+          </div>
+          <Link to='/alarms' className='mt-1 block text-xs underline underline-offset-2 opacity-70 hover:opacity-100'>
+            View all
+          </Link>
         </div>
       )}
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
