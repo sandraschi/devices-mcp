@@ -192,9 +192,7 @@ async def setup_morning_routine(request: MorningRoutineRequest):
                 "coffee_temperature": request.coffee_temperature,
                 "delay_minutes": result.get("delay_minutes"),
             }
-        raise HTTPException(
-            status_code=500, detail=result.get("error", "Failed to setup morning routine")
-        )
+        raise HTTPException(status_code=500, detail=result.get("error", "Failed to setup morning routine"))
 
     except HTTPException:
         raise
@@ -209,9 +207,7 @@ async def set_mode(mode: str):
     try:
         valid_modes = ["wake_up", "home", "formula"]
         if mode not in valid_modes:
-            raise HTTPException(
-                status_code=400, detail=f"Invalid mode. Must be one of: {', '.join(valid_modes)}"
-            )
+            raise HTTPException(status_code=400, detail=f"Invalid mode. Must be one of: {', '.join(valid_modes)}")
 
         client = await get_ikettle_client()
         success = await client.set_mode(mode)

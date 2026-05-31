@@ -25,8 +25,16 @@ def security_audit() -> Message:
     )
 
 
+def home_inventory() -> Message:
+    """Ask for a full inventory of cameras, lights, plugs, and sensors."""
+    return Message(
+        "List all devices in my home: cameras, lights, energy plugs, weather station, Ring, Nest, Shelly sensors, and robots. Note anything offline."
+    )
+
+
 def register_prompts(mcp) -> None:
     """Register all SOTA prompts with the FastMCP instance."""
     mcp.add_prompt(device_status)
     mcp.add_prompt(list_cameras)
     mcp.add_prompt(security_audit)
+    mcp.add_prompt(home_inventory)

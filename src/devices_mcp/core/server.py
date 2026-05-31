@@ -12,6 +12,7 @@ if str(src_path) not in sys.path:
 # Now import after path manipulation
 
 from fastmcp import FastMCP
+from fastmcp.server import create_proxy
 
 from devices_mcp.camera.manager import CameraManager
 
@@ -84,7 +85,7 @@ class DevicesMCPServer:
         return cls._instance
 
     @classmethod
-    async def get_instance(cls, skip_hardware_init: bool = None):
+    async def get_instance(cls, skip_hardware_init: bool | None = None):
         """Get or create the singleton instance."""
         # Check environment variable if not explicitly specified
         if skip_hardware_init is None:
@@ -192,6 +193,18 @@ class DevicesMCPServer:
             # Initialize FastMCP server (only if not already initialized)
             if not hasattr(self, "mcp") or self.mcp is None:
                 self.mcp = FastMCP("devices-mcp")
+                # MCP Bridge: proxy upstream servers via MCP_BRIDGE_URLS
+                _bridge_proxies = []
+                bridge_urls = os.getenv("MCP_BRIDGE_URLS", "")
+                if bridge_urls:
+                    for url in bridge_urls.split(","):
+                        url = url.strip()
+                        if url:
+                            try:
+                                self.mcp.add_provider(create_proxy(url))
+                                _bridge_proxies.append(url)
+                            except Exception:
+                                pass
                 _register_fastmcp_32_parity(self.mcp)
             else:
                 logger.debug("FastMCP instance already exists, reusing")

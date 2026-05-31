@@ -11,12 +11,12 @@ Based on official Pilot Labs SDK: https://github.com/Pilot-Labs-Dev/Scout-open-s
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 logger = logging.getLogger(__name__)
 
 
-class MoorebotStatus(str, Enum):
+class MoorebotStatus(StrEnum):
     """Robot status states"""
 
     IDLE = "idle"

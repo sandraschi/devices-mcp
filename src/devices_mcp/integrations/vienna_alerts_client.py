@@ -264,9 +264,9 @@ class ViennaAlertsClient:
                     if isinstance(warnings, dict):
                         # Warnings might be keyed by region
                         for region_key, region_warnings in warnings.items():
-                            if any(
-                                r.lower() in region_key.lower() for r in self.regions
-                            ) and isinstance(region_warnings, list):
+                            if any(r.lower() in region_key.lower() for r in self.regions) and isinstance(
+                                region_warnings, list
+                            ):
                                 for w in region_warnings:
                                     alert = self._parse_geosphere_warning(w, region_key)
                                     if alert:
@@ -360,7 +360,7 @@ class ViennaAlertsClient:
                 text = await response.text()
 
                 # Parse Atom/XML feed (Meteoalarm is a trusted EU government source)
-                root = ET.fromstring(text)  # noqa: S314
+                root = ET.fromstring(text)
 
                 # Define namespaces
                 ns = {

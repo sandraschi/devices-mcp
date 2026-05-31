@@ -9,7 +9,7 @@ Communicates with FastMCP server via HTTP API calls.
 """
 
 import logging
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import aiohttp
@@ -17,7 +17,7 @@ import aiohttp
 logger = logging.getLogger(__name__)
 
 
-class VbotStatus(str, Enum):
+class VbotStatus(StrEnum):
     """Virtual robot status states"""
 
     IDLE = "idle"
@@ -29,7 +29,7 @@ class VbotStatus(str, Enum):
     OFFLINE = "offline"
 
 
-class VbotType(str, Enum):
+class VbotType(StrEnum):
     """Supported virtual robot types"""
 
     SCOUT = "scout"  # Moorebot Scout

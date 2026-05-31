@@ -114,9 +114,7 @@ def register_ikettle_management_tool(mcp: FastMCP) -> None:
                 return {
                     "success": success,
                     "action": action,
-                    "data": {"temperature_c": temperature, "duration_m": duration}
-                    if success
-                    else {},
+                    "data": {"temperature_c": temperature, "duration_m": duration} if success else {},
                 }
 
             if action == "stop":

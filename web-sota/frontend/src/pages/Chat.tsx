@@ -1,7 +1,8 @@
-import { AlertCircle, Loader2, MessageCircle, Send } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { type LLMModelInfo, normalizeModelList } from '@/lib/llmModels';
+import { AlertCircle, Loader2, MessageCircle, Send } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ChatMessage {
   role: string;
@@ -14,17 +15,18 @@ export function Chat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [providers, setProviders] = useState<string[]>([]);
-  const [models, setModels] = useState<string[]>([]);
+  const [models, setModels] = useState<LLMModelInfo[]>([]);
   const [provider, setProvider] = useState('');
   const [model, setModel] = useState('');
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [deviceContextReady, setDeviceContextReady] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const loadProviders = async () => {
+  const loadProviders = useCallback(async () => {
     try {
       const r = await fetch('/api/llm/providers');
       const data = await r.json();
@@ -33,31 +35,36 @@ export function Chat() {
           (p: { type?: string; name?: string }) => p.type ?? p.name ?? '',
         );
         setProviders(names);
-        if (!provider && names[0]) setProvider(names[0]);
+        setProvider((current) => current || names[0] || '');
       }
     } catch {
       setError('Could not load providers');
     }
-  };
+  }, []);
 
-  const loadModels = async () => {
+  const loadModels = useCallback(async () => {
     if (!provider) return;
     try {
       const r = await fetch(`/api/llm/models?provider=${encodeURIComponent(provider)}`);
       const data = await r.json();
       if (data.success && data.models?.length) {
-        setModels(data.models);
-        if (!model && data.models[0]) setModel(data.models[0]);
+        const normalized = normalizeModelList(data.models);
+        setModels(normalized);
+        setModel((current) => current || normalized[0]?.name || '');
       } else {
         setModels([]);
       }
     } catch {
       setModels([]);
     }
-  };
+  }, [provider]);
 
   useEffect(() => {
     loadProviders();
+    fetch('/api/llm/device-context')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setDeviceContextReady(Boolean(data?.success)))
+      .catch(() => setDeviceContextReady(false));
   }, [loadProviders]);
 
   useEffect(() => {
@@ -103,7 +110,9 @@ export function Chat() {
         body: JSON.stringify({
           messages: [...messages, userMsg].map((msg) => ({ role: msg.role, content: msg.content })),
           provider: provider || undefined,
+          model: model || undefined,
           stream: false,
+          include_device_context: true,
         }),
       });
       const data = await r.json();
@@ -140,6 +149,7 @@ export function Chat() {
                 value={provider}
                 onChange={(e) => {
                   setProvider(e.target.value);
+                  setModel('');
                   setModelLoaded(false);
                 }}
                 className='rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800'
@@ -161,8 +171,8 @@ export function Chat() {
                 className='rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800'
               >
                 {models.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
+                  <option key={m.name} value={m.name}>
+                    {m.name}
                   </option>
                 ))}
               </select>
@@ -190,7 +200,11 @@ export function Chat() {
             <div className='flex-1 overflow-y-auto p-4 space-y-3'>
               {messages.length === 0 && (
                 <p className='text-sm text-slate-500 dark:text-slate-400'>
-                  Load a model above, then type a message. Uses /api/llm/chat.
+                  Load a model above, then ask about your home — e.g.{' '}
+                  <strong>What cameras do we have?</strong>
+                  {deviceContextReady
+                    ? ' Live device inventory is prepended to each request.'
+                    : ' Device inventory loads when the backend is ready.'}
                 </p>
               )}
               {messages.map((msg, i) => (

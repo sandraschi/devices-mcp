@@ -1,10 +1,11 @@
-logger = logging.getLogger(__name__)
-
 """
 Verify imports for Devices MCP tools.
 """
 
+import logging
 import sys
+
+logger = logging.getLogger(__name__)
 from pathlib import Path
 
 # Add the src directory to the Python path

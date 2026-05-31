@@ -122,7 +122,9 @@ class WienEnergieIngestionService:
                         logger.info(f"Connected to Wien Energie adapter at {self._adapter_port}")
                     except Exception as e:
                         logger.exception("Failed to connect to adapter:")
-                        raise IngestionUnavailableError(f"Cannot connect to adapter at {self._adapter_port}: {e}")
+                        raise IngestionUnavailableError(
+                            f"Cannot connect to adapter at {self._adapter_port}: {e}"
+                        ) from e
 
     async def _read_obis_code(self, obis_code: str) -> float | None:
         """

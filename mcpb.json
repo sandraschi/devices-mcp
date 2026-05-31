@@ -1,11 +1,11 @@
 {
     "name": "devices-mcp",
-    "version": "1.2.0",
+    "version": "1.21.1",
     "type": "server",
     "runtime": "python",
-    "entry_point": "src/tapo_camera/main.py",
+    "entry_point": "src/devices_mcp/server_v2.py",
     "dependencies": [
-        "fastmcp>=2.14.4,<3.0.0",
+        "fastmcp>=3.2.0",
         "pytapo>=3.3.0"
     ],
     "build": {
@@ -13,7 +13,9 @@
             "src/**/*",
             "README.md",
             "LICENSE",
-            "docs/fastmcp-best-practices.md"
+            "pyproject.toml",
+            "CHANGELOG.md",
+            "config.yaml.example"
         ],
         "exclude": [
             "tests/",
@@ -26,12 +28,15 @@
             "target/",
             "docs/",
             "scripts/",
-            "mcpb/"
+            "mcpb/",
+            "web-sota/",
+            "node_modules/",
+            "grafana/"
         ]
     },
     "scripts": {
         "build": "mcpb build",
         "pack": "mcpb pack . dist/devices-mcp.mcpb",
-        "test": "python -m pytest"
+        "test": "uv run pytest"
     }
 }

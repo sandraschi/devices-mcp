@@ -21,14 +21,46 @@ warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-# Configure enhanced logging (to stderr - won't corrupt MCP stdout JSON-RPC)
+# Configure enhanced logging with file rotation (to stderr - won't corrupt MCP stdout JSON-RPC)
+import logging.handlers
+
+_log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
+_log_numeric = getattr(logging, _log_level, logging.WARNING)
+
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=_log_numeric,
     format="%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stderr),
     ],
 )
+
+# Add rotating file handler using config values
+try:
+    from devices_mcp.config import get_config
+
+    _cfg = get_config() or {}
+    _log_cfg = _cfg.get("logging") or {}
+    _log_file = _log_cfg.get("file", "tapo_mcp.log")
+    _max_mb = int(_log_cfg.get("max_size", 10))
+    _backup = int(_log_cfg.get("backup_count", 5))
+
+    _fh = logging.handlers.RotatingFileHandler(
+        _log_file,
+        maxBytes=_max_mb * 1024 * 1024,
+        backupCount=_backup,
+        encoding="utf-8",
+    )
+    _fh.setLevel(logging.INFO)
+    _fh.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    logging.getLogger().addHandler(_fh)
+    logging.getLogger().info(f"File logging active: {_log_file} ({_max_mb}MB x {_backup})")
+except Exception as _e:
+    logging.getLogger(__name__).warning(f"File logging setup skipped: {_e}")
+
+# Quiet noisy loggers
+for _quiet in ["asyncio", "httpx", "httpcore", "urllib3", "phue"]:
+    logging.getLogger(_quiet).setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
@@ -95,14 +127,10 @@ def main():
             # TODO: Migrate TapoCameraServer.run() to use transport.py directly
             if transport == "stdio":
                 logger.info("Starting server in STDIO mode...")
-                await server.run(
-                    host=args.host or "127.0.0.1", port=args.port or 8000, stdio=True, direct=True
-                )
+                await server.run(host=args.host or "127.0.0.1", port=args.port or 8000, stdio=True, direct=True)
             elif transport in ("http", "sse"):
                 logger.info(f"Starting server in {transport.upper()} mode...")
-                await server.run(
-                    host=args.host or "127.0.0.1", port=args.port or 8000, stdio=False, direct=False
-                )
+                await server.run(host=args.host or "127.0.0.1", port=args.port or 8000, stdio=False, direct=False)
 
         logger.info("Starting Devices MCP Server...")
         asyncio.run(run_server())

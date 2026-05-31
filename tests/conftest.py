@@ -318,16 +318,6 @@ def sample_system_status():
     }
 
 
-@pytest.fixture
-def test_image() -> bytes:
-    """Return a test image in bytes."""
-    # This is a minimal PNG file (1x1 transparent pixel)
-    return (
-        b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89"
-        b"\x00\x00\x00\nIDATx\xdac\x00\x01\x00\x00\x05\x00\x01\x0f\xa5\xea\xfd\x00\x00\x00\x00IEND\xaeB`\x82"
-    )
-
-
 # Test utilities
 def assert_dict_contains(d: dict[Any, Any], sub_d: dict[Any, Any]) -> None:
     """Assert that dictionary d contains all key-value pairs from sub_d."""
@@ -412,8 +402,9 @@ async def hardware_initializer():
 
     yield initializer
 
-    # Cleanup
-    await camera_manager.cleanup()
+    cleanup = getattr(camera_manager, "cleanup", None)
+    if cleanup:
+        await cleanup()
 
 
 @pytest.fixture
@@ -471,7 +462,7 @@ def patch_json_dump():
     return patch("json.dump")
 
 
-def patch_mcp_call_tool(return_value: dict[str, Any] = None):
+def patch_mcp_call_tool(return_value: dict[str, Any] | None = None):
     """Patch the MCP call_mcp_tool function."""
     return patch(
         "devices_mcp.mcp_client.call_mcp_tool",
@@ -785,13 +776,6 @@ class MockDatabase:
 # ============================================================================
 
 
-def assert_dict_contains(d: dict[Any, Any], sub_d: dict[Any, Any]) -> None:
-    """Assert that dictionary d contains all key-value pairs from sub_d."""
-    for key, value in sub_d.items():
-        assert key in d, f"Key '{key}' not found in dictionary"
-        assert d[key] == value, f"Value for key '{key}' does not match. Expected {value}, got {d[key]}"
-
-
 def assert_dict_contains_keys(d: dict[Any, Any], keys: list[str]) -> None:
     """Assert that dictionary d contains all specified keys."""
     for key in keys:
@@ -804,7 +788,7 @@ def assert_api_response_success(response: dict[str, Any]) -> None:
     assert response["success"] is True, f"API call failed: {response}"
 
 
-def assert_api_response_error(response: dict[str, Any], expected_status: int = None) -> None:
+def assert_api_response_error(response: dict[str, Any], expected_status: int | None = None) -> None:
     """Assert that an API response indicates an error."""
     assert "success" in response, "Response missing 'success' field"
     assert response["success"] is False, "Expected error response but got success"

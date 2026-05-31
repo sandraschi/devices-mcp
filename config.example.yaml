@@ -6,8 +6,8 @@
 # 2. For Ring cameras: pip install ring-doorbell
 # 3. Copy this file: cp config.example.yaml config.yaml
 # 4. Edit config.yaml with your camera details
-# 5. Start dashboard: python start.py dashboard
-# 6. Access dashboard: http://localhost:7777
+# 5. Start dashboard: .\web-sota\start.ps1
+# 6. Access dashboard: http://localhost:10717/app/ (or http://localhost:10716 in Vite dev)
 #
 # Supported Camera Types:
 # - tapo: TP-Link Tapo cameras (requires pytapo)
@@ -19,7 +19,7 @@
 # Server configuration
 server:
   host: "0.0.0.0"  # Listen on all interfaces
-  port: 7777       # HTTP server port
+  port: 10717      # FastAPI backend (web-sota); Vite dev frontend uses 10716
   debug: false     # Enable debug mode
   log_level: "INFO"  # Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
@@ -168,7 +168,7 @@ grafana:
 web:
   enabled: true
   host: "0.0.0.0"  # Web dashboard host
-  port: 7777       # Web dashboard port
+  port: 10717      # Web dashboard backend (web-sota)
   theme: "dark"    # dark or light
   show_ptz_controls: true
   show_motion_zones: true

@@ -40,12 +40,6 @@ def register_agentic_tools():
         """
         try:
             # Parse workflow prompt and determine optimal tool sequence
-            workflow_analysis = {
-                "prompt": workflow_prompt,
-                "available_tools": available_tools,
-                "max_iterations": max_iterations,
-                "analysis": "LLM will autonomously orchestrate Plex media operations",
-            }
 
             # This would use FastMCP 3.1 sampling to execute complex workflows
             # For now, return a conversational response about capabilities
@@ -102,7 +96,7 @@ def register_agentic_tools():
             Intelligent batch processing results
         """
         try:
-            processing_plan = {
+            {
                 "goal": processing_goal,
                 "item_count": len(media_items),
                 "available_operations": available_operations,

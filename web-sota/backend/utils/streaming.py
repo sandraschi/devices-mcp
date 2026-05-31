@@ -52,14 +52,10 @@ async def generate_webcam_stream(camera) -> AsyncGenerator[bytes, None]:
                 continue
 
             encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 80]
-            result, encoded_img = await asyncio.to_thread(
-                cv2.imencode, ".jpg", frame, encode_param
-            )
+            result, encoded_img = await asyncio.to_thread(cv2.imencode, ".jpg", frame, encode_param)
 
             if result:
-                yield (
-                    b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + encoded_img.tobytes() + b"\r\n"
-                )
+                yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + encoded_img.tobytes() + b"\r\n")
             await asyncio.sleep(0.1)
 
     except Exception:
@@ -79,9 +75,7 @@ async def generate_rtsp_mjpeg_stream(rtsp_url: str) -> AsyncGenerator[bytes, Non
     """Generate MJPEG stream from RTSP URL for browser viewing."""
     logger.info(f"Opening RTSP stream: {rtsp_url[:60]}...")
 
-    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = (
-        "rtsp_transport;tcp|analyzeduration;1000000|probesize;1000000"
-    )
+    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp|analyzeduration;1000000|probesize;1000000"
 
     cap = await asyncio.to_thread(cv2.VideoCapture, rtsp_url, cv2.CAP_FFMPEG)
     try:
@@ -108,14 +102,10 @@ async def generate_rtsp_mjpeg_stream(rtsp_url: str) -> AsyncGenerator[bytes, Non
                 frame = await asyncio.to_thread(cv2.resize, frame, (new_w, new_h))
 
             encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 70]
-            result, encoded_img = await asyncio.to_thread(
-                cv2.imencode, ".jpg", frame, encode_param
-            )
+            result, encoded_img = await asyncio.to_thread(cv2.imencode, ".jpg", frame, encode_param)
 
             if result:
-                yield (
-                    b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + encoded_img.tobytes() + b"\r\n"
-                )
+                yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + encoded_img.tobytes() + b"\r\n")
 
             await asyncio.sleep(0.05)
     except Exception as e:

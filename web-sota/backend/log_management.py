@@ -3,7 +3,10 @@ Log management API endpoints for manual log operations.
 """
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from devices_mcp.utils.log_manager import LogManager
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
@@ -14,7 +17,7 @@ router = APIRouter(prefix="/api/logs", tags=["log-management"])
 
 
 @router.post("/sanitize", summary="Sanitize log files")
-async def sanitize_logs(background_tasks: BackgroundTasks, log_files: list[str] = None) -> dict[str, Any]:
+async def sanitize_logs(background_tasks: BackgroundTasks, log_files: list[str] | None = None) -> dict[str, Any]:
     """
     Manually trigger log sanitization (rotation, compression, cleanup).
 
@@ -31,7 +34,7 @@ async def sanitize_logs(background_tasks: BackgroundTasks, log_files: list[str] 
         return {"message": "Log sanitization started in background", "status": "running"}
     except Exception as e:
         logger.exception(f"Failed to start log sanitization: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to start log sanitization: {e!s}")
+        raise HTTPException(status_code=500, detail=f"Failed to start log sanitization: {e!s}") from e
 
 
 @router.get("/stats", summary="Get log statistics")
@@ -46,7 +49,7 @@ async def get_logs_stats() -> dict[str, Any]:
         return get_log_stats()
     except Exception as e:
         logger.exception(f"Failed to get log stats: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get log stats: {e!s}")
+        raise HTTPException(status_code=500, detail=f"Failed to get log stats: {e!s}") from e
 
 
 @router.post("/rotate/{log_file}", summary="Rotate specific log file")
@@ -70,10 +73,10 @@ async def rotate_log_file(log_file: str, background_tasks: BackgroundTasks) -> d
         return {"message": f"Log rotation started for {log_file}", "status": "running"}
     except Exception as e:
         logger.exception(f"Failed to start log rotation: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to start log rotation: {e!s}")
+        raise HTTPException(status_code=500, detail=f"Failed to start log rotation: {e!s}") from e
 
 
-async def _sanitize_logs_background(log_files: list[str] = None):
+async def _sanitize_logs_background(log_files: list[str] | None = None):
     """Background task for log sanitization"""
     try:
         results = sanitize_logs_now(log_files)

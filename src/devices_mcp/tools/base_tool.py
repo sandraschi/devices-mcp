@@ -8,7 +8,7 @@ with FastMCP 3.1 compatibility.
 import inspect
 import logging
 from collections.abc import Awaitable
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict
@@ -93,7 +93,7 @@ def get_all_tools() -> list["type[BaseTool]"]:
     return list(_tool_registry.values())
 
 
-class ToolCategory(str, Enum):
+class ToolCategory(StrEnum):
     """Categories for organizing tools in the MCP interface."""
 
     CAMERA = "Camera"

@@ -366,33 +366,26 @@ class RingClient:
         return elapsed < self.cache_ttl
 
     async def _update_data(self, force: bool = False):
-        """Update Ring data from API.
-
-        Args:
-            force: If True, bypass cache and force refresh from Ring API.
-                   Use sparingly due to rate limiting and async issues.
-        """
+        """Update Ring data from API (sync ring_doorbell calls run in a worker thread)."""
         if not self._initialized or not self._ring:
             return
 
-        # Check if we need to update (use longer interval to avoid async issues)
         update_cache_key = "_last_update"
         if not force and self._is_cache_valid(update_cache_key):
-            return  # Data is fresh enough
+            return
 
         try:
-            # Skip data refresh for now due to async event loop conflicts
-            # The ring_doorbell library has internal async code that conflicts
-            # with FastAPI's async event loop. Data is refreshed during init.
-            logger.debug("Skipping Ring data refresh to avoid async conflicts")
+            await asyncio.to_thread(self._ring.update_data)
+            self._raw_devices_data = self._ring.devices_data.copy()
             await self._fetch_alarm_data()
-
-            # Mark as updated with longer TTL
+            for key in ("doorbells", "alarm_devices", "alarm_status", "events", "alarm_events"):
+                self._cache.pop(key, None)
+                self._cache_time.pop(key, None)
             self._cache_time[update_cache_key] = datetime.now()
+            logger.debug("Ring data refreshed")
         except Exception:
-            # Log error - don't use stale cached data
-            logger.exception("Ring data refresh failed:")
-            raise  # Re-raise to fail properly instead of using stale data
+            logger.exception("Ring data refresh failed")
+            raise
 
     async def _fetch_alarm_data(self):
         """Fetch raw alarm device data from Ring API.
@@ -556,8 +549,9 @@ class RingClient:
             return self._cache[cache_key]
 
         try:
-            # Skip _update_data() to avoid async conflicts
-            # Use cached data from initialization instead
+            if not self._is_cache_valid(cache_key):
+                await self._update_data()
+
             devices = []
 
             # Access video devices directly from raw data to avoid async calls
@@ -597,11 +591,8 @@ class RingClient:
             return self._cache[cache_key]
 
         try:
-            # Don't force refresh - use cached data from initialization
-            # This avoids the nested async event loop issue
-            if not self._raw_devices_data:
-                logger.warning("No raw Ring device data available")
-                return []
+            if not self._raw_devices_data or not self._is_cache_valid("alarm_devices"):
+                await self._update_data()
 
             devices = []
 
@@ -1159,6 +1150,21 @@ def _resolve_token_file(token_file: str) -> str:
         return str(p)
     root = Path(__file__).resolve().parents[3]
     return str(root / p)
+
+
+def ring_token_path(token_file: str = "ring_token.cache") -> Path:
+    return Path(_resolve_token_file(token_file))
+
+
+def ring_has_cached_token(token_file: str = "ring_token.cache") -> bool:
+    path = ring_token_path(token_file)
+    if not path.exists() or path.stat().st_size == 0:
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return isinstance(data, dict) and bool(data)
+    except Exception:
+        return False
 
 
 async def init_ring_client(

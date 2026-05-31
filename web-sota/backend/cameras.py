@@ -38,7 +38,7 @@ async def get_cameras() -> dict[str, Any]:
 
     except Exception as e:
         logger.exception(f"Error in get_cameras: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/api/cameras/{camera_name}/snapshot")
@@ -72,7 +72,7 @@ async def get_camera_snapshot(camera_name: str) -> JSONResponse:
 
     except Exception as e:
         logger.exception(f"Error getting snapshot for {camera_name}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/api/cameras/{camera_name}/stream")
@@ -109,7 +109,7 @@ async def get_camera_stream(camera_name: str) -> JSONResponse:
 
     except Exception as e:
         logger.exception(f"Error getting stream for {camera_name}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/api/ring/snapshot/{camera_id}")
@@ -119,7 +119,7 @@ async def get_ring_snapshot(camera_id: str) -> JSONResponse:
         # Import Ring camera tools
         from devices_mcp.ring.tools.camera_tools import RingCameraTools
 
-        tool = RingCameraTools()
+        RingCameraTools()
         # This would implement actual Ring snapshot functionality
         # For now, return placeholder
 
@@ -133,7 +133,7 @@ async def get_ring_snapshot(camera_id: str) -> JSONResponse:
 
     except Exception as e:
         logger.exception(f"Error getting Ring snapshot for {camera_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/api/ring/stream/{camera_id}")
@@ -143,7 +143,7 @@ async def get_ring_stream(camera_id: str) -> JSONResponse:
         # Import Ring camera tools
         from devices_mcp.ring.tools.camera_tools import RingCameraTools
 
-        tool = RingCameraTools()
+        RingCameraTools()
         # This would implement actual Ring stream functionality
         # For now, return placeholder
 
@@ -157,7 +157,7 @@ async def get_ring_stream(camera_id: str) -> JSONResponse:
 
     except Exception as e:
         logger.exception(f"Error getting Ring stream for {camera_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/api/cameras/{camera_name}/ptz/move")
@@ -210,7 +210,7 @@ async def move_camera_ptz(camera_name: str, direction: str, amount: float = 1.0)
 
     except Exception as e:
         logger.exception(f"Error moving camera {camera_name}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/api/cameras/{camera_name}/audio/toggle")
@@ -230,4 +230,4 @@ async def toggle_camera_audio(camera_name: str) -> JSONResponse:
 
     except Exception as e:
         logger.exception(f"Error toggling audio for {camera_name}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

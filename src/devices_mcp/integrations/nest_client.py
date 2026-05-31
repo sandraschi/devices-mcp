@@ -9,7 +9,7 @@ import json
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +18,7 @@ import aiohttp
 logger = logging.getLogger(__name__)
 
 
-class NestProtectStatus(str, Enum):
+class NestProtectStatus(StrEnum):
     """Nest Protect detector status."""
 
     OK = "ok"

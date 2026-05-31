@@ -472,7 +472,7 @@ def register_tools(app: FastMCP) -> None:
                 new_config["motion_zones"] = valid_zones
 
             # Apply configuration
-            config_result = client.update_motion_settings(device_id=doorbell.id, settings=new_config)
+            client.update_motion_settings(device_id=doorbell.id, settings=new_config)
 
             # Generate optimization suggestions
             suggestions = []

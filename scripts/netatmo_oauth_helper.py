@@ -11,9 +11,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-def build_authorize_url(
-    client_id: str, redirect_uri: str, scope: str = "read_station", state: str = "xyz"
-) -> str:
+def build_authorize_url(client_id: str, redirect_uri: str, scope: str = "read_station", state: str = "xyz") -> str:
     base = "https://api.netatmo.com/oauth2/authorize"
     params = {
         "client_id": client_id,
@@ -25,9 +23,7 @@ def build_authorize_url(
     return f"{base}?{urllib.parse.urlencode(params)}"
 
 
-def exchange_code_for_tokens(
-    client_id: str, client_secret: str, code: str, redirect_uri: str
-) -> dict:
+def exchange_code_for_tokens(client_id: str, client_secret: str, code: str, redirect_uri: str) -> dict:
     url = "https://api.netatmo.com/oauth2/token"
     data = {
         "grant_type": "authorization_code",
@@ -205,9 +201,7 @@ def main():
         try:
             webbrowser.open(url)
         except Exception:
-            logger.info(
-                "WARNING: Could not open browser automatically. Copy the URL above and open it manually.\n"
-            )
+            logger.info("WARNING: Could not open browser automatically. Copy the URL above and open it manually.\n")
 
         # Wait for callback
         server_thread.join(timeout=300)

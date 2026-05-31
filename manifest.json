@@ -1,9 +1,9 @@
 {
   "manifest_version": "0.2",
   "name": "devices-mcp",
-  "version": "1.1.0",
-  "description": "Comprehensive camera management MCP server supporting Tapo, Ring, Furbo, and USB webcams with 26+ tools",
-  "long_description": "Professional camera management and control platform with support for multiple camera types including TP-Link Tapo IP cameras, Ring doorbells, Furbo pet cameras, and USB webcams. Includes PTZ control, motion detection, image capture, video streaming, Grafana metrics integration, and AI-powered vision analysis using DINOv3. Features a web dashboard with live video streaming and comprehensive MCP tool suite.",
+  "version": "1.21.1",
+  "description": "Home security and IoT orchestration MCP server. Supports Tapo cameras, Ring, Nest Protect, Philips Hue, Netatmo weather, Shelly, USB webcams. 40+ tools.",
+  "long_description": "Comprehensive home security and IoT orchestration platform. Dual-architecture: individual device MCP servers + unified web-sota SPA dashboard (Vite + React, ports 10716/10717). Supports TP-Link Tapo cameras, Ring doorbells, Nest Protect, Philips Hue lighting, Netatmo weather stations, Shelly devices, and USB webcams. Includes PTZ control, motion detection, energy monitoring, lighting scenes, HomeAware motion detection via Zigbee mesh, log management, and health supervision with circuit breakers.",
   "author": {
     "name": "Sandra Schi",
     "email": "sandraschipal@hotmail.com"
@@ -18,16 +18,24 @@
   "license": "MIT",
   "keywords": [
     "mcp",
+    "home-security",
+    "iot",
     "camera",
     "tapo",
     "ring",
-    "furbo",
+    "nest",
+    "hue",
+    "lighting",
+    "netatmo",
+    "weather",
+    "shelly",
     "webcam",
     "ptz",
     "motion-detection",
-    "video-streaming",
+    "energy-monitoring",
     "grafana",
-    "fastmcp"
+    "fastmcp",
+    "portmanteau"
   ],
   "prompts": [
     {
@@ -51,20 +59,17 @@
   ],
   "server": {
     "type": "python",
-    "entry_point": "src/devices_mcp/server_v2.py",
+    "entry_point": "src/devices_mcp/server.py",
     "mcp_config": {
-      "command": "python",
+      "command": "uv",
       "args": [
+        "run",
+        "python",
         "-m",
-        "devices_mcp.server_v2",
-        "--direct"
+        "devices_mcp.server"
       ],
       "env": {
-        "PYTHONPATH": "${PWD}",
-        "TAPO_CAMERA_HOST": "${user_config.tapo_camera_host}",
-        "TAPO_CAMERA_USERNAME": "${user_config.tapo_camera_username}",
-        "TAPO_CAMERA_PASSWORD": "${user_config.tapo_camera_password}",
-        "WEB_DASHBOARD_PORT": "${user_config.dashboard_port}",
+        "PYTHONPATH": "${PWD}/src",
         "PYTHONUNBUFFERED": "1"
       }
     }
@@ -75,7 +80,7 @@
       "title": "Tapo Camera IP Address",
       "description": "IP address of your TP-Link Tapo camera (optional, can add cameras via tools)",
       "required": false,
-      "default": "192.168.1.100"
+      "default": ""
     },
     "tapo_camera_username": {
       "type": "string",
@@ -91,13 +96,6 @@
       "sensitive": true,
       "required": false,
       "default": ""
-    },
-    "dashboard_port": {
-      "type": "string",
-      "title": "Web Dashboard Port",
-      "description": "Port number for the web dashboard (default: 7777)",
-      "required": false,
-      "default": "7777"
     }
   },
   "tools": [
@@ -228,6 +226,50 @@
     {
       "name": "grafana_metrics_search",
       "description": "Search available Grafana metrics"
+    },
+    {
+      "name": "energy_management",
+      "description": "Smart plug energy monitoring and control (Tapo P115 power consumption)"
+    },
+    {
+      "name": "lighting_management",
+      "description": "Philips Hue + Tapo lighting orchestration (status, control, effects)"
+    },
+    {
+      "name": "camera_management",
+      "description": "Multi-camera management portmanteau (Tapo, Ring, USB)"
+    },
+    {
+      "name": "weather_management",
+      "description": "Netatmo weather station data and environmental monitoring"
+    },
+    {
+      "name": "security_management",
+      "description": "Unified alarm monitoring and event correlation"
+    },
+    {
+      "name": "ring_management",
+      "description": "Ring doorbell orchestration"
+    },
+    {
+      "name": "ptz_management",
+      "description": "PTZ control with Prank Modes"
+    },
+    {
+      "name": "get_hue_lights",
+      "description": "List all Philips Hue lights with status"
+    },
+    {
+      "name": "control_hue_light",
+      "description": "Control a Philips Hue light (on/off/brightness/color temp)"
+    },
+    {
+      "name": "get_homeaware_status",
+      "description": "Get HomeAware motion detection area statuses"
+    },
+    {
+      "name": "monitor_homeaware_motion",
+      "description": "Poll HomeAware for new motion events"
     }
   ],
   "compatibility": {
@@ -235,7 +277,6 @@
       "win32",
       "darwin",
       "linux"
-    ],
-    "python_version": ">=3.10"
+    ]
   }
 }

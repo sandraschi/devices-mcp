@@ -15,12 +15,12 @@ extracts design information for virtual robotics (vrobs) testing.
 
 import json
 from dataclasses import asdict, dataclass
-from enum import Enum
+from enum import StrEnum
 
 from plexapi.server import PlexServer
 
 
-class EmotionType(str, Enum):
+class EmotionType(StrEnum):
     """Vrob emotion spectrum (0-10 scale)"""
 
     TERRIFYING = "0-2"  # Evangelion, Zearth, Genocyber
@@ -143,7 +143,7 @@ FAMOUS_ROBOT_ANIME = {
 class PlexAnimeRobotExtractor:
     """Extract robot designs from Plex anime collection"""
 
-    def __init__(self, plex_url: str = "http://goliath:32400", token: str = None):
+    def __init__(self, plex_url: str = "http://goliath:32400", token: str | None = None):
         self.plex = PlexServer(plex_url, token)
         self.anime_library = self.plex.library.section("Anime")
         self.robot_designs = []
@@ -199,7 +199,7 @@ class PlexAnimeRobotExtractor:
             List of robot designs found in anime
         """
         # Check if anime is in famous database
-        for key, data in FAMOUS_ROBOT_ANIME.items():
+        for _key, data in FAMOUS_ROBOT_ANIME.items():
             if anime_title.lower() in data["title"].lower():
                 logger.info(f"Found famous anime: {data['title']}")
                 return self._extract_famous_designs(data)

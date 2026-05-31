@@ -1,9 +1,9 @@
 import logging
 
-from devices_mcp.auth import get_current_user, is_auth_enabled
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from devices_mcp.auth import get_current_user, is_auth_enabled
 from devices_mcp.mcp_client import call_mcp_tool
 from devices_mcp.utils.storage import EventStore, RecordingStore
 
@@ -115,9 +115,7 @@ async def stream_viewer_page(request: Request, camera_id: str):
     # If we couldn't get type from display info, try to get it from MCP
     if camera_type == "unknown":
         try:
-            result = await call_mcp_tool(
-                "camera_management", {"action": "info", "camera_name": camera_id}
-            )
+            result = await call_mcp_tool("camera_management", {"action": "info", "camera_name": camera_id})
             if result.get("success") and result.get("data"):
                 camera_type = result["data"].get("type", "unknown")
         except Exception as e:
@@ -262,9 +260,7 @@ async def index(request: Request):
 
             if len(cameras) == 0:
                 # No cameras configured, try to auto-add USB webcam
-                logger.info(
-                    "No cameras configured, attempting to auto-add USB webcam for dashboard..."
-                )
+                logger.info("No cameras configured, attempting to auto-add USB webcam for dashboard...")
 
                 try:
                     add_result = await call_mcp_tool(
@@ -284,9 +280,7 @@ async def index(request: Request):
                         if result.get("success"):
                             cameras = result.get("data", [])
                             total_cameras = len(cameras)
-                            online_cameras = sum(
-                                1 for cam in cameras if cam.get("status") == "online"
-                            )
+                            online_cameras = sum(1 for cam in cameras if cam.get("status") == "online")
                 except Exception:
                     pass
     except Exception as e:
@@ -337,9 +331,7 @@ async def index(request: Request):
 @router.get("/list_cameras", response_class=HTMLResponse, name="list_cameras")
 async def list_cameras(request: Request):
     """Serve the cameras list page."""
-    return templates.TemplateResponse(
-        "dashboard.html", {"request": request, "active_page": "cameras"}
-    )
+    return templates.TemplateResponse("dashboard.html", {"request": request, "active_page": "cameras"})
 
 
 @router.get("/recordings", response_class=HTMLResponse, name="recordings")
@@ -353,9 +345,7 @@ async def recordings(request: Request):
         recordings_list = recording_store.get_recordings(limit=50)
 
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        today_recordings = [
-            r for r in recordings_list if datetime.fromisoformat(r.get("timestamp", "")) >= today
-        ]
+        today_recordings = [r for r in recordings_list if datetime.fromisoformat(r.get("timestamp", "")) >= today]
 
         total_gb = stats.get("total_size_gb", 0)
         storage_free = f"{max(0, 100 - total_gb):.2f}GB"

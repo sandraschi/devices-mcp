@@ -4,8 +4,9 @@ Camera tools for Devices MCP.
 This module contains tools for managing and controlling Tapo cameras.
 """
 
+import asyncio
 import logging
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import ConfigDict, Field
@@ -22,7 +23,7 @@ from devices_mcp.validation import (
 logger = logging.getLogger(__name__)
 
 
-class CameraStatus(str, Enum):
+class CameraStatus(StrEnum):
     """Camera status values."""
 
     ONLINE = "online"

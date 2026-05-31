@@ -123,10 +123,10 @@ async def plex_webhook(request: Request):
 
     except json.JSONDecodeError as e:
         logger.exception(f"Failed to decode Plex webhook payload: {e}")
-        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+        raise HTTPException(status_code=400, detail="Invalid JSON payload") from e
     except Exception as e:
         logger.exception(f"Error processing Plex webhook: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}") from e
 
 
 @router.get("/now-playing")

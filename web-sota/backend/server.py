@@ -45,6 +45,128 @@ class WebServer:
             except Exception:
                 logger.debug("Startup LLM glom skipped", exc_info=True)
 
+            try:
+                from devices_mcp.config import get_config
+                from devices_mcp.tools.lighting.hue_tools import get_hue_manager, load_hue_bridge_cache
+
+                raw = get_config() or {}
+                hue_cfg = (raw.get("lighting") or {}).get("philips_hue") or {}
+                if hue_cfg.get("enabled") is not False:
+                    cache = load_hue_bridge_cache()
+                    if hue_cfg.get("bridge_ip") or cache.get("bridge_ip"):
+                        mgr = get_hue_manager()
+                        if await mgr.initialize():
+                            try:
+                                await mgr.rescan()
+                                logger.info("Hue startup: %s lights on %s", len(mgr.lights), mgr._bridge_name)
+                            except Exception:
+                                logger.warning("Hue startup rescan failed", exc_info=True)
+                        else:
+                            logger.warning("Hue startup init skipped: %s", mgr._connection_error)
+            except Exception:
+                logger.debug("Startup Hue init skipped", exc_info=True)
+
+            try:
+                from devices_mcp.config import get_config
+                from devices_mcp.integrations.ring_client import init_ring_client, ring_has_cached_token
+
+                raw = get_config() or {}
+                ring_cfg = raw.get("ring") or {}
+                if ring_cfg.get("enabled"):
+                    email = ring_cfg.get("email")
+                    token_file = ring_cfg.get("token_file", "ring_token.cache")
+                    password = ring_cfg.get("password")
+                    if email and (password or ring_has_cached_token(token_file)):
+                        client = await init_ring_client(
+                            email=email,
+                            password=password or None,
+                            token_file=token_file,
+                            cache_ttl=ring_cfg.get("cache_ttl", 60),
+                        )
+                        if client.is_initialized:
+                            logger.info("Ring startup: connected (doorbells via /api/ring/summary)")
+                        elif client.is_2fa_pending:
+                            logger.warning("Ring startup: 2FA pending — submit code in Ring page")
+                        else:
+                            logger.warning("Ring startup init failed: %s", client.last_error)
+            except Exception:
+                logger.debug("Startup Ring init skipped", exc_info=True)
+
+            try:
+                from devices_mcp.config import get_config
+                from devices_mcp.integrations.shelly_client import init_shelly_client
+
+                raw = get_config() or {}
+                shelly_cfg = raw.get("shelly") or {}
+                if shelly_cfg.get("enabled") and shelly_cfg.get("devices"):
+                    client = await init_shelly_client(
+                        devices=shelly_cfg.get("devices"),
+                        cache_ttl=shelly_cfg.get("cache_ttl", 30),
+                    )
+                    if client.is_initialized:
+                        logger.info("Shelly startup: %s device(s)", len(client._devices))
+                    else:
+                        logger.warning("Shelly startup init failed")
+            except Exception:
+                logger.debug("Startup Shelly init skipped", exc_info=True)
+
+            try:
+                from devices_mcp.config import get_config
+                from devices_mcp.integrations.homeassistant_client import init_homeassistant_client
+
+                raw = get_config() or {}
+                ha_cfg = (raw.get("security") or {}).get("integrations", {}).get("homeassistant") or {}
+                if ha_cfg.get("enabled") and ha_cfg.get("access_token"):
+                    client = await init_homeassistant_client(
+                        base_url=ha_cfg.get("url", "http://localhost:8123"),
+                        access_token=ha_cfg.get("access_token"),
+                        cache_ttl=ha_cfg.get("cache_ttl", 30),
+                    )
+                    if client and client.is_initialized:
+                        logger.info("Home Assistant startup: connected (Nest via /api/nest/status)")
+                    else:
+                        logger.warning("Home Assistant startup init failed")
+            except Exception:
+                logger.debug("Startup Home Assistant init skipped", exc_info=True)
+
+            try:
+                from devices_mcp.config import get_config
+                from devices_mcp.integrations.netatmo_client import PYATMO_AVAILABLE, NetatmoService
+
+                raw = get_config() or {}
+                netatmo_cfg = ((raw.get("weather") or {}).get("integrations") or {}).get("netatmo") or {}
+                token_file = netatmo_cfg.get("token_file") or "netatmo_token.cache"
+                has_token = bool((netatmo_cfg.get("refresh_token") or "").strip())
+                if not has_token:
+                    cache_path = NetatmoService._adjust_token_path(token_file)
+                    try:
+                        has_token = cache_path.exists() and bool(cache_path.read_text(encoding="utf-8").strip())
+                    except OSError:
+                        has_token = False
+                if (
+                    netatmo_cfg.get("enabled")
+                    and PYATMO_AVAILABLE
+                    and netatmo_cfg.get("client_id")
+                    and netatmo_cfg.get("client_secret")
+                    and has_token
+                ):
+                    svc = await NetatmoService.get_instance(token_file)
+                    if svc.is_api_ready():
+                        logger.info("Netatmo startup: connected (weather via /api/weather/modules)")
+                    else:
+                        logger.warning("Netatmo startup init failed: %s", svc.last_error)
+            except Exception:
+                logger.debug("Startup Netatmo init skipped", exc_info=True)
+
+            try:
+                from devices_mcp.core.connection_supervisor import get_supervisor
+
+                supervisor = get_supervisor()
+                await supervisor.start()
+                logger.info("Connection supervisor started (energy + device health polling)")
+            except Exception:
+                logger.debug("Connection supervisor startup skipped", exc_info=True)
+
             # Start fleet monitoring background task
             import asyncio
 
@@ -78,6 +200,8 @@ class WebServer:
                 "http://localhost:10716",
                 "http://127.0.0.1:10716",
                 "http://127.0.0.1:10717",
+                "http://goliath:10716",
+                "http://goliath:10717",
             ],
             allow_credentials=True,
             allow_methods=["*"],

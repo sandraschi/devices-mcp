@@ -188,9 +188,7 @@ def register_energy_management_tool(mcp: FastMCP) -> None:
                     "Check firewall allows communication with smart plug",
                     "Try power cycling the smart plug (unplug for 30 seconds)",
                 ]
-            elif (
-                "authentication" in error_str or "login" in error_str or "credentials" in error_str
-            ):
+            elif "authentication" in error_str or "login" in error_str or "credentials" in error_str:
                 recovery_options = [
                     "Verify smart plug username/password in configuration",
                     "Check if smart plug was factory reset and needs re-setup",

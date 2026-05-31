@@ -8,7 +8,7 @@ import json
 import logging
 import shutil
 from pathlib import Path
-from typing import Any, Dict, Optional, Type, TypeVar, Union
+from typing import Any, TypeVar
 
 import yaml
 
@@ -345,7 +345,7 @@ def get_setting(key: str, default: Any = None) -> Any:
     return _get_config_manager().get(key, default)
 
 
-def get_model(model_class: type[T]) -> T:
+def get_model[T](model_class: type[T]) -> T:
     return _get_config_manager().get_model(model_class)
 
 

@@ -11,12 +11,12 @@ Based on official Unitree SDK for Go2 robot.
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 logger = logging.getLogger(__name__)
 
 
-class Go2Status(str, Enum):
+class Go2Status(StrEnum):
     """Go2 robot status states"""
 
     IDLE = "idle"

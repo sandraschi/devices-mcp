@@ -13,7 +13,7 @@ from ..config import CameraConfig, ServerConfig
 T = TypeVar("T")
 
 
-def load_config(config_file: str = "config.yaml", config_class: type[T] = ServerConfig) -> T:
+def load_config[T](config_file: str = "config.yaml", config_class: type[T] = ServerConfig) -> T:
     """
     Load configuration from a YAML or JSON file.
 

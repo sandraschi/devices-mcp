@@ -5,6 +5,21 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
+class _McpStub:
+    """Stub decorator when tools are registered via register_nest_protect_tools."""
+
+    def tool(self, *args, **kwargs):
+        def decorator(func):
+            return func
+
+        if args and callable(args[0]) and not kwargs:
+            return args[0]
+        return decorator
+
+
+mcp = _McpStub()
+
+
 class HomeSafetyAssessmentParams(BaseModel):
     """Parameters for comprehensive home safety assessment."""
 
@@ -58,7 +73,7 @@ class SmartAutomationParams(BaseModel):
 async def assess_home_safety(
     include_recommendations: bool = True,
     assessment_scope: str = "comprehensive",
-    focus_areas: list[str] = None,
+    focus_areas: list[str] | None = None,
 ) -> dict[str, Any]:
     """🧠 **AI-Powered Home Safety Assessment with Sampling Intelligence**
 

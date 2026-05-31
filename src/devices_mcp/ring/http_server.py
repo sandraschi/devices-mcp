@@ -67,6 +67,8 @@ app.add_middleware(
         "http://localhost:11110",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:11110",
+        "http://goliath:3000",
+        "http://goliath:11110",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -146,13 +148,13 @@ async def configure_auth(credentials: dict[str, str]):
         auth_credentials = None
         ring_client = None
         logger.warning(f"Authentication failed for user {username}: {e!s}")
-        raise HTTPException(status_code=401, detail=f"Authentication failed: {e!s}")
+        raise HTTPException(status_code=401, detail=f"Authentication failed: {e!s}") from e
     except Exception as e:
         # Clear stored credentials on any failure
         auth_credentials = None
         ring_client = None
         logger.exception("Failed to configure authentication:")
-        raise HTTPException(status_code=500, detail=f"Failed to configure authentication: {e!s}")
+        raise HTTPException(status_code=500, detail=f"Failed to configure authentication: {e!s}") from e
 
 
 @app.get("/api/v1/health")

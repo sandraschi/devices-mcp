@@ -22,13 +22,13 @@ import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class PollingPriority(str, Enum):
+class PollingPriority(StrEnum):
     """Priority levels for polling tasks."""
 
     CRITICAL = "critical"  # System health, security (min 1s)
@@ -236,7 +236,7 @@ class PollingManager:
         self._running = False
 
         # Cancel all tasks
-        for name, task in list(self._tasks_dict.items()):
+        for _name, task in list(self._tasks_dict.items()):
             task.cancel()
             try:
                 await task

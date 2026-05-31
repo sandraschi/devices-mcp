@@ -9,7 +9,7 @@ tool registration for Claude Desktop stdio communication.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from fastmcp import FastMCP

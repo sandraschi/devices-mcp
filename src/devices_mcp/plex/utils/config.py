@@ -129,7 +129,7 @@ class AppConfig(BaseModel):
         json_encoders = {Path: str}
 
 
-def load_config(config_file: str | Path = None) -> dict[str, Any]:
+def load_config(config_file: str | Path | None = None) -> dict[str, Any]:
     """Load configuration from file.
 
     Args:
@@ -165,7 +165,7 @@ def load_config(config_file: str | Path = None) -> dict[str, Any]:
         return DEFAULT_CONFIG
 
 
-def save_config(config: dict[str, Any], config_file: str | Path = None) -> bool:
+def save_config(config: dict[str, Any], config_file: str | Path | None = None) -> bool:
     """Save configuration to file.
 
     Args:
@@ -231,7 +231,7 @@ def get_config_dir() -> Path:
     return CONFIG_DIR
 
 
-def get_config_value(key: str, default: Any = None, config_file: str | Path = None) -> Any:
+def get_config_value(key: str, default: Any = None, config_file: str | Path | None = None) -> Any:
     """Get a specific configuration value.
 
     Args:
@@ -256,7 +256,7 @@ def get_config_value(key: str, default: Any = None, config_file: str | Path = No
         return default
 
 
-def set_config_value(key: str, value: Any, config_file: str | Path = None) -> bool:
+def set_config_value(key: str, value: Any, config_file: str | Path | None = None) -> bool:
     """Set a specific configuration value.
 
     Args:

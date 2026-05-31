@@ -104,7 +104,7 @@ class EnergyManagementTool(BaseTool):
 
             devices = tapo_plug_manager.devices
 
-            for device_id_key, device in devices.items():
+            for _device_id_key, device in devices.items():
                 devices_data.append(
                     {
                         "device_id": device.device_id,
@@ -298,7 +298,7 @@ class EnergyManagementTool(BaseTool):
             total_consumption = 0.0
             device_consumption_data = []
 
-            for device_id, device in devices.items():
+            for _device_id, device in devices.items():
                 # Use device's daily/monthly data based on time range
                 if time_range == "24h":
                     device_consumption = device.daily_energy
@@ -385,7 +385,7 @@ class EnergyManagementTool(BaseTool):
             total_cost = 0.0
             cost_by_device = []
 
-            for device_id, device in devices.items():
+            for _device_id, device in devices.items():
                 # Use appropriate consumption data based on time range
                 if time_range == "24h":
                     consumption = device.daily_energy

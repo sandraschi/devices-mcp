@@ -26,9 +26,7 @@ async def inspect_energy(host: str, name: str):
         logger.info("Getting device info...")
         device_info = await plug.get_device_info()
         logger.info(f"Device info type: {type(device_info)}")
-        logger.info(
-            f"Device info attributes: {[attr for attr in dir(device_info) if not attr.startswith('_')]}"
-        )
+        logger.info(f"Device info attributes: {[attr for attr in dir(device_info) if not attr.startswith('_')]}")
 
         # Try to get device info as dict
         if hasattr(device_info, "__dict__"):
@@ -86,9 +84,7 @@ async def inspect_energy(host: str, name: str):
         logger.info("\n" + "=" * 50)
         logger.info("Checking plug object methods...")
         plug_methods = [
-            method
-            for method in dir(plug)
-            if not method.startswith("_") and callable(getattr(plug, method))
+            method for method in dir(plug) if not method.startswith("_") and callable(getattr(plug, method))
         ]
         logger.info(f"Available methods: {plug_methods}")
 
@@ -109,9 +105,7 @@ async def inspect_energy(host: str, name: str):
             if hasattr(current_power_result, "power"):
                 logger.info(f"Power from get_current_power(): {current_power_result.power}")
             elif hasattr(current_power_result, "current_power"):
-                logger.info(
-                    f"Current power from get_current_power(): {current_power_result.current_power}"
-                )
+                logger.info(f"Current power from get_current_power(): {current_power_result.current_power}")
 
         except Exception as e:
             logger.info(f"get_current_power() failed: {e}")

@@ -3,11 +3,11 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from backend.server import WebServer
 from fastapi.testclient import TestClient
 
 from devices_mcp.llm.manager import get_llm_manager
 from devices_mcp.llm.providers import ProviderType
-from backend.server import WebServer
 
 
 @pytest.fixture
@@ -178,9 +178,7 @@ class TestLLMChatAPI:
         mock_manager.current_model = "llama2"
         mock_manager.current_provider = ProviderType.OLLAMA
 
-        with patch.object(
-            mock_manager.providers[ProviderType.OLLAMA], "chat", new_callable=AsyncMock
-        ) as mock_chat:
+        with patch.object(mock_manager.providers[ProviderType.OLLAMA], "chat", new_callable=AsyncMock) as mock_chat:
             mock_chat.return_value = "AI response text"
             response = client.post(
                 "/api/llm/chat",
@@ -195,3 +193,44 @@ class TestLLMChatAPI:
             assert data["success"] is True
             assert data["response"] == "AI response text"
 
+    @pytest.mark.asyncio
+    async def test_chat_with_explicit_model(self, client, mock_manager):
+        """Test chat passes an explicit model name to the provider."""
+        mock_manager.register_provider(ProviderType.OLLAMA, "http://localhost:11434")
+
+        with patch.object(mock_manager.providers[ProviderType.OLLAMA], "chat", new_callable=AsyncMock) as mock_chat:
+            mock_chat.return_value = "AI response text"
+            response = client.post(
+                "/api/llm/chat",
+                json={
+                    "messages": [{"role": "user", "content": "Hello"}],
+                    "provider": "ollama",
+                    "model": "mistral",
+                    "stream": False,
+                },
+            )
+            assert response.status_code == 200
+            mock_chat.assert_awaited_once()
+            assert mock_chat.await_args.kwargs.get("model_name") == "mistral"
+
+    @pytest.mark.asyncio
+    async def test_list_models_returns_object_shape(self, client, mock_manager):
+        """Frontend contract: models are objects with a name field."""
+        mock_manager.register_provider(ProviderType.OLLAMA, "http://localhost:11434")
+
+        mock_models = [
+            {"name": "llama2", "provider": "ollama", "size": 123},
+            {"name": "mistral", "provider": "ollama"},
+        ]
+
+        with patch.object(
+            mock_manager.providers[ProviderType.OLLAMA],
+            "list_models",
+            new_callable=AsyncMock,
+        ) as mock_list:
+            mock_list.return_value = mock_models
+            response = client.get("/api/llm/models?provider=ollama")
+            assert response.status_code == 200
+            data = response.json()
+            assert data["models"][0]["name"] == "llama2"
+            assert isinstance(data["models"][0], dict)

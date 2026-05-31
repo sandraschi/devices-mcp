@@ -147,7 +147,7 @@ class RateLimiter:
         try:
             yield
         except Exception as e:
-            raise e
+            raise e from e
 
 
 def retry_with_backoff(

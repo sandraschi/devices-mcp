@@ -1897,13 +1897,13 @@ class PlexService:
             if found_client:
                 # Get client address/port for direct HTTP
                 if isinstance(found_client, dict):
-                    client_address = found_client.get("address", "")
-                    client_port = found_client.get("port", 32400)
-                    client_name = found_client.get("name", "Unknown")
+                    found_client.get("address", "")
+                    found_client.get("port", 32400)
+                    found_client.get("name", "Unknown")
                 else:
-                    client_address = getattr(found_client, "address", "")
-                    client_port = getattr(found_client, "port", 32400)
-                    client_name = getattr(found_client, "title", getattr(found_client, "name", "Unknown"))
+                    getattr(found_client, "address", "")
+                    getattr(found_client, "port", 32400)
+                    getattr(found_client, "title", getattr(found_client, "name", "Unknown"))
 
                 # For Plex Web and Plex for Windows, we need to use server API routing
                 # Direct HTTP won't work (address is 127.0.0.1 or server address)

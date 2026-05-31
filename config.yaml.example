@@ -64,10 +64,12 @@ public_webcams:
       description: Live view
 lighting:
   philips_hue:
-    enabled: false
-    bridge_ip: 192.168.0.XXX
+    enabled: true
+    bridge_ip: 192.168.0.236
+    # Pair via Lighting page (link button) — username is saved to hue_bridge.cache
     username: your_hue_username
     auto_discover: true
+    # Hue Bridge Pro (BSB003) requires HTTPS; devices-mcp handles this automatically
   tapo_lighting:
     enabled: false
     account:
@@ -92,6 +94,15 @@ ring:
   password: your_password
   token_file: ring_token.cache
   cache_ttl: 60
+shelly:
+  enabled: false
+  cache_ttl: 30
+  devices:
+    - ip: 192.168.0.XXX
+      name: Freezer
+      thresholds:
+        high_c: -10
+        low_c: -25
 security:
   integrations:
     homeassistant:
@@ -99,6 +110,7 @@ security:
       url: http://localhost:8123
       access_token: your_ha_access_token
       cache_ttl: 30
+      # Nest Protect smoke/CO detectors appear via Home Assistant Nest integration
 alerts:
   enabled: true
   regions:
@@ -110,11 +122,18 @@ alerts:
     meteoalarm:
       enabled: true
 robotics_mcp:
-  enabled: false
+  enabled: true
   server_url: http://localhost:12230
+  yahboom_mcp_url: http://127.0.0.1:10892
+  yahboom_host: 192.168.1.11
+  yahboom_name: "Yahboom ROS Car"
   timeout: 30
   auto_discover_robots: true
   devices:
+    yahboom_car:
+      type: yahboom
+      name: "Yahboom ROS Car"
+      host: 192.168.1.11
     dreame_d20:
       type: dreame
       name: "Dreame D20 Pro"

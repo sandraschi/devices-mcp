@@ -14,6 +14,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 
+logger = logging.getLogger(__name__)
+
 
 def setup_logging(level: str = "INFO", format_string: str | None = None) -> None:
     """

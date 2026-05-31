@@ -171,9 +171,7 @@ def _format_prometheus_metrics(data: dict[str, Any]) -> dict[str, Any]:
         labels = f'camera="{camera_id}"'
 
         if "motion_events_1h" in camera_data:
-            prometheus_lines.append(
-                f"tapo_motion_events_1h{{{labels}}} {camera_data['motion_events_1h']}"
-            )
+            prometheus_lines.append(f"tapo_motion_events_1h{{{labels}}} {camera_data['motion_events_1h']}")
 
         if "recording_duration_today" in camera_data:
             prometheus_lines.append(
@@ -181,9 +179,7 @@ def _format_prometheus_metrics(data: dict[str, Any]) -> dict[str, Any]:
             )
 
         if "storage_used_mb" in camera_data:
-            prometheus_lines.append(
-                f"tapo_storage_used_mb{{{labels}}} {camera_data['storage_used_mb']}"
-            )
+            prometheus_lines.append(f"tapo_storage_used_mb{{{labels}}} {camera_data['storage_used_mb']}")
 
     # System metrics
     system = data.get("system", {})

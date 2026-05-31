@@ -25,9 +25,7 @@ def create_mcp_server() -> FastMCP:
     for tool_cls in tools:
         # Get the tool name and description from the Meta class or class attributes
         tool_name = getattr(tool_cls, "name", getattr(tool_cls.Meta, "name", tool_cls.__name__))
-        tool_description = getattr(
-            tool_cls, "description", getattr(tool_cls.Meta, "description", "")
-        )
+        tool_description = getattr(tool_cls, "description", getattr(tool_cls.Meta, "description", ""))
 
         try:
             # Try to create an instance with default values
@@ -36,9 +34,7 @@ def create_mcp_server() -> FastMCP:
                 logger.debug(f"Successfully instantiated tool: {tool_name}")
             except Exception as e:
                 # If we can't create with defaults, skip this tool
-                logger.warning(
-                    f"Skipping tool {tool_name}: Could not instantiate with defaults: {e!s}"
-                )
+                logger.warning(f"Skipping tool {tool_name}: Could not instantiate with defaults: {e!s}")
                 continue
 
             logger.debug(f"Registering tool: {tool_name}")
@@ -88,9 +84,7 @@ def create_mcp_server() -> FastMCP:
             try:
                 from fastmcp.tools import Tool
 
-                fastmcp_tool = Tool.from_function(
-                    fn=tool_wrapper, name=tool_name, description=tool_description
-                )
+                fastmcp_tool = Tool.from_function(fn=tool_wrapper, name=tool_name, description=tool_description)
 
                 # Add to MCP server
                 mcp.add_tool(fastmcp_tool)

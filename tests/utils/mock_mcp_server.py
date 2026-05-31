@@ -278,7 +278,7 @@ class MockMCPServer:
         elif method == "tools/call":
             tool_call = params
             tool_name = tool_call.get("name", "")
-            arguments = tool_call.get("arguments", {})
+            tool_call.get("arguments", {})
 
             # Parse tool and action from name (format: "tool.action")
             if "." in tool_name:

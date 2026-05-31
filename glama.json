@@ -2,12 +2,12 @@
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "maintainers": ["sandraschi"],
   "name": "devices-mcp",
-  "description": "Home security platform with unified surveillance dashboard. Dual-architecture: individual device MCP servers and security monitoring ecosystem. Supports Tapo, Ring, Nest, USB cameras. Beta status.",
+  "description": "Home security and IoT orchestration MCP server. Dual-architecture: individual device MCP servers + unified web-sota dashboard. Supports Tapo cameras, Ring doorbells, Nest Protect, Philips Hue lighting, Netatmo weather, Shelly devices, USB webcams.",
   "type": "mcp_server",
   "status": "beta",
-  "framework": "FastMCP 2.13",
-  "tools": 15,
-  "transport": ["stdio", "http"],
+  "framework": "FastMCP 3.1+",
+  "tools": 40,
+  "transport": ["stdio", "http", "sse"],
   "keywords": [
     "tapo",
     "security",
@@ -16,28 +16,48 @@
     "surveillance",
     "ring",
     "nest",
+    "philips-hue",
+    "lighting",
+    "netatmo",
+    "weather",
+    "shelly",
     "mcp-server",
     "fastmcp",
-    "iot"
+    "iot",
+    "home-automation",
+    "portmanteau"
   ],
   "features": {
     "dual_architecture": {
       "enabled": true,
-      "note": "Individual device servers + unified platform"
+      "note": "Individual device MCP servers + unified web-sota dashboard"
     },
     "device_support": {
       "enabled": true,
-      "devices": ["Tapo", "Ring", "Nest", "USB"]
+      "devices": ["Tapo", "Ring", "Nest", "Philips Hue", "Netatmo", "Shelly", "USB Webcam"]
     },
     "dashboard": {
       "enabled": true,
-      "port": 7777
+      "port": 10716,
+      "note": "Vite + React SPA at /app/ with dark mode"
     },
     "energy_dashboard": {
       "enabled": true
     },
     "lighting_dashboard": {
       "enabled": true
+    },
+    "portmanteau_tools": {
+      "enabled": true,
+      "note": "~20 consolidated management tools from 40+ atomic tools"
+    },
+    "health_supervisor": {
+      "enabled": true,
+      "note": "Connection supervisor with 60s polling, circuit breakers, auto-reconnect"
+    },
+    "log_management": {
+      "enabled": true,
+      "note": "Log viewer, rotation, compression, cleanup, AI analysis"
     }
   }
 }

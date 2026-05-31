@@ -1,5 +1,6 @@
 """Appliance health monitoring API for detecting device failures via energy patterns."""
 
+import asyncio
 import logging
 from datetime import datetime
 
@@ -231,7 +232,7 @@ async def create_appliance_monitor(request: CreateApplianceMonitorRequest):
 
     except Exception as e:
         logger.exception("Failed to create appliance monitor")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/status")
@@ -246,11 +247,11 @@ async def get_all_appliance_status():
 
     except Exception as e:
         logger.exception("Failed to get appliance status")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/status/{device_id}")
-async def get_appliance_status(device_id: str):
+async def get_appliance_status_by_id(device_id: str):
     """Get status of specific appliance."""
     try:
         if device_id not in _appliance_status:
@@ -262,7 +263,7 @@ async def get_appliance_status(device_id: str):
         raise
     except Exception as e:
         logger.exception(f"Failed to get appliance status for {device_id}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/alerts")
@@ -276,7 +277,7 @@ async def get_recent_alerts(limit: int = 20):
 
     except Exception as e:
         logger.exception("Failed to get appliance alerts")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.delete("/alerts")
@@ -290,7 +291,7 @@ async def clear_alerts():
 
     except Exception as e:
         logger.exception("Failed to clear appliance alerts")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/check/{device_id}")
@@ -312,7 +313,7 @@ async def manual_health_check(device_id: str):
         raise
     except Exception as e:
         logger.exception(f"Failed to manually check appliance health for {device_id}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/presets")
@@ -396,4 +397,4 @@ async def start_background_monitoring(background_tasks: BackgroundTasks):
 
     except Exception as e:
         logger.exception("Failed to start background monitoring")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

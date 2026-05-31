@@ -188,9 +188,7 @@ def register_automation_management_tool(mcp: FastMCP) -> None:
                         "success": False,
                         "error": "schedule_id is required for execute_schedule",
                     }
-                result = await automation_tool.execute(
-                    action="execute_schedule", schedule_id=schedule_id
-                )
+                result = await automation_tool.execute(action="execute_schedule", schedule_id=schedule_id)
 
             elif action == "delete_schedule":
                 if not schedule_id:
@@ -198,9 +196,7 @@ def register_automation_management_tool(mcp: FastMCP) -> None:
                         "success": False,
                         "error": "schedule_id is required for delete_schedule",
                     }
-                result = await automation_tool.execute(
-                    action="delete_schedule", schedule_id=schedule_id
-                )
+                result = await automation_tool.execute(action="delete_schedule", schedule_id=schedule_id)
 
             elif action == "get_history":
                 result = await automation_tool.execute(action="get_history", time_range=time_range)

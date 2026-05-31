@@ -1,9 +1,19 @@
-import { AlertCircle, Bell, CloudRain, Loader2, Puzzle, Video, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { type CapabilitiesResponse, getCapabilities } from '@/common/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertCircle,
+  Bell,
+  CloudRain,
+  Flame,
+  Loader2,
+  Puzzle,
+  Thermometer,
+  Video,
+  Zap,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface CameraStatus {
   total: number;
@@ -46,9 +56,23 @@ interface AlertSummary {
   }>;
 }
 
+interface NestStatus {
+  initialized?: boolean;
+  total_devices?: number;
+  all_ok?: boolean;
+  error?: string;
+}
+
+interface ShellySummary {
+  sensor_count?: number;
+  alert_count?: number;
+}
+
 export function Dashboard() {
   const [cameras, setCameras] = useState<CameraStatus | null>(null);
   const [ring, setRing] = useState<RingStatus | null>(null);
+  const [nest, setNest] = useState<NestStatus | null>(null);
+  const [shelly, setShelly] = useState<ShellySummary | null>(null);
   const [sensors, setSensors] = useState<SensorsResponse | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
   const [alerts, setAlerts] = useState<AlertSummary | null>(null);
@@ -68,18 +92,23 @@ export function Dashboard() {
             offline: data.offline ?? 0,
           });
         }
-      } catch { /* ignore poll errors */ }
+      } catch {
+        /* ignore poll errors */
+      }
     };
 
     const load = async () => {
       try {
-        const [camRes, ringRes, sensorsRes, capabilitiesRes, alertsRes] = await Promise.allSettled([
-          fetch('/api/cameras/status'),
-          fetch('/api/ring/status'),
-          fetch('/api/sensors/tapo-p115'),
-          getCapabilities(),
-          fetch('/alerts/summary'),
-        ]);
+        const [camRes, ringRes, nestRes, shellyRes, sensorsRes, capabilitiesRes, alertsRes] =
+          await Promise.allSettled([
+            fetch('/api/cameras/status'),
+            fetch('/api/ring/status'),
+            fetch('/api/nest/status'),
+            fetch('/api/shelly/summary'),
+            fetch('/api/sensors/tapo-p115'),
+            getCapabilities(),
+            fetch('/alerts/summary'),
+          ]);
         if (cancelled) return;
         if (camRes.status === 'fulfilled' && camRes.value.ok) {
           const data = await camRes.value.json();
@@ -91,6 +120,12 @@ export function Dashboard() {
         }
         if (ringRes.status === 'fulfilled' && ringRes.value.ok) {
           setRing(await ringRes.value.json());
+        }
+        if (nestRes.status === 'fulfilled' && nestRes.value.ok) {
+          setNest(await nestRes.value.json());
+        }
+        if (shellyRes.status === 'fulfilled' && shellyRes.value.ok) {
+          setShelly(await shellyRes.value.json());
         }
         if (sensorsRes.status === 'fulfilled' && sensorsRes.value.ok) {
           setSensors(await sensorsRes.value.json());
@@ -133,19 +168,26 @@ export function Dashboard() {
         </div>
       )}
       {alerts && alerts.total_alerts > 0 && alerts.status !== 'ok' && (
-        <div className={`rounded-lg border p-4 text-sm ${
-          alerts.highest_severity === 'extreme' || alerts.highest_severity === 'severe'
-            ? 'border-red-300 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200'
-            : 'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200'
-        }`}>
+        <div
+          className={`rounded-lg border p-4 text-sm ${
+            alerts.highest_severity === 'extreme' || alerts.highest_severity === 'severe'
+              ? 'border-red-300 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200'
+              : 'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200'
+          }`}
+        >
           <div className='flex items-center gap-2 font-medium'>
             <CloudRain className='h-4 w-4' />
             {alerts.total_alerts} active alert{alerts.total_alerts !== 1 ? 's' : ''}
             {alerts.alerts.slice(0, 3).map((a) => (
-              <span key={a.id} className='font-normal text-xs ml-2'>{a.title}</span>
+              <span key={a.id} className='font-normal text-xs ml-2'>
+                {a.title}
+              </span>
             ))}
           </div>
-          <Link to='/alarms' className='mt-1 block text-xs underline underline-offset-2 opacity-70 hover:opacity-100'>
+          <Link
+            to='/alarms'
+            className='mt-1 block text-xs underline underline-offset-2 opacity-70 hover:opacity-100'
+          >
             View all
           </Link>
         </div>
@@ -210,6 +252,52 @@ export function Dashboard() {
             <Link to='/ring'>
               <Button variant='ghost' size='sm' className='mt-2 px-0'>
                 Ring doorbell
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between pb-2'>
+            <CardTitle className='text-sm font-medium text-slate-500 dark:text-slate-400'>
+              Nest Protect
+            </CardTitle>
+            <Flame className='h-4 w-4 text-slate-400' />
+          </CardHeader>
+          <CardContent>
+            <p className='text-2xl font-bold'>
+              {nest?.initialized ? (nest.all_ok ? 'OK' : 'Alert') : 'Off'}
+            </p>
+            <p className='text-xs text-slate-500 dark:text-slate-400'>
+              {nest?.initialized
+                ? `${nest.total_devices ?? 0} device(s)`
+                : (nest?.error ?? 'Via Home Assistant')}
+            </p>
+            <Link to='/nest'>
+              <Button variant='ghost' size='sm' className='mt-2 px-0'>
+                Nest Protect
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className='flex flex-row items-center justify-between pb-2'>
+            <CardTitle className='text-sm font-medium text-slate-500 dark:text-slate-400'>
+              Shelly
+            </CardTitle>
+            <Thermometer className='h-4 w-4 text-slate-400' />
+          </CardHeader>
+          <CardContent>
+            <p className='text-2xl font-bold'>{shelly?.sensor_count ?? 0}</p>
+            <p className='text-xs text-slate-500 dark:text-slate-400'>
+              {(shelly?.alert_count ?? 0) > 0
+                ? `${shelly?.alert_count} alert(s)`
+                : 'temperature sensors'}
+            </p>
+            <Link to='/shelly'>
+              <Button variant='ghost' size='sm' className='mt-2 px-0'>
+                Shelly sensors
               </Button>
             </Link>
           </CardContent>

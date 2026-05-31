@@ -132,14 +132,14 @@ class PlexManager:
                 root = ET.fromstring(response.content)
                 return self._xml_to_dict(root)
             except ET.ParseError as e:
-                raise PlexAPIError(f"Invalid XML response: {e}")
+                raise PlexAPIError(f"Invalid XML response: {e}") from e
 
         except requests.exceptions.ConnectTimeout:
-            raise PlexAPIError(f"Connection timeout after {self.config.timeout}s")
+            raise PlexAPIError(f"Connection timeout after {self.config.timeout}s") from None
         except requests.exceptions.ConnectionError as e:
-            raise PlexAPIError(f"Connection failed: {e!s}")
+            raise PlexAPIError(f"Connection failed: {e!s}") from e
         except requests.exceptions.RequestException as e:
-            raise PlexAPIError(f"Request error: {e!s}")
+            raise PlexAPIError(f"Request error: {e!s}") from e
 
     async def get_server_status(self) -> dict[str, Any]:
         """Get server status and identity information"""

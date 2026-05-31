@@ -41,6 +41,8 @@ __all__ = [
     # Models
     "CameraModel",
     "CameraStatus",
+    # Core components
+    "DevicesMCPServer",
     "MotionDetectionSensitivity",
     "MotionEvent",
     "PTZDirection",
@@ -49,8 +51,6 @@ __all__ = [
     "TapoCameraError",
     "TapoCameraMCP",  # For backward compatibility
     "TapoCameraServer",  # For backward compatibility
-    # Core components
-    "DevicesMCPServer",
     "TapoWebServer",
     "VideoQuality",
     "get_server",

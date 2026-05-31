@@ -37,6 +37,7 @@ class RingSummaryResponse(BaseModel):
     doorbells: list = []
     doorbell_count: int = 0
     alarm: dict | None = None
+    alarm_devices: dict | None = None
     recent_events: list = []
     last_event: dict | None = None
 
@@ -118,11 +119,25 @@ async def initialize_ring():
     token_file = ring_cfg.get("token_file", "ring_token.cache")
     cache_ttl = ring_cfg.get("cache_ttl", 60)
 
-    if not email or not password:
-        raise HTTPException(status_code=400, detail="Ring email/password not configured in config.yaml")
+    from devices_mcp.integrations.ring_client import ring_has_cached_token
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Ring email not configured in config.yaml")
+
+    if not password and not ring_has_cached_token(token_file):
+        raise HTTPException(
+            status_code=400,
+            detail="Ring password not configured and no cached token (ring_token.cache). "
+            "Add password for first login or restore token cache.",
+        )
 
     try:
-        client = await init_ring_client(email=email, password=password, token_file=token_file, cache_ttl=cache_ttl)
+        client = await init_ring_client(
+            email=email,
+            password=password or None,
+            token_file=token_file,
+            cache_ttl=cache_ttl,
+        )
 
         if client.is_2fa_pending:
             return {
@@ -149,6 +164,22 @@ async def initialize_ring():
         raise HTTPException(status_code=500, detail=f"Initialization failed: {e!s}") from e
 
 
+@router.post("/refresh")
+async def refresh_ring_data():
+    """Force refresh doorbells, alarm devices, and events from Ring cloud."""
+    client = get_ring_client()
+    if not client or not client.is_initialized:
+        raise HTTPException(status_code=503, detail="Ring not initialized")
+
+    try:
+        await client._update_data(force=True)
+        summary = await client.get_summary()
+        return {"success": True, "summary": summary}
+    except Exception as e:
+        logger.exception("Failed to refresh Ring data")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
 @router.get("/summary", response_model=RingSummaryResponse)
 async def get_ring_summary():
     """Get Ring summary for dashboard."""
@@ -170,6 +201,7 @@ async def get_ring_summary():
             doorbells=summary["doorbells"],
             doorbell_count=summary["doorbell_count"],
             alarm=summary["alarm"],
+            alarm_devices=summary.get("alarm_devices"),
             recent_events=summary["recent_events"],
             last_event=summary["last_event"],
         )
@@ -415,45 +447,38 @@ async def get_event_video_url(device_id: str, recording_id: str):
 
     Note: Works WITHOUT Ring Protect subscription for recent events (< 60 days).
     """
-    import asyncio
 
     client = get_ring_client()
     if not client or not client.is_initialized:
         raise HTTPException(status_code=503, detail="Ring not initialized")
 
     try:
-        # Use async recording URL to avoid timeout issues
-        try:
-            for db in client._ring.video_devices():
-                if str(db.id) == device_id:
-                    url = await db.async_recording_url(recording_id)
-                    return {"url": url, "has_subscription": db.has_subscription}
-            return None
-        except Exception as e:
-            return {"error": str(e), "has_subscription": False}
+        for db in client._ring.video_devices():
+            if str(db.id) != device_id:
+                continue
+            try:
+                url = await db.async_recording_url(recording_id)
+                if not url:
+                    return {
+                        "video_url": None,
+                        "recording_id": recording_id,
+                        "message": "Video not available for this recording",
+                    }
+                return {
+                    "video_url": url,
+                    "recording_id": recording_id,
+                    "has_subscription": db.has_subscription,
+                }
+            except Exception as e:
+                return {
+                    "video_url": None,
+                    "recording_id": recording_id,
+                    "has_subscription": db.has_subscription,
+                    "error": str(e),
+                    "message": "Video may not be available or may require Ring Protect subscription for older recordings",
+                }
 
-        result = await asyncio.to_thread(get_url)
-
-        if not result:
-            raise HTTPException(status_code=404, detail="Device not found")
-
-        if result.get("error"):
-            return {
-                "video_url": None,
-                "recording_id": recording_id,
-                "has_subscription": result.get("has_subscription", False),
-                "error": result["error"],
-                "message": "Video may not be available or may require Ring Protect subscription for older recordings",
-            }
-
-        if not result.get("url"):
-            return {
-                "video_url": None,
-                "recording_id": recording_id,
-                "message": "Video not available for this recording",
-            }
-
-        return {"video_url": result["url"], "recording_id": recording_id}
+        raise HTTPException(status_code=404, detail="Device not found")
     except HTTPException:
         raise
     except Exception as e:
@@ -482,7 +507,7 @@ async def submit_2fa_code(request: Ring2FARequest):
 
 
 @router.post("/auth/init")
-async def initialize_ring(request: RingAuthRequest):
+async def initialize_ring_auth(request: RingAuthRequest):
     """Initialize Ring with credentials (for first-time setup)."""
     try:
         client = await init_ring_client(
@@ -852,13 +877,11 @@ async def download_event_video(device_id: str, recording_id: str, request: Reque
         # Get the video URL directly to avoid double API calls and URL expiration
         # Use async recording URL directly
         video_url = None
-        has_subscription = False
 
         try:
             for db in client._ring.video_devices():
                 if str(db.id) == device_id:
                     video_url = await db.async_recording_url(recording_id)
-                    has_subscription = db.has_subscription
                     break
 
             if not video_url:

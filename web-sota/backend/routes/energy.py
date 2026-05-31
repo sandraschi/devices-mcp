@@ -32,12 +32,9 @@ async def get_prometheus_metrics() -> Response:
 
             power_watts = 0.0
             try:
-                account_email = (
-                    config.get("energy", {}).get("tapo_p115", {}).get("account", {}).get("email")
-                )
-                account_password = (
-                    config.get("energy", {}).get("tapo_p115", {}).get("account", {}).get("password")
-                )
+                account = config.get("energy", {}).get("tapo_p115", {}).get("account", {})
+                account_email = account.get("email") or account.get("username")
+                account_password = account.get("password")
 
                 if account_email and account_password and host != "unknown":
                     import tapo
@@ -45,28 +42,18 @@ async def get_prometheus_metrics() -> Response:
                     client = await tapo.ApiClient(account_email, account_password).p115(host)
                     current_power_result = await client.get_current_power()
                     power_watts = (
-                        current_power_result.current_power
-                        if hasattr(current_power_result, "current_power")
-                        else 0.0
+                        current_power_result.current_power if hasattr(current_power_result, "current_power") else 0.0
                     )
             except Exception:
                 power_watts = getattr(device, "current_power", 0.0)
 
             labels = f'device_id="{device_id}",host="{host}",name="{name}",location="{location}"'
             metrics_lines.append(f"tapo_p115_power_watts{{{labels}}} {power_watts}")
-            metrics_lines.append(
-                f"tapo_p115_voltage_volts{{{labels}}} {getattr(device, 'voltage', 0.0)}"
-            )
-            metrics_lines.append(
-                f"tapo_p115_current_amps{{{labels}}} {getattr(device, 'current', 0.0)}"
-            )
+            metrics_lines.append(f"tapo_p115_voltage_volts{{{labels}}} {getattr(device, 'voltage', 0.0)}")
+            metrics_lines.append(f"tapo_p115_current_amps{{{labels}}} {getattr(device, 'current', 0.0)}")
             metrics_lines.append(f"tapo_p115_daily_energy_kwh{{{labels}}} {device.daily_energy}")
-            metrics_lines.append(
-                f"tapo_p115_monthly_energy_kwh{{{labels}}} {device.monthly_energy}"
-            )
-            metrics_lines.append(
-                f"tapo_p115_power_state{{{labels}}} {1 if device.power_state else 0}"
-            )
+            metrics_lines.append(f"tapo_p115_monthly_energy_kwh{{{labels}}} {device.monthly_energy}")
+            metrics_lines.append(f"tapo_p115_power_state{{{labels}}} {1 if device.power_state else 0}")
 
         # Device health metrics
         try:
@@ -105,7 +92,7 @@ async def get_energy_status():
         return result
     except Exception as e:
         logger.exception(f"Error in get_energy_status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/api/energy/consumption")
@@ -121,7 +108,7 @@ async def get_energy_consumption(time_range: str = "24h"):
         return result
     except Exception as e:
         logger.exception(f"Error in get_energy_consumption: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/api/energy/control")
@@ -139,4 +126,4 @@ async def control_energy_device(device_id: str, action: str):
         return result
     except Exception as e:
         logger.exception(f"Error controlling energy device {device_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

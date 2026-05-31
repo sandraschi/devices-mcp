@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -223,6 +223,69 @@ def test_usb_camera_server():
         return False
 
 
+async def test_home_assistant_nest():
+    """Test Home Assistant / Nest Protect connectivity."""
+    logger.info("Testing Home Assistant (Nest Protect)...")
+    try:
+        from devices_mcp.camera.manager import CameraManager
+        from devices_mcp.core.hardware_init import HardwareInitializer
+
+        camera_manager = CameraManager()
+        initializer = HardwareInitializer(camera_manager=camera_manager)
+        result = await initializer._init_home_assistant()
+
+        if result["success"]:
+            devices = result.get("devices_count", 0)
+            logger.info(f"OK - Home Assistant: {devices} Nest Protect device(s)")
+            return True
+        error = result.get("error", "Unknown error")
+        if "not enabled" in error.lower():
+            logger.info("SKIP - Home Assistant not enabled")
+            return True
+        logger.info(f"FAIL - Home Assistant: {error}")
+        return False
+    except Exception as e:
+        logger.info(f"FAIL - Home Assistant exception: {e}")
+        return False
+
+
+async def test_shelly_sensors():
+    """Test Shelly temperature sensor connectivity."""
+    logger.info("Testing Shelly temperature sensors...")
+    try:
+        from devices_mcp.config import get_config
+        from devices_mcp.integrations.shelly_client import get_shelly_client, init_shelly_client
+
+        config = get_config()
+        shelly_cfg = config.get("shelly", {})
+        if not shelly_cfg.get("enabled"):
+            logger.info("SKIP - Shelly not enabled")
+            return True
+
+        devices = shelly_cfg.get("devices") or []
+        if not devices:
+            logger.info("SKIP - Shelly enabled but no devices configured")
+            return True
+
+        client = get_shelly_client()
+        if not client or not client.is_initialized:
+            client = await init_shelly_client(
+                devices=devices,
+                cache_ttl=shelly_cfg.get("cache_ttl", 30),
+            )
+
+        if client.is_initialized:
+            summary = await client.get_summary()
+            count = summary.get("sensor_count", 0)
+            logger.info(f"OK - Shelly: {count} temperature sensor(s)")
+            return True
+        logger.info("FAIL - Shelly initialization failed")
+        return False
+    except Exception as e:
+        logger.info(f"FAIL - Shelly exception: {e}")
+        return False
+
+
 def test_configuration():
     """Test hardware configuration validity."""
     logger.info("Testing Hardware Configuration...")
@@ -255,6 +318,13 @@ def test_configuration():
         ring_enabled = config.get("ring", {}).get("enabled", False)
         logger.info(f"OK - Ring: {'enabled' if ring_enabled else 'disabled'}")
 
+        shelly_enabled = config.get("shelly", {}).get("enabled", False)
+        shelly_devices = len(config.get("shelly", {}).get("devices") or [])
+        logger.info(f"OK - Shelly: {'enabled' if shelly_enabled else 'disabled'}, {shelly_devices} devices")
+
+        ha_enabled = config.get("security", {}).get("integrations", {}).get("homeassistant", {}).get("enabled", False)
+        logger.info(f"OK - Home Assistant: {'enabled' if ha_enabled else 'disabled'}")
+
         return True
 
     except Exception as e:
@@ -280,6 +350,8 @@ async def main():
         ("Tapo Plugs", test_tapo_plugs),
         ("Netatmo Weather", test_netatmo_weather),
         ("Ring Doorbell", test_ring_doorbell),
+        ("Home Assistant / Nest", test_home_assistant_nest),
+        ("Shelly Sensors", test_shelly_sensors),
     ]
 
     results = []
@@ -314,6 +386,8 @@ async def main():
         "Tapo Plugs",
         "Netatmo Weather",
         "Ring Doorbell",
+        "Home Assistant / Nest",
+        "Shelly Sensors",
     ]
     optional_passed = sum(1 for name, result in results if name in optional_systems and result)
     optional_total = len(optional_systems)

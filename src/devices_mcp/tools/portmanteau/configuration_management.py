@@ -28,9 +28,7 @@ def register_configuration_management_tool(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def configuration_management(
-        action: Literal[
-            "device_settings", "privacy_settings", "led_control", "motion_detection", "privacy_mode"
-        ],
+        action: Literal["device_settings", "privacy_settings", "led_control", "motion_detection", "privacy_mode"],
         camera_name: str | None = None,
         setting_name: str | None = None,
         setting_value: Any = None,

@@ -3,9 +3,12 @@
 Final cleanup script to add logging to all Python files and replace print statements.
 """
 
+import logging
 import os
 import re
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def process_file(file_path):

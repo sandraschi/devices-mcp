@@ -18,7 +18,7 @@ def try_credentials(ip, username, password):
     try:
         logger.info(f"  Trying {username}/{password}...", end=" ")
         camera = Tapo(ip, username, password)
-        info = camera.getBasicInfo()
+        camera.getBasicInfo()
         logger.info("[SUCCESS!]")
         return True
     except Exception as e:

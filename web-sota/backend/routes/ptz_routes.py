@@ -27,9 +27,7 @@ def _speed_factor(speed: PTZSpeed) -> float:
     return m.get(speed, 0.55)
 
 
-def _direction_to_vectors(
-    direction: PTZMoveDirection, speed: PTZSpeed
-) -> tuple[float, float, float]:
+def _direction_to_vectors(direction: PTZMoveDirection, speed: PTZSpeed) -> tuple[float, float, float]:
     """Map directional move to pan/tilt/zoom for continuous_move."""
     s = _speed_factor(speed)
     if direction == PTZMoveDirection.STOP:

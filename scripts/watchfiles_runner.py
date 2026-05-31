@@ -56,11 +56,11 @@ class CrashproofRunner:
     def __init__(
         self,
         command: list[str],
-        cwd: str = None,
+        cwd: str | None = None,
         max_restarts: int = 10,
         restart_delay: float = 1.0,
         backoff_multiplier: float = 1.5,
-        health_check_url: str = None,
+        health_check_url: str | None = None,
         health_check_interval: int = 30,
         notify_on_crash: bool = True,
     ):

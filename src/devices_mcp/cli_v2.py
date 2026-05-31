@@ -55,9 +55,7 @@ class TapoCameraCLI:
             default="http://localhost:8000",
             help="MCP server URL (default: http://localhost:8000)",
         )
-        parser.add_argument(
-            "--stdio", action="store_true", help="Use stdio transport instead of HTTP"
-        )
+        parser.add_argument("--stdio", action="store_true", help="Use stdio transport instead of HTTP")
         parser.add_argument("--debug", action="store_true", help="Enable debug output")
 
         # Subcommands (default to serve for MCP compatibility)
@@ -95,25 +93,17 @@ class TapoCameraCLI:
         ptz_parser = camera_subparsers.add_parser("ptz", help="PTZ control")
         ptz_parser.add_argument("action", choices=["move", "preset"], help="PTZ action")
         ptz_parser.add_argument("--pan", type=float, default=0.0, help="Pan position (-1.0 to 1.0)")
-        ptz_parser.add_argument(
-            "--tilt", type=float, default=0.0, help="Tilt position (-1.0 to 1.0)"
-        )
-        ptz_parser.add_argument(
-            "--speed", type=float, default=0.5, help="Movement speed (0.1 to 1.0)"
-        )
+        ptz_parser.add_argument("--tilt", type=float, default=0.0, help="Tilt position (-1.0 to 1.0)")
+        ptz_parser.add_argument("--speed", type=float, default=0.5, help="Movement speed (0.1 to 1.0)")
 
         # Stream control
         stream_parser = camera_subparsers.add_parser("stream", help="Stream operations")
         stream_parser.add_argument("action", choices=["start", "stop"], help="Action to perform")
-        stream_parser.add_argument(
-            "--quality", choices=["hd", "sd"], default="hd", help="Stream quality"
-        )
+        stream_parser.add_argument("--quality", choices=["hd", "sd"], default="hd", help="Stream quality")
 
         # Motion detection
         motion_parser = camera_subparsers.add_parser("motion", help="Motion detection control")
-        motion_parser.add_argument(
-            "action", choices=["enable", "disable", "status"], help="Action to perform"
-        )
+        motion_parser.add_argument("action", choices=["enable", "disable", "status"], help="Action to perform")
 
         # LED control
         led_parser = camera_subparsers.add_parser("led", help="LED control")
@@ -121,9 +111,7 @@ class TapoCameraCLI:
 
         # Privacy mode
         privacy_parser = camera_subparsers.add_parser("privacy", help="Privacy mode control")
-        privacy_parser.add_argument(
-            "action", choices=["on", "off", "status"], help="Action to perform"
-        )
+        privacy_parser.add_argument("action", choices=["on", "off", "status"], help="Action to perform")
 
         # Reboot
         camera_subparsers.add_parser("reboot", help="Reboot the camera")
@@ -137,7 +125,7 @@ class TapoCameraCLI:
         """Run the CLI."""
         if args is None:
             # Use parse_known_args to handle cases where no subcommand is provided
-            args, unknown = self.parser.parse_known_args()
+            args, _unknown = self.parser.parse_known_args()
 
             # If no command was specified (which can happen with set_defaults), ensure it's serve
             if (
@@ -255,9 +243,7 @@ class TapoCameraCLI:
 
         elif args.camera_command == "led":
             if args.action in ["on", "off"]:
-                result = await self.client.call_tool(
-                    "set_led_enabled", {"enabled": args.action == "on"}
-                )
+                result = await self.client.call_tool("set_led_enabled", {"enabled": args.action == "on"})
                 if result.content.get("status") == "success":
                     print_success(f"LED turned {args.action}")
                     return 0
@@ -271,9 +257,7 @@ class TapoCameraCLI:
 
         elif args.camera_command == "privacy":
             if args.action in ["on", "off"]:
-                result = await self.client.call_tool(
-                    "set_privacy_mode", {"enabled": args.action == "on"}
-                )
+                result = await self.client.call_tool("set_privacy_mode", {"enabled": args.action == "on"})
                 if result.content.get("status") == "success":
                     state = "enabled" if args.action == "on" else "disabled"
                     print_success(f"Privacy mode {state}")

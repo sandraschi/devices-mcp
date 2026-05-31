@@ -258,7 +258,7 @@ async def scrub_old_data(
         # Scrub environment data (time series)
         env_cutoff = datetime.now(UTC) - timedelta(days=policies["environment_data"])
         try:
-            ts_db = TimeSeriesDB()
+            TimeSeriesDB()
             # Placeholder for TimeSeriesDB cleanup
             # SQLite will handle old data via VACUUM
             results["environment_records_deleted"] = 0

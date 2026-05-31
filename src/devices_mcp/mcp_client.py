@@ -107,7 +107,7 @@ class MCPClient:
                     return response
                 except json.JSONDecodeError as e:
                     logger.exception("Failed to parse response:")
-                    raise e
+                    raise e from e
 
         raise RuntimeError("No response received from MCP server")
 

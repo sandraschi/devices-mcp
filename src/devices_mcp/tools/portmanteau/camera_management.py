@@ -373,9 +373,7 @@ async def _handle_add_camera(
         }
 
 
-async def _handle_remove_camera(
-    camera_name: str | None = None, camera_id: str | None = None
-) -> dict[str, Any]:
+async def _handle_remove_camera(camera_name: str | None = None, camera_id: str | None = None) -> dict[str, Any]:
     """Handle remove camera action."""
     identifier = camera_name or camera_id
     if not identifier:
@@ -398,9 +396,7 @@ async def _handle_remove_camera(
         }
 
 
-async def _handle_connect_camera(
-    camera_name: str | None = None, camera_id: str | None = None
-) -> dict[str, Any]:
+async def _handle_connect_camera(camera_name: str | None = None, camera_id: str | None = None) -> dict[str, Any]:
     """Handle connect camera action."""
     identifier = camera_name or camera_id
     if not identifier:
@@ -423,9 +419,7 @@ async def _handle_connect_camera(
         }
 
 
-async def _handle_disconnect_camera(
-    camera_name: str | None = None, camera_id: str | None = None
-) -> dict[str, Any]:
+async def _handle_disconnect_camera(camera_name: str | None = None, camera_id: str | None = None) -> dict[str, Any]:
     """Handle disconnect camera action."""
     identifier = camera_name or camera_id
     if not identifier:
@@ -448,9 +442,7 @@ async def _handle_disconnect_camera(
         }
 
 
-async def _handle_get_camera_info(
-    camera_name: str | None = None, camera_id: str | None = None
-) -> dict[str, Any]:
+async def _handle_get_camera_info(camera_name: str | None = None, camera_id: str | None = None) -> dict[str, Any]:
     """Handle get camera info action."""
     identifier = camera_name or camera_id
     if not identifier:
@@ -473,9 +465,7 @@ async def _handle_get_camera_info(
         }
 
 
-async def _handle_get_camera_status(
-    camera_name: str | None = None, camera_id: str | None = None
-) -> dict[str, Any]:
+async def _handle_get_camera_status(camera_name: str | None = None, camera_id: str | None = None) -> dict[str, Any]:
     """Handle get camera status action."""
     identifier = camera_name or camera_id
     if not identifier:
@@ -498,9 +488,7 @@ async def _handle_get_camera_status(
         }
 
 
-async def _handle_set_active_camera(
-    camera_name: str | None = None, camera_id: str | None = None
-) -> dict[str, Any]:
+async def _handle_set_active_camera(camera_name: str | None = None, camera_id: str | None = None) -> dict[str, Any]:
     """Handle set active camera action."""
     identifier = camera_name or camera_id
     if not identifier:
@@ -538,9 +526,7 @@ async def _handle_manage_groups(
 
     try:
         tool = ManageCameraGroupsTool()
-        result = await tool.execute(
-            group_action=group_action, group_name=group_name, camera_id=camera_name
-        )
+        result = await tool.execute(group_action=group_action, group_name=group_name, camera_id=camera_name)
         return {
             "success": True,
             "action": "manage_groups",

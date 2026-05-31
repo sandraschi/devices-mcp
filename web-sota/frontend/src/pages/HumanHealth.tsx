@@ -1,5 +1,5 @@
-import { Activity, Heart, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Activity, Heart, Info } from 'lucide-react';
 
 export function HumanHealth() {
   return (

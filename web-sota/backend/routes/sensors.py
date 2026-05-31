@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from devices_mcp.db import TimeSeriesDB
 from devices_mcp.tools.energy.tapo_plug_tools import tapo_plug_manager
@@ -17,15 +17,19 @@ from devices_mcp.tools.energy.tapo_plug_tools import tapo_plug_manager
 class ToggleRequest(BaseModel):
     """Request model for toggling device power state."""
 
+    model_config = ConfigDict(json_schema_extra={"example": {"turn_on": False}})
+
     turn_on: bool
-
-    class Config:
-        """Pydantic config."""
-
-        json_schema_extra = {"example": {"turn_on": False}}
 
 
 router = APIRouter(prefix="/api/sensors", tags=["sensors"])
+
+
+@router.get("/overview", summary="Cross-integration sensor summary")
+async def get_sensor_overview_route() -> dict[str, Any]:
+    from devices_mcp.core.sensor_registry import get_sensor_overview
+
+    return await get_sensor_overview()
 
 
 def get_sensors_db() -> TimeSeriesDB:
@@ -40,6 +44,27 @@ def _model_dump(model: Any) -> dict[str, Any]:
     if hasattr(model, "model_dump"):
         return model.model_dump()
     return model.dict()  # type: ignore[attr-defined]
+
+
+def _energy_timestamp_to_iso(ts: int | float | str) -> str:
+    """Convert unix seconds (or ms) from SQLite to ISO-8601 for charts."""
+    if isinstance(ts, str):
+        return ts
+    sec = float(ts)
+    if sec > 1e12:
+        sec /= 1000.0
+    return datetime.fromtimestamp(sec, tz=UTC).isoformat()
+
+
+def _downsample_points(points: list[dict[str, Any]], max_points: int = 360) -> list[dict[str, Any]]:
+    """Thin dense history for chart rendering without dropping recent detail."""
+    if len(points) <= max_points:
+        return points
+    step = max(1, len(points) // max_points)
+    sampled = points[::step]
+    if sampled[-1] is not points[-1]:
+        sampled.append(points[-1])
+    return sampled
 
 
 @router.post("/tapo-p115/refresh", summary="Rediscover Tapo P115 plugs")
@@ -103,6 +128,7 @@ async def get_tapo_p115_history(
         }
         for point in history
     ]
+    data_points = _downsample_points(data_points)
 
     if not data_points and device.current_power is not None:
         now = datetime.now(tz=UTC).isoformat()
@@ -166,9 +192,8 @@ async def toggle_tapo_p115(
         await tapo_plug_manager._discover_devices()
         updated_device = await tapo_plug_manager.get_device_status(device_id)
 
-        logger.info(
-            f"Device {device_id} toggled successfully, new state: {updated_device.power_state if updated_device else turn_on}"
-        )
+        new_state = updated_device.power_state if updated_device else turn_on
+        logger.info("Device %s toggled successfully, new state: %s", device_id, new_state)
         return {
             "success": True,
             "device_id": device_id,
@@ -179,4 +204,4 @@ async def toggle_tapo_p115(
         raise
     except Exception as e:
         logger.exception(f"Error toggling device {device_id}")
-        raise HTTPException(status_code=500, detail=f"Internal error: {e!s}")
+        raise HTTPException(status_code=500, detail=f"Internal error: {e!s}") from e

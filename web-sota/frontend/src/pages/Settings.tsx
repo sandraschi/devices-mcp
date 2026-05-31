@@ -1,8 +1,8 @@
-import { AlertCircle, Check, Edit3, Loader2, Save, Shield, User, X } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
 import { type CapabilitiesResponse, getCapabilities } from '@/common/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Check, Edit3, Loader2, Save, Shield, User, X } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface AuthStatus {
   authenticated: boolean;
@@ -126,12 +126,10 @@ export function Settings() {
         </CardHeader>
         <CardContent className='space-y-2 text-sm'>
           <p>
-            Auth enabled:{' '}
-            <span className='font-medium'>{auth?.auth_enabled ? 'Yes' : 'No'}</span>
+            Auth enabled: <span className='font-medium'>{auth?.auth_enabled ? 'Yes' : 'No'}</span>
           </p>
           <p>
-            Logged in:{' '}
-            <span className='font-medium'>{auth?.authenticated ? 'Yes' : 'No'}</span>
+            Logged in: <span className='font-medium'>{auth?.authenticated ? 'Yes' : 'No'}</span>
           </p>
           {auth?.user && (
             <p className='flex items-center gap-1'>

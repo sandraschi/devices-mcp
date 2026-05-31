@@ -171,11 +171,7 @@ class OpenMeteoClient:
                 forecast = []
                 dates = daily.get("time", [])
                 for i, date in enumerate(dates):
-                    weather_code = (
-                        daily.get("weather_code", [])[i]
-                        if i < len(daily.get("weather_code", []))
-                        else 0
-                    )
+                    weather_code = daily.get("weather_code", [])[i] if i < len(daily.get("weather_code", [])) else 0
                     forecast.append(
                         {
                             "date": date,

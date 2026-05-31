@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class IKettleClient:
     """Client for Smarter iKettle smart kettle."""
 
-    def __init__(self, host: str, username: str = None, password: str = None):
+    def __init__(self, host: str, username: str | None = None, password: str | None = None):
         """Initialize iKettle client.
 
         Args:
@@ -53,7 +53,7 @@ class IKettleClient:
             self.session = None
         self._connected = False
 
-    async def _make_request(self, endpoint: str, method: str = "GET", data: dict = None) -> dict | None:
+    async def _make_request(self, endpoint: str, method: str = "GET", data: dict | None = None) -> dict | None:
         """Make HTTP request to iKettle API."""
         if not self.session:
             await self.connect()

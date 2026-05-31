@@ -178,9 +178,9 @@ class CameraManager:
         camera_name: str,
         interval: int = 30,
         motion_threshold: float = 0.05,
-        led_control: bool = None,
-        led_flash_interval: int = None,
-        led_flash_duration: float = None,
+        led_control: bool | None = None,
+        led_flash_interval: int | None = None,
+        led_flash_duration: float | None = None,
     ) -> bool:
         """Start surveillance mode for a camera."""
         camera = await self.get_camera(camera_name)

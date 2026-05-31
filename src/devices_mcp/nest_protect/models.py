@@ -6,13 +6,13 @@ including configuration, state, and command models.
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-class ProtectAlarmState(str, Enum):
+class ProtectAlarmState(StrEnum):
     """Possible alarm states for Nest Protect."""
 
     OK = "ok"
@@ -22,7 +22,7 @@ class ProtectAlarmState(str, Enum):
     OFF = "off"
 
 
-class ProtectAlarmType(str, Enum):
+class ProtectAlarmType(StrEnum):
     """Types of alarms that Nest Protect can detect."""
 
     SMOKE = "smoke"
@@ -34,7 +34,7 @@ class ProtectAlarmType(str, Enum):
     TEST = "test"
 
 
-class ProtectBatteryState(str, Enum):
+class ProtectBatteryState(StrEnum):
     """Battery state of the Nest Protect."""
 
     OK = "ok"
@@ -44,7 +44,7 @@ class ProtectBatteryState(str, Enum):
     INVALID = "invalid"
 
 
-class ProtectHushState(str, Enum):
+class ProtectHushState(StrEnum):
     """Hush state of the Nest Protect."""
 
     NONE = "none"

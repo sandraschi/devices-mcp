@@ -9,7 +9,7 @@ tool registration for Claude Desktop stdio communication.
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Literal
 
 from fastmcp import FastMCP
@@ -170,7 +170,7 @@ def register_tools(app: FastMCP) -> None:
                 for camera in cameras:
                     try:
                         # Get stream URL to activate camera
-                        stream_url = await client.get_live_stream_url(camera["id"])
+                        await client.get_live_stream_url(camera["id"])
                         activated_measures.append(f"Activated camera: {camera['name']}")
                     except Exception as e:
                         logger.exception("Failed to activate camera {camera['id']}:")
@@ -289,7 +289,7 @@ def register_tools(app: FastMCP) -> None:
         if "timeframes" in schedule_config:
             timeframes = schedule_config["timeframes"]
             for i, tf1 in enumerate(timeframes):
-                for j, tf2 in enumerate(timeframes[i + 1 :], i + 1):
+                for _j, tf2 in enumerate(timeframes[i + 1 :], i + 1):
                     if await timeframes_overlap(tf1, tf2, timezone):
                         warnings.append(f"Overlapping timeframes: {tf1} and {tf2}")
 

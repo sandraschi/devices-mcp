@@ -1,7 +1,7 @@
-import { AlertCircle, Bell, CheckCircle, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Bell, CheckCircle, Loader2, RefreshCw, Shield } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface RingStatus {
   connected: boolean;
@@ -12,6 +12,42 @@ interface RingStatus {
   config_issue?: boolean;
   needs_init?: boolean;
   last_error?: string | null;
+}
+
+interface RingDeviceRow {
+  id?: string;
+  name?: string;
+  device_type?: string;
+  battery_level?: number | null;
+  is_online?: boolean;
+}
+
+interface RingSensorRow {
+  id?: string;
+  name?: string;
+  sensor_type?: string;
+  is_open?: boolean | null;
+  motion_detected?: boolean;
+  battery_level?: number | null;
+  is_online?: boolean;
+}
+
+interface RingSummary {
+  initialized?: boolean;
+  two_fa_pending?: boolean;
+  doorbells?: RingDeviceRow[];
+  doorbell_count?: number;
+  alarm?: {
+    mode?: string;
+    sensors?: RingSensorRow[];
+    base_station?: { name?: string; mode?: string; is_online?: boolean };
+  } | null;
+  alarm_devices?: {
+    total?: number;
+    contact_sensors?: number;
+    motion_sensors?: number;
+  };
+  recent_events?: Array<{ device_name?: string; event_type?: string; timestamp?: string }>;
 }
 
 function parseErrorBody(data: unknown): string {
@@ -30,27 +66,45 @@ function parseErrorBody(data: unknown): string {
 
 export function Ring() {
   const [status, setStatus] = useState<RingStatus | null>(null);
+  const [summary, setSummary] = useState<RingSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [initLoading, setInitLoading] = useState(false);
+  const [refreshLoading, setRefreshLoading] = useState(false);
+  const [modeLoading, setModeLoading] = useState<string | null>(null);
   const [twoFaCode, setTwoFaCode] = useState('');
   const [twoFaLoading, setTwoFaLoading] = useState(false);
 
-  const load = async () => {
+  const loadSummary = useCallback(async () => {
+    try {
+      const r = await fetch('/api/ring/summary');
+      if (r.ok) setSummary(await r.json());
+      else setSummary(null);
+    } catch {
+      setSummary(null);
+    }
+  }, []);
+
+  const load = useCallback(async () => {
     try {
       const r = await fetch('/api/ring/status');
       if (!r.ok) throw new Error(parseErrorBody(await r.json().catch(() => ({}))));
-      setStatus(await r.json());
+      const st = await r.json();
+      setStatus(st);
       setError(null);
+      if (st.connected) await loadSummary();
+      else setSummary(null);
     } catch (e) {
       setError(String(e));
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadSummary]);
 
   useEffect(() => {
     load();
+    const timer = window.setInterval(load, 30000);
+    return () => window.clearInterval(timer);
   }, [load]);
 
   const doInit = async () => {
@@ -75,6 +129,44 @@ export function Ring() {
       setError(String(e));
     } finally {
       setInitLoading(false);
+    }
+  };
+
+  const refresh = async () => {
+    setRefreshLoading(true);
+    setError(null);
+    try {
+      const r = await fetch('/api/ring/refresh', { method: 'POST' });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setError(parseErrorBody(data));
+        return;
+      }
+      if (data.summary) setSummary(data.summary);
+      else await loadSummary();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setRefreshLoading(false);
+    }
+  };
+
+  const setAlarmMode = async (mode: string) => {
+    setModeLoading(mode);
+    setError(null);
+    try {
+      const r = await fetch('/api/ring/alarm/mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) setError(parseErrorBody(data));
+      else await load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setModeLoading(null);
     }
   };
 
@@ -122,15 +214,32 @@ export function Ring() {
     !status?.two_fa_pending &&
     status?.needs_init !== false;
 
+  const sensors = summary?.alarm?.sensors ?? [];
+  const doorbells = summary?.doorbells ?? [];
+
   return (
     <div className='space-y-6'>
-      <h1 className='text-2xl font-bold tracking-tight'>Ring Doorbell</h1>
+      <div className='flex flex-wrap items-center justify-between gap-2'>
+        <h1 className='text-2xl font-bold tracking-tight'>Ring Doorbell</h1>
+        {status?.connected && (
+          <Button size='sm' variant='outline' onClick={refresh} disabled={refreshLoading}>
+            {refreshLoading ? (
+              <Loader2 className='h-4 w-4 animate-spin' />
+            ) : (
+              <RefreshCw className='h-4 w-4' />
+            )}
+            <span className='ml-1'>Refresh</span>
+          </Button>
+        )}
+      </div>
+
       {error && (
         <div className='flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200'>
           <AlertCircle className='h-5 w-5 shrink-0' />
           {error}
         </div>
       )}
+
       <Card className={status?.connected ? 'border-green-200 dark:border-green-900' : ''}>
         <CardHeader className='flex flex-row items-center justify-between pb-2'>
           <CardTitle className='text-base font-medium'>Connection status</CardTitle>
@@ -142,6 +251,9 @@ export function Ring() {
         </CardHeader>
         <CardContent className='space-y-3'>
           <p className='text-sm'>{status?.message ?? '—'}</p>
+          {status?.last_error && !status.connected && (
+            <p className='text-xs text-amber-700 dark:text-amber-300'>{status.last_error}</p>
+          )}
           {status?.two_fa_pending && (
             <div className='space-y-2'>
               <p className='text-sm text-amber-600 dark:text-amber-400'>
@@ -170,10 +282,140 @@ export function Ring() {
           )}
         </CardContent>
       </Card>
-      <p className='text-sm text-slate-500 dark:text-slate-400'>
-        Monitor and control your Ring doorbell and alarm. Configure email/password in config.yaml
-        and use Initialize to connect.
-      </p>
+
+      {status?.connected && summary && (
+        <>
+          <div className='grid gap-4 md:grid-cols-3'>
+            <Card>
+              <CardHeader className='pb-2'>
+                <CardTitle className='text-sm text-slate-500'>Doorbells</CardTitle>
+              </CardHeader>
+              <CardContent className='text-2xl font-semibold'>
+                {summary.doorbell_count ?? doorbells.length}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='pb-2'>
+                <CardTitle className='text-sm text-slate-500'>Alarm sensors</CardTitle>
+              </CardHeader>
+              <CardContent className='text-2xl font-semibold'>
+                {summary.alarm_devices?.total ?? sensors.length}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className='pb-2'>
+                <CardTitle className='text-sm text-slate-500'>Alarm mode</CardTitle>
+              </CardHeader>
+              <CardContent className='text-lg font-medium capitalize'>
+                {summary.alarm?.mode ?? summary.alarm?.base_station?.mode ?? 'unknown'}
+              </CardContent>
+            </Card>
+          </div>
+
+          {summary.alarm?.base_station && (
+            <Card>
+              <CardHeader className='flex flex-row items-center gap-2 pb-2'>
+                <Shield className='h-5 w-5' />
+                <CardTitle className='text-base'>Alarm</CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-3'>
+                <p className='text-sm text-slate-600 dark:text-slate-400'>
+                  {summary.alarm.base_station.name ?? 'Base station'}
+                  {summary.alarm.base_station.is_online === false ? ' · offline' : ''}
+                </p>
+                <div className='flex flex-wrap gap-2'>
+                  {(['disarmed', 'home', 'away'] as const).map((mode) => (
+                    <Button
+                      key={mode}
+                      size='sm'
+                      variant='outline'
+                      disabled={modeLoading !== null}
+                      onClick={() => setAlarmMode(mode)}
+                    >
+                      {modeLoading === mode ? '…' : mode}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {doorbells.length > 0 && (
+            <Card>
+              <CardHeader className='pb-2'>
+                <CardTitle className='text-base'>Doorbells</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className='space-y-2 text-sm'>
+                  {doorbells.map((d) => (
+                    <li key={d.id} className='flex justify-between gap-2'>
+                      <span>{d.name ?? d.id}</span>
+                      <span className='text-slate-500'>
+                        {d.is_online === false ? 'offline' : 'online'}
+                        {d.battery_level != null ? ` · ${d.battery_level}%` : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {sensors.length > 0 && (
+            <Card>
+              <CardHeader className='pb-2'>
+                <CardTitle className='text-base'>Sensors</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className='space-y-2 text-sm'>
+                  {sensors.map((s) => (
+                    <li key={s.id} className='flex justify-between gap-2'>
+                      <span>
+                        {s.name ?? s.id}
+                        {s.sensor_type ? ` (${s.sensor_type})` : ''}
+                      </span>
+                      <span className='text-slate-500'>
+                        {s.sensor_type === 'contact' && s.is_open != null
+                          ? s.is_open
+                            ? 'open'
+                            : 'closed'
+                          : null}
+                        {s.sensor_type === 'motion' && s.motion_detected ? 'motion' : null}
+                        {s.battery_level != null ? ` · ${s.battery_level}%` : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {(summary.recent_events?.length ?? 0) > 0 && (
+            <Card>
+              <CardHeader className='pb-2'>
+                <CardTitle className='text-base'>Recent events</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className='space-y-1 text-sm text-slate-600 dark:text-slate-400'>
+                  {summary.recent_events!.slice(0, 8).map((ev, i) => (
+                    <li key={`${ev.timestamp}-${i}`}>
+                      {ev.device_name ?? 'Device'} · {ev.event_type ?? 'event'}
+                      {ev.timestamp ? ` · ${ev.timestamp}` : ''}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+
+      {!status?.connected && (
+        <p className='text-sm text-slate-500 dark:text-slate-400'>
+          Enable Ring in config.yaml, then Initialize. Token is cached in ring_token.cache after
+          first successful login.
+        </p>
+      )}
     </div>
   );
 }

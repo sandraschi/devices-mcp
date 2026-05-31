@@ -19,7 +19,7 @@ from typing import Any
 
 from fastmcp import FastMCP
 
-from ..core.exceptions import AuthenticationError
+from ..core.exceptions import AuthenticationError, DeviceNotFoundError
 from ..core.ring_client import RingClient
 
 logger = logging.getLogger(__name__)
@@ -73,12 +73,12 @@ def register_tools(app: FastMCP) -> None:
             status["authentication"] = auth_status
 
             # Check device status
-            device_status = await check_device_status(include_device_details)
+            device_status = await check_device_connectivity(device_id=None, test_commands=include_device_details)
             status["devices"] = device_status
 
             # Check connectivity
             if check_connectivity:
-                connectivity_status = await check_connectivity_status()
+                connectivity_status = await check_device_connectivity()
                 status["connectivity"] = connectivity_status
 
             # Determine overall system status
@@ -363,10 +363,25 @@ def register_tools(app: FastMCP) -> None:
         return health_info
 
 
+async def _module_auth_status() -> dict[str, Any]:
+    """Authentication snapshot for module-level health helpers."""
+    try:
+        client = RingClient()
+        await client.connect()
+        if client.auth and client.auth.token:
+            return {"authenticated": True, "token_valid": True, "method": "oauth_token"}
+        if client.username and client.password:
+            await client.get_devices(force_refresh=False)
+            return {"authenticated": True, "method": "username_password"}
+        return {"authenticated": False, "method": "none", "auth_errors": ["No credentials configured"]}
+    except Exception as e:
+        return {"authenticated": False, "auth_errors": [str(e)]}
+
+
 async def check_auth_component() -> dict[str, Any]:
     """Check authentication component health."""
     try:
-        auth_status = await check_authentication_status()
+        auth_status = await _module_auth_status()
         if auth_status["authenticated"]:
             return {"status": "healthy", "details": "Authentication working"}
         return {"status": "error", "details": "Authentication failed"}

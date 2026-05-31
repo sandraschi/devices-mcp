@@ -293,9 +293,7 @@ def register_thermal_management_tool(mcp: FastMCP) -> None:
                     "timestamp": "2025-12-27T04:00:00Z",
                     "resolution": resolution,
                     "image_format": "thermal_array",
-                    "dimensions": {"width": 32, "height": 24}
-                    if resolution == "high"
-                    else {"width": 16, "height": 12},
+                    "dimensions": {"width": 32, "height": 24} if resolution == "high" else {"width": 16, "height": 12},
                     "temperature_range": {"min_celsius": 22.1, "max_celsius": 45.2},
                     "data_points": 768,  # 32x24
                     "file_size_kb": 15,

@@ -1,13 +1,13 @@
 """Pydantic models for Plex sessions and playback."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
 
-class SessionState(str, Enum):
+class SessionState(StrEnum):
     """Possible states of a Plex session."""
 
     PLAYING = "playing"
@@ -17,7 +17,7 @@ class SessionState(str, Enum):
     ERROR = "error"
 
 
-class MediaType(str, Enum):
+class MediaType(StrEnum):
     """Types of media in Plex."""
 
     MOVIE = "movie"

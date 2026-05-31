@@ -82,7 +82,7 @@ async def scan_document(request: ScanRequest):
         return {"success": True, "message": "Document scanned successfully", "scan_path": scan_path}
     except Exception as e:
         logger.exception("Failed to scan document")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/preview/{camera_name}")
@@ -98,7 +98,7 @@ async def get_scan_preview(camera_name: str):
         return StreamingResponse(io.BytesIO(preview_bytes), media_type="image/jpeg")
     except Exception as e:
         logger.exception("Failed to get scan preview")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/settings")
@@ -114,10 +114,10 @@ async def set_scan_settings(request: SetScanSettingsRequest):
         )
         return {"success": True, "message": "Scanner settings updated"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to set scanner settings")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/history/{camera_name}", response_model=list[dict])
@@ -129,7 +129,7 @@ async def get_scan_history(camera_name: str):
         return history
     except Exception as e:
         logger.exception("Failed to get scan history")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/ocr")
@@ -141,7 +141,7 @@ async def scan_with_ocr(request: OCRRequest):
         return {"success": True, "message": "OCR scan completed", "result": ocr_result}
     except Exception as e:
         logger.exception("Failed to perform OCR scan")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/batch")
@@ -156,10 +156,10 @@ async def batch_scan(request: BatchScanRequest):
             "scanned_files": scanned_files,
         }
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to perform batch scan")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.delete("/delete")
@@ -175,7 +175,7 @@ async def delete_scan(request: DeleteScanRequest):
         raise
     except Exception as e:
         logger.exception("Failed to delete scan")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/download/{camera_name}/{filename}")
@@ -194,4 +194,4 @@ async def download_scan(camera_name: str, filename: str):
         raise
     except Exception as e:
         logger.exception("Failed to download scan")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

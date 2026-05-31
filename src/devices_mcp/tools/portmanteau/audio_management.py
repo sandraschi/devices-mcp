@@ -301,7 +301,7 @@ async def _play_audio_bytes(audio_bytes: bytes) -> bool:
                 winsound.PlaySound(temp_path, winsound.SND_FILENAME)
             else:
                 # temp_path is controlled (from tempfile), safe to use
-                os.system(f"aplay {temp_path} 2>/dev/null || afplay {temp_path} 2>/dev/null")  # noqa: S605
+                os.system(f"aplay {temp_path} 2>/dev/null || afplay {temp_path} 2>/dev/null")
             return True
         finally:
             os.unlink(temp_path)
@@ -381,9 +381,9 @@ async def _speak_with_edge(text: str, voice: str | None = None) -> dict[str, Any
             sd.play(data, samplerate)
             sd.wait()
         elif os.name == "nt":
-            os.system(f'start /wait "" "{temp_path}"')  # noqa: S605
+            os.system(f'start /wait "" "{temp_path}"')
         else:
-            os.system(f"mpg123 {temp_path} 2>/dev/null || afplay {temp_path}")  # noqa: S605
+            os.system(f"mpg123 {temp_path} 2>/dev/null || afplay {temp_path}")
 
         os.unlink(temp_path)
         return {"success": True, "engine": "edge-tts", "voice": voice, "text": text}

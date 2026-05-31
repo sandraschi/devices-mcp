@@ -111,6 +111,8 @@ class ConnectionSupervisor:
             self._check_hue_homeaware(),
             self._check_netatmo(),
             self._check_ring(),
+            self._check_shelly(),
+            self._check_home_assistant(),
             return_exceptions=True,  # Don't let one failure crash others
         )
 
@@ -252,8 +254,9 @@ class ConnectionSupervisor:
 
                 # Try to query plug
                 try:
-                    account_email = config.get("energy", {}).get("tapo_p115", {}).get("account", {}).get("email")
-                    account_password = config.get("energy", {}).get("tapo_p115", {}).get("account", {}).get("password")
+                    account = config.get("energy", {}).get("tapo_p115", {}).get("account", {})
+                    account_email = account.get("email") or account.get("username")
+                    account_password = account.get("password")
 
                     if not account_email or not account_password:
                         raise ValueError("Missing Tapo account credentials")
@@ -267,9 +270,9 @@ class ConnectionSupervisor:
                         info = await asyncio.wait_for(device.get_device_info(), timeout=3.0)
                         energy = await asyncio.wait_for(device.get_energy_usage(), timeout=3.0)
                     except TimeoutError:
-                        raise ConnectionError(f"Timeout connecting to plug {name} at {host}")
+                        raise ConnectionError(f"Timeout connecting to plug {name} at {host}") from None
                     except Exception as e:
-                        raise ConnectionError(f"Failed to connect to plug {name}: {e}")
+                        raise ConnectionError(f"Failed to connect to plug {name}: {e}") from e
 
                     current_power = 0.0
                     voltage = 220.0
@@ -354,12 +357,12 @@ class ConnectionSupervisor:
     async def _check_hue_bridge(self):
         """Check Philips Hue Bridge."""
         try:
+            # Check if phue available
+            import importlib.util
+
             from ..tools.lighting.hue_tools import hue_manager
 
-            # Check if phue available
-            try:
-                import phue
-            except ImportError:
+            if importlib.util.find_spec("phue") is None:
                 self._update_health(
                     device_id="hue_bridge",
                     device_type="light",
@@ -469,9 +472,9 @@ class ConnectionSupervisor:
         """Check Netatmo weather station."""
         try:
             # Check if pyatmo available
-            try:
-                import pyatmo
-            except ImportError:
+            import importlib.util
+
+            if importlib.util.find_spec("pyatmo") is None:
                 self._update_health(
                     device_id="netatmo_weather",
                     device_type="weather",
@@ -598,10 +601,8 @@ class ConnectionSupervisor:
 
             logger.info("Weather data collection completed for all stations")
 
-        except Exception:
-            logger.exception("Error during weather data collection")
-
         except Exception as e:
+            logger.exception("Error during weather data collection")
             # Catch all exceptions including network errors
             error_msg = str(e)
             error_type = type(e).__name__
@@ -669,6 +670,89 @@ class ConnectionSupervisor:
 
         except Exception:
             logger.exception("Error checking Ring")
+
+    async def _check_shelly(self):
+        """Check Shelly temperature sensors."""
+        try:
+            from ..integrations.shelly_client import get_shelly_client
+
+            client = get_shelly_client()
+            if client and client.is_initialized:
+                try:
+                    summary = await asyncio.wait_for(client.get_summary(), timeout=10.0)
+                    self._update_health(
+                        device_id="shelly_sensors",
+                        device_type="shelly",
+                        name="Shelly Temperature",
+                        connected=True,
+                        error=None,
+                        details={
+                            "sensors": summary.get("sensor_count", 0),
+                            "alerts": summary.get("alert_count", 0),
+                        },
+                    )
+                except Exception as e:
+                    self._update_health(
+                        device_id="shelly_sensors",
+                        device_type="shelly",
+                        name="Shelly Temperature",
+                        connected=False,
+                        error=f"API call failed: {e}",
+                        details={},
+                    )
+            else:
+                self._update_health(
+                    device_id="shelly_sensors",
+                    device_type="shelly",
+                    name="Shelly Temperature",
+                    connected=False,
+                    error="Not initialized",
+                    details={"needs_setup": True},
+                )
+        except Exception:
+            logger.exception("Error checking Shelly")
+
+    async def _check_home_assistant(self):
+        """Check Home Assistant / Nest Protect."""
+        try:
+            from ..integrations.homeassistant_client import get_homeassistant_client
+
+            client = get_homeassistant_client()
+            if client and client.is_initialized:
+                try:
+                    summary = await asyncio.wait_for(client.get_nest_summary(), timeout=10.0)
+                    connected = summary.get("initialized", False)
+                    self._update_health(
+                        device_id="nest_protect",
+                        device_type="nest",
+                        name="Nest Protect (HA)",
+                        connected=connected,
+                        error=None if connected else summary.get("error"),
+                        details={
+                            "devices": summary.get("total_devices", 0),
+                            "all_ok": summary.get("all_ok"),
+                        },
+                    )
+                except Exception as e:
+                    self._update_health(
+                        device_id="nest_protect",
+                        device_type="nest",
+                        name="Nest Protect (HA)",
+                        connected=False,
+                        error=f"API call failed: {e}",
+                        details={},
+                    )
+            else:
+                self._update_health(
+                    device_id="nest_protect",
+                    device_type="nest",
+                    name="Nest Protect (HA)",
+                    connected=False,
+                    error="Home Assistant not connected",
+                    details={"needs_setup": True},
+                )
+        except Exception:
+            logger.exception("Error checking Home Assistant")
 
     def _update_health(
         self,

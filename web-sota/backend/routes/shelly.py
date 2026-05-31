@@ -33,18 +33,36 @@ class ShellyInitRequest(BaseModel):
 @router.get("/status")
 async def get_shelly_status():
     """Get Shelly connection status."""
+    from devices_mcp.config import get_config
+
+    config = get_config()
+    shelly_cfg = config.get("shelly", {})
+    enabled = shelly_cfg.get("enabled", False)
+
+    if not enabled:
+        return {
+            "connected": False,
+            "initialized": False,
+            "enabled": False,
+            "message": "Shelly integration is disabled in config.yaml",
+        }
+
     client = get_shelly_client()
     if not client:
         return {
             "connected": False,
             "initialized": False,
-            "message": "Shelly client not configured",
+            "enabled": True,
+            "message": "Shelly not initialized — add devices under shelly.devices in config.yaml",
+            "needs_init": True,
         }
 
     return {
-        "connected": True,
+        "connected": client.is_initialized,
         "initialized": client.is_initialized,
+        "enabled": True,
         "message": "Connected" if client.is_initialized else "Not initialized",
+        "device_count": len(client._devices),
     }
 
 

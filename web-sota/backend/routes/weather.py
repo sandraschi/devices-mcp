@@ -144,6 +144,30 @@ async def get_netatmo_status() -> dict[str, Any]:
 
     inst = NetatmoService.get_existing_instance()
     if inst is None:
+        token_file = netatmo_cfg.get("token_file") or "netatmo_token.cache"
+        try:
+            inst = await asyncio.wait_for(NetatmoService.get_instance(token_file), timeout=20.0)
+        except TimeoutError:
+            return {
+                "enabled": True,
+                "connected": False,
+                "initialized": False,
+                "message": "Netatmo initialization timed out. Check network access to api.netatmo.com.",
+                "needs_init": True,
+                "last_error": "Initialization timed out",
+            }
+        except Exception as e:
+            logger.debug("Netatmo lazy init from status failed", exc_info=True)
+            return {
+                "enabled": True,
+                "connected": False,
+                "initialized": False,
+                "message": f"Netatmo init failed: {e!s}",
+                "needs_init": True,
+                "last_error": str(e),
+            }
+
+    if inst is None:
         return {
             "enabled": True,
             "connected": False,

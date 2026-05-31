@@ -59,6 +59,7 @@ class USBCameraManagementTool(BaseTool):
         resolution: str | None = None,
         friendly_name: str | None = None,
         max_cameras: int = 10,
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """Execute USB camera management operation."""
         try:
@@ -245,7 +246,6 @@ class USBCameraManagementTool(BaseTool):
             from ...camera.manager import camera_manager
 
             # Get all cameras and filter for USB/webcam types
-            all_cameras = []
             cameras_info = await camera_manager.list_cameras()
 
             usb_cameras = []
@@ -470,12 +470,14 @@ class USBCameraManagementTool(BaseTool):
         camera_id: str,
         interval: int = 30,
         motion_threshold: float = 0.05,
-        led_control: bool = None,
-        led_flash_interval: int = None,
-        led_flash_duration: float = None,
+        led_control: bool | None = None,
+        led_flash_interval: int | None = None,
+        led_flash_duration: float | None = None,
     ) -> dict[str, Any]:
         """Start surveillance mode for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             success = await camera_manager.start_camera_surveillance(
                 camera_id,
                 interval,
@@ -504,6 +506,8 @@ class USBCameraManagementTool(BaseTool):
     async def _stop_surveillance(self, camera_id: str) -> dict[str, Any]:
         """Stop surveillance mode for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             success = await camera_manager.stop_camera_surveillance(camera_id)
             if success:
                 return {
@@ -522,6 +526,8 @@ class USBCameraManagementTool(BaseTool):
     async def _get_surveillance_events(self, camera_id: str, limit: int = 10) -> dict[str, Any]:
         """Get surveillance events for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             events = await camera_manager.get_camera_surveillance_events(camera_id, limit)
             return {
                 "success": True,
@@ -538,6 +544,8 @@ class USBCameraManagementTool(BaseTool):
     ) -> dict[str, Any]:
         """Enable LED control for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             success = await camera_manager.enable_camera_led_control(camera_id, flash_interval, flash_duration)
             if success:
                 return {
@@ -556,6 +564,8 @@ class USBCameraManagementTool(BaseTool):
     async def _disable_led_control(self, camera_id: str) -> dict[str, Any]:
         """Disable LED control for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             success = await camera_manager.disable_camera_led_control(camera_id)
             if success:
                 return {
@@ -574,6 +584,8 @@ class USBCameraManagementTool(BaseTool):
     async def _enable_speakerphone(self, camera_id: str) -> dict[str, Any]:
         """Enable speakerphone for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             success = await camera_manager.enable_camera_speakerphone(camera_id)
             if success:
                 return {
@@ -592,6 +604,8 @@ class USBCameraManagementTool(BaseTool):
     async def _disable_speakerphone(self, camera_id: str) -> dict[str, Any]:
         """Disable speakerphone for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             success = await camera_manager.disable_camera_speakerphone(camera_id)
             if success:
                 return {
@@ -610,6 +624,8 @@ class USBCameraManagementTool(BaseTool):
     async def _get_speakerphone_status(self, camera_id: str) -> dict[str, Any]:
         """Get speakerphone status for a USB camera."""
         try:
+            from ...camera.manager import camera_manager
+
             status = await camera_manager.get_camera_speakerphone_status(camera_id)
             return {
                 "success": True,

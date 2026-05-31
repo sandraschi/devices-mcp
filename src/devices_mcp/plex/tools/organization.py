@@ -138,7 +138,7 @@ async def refresh_metadata(request: RefreshMetadataRequest) -> dict[str, Any]:
     except Exception:
         logger.exception("Error refreshing metadata:")
         raise
-        raise ValueError("Either item_id or library_id must be provided")
+        raise ValueError("Either item_id or library_id must be provided") from None
 
 
 class CleanBundlesRequest(BaseModel):

@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   AlertCircle,
   Camera,
@@ -9,9 +11,7 @@ import {
   Thermometer,
   Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCallback, useEffect, useState } from 'react';
 
 interface DiscoveredDevice {
   device_id: string;
@@ -59,7 +59,7 @@ export function Onboarding() {
   } | null>(null);
   const [resetting, setResetting] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const r = await fetch('/api/onboarding/progress');
       if (r.ok) {
@@ -74,10 +74,10 @@ export function Onboarding() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const startDiscovery = async () => {

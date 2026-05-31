@@ -111,7 +111,7 @@ class SDRProcessor:
         """Clear the waterfall history."""
         self.waterfall_history.clear()
 
-    def set_parameters(self, fft_size: int = None, sample_rate: float = None):
+    def set_parameters(self, fft_size: int | None = None, sample_rate: float | None = None):
         """Update processing parameters."""
         if fft_size:
             self.fft_size = fft_size

@@ -1,7 +1,16 @@
-import { AlertCircle, AlertTriangle, Bell, CheckCircle, CloudRain, Loader2, Shield } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  CheckCircle,
+  CloudRain,
+  Flame,
+  Loader2,
+  Shield,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface RingStatus {
   connected: boolean;
@@ -35,8 +44,18 @@ interface AlarmStatus {
   message?: string;
 }
 
+interface NestStatus {
+  initialized?: boolean;
+  total_devices?: number;
+  all_ok?: boolean;
+  smoke_status?: string;
+  co_status?: string;
+  error?: string;
+}
+
 export function Alarms() {
   const [ringStatus, setRingStatus] = useState<RingStatus | null>(null);
+  const [nestStatus, setNestStatus] = useState<NestStatus | null>(null);
   const [alarm, setAlarm] = useState<AlarmStatus | null>(null);
   const [indoorAlerts, setIndoorAlerts] = useState<PublicAlert[]>([]);
   const [weatherAlerts, setWeatherAlerts] = useState<PublicAlert[]>([]);
@@ -44,10 +63,11 @@ export function Alarms() {
   const [error, setError] = useState<string | null>(null);
   const [settingMode, setSettingMode] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
-      const [statusRes, alarmRes, alertsRes] = await Promise.allSettled([
+      const [statusRes, nestRes, alarmRes, alertsRes] = await Promise.allSettled([
         fetch('/api/ring/status'),
+        fetch('/api/nest/status'),
         fetch('/api/ring/alarm').catch(() => ({ ok: false, json: () => ({ alarm: null }) })),
         fetch('/alerts/all?use_cache=false'),
       ]);
@@ -55,6 +75,9 @@ export function Alarms() {
         setRingStatus(await statusRes.value.json());
       } else if (statusRes.status === 'fulfilled') {
         setRingStatus(await statusRes.value.json());
+      }
+      if (nestRes.status === 'fulfilled' && nestRes.value.ok) {
+        setNestStatus(await nestRes.value.json());
       }
       if (alarmRes.status === 'fulfilled' && alarmRes.value.ok) {
         setAlarm(await alarmRes.value.json());
@@ -73,11 +96,7 @@ export function Alarms() {
               (typeof a.id === 'string' && a.id.startsWith('netatmo_co2')),
           ),
         );
-        setWeatherAlerts(
-          all.filter(
-            (a) => a.source === 'meteoalarm',
-          ),
-        );
+        setWeatherAlerts(all.filter((a) => a.source === 'meteoalarm'));
       } else {
         setIndoorAlerts([]);
         setWeatherAlerts([]);
@@ -88,10 +107,10 @@ export function Alarms() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const setAlarmMode = async (mode: string) => {
@@ -205,6 +224,27 @@ export function Alarms() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader className='flex flex-row items-center gap-2 pb-2'>
+          <Flame className='h-5 w-5' />
+          <CardTitle className='text-base'>Nest Protect</CardTitle>
+        </CardHeader>
+        <CardContent className='text-sm text-slate-600 dark:text-slate-400'>
+          {nestStatus?.initialized ? (
+            <p>
+              {nestStatus.total_devices ?? 0} device(s) · smoke {nestStatus.smoke_status ?? '—'} ·
+              CO {nestStatus.co_status ?? '—'}
+              {nestStatus.all_ok === false ? ' · check alerts' : ''}
+            </p>
+          ) : (
+            <p>
+              {nestStatus?.error ??
+                'Connect Home Assistant (security.integrations.homeassistant in config).'}
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {!ringStatus?.enabled && (
         <Card>

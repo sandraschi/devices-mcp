@@ -4,7 +4,6 @@ This module contains all the tools available in the Nest Protect MCP server.
 """
 
 from collections.abc import Callable
-from typing import Any, Dict, List, Type
 
 from fastmcp.tools import Tool
 

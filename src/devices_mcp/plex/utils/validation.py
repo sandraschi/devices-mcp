@@ -50,7 +50,7 @@ def validate_required(value: Any, field: str = "field") -> None:
         raise ValidationError(f"{field} is required", field=field, code="required")
 
 
-def validate_type(value: Any, expected_type: type[T], field: str = "field") -> None:
+def validate_type[T](value: Any, expected_type: type[T], field: str = "field") -> None:
     """Validate that a value is of the expected type.
 
     Args:
@@ -203,7 +203,9 @@ def validate_datetime(
                     continue
 
             if dt is None:
-                raise ValidationError(f"{field} must be a valid datetime string", field=field, code="invalid_datetime")
+                raise ValidationError(
+                    f"{field} must be a valid datetime string", field=field, code="invalid_datetime"
+                ) from None
     elif isinstance(value, datetime):
         dt = value
     else:
@@ -405,7 +407,7 @@ def validate_with_schema(schema: dict[str, Any], data: dict[str, Any], allow_ext
         return data
 
     except ImportError:
-        raise RuntimeError("jsonschema package is required for schema validation")
+        raise RuntimeError("jsonschema package is required for schema validation") from None
     except JsonSchemaValidationError as e:
         raise ValidationError(
             f"Schema validation failed: {e.message}",
@@ -447,7 +449,7 @@ def validate_plex_url(value: str, field: str = "url") -> None:
     try:
         parsed = urlparse(value)
     except Exception:
-        raise ValidationError(f"{field} is not a valid URL", field=field, code="invalid_url")
+        raise ValidationError(f"{field} is not a valid URL", field=field, code="invalid_url") from None
 
     # Check if scheme is provided
     if not parsed.scheme:

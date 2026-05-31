@@ -27,7 +27,7 @@ def detect_usb_cameras(max_devices=10):
             backend = cap.getBackendName()
 
             # Try to read a frame to confirm it's a working camera
-            ret, frame = cap.read()
+            ret, _frame = cap.read()
             if ret:
                 device_info = {
                     "device_id": i,
@@ -41,9 +41,7 @@ def detect_usb_cameras(max_devices=10):
                 device_type = device_info["suggested_type"].upper()
                 logger.info(f"[{device_type}] Device {i}: {width}x{height} - {backend} (Working)")
             else:
-                logger.info(
-                    f"[UNKNOWN] Device {i}: {width}x{height} - {backend} (Not working, possibly in use)"
-                )
+                logger.info(f"[UNKNOWN] Device {i}: {width}x{height} - {backend} (Not working, possibly in use)")
             cap.release()
         else:
             logger.info(f"[NOT FOUND] Device {i}: Not available")
@@ -52,7 +50,6 @@ def detect_usb_cameras(max_devices=10):
 
 def detect_microphone_likelihood(width, height, device_id, device_name=""):
     """Estimate likelihood that a USB camera has a built-in microphone."""
-    resolution = f"{width}x{height}"
     name_lower = device_name.lower()
 
     # Microscopes typically don't have microphones
@@ -112,9 +109,7 @@ def generate_device_configs(detected_devices):
         has_microphone = device.get("likely_has_microphone", True)
 
         if device_type == "webcam":
-            mic_config = (
-                f"  audio_capable: {str(has_microphone).lower()}" if not has_microphone else ""
-            )
+            mic_config = f"  audio_capable: {str(has_microphone).lower()}" if not has_microphone else ""
             config = f"""
 # Webcam Configuration (Device {device_id})
 webcam{device_id}:
@@ -215,22 +210,18 @@ unknown{device_id}:
 def main():
     """Main detection function."""
     logger.info("Universal USB Device Detection Tool")
-    logger.info(
-        "Finds cameras, microscopes, otoscopes, scanners, digicams, iPhones, and other USB imaging devices."
-    )
+    logger.info("Finds cameras, microscopes, otoscopes, scanners, digicams, iPhones, and other USB imaging devices.")
     logger.info()
 
     detected_devices = detect_usb_cameras()
-    configs = generate_device_configs(detected_devices)
+    generate_device_configs(detected_devices)
 
     logger.info(f"\n[SUCCESS] Found {len(detected_devices)} USB imaging device(s)")
     logger.info("Add the configuration above to your config.yaml file.")
     logger.info("Then restart the Devices MCP server.")
     logger.info("\nDevice Types Detected:")
     for device in detected_devices:
-        logger.info(
-            f"  - Device {device['device_id']}: {device['suggested_type'].upper()} ({device['resolution']})"
-        )
+        logger.info(f"  - Device {device['device_id']}: {device['suggested_type'].upper()} ({device['resolution']})")
 
     logger.info("\n[INFO] Additional Device Types Available:")
     logger.info("  - DIGICAM: For old digital cameras (Canon, Nikon, Sony, etc.)")

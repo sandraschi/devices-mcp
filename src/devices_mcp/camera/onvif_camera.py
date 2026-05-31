@@ -579,7 +579,7 @@ class ONVIFBasedCamera(BaseCamera):
             logger.exception("PTZ move timed out after 8 seconds")
             # Reset connection state on timeout
             self._is_connected = False
-            raise Exception("PTZ operation timed out")
+            raise Exception("PTZ operation timed out") from None
         except Exception:
             logger.exception("PTZ move failed")
             # Reset connection state on any error

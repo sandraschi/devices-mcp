@@ -24,13 +24,14 @@ async def get_nest_status():
             "initialized": False,
             "error": "Home Assistant not connected",
             "setup_instructions": [
-                "1. Run: cd deploy/homeassistant && docker-compose up -d",
-                "2. Open http://localhost:8123 and create account",
-                "3. Add Nest integration (Settings > Devices > Add Integration)",
-                "4. Sign in with Google account",
-                "5. Create Long-Lived Access Token (Profile > Security)",
-                "6. Add token to config.yaml under security.integrations.homeassistant.access_token",
-                "7. Restart devices-mcp server",
+                "1. Start Docker Desktop (from system tray)",
+                '2. Open PowerShell and run: docker run -d --name=homeassistant --restart=unless-stopped -p 8123:8123 -v "$env:USERPROFILE\\ha-config:/config" ghcr.io/home-assistant/home-assistant:stable',
+                "3. Open http://localhost:8123 and create account",
+                "4. Add Nest integration (Settings > Devices > Add Integration)",
+                "5. Sign in with Google account",
+                "6. Create Long-Lived Access Token (Profile > Security)",
+                "7. Add token to config.yaml under security.integrations.homeassistant.access_token",
+                "8. Restart devices-mcp server",
             ],
         }
 

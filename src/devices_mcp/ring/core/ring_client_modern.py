@@ -13,7 +13,7 @@ import logging
 import os
 from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta
-from typing import Any, Union, cast
+from typing import Any, cast
 
 import aiocache
 from ring_doorbell import Auth, Ring, RingDoorBell, RingStickUpCam
@@ -28,6 +28,7 @@ from .exceptions import (
     AuthenticationError,
     DeviceNotFoundError,
     RateLimitError,
+    RingConnectionError,
     RingError,
     StreamingError,
 )
@@ -36,7 +37,7 @@ from .token_manager import TokenManager
 logger = logging.getLogger(__name__)
 
 # Type aliases
-RingDevice = Union[RingDoorBell, RingStickUpCam]
+RingDevice = RingDoorBell | RingStickUpCam
 DeviceData = dict[str, Any]
 
 # Cache configuration
@@ -218,7 +219,7 @@ class RingClient:
 
                 try:
                     # First try without 2FA
-                    token = await self._auth.async_fetch_token(self.username, self.password)
+                    await self._auth.async_fetch_token(self.username, self.password)
                     logger.info("Successfully authenticated with Ring API")
                 except Exception as e:
                     # Check if 2FA is required
@@ -228,15 +229,15 @@ class RingClient:
                             # Get 2FA code from callback
                             two_factor_code = await two_factor_callback()
                             if not two_factor_code:
-                                raise AuthenticationError("2FA code is required but not provided")
+                                raise AuthenticationError("2FA code is required but not provided") from e
 
                             # Retry with 2FA code
-                            token = await self._auth.async_fetch_token(self.username, self.password, two_factor_code)
+                            await self._auth.async_fetch_token(self.username, self.password, two_factor_code)
                             logger.info("Successfully authenticated with Ring API (with 2FA)")
                         else:
-                            raise AuthenticationError("2FA is required but no callback provided")
+                            raise AuthenticationError("2FA is required but no callback provided") from e
                     else:
-                        raise AuthenticationError(f"Authentication failed: {e}")
+                        raise AuthenticationError(f"Authentication failed: {e}") from e
 
                 # Extract token from auth object
                 self.token = self._auth._token
@@ -382,7 +383,7 @@ class RingClient:
 
                 return response
 
-            except (requests.exceptions.RequestException, httpx.RequestError) as e:
+            except (TimeoutError, OSError, ConnectionError) as e:
                 # Handle network-related errors
                 error_msg = str(e).lower()
                 if "timeout" in error_msg or "timed out" in error_msg:

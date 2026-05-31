@@ -12,7 +12,7 @@ Provides high-level access to Plex media server functionality including:
 
 import asyncio
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from plexapi import utils
@@ -41,7 +41,7 @@ from .base import BaseService, ServiceError, service_method
 CONFIG.logger = None  # We'll use our own logging
 
 
-class StreamQuality(str, Enum):
+class StreamQuality(StrEnum):
     """Stream quality presets."""
 
     ORIGINAL = "original"
@@ -52,7 +52,7 @@ class StreamQuality(str, Enum):
     QUALITY_240P = "240p"
 
 
-class StreamProtocol(str, Enum):
+class StreamProtocol(StrEnum):
     """Streaming protocols."""
 
     HTTP = "http"
@@ -61,7 +61,7 @@ class StreamProtocol(str, Enum):
     WEBSOCKET = "websocket"
 
 
-class StreamDecision(str, Enum):
+class StreamDecision(StrEnum):
     """Transcode decision options."""
 
     TRANSCODE = "transcode"
@@ -566,7 +566,7 @@ class PlexMediaService(BaseService):
             return result
 
         except NotFound:
-            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404)
+            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404) from None
         except Exception as e:
             self.logger.exception("Failed to get playlist:")
             raise ServiceError(f"Failed to get playlist: {e!s}", code="playlist_error") from e
@@ -690,7 +690,7 @@ class PlexMediaService(BaseService):
             return await self.get_playlist(playlist_id)
 
         except NotFound:
-            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404)
+            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404) from None
         except Exception as e:
             self.logger.exception("Failed to update playlist:")
             raise ServiceError(f"Failed to update playlist: {e!s}", code="playlist_update_failed") from e
@@ -723,7 +723,7 @@ class PlexMediaService(BaseService):
             }
 
         except NotFound:
-            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404)
+            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404) from None
         except Exception as e:
             self.logger.exception("Failed to delete playlist:")
             raise ServiceError(f"Failed to delete playlist: {e!s}", code="playlist_deletion_failed") from e
@@ -777,7 +777,7 @@ class PlexMediaService(BaseService):
             return await self.get_playlist(playlist_id)
 
         except NotFound:
-            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404)
+            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404) from None
         except Exception as e:
             self.logger.exception("Failed to add items to playlist:")
             raise ServiceError(f"Failed to add items to playlist: {e!s}", code="playlist_update_failed") from e
@@ -822,7 +822,7 @@ class PlexMediaService(BaseService):
             return await self.get_playlist(playlist_id)
 
         except NotFound:
-            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404)
+            raise ServiceError(f"Playlist not found: {playlist_id}", code="not_found", status_code=404) from None
         except Exception as e:
             self.logger.exception("Failed to remove items from playlist:")
             raise ServiceError(f"Failed to remove items from playlist: {e!s}", code="playlist_update_failed") from e
@@ -1455,7 +1455,7 @@ class PlexMediaService(BaseService):
             return result
 
         except NotFound:
-            raise ServiceError(f"Media item not found: {item_id}", code="not_found", status_code=404)
+            raise ServiceError(f"Media item not found: {item_id}", code="not_found", status_code=404) from None
         except Exception as e:
             self.logger.exception("Failed to get media metadata:")
             raise ServiceError(f"Failed to get media metadata: {e!s}", code="metadata_failed") from e

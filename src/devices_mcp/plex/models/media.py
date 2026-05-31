@@ -5,13 +5,13 @@ This module contains Pydantic models for representing media items and related da
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
 
-class MediaType(str, Enum):
+class MediaType(StrEnum):
     """Enumeration of media types in Plex."""
 
     MOVIE = "movie"
@@ -143,7 +143,7 @@ class MediaFilter(BaseModel):
     value: Any = Field(..., description="Value to compare against")
 
 
-class SortOrder(str, Enum):
+class SortOrder(StrEnum):
     """Sort order for media queries."""
 
     ASC = "asc"

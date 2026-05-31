@@ -5,11 +5,11 @@ Defines the data structures used for PTZ (Pan-Tilt-Zoom) camera control.
 """
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 
-class PTZMoveDirection(str, Enum):
+class PTZMoveDirection(StrEnum):
     """Enumeration of possible PTZ movement directions"""
 
     UP = "up"
@@ -23,7 +23,7 @@ class PTZMoveDirection(str, Enum):
     STOP = "stop"
 
 
-class PTZSpeed(str, Enum):
+class PTZSpeed(StrEnum):
     """Enumeration of PTZ movement speeds"""
 
     SLOW = "slow"
@@ -120,7 +120,7 @@ class PTZLimits:
         }
 
 
-class PTZCommandType(str, Enum):
+class PTZCommandType(StrEnum):
     """Types of PTZ commands"""
 
     MOVE = "move"

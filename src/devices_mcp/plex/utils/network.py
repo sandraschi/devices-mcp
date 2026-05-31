@@ -58,7 +58,7 @@ async def async_is_port_open(
     loop = loop or asyncio.get_event_loop()
 
     try:
-        reader, writer = await asyncio.wait_for(asyncio.open_connection(host, port, loop=loop), timeout=timeout)
+        _reader, writer = await asyncio.wait_for(asyncio.open_connection(host, port, loop=loop), timeout=timeout)
         writer.close()
         await writer.wait_closed()
         return True

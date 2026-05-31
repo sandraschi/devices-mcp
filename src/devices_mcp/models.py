@@ -2,12 +2,12 @@
 Data models for devices-mcp.
 """
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, HttpUrl, IPvAnyAddress, field_validator
 
 
-class CameraModel(str, Enum):
+class CameraModel(StrEnum):
     """Supported Tapo camera models."""
 
     C100 = "Tapo C100"
@@ -17,7 +17,7 @@ class CameraModel(str, Enum):
     C310 = "Tapo C310"
 
 
-class StreamType(str, Enum):
+class StreamType(StrEnum):
     """Supported stream types."""
 
     RTSP = "rtsp"
@@ -26,7 +26,7 @@ class StreamType(str, Enum):
     DASH = "dash"
 
 
-class VideoQuality(str, Enum):
+class VideoQuality(StrEnum):
     """Video quality presets."""
 
     HIGH = "high"
@@ -34,7 +34,7 @@ class VideoQuality(str, Enum):
     LOW = "low"
 
 
-class PTZDirection(str, Enum):
+class PTZDirection(StrEnum):
     """PTZ movement directions."""
 
     UP = "up"
@@ -44,7 +44,7 @@ class PTZDirection(str, Enum):
     STOP = "stop"
 
 
-class MotionDetectionSensitivity(str, Enum):
+class MotionDetectionSensitivity(StrEnum):
     """Motion detection sensitivity levels."""
 
     HIGH = "high"

@@ -41,9 +41,9 @@ from .weather_management import register_weather_management_tool
 
 # Import agentic tools (SEP-1577)
 try:
-    from ..agentic_security import agentic_security_workflow
+    from .. import agentic_security as _agentic_security_mod
 
-    _agentic_security_available = True
+    _agentic_security_available = hasattr(_agentic_security_mod, "agentic_security_workflow")
 except ImportError:
     _agentic_security_available = False
 
@@ -57,9 +57,7 @@ def register_all_portmanteau_tools(mcp: FastMCP) -> None:
         mcp: The FastMCP instance to register tools with
     """
     # Core portmanteau tools (always registered)
-    register_tapo_control_tool(
-        mcp
-    )  # Unified "device_control" tool - register first for natural commands
+    register_tapo_control_tool(mcp)  # Unified "device_control" tool - register first for natural commands
     register_camera_management_tool(mcp)
     register_ptz_management_tool(mcp)
     register_media_management_tool(mcp)
@@ -96,9 +94,7 @@ def register_all_portmanteau_tools(mcp: FastMCP) -> None:
         # The agentic_security_workflow tool is already registered via @mcp.tool decorator
         logger.info("Agentic security workflow tool registered (SEP-1577)")
     else:
-        logger.warning(
-            "Agentic security workflow tool not available (missing advanced_memory dependency)"
-        )
+        logger.warning("Agentic security workflow tool not available (missing advanced_memory dependency)")
 
     logger.info("All portmanteau tools registered successfully (20+ agentic tools)")
 

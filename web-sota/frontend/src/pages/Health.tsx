@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Activity,
   AlertCircle,
@@ -9,7 +10,6 @@ import {
   Video,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface HealthData {
   success?: boolean;
@@ -41,8 +41,22 @@ function formatUptime(sec?: number): string {
   return `${h}h ${m}m`;
 }
 
+interface ConnectionHealth {
+  total_devices?: number;
+  online?: number;
+  offline?: number;
+  devices?: Array<{
+    name?: string;
+    type?: string;
+    connected?: boolean;
+    error?: string | null;
+  }>;
+  error?: string;
+}
+
 export function Health() {
   const [data, setData] = useState<HealthData | null>(null);
+  const [connection, setConnection] = useState<ConnectionHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,12 +64,26 @@ export function Health() {
     let cancelled = false;
     async function load() {
       try {
-        const r = await fetch('/api/health');
-        const json = await r.json();
-        if (!cancelled) {
-          setData(json);
-          if (!r.ok) setError(json.error ?? 'Health check failed');
-          else setError(null);
+        const ctrl = new AbortController();
+        const timeout = setTimeout(() => ctrl.abort(), 15000);
+        const [healthRes, connRes] = await Promise.allSettled([
+          fetch('/api/health', { signal: ctrl.signal }),
+          fetch('/api/system/connection-health', { signal: ctrl.signal }),
+        ]);
+        clearTimeout(timeout);
+
+        if (cancelled) return;
+        if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
+          setData(await healthRes.value.json());
+          setError(null);
+        } else if (healthRes.status === 'fulfilled') {
+          const json = await healthRes.value.json().catch(() => ({}));
+          setError((json as { error?: string }).error ?? 'Health check failed');
+        } else {
+          setError('Health API request failed');
+        }
+        if (connRes.status === 'fulfilled' && connRes.value.ok) {
+          setConnection(await connRes.value.json());
         }
       } catch (e) {
         if (!cancelled) setError(String(e));
@@ -185,6 +213,32 @@ export function Health() {
           </Card>
         )}
       </div>
+
+      {connection && (connection.total_devices ?? 0) > 0 && (
+        <Card>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-base'>Device connectivity</CardTitle>
+          </CardHeader>
+          <CardContent className='space-y-2'>
+            <p className='text-sm text-slate-600 dark:text-slate-400'>
+              {connection.online ?? 0} online · {connection.offline ?? 0} offline ·{' '}
+              {connection.total_devices ?? 0} total
+            </p>
+            <ul className='space-y-1 text-sm'>
+              {(connection.devices ?? []).map((d) => (
+                <li key={`${d.type}-${d.name}`} className='flex justify-between gap-2'>
+                  <span>
+                    {d.name} ({d.type})
+                  </span>
+                  <span className={d.connected ? 'text-green-600' : 'text-amber-600'}>
+                    {d.connected ? 'online' : (d.error ?? 'offline')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

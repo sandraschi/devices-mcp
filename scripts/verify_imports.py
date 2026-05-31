@@ -16,9 +16,9 @@ try:
 except ImportError as e:
     logger.info(f"Failed to import devices_mcp: {e}")
 
-try:
-    from devices_mcp.integrations.vbot_client import VbotClient
+import importlib.util
 
-    logger.info("Successfully imported VbotClient")
-except ImportError as e:
-    logger.info(f"Failed to import VbotClient: {e}")
+if importlib.util.find_spec("devices_mcp.integrations.vbot_client") is not None:
+    logger.info("Successfully imported VbotClient module")
+else:
+    logger.info("Failed to import VbotClient module (not installed)")

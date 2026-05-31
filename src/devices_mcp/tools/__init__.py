@@ -13,8 +13,6 @@ import pkgutil
 from importlib import import_module
 
 # Import types first to avoid circular imports
-from typing import List, Optional, Type
-
 # Import base tool components
 from devices_mcp.tools.base_tool import (
     BaseTool,

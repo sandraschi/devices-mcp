@@ -26,9 +26,7 @@ def register_kitchen_management_tool(mcp: FastMCP) -> None:
 
     @mcp.tool()
     async def kitchen_management(
-        action: Literal[
-            "list_appliances", "control_appliance", "get_appliance_status", "get_energy_usage"
-        ],
+        action: Literal["list_appliances", "control_appliance", "get_appliance_status", "get_energy_usage"],
         device_id: str | None = None,
         power_state: str | None = None,
         time_range: str = "24h",
@@ -146,9 +144,7 @@ def register_kitchen_management_tool(mcp: FastMCP) -> None:
                 if not device:
                     return {"success": False, "error": f"Device {device_id} not found"}
 
-                is_kitchen = any(
-                    keyword.lower() in device.name.lower() for keyword in kitchen_keywords
-                )
+                is_kitchen = any(keyword.lower() in device.name.lower() for keyword in kitchen_keywords)
                 if not is_kitchen:
                     return {
                         "success": False,
@@ -173,9 +169,7 @@ def register_kitchen_management_tool(mcp: FastMCP) -> None:
                         "action": action,
                         "data": {
                             "device_id": device_id,
-                            "power_state": updated_device.power_state
-                            if updated_device
-                            else turn_on,
+                            "power_state": updated_device.power_state if updated_device else turn_on,
                             "message": f"Appliance turned {'ON' if turn_on else 'OFF'}",
                         },
                     }

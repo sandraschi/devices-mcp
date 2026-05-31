@@ -238,7 +238,7 @@ class HealthCheckTool(BaseTool):
                 cameras_dict = camera_manager.cameras
                 total_cameras = len(cameras_dict)
                 online_cameras = 0
-                for camera_name, camera in cameras_dict.items():
+                for _camera_name, camera in cameras_dict.items():
                     try:
                         status = await camera.get_status()
                         if status.get("connected", False):

@@ -81,7 +81,7 @@ class MCPServerComposition:
 
                 # Register all tools from the connected server with the namespace
                 for tool_name in await client.list_tools():
-                    tool_info = await client.get_tool(tool_name)
+                    await client.get_tool(tool_name)
                     prefixed_name = f"{namespace}.{tool_name}"
                     self.namespace_mapping[prefixed_name] = (namespace, tool_name)
 
@@ -94,7 +94,7 @@ class MCPServerComposition:
 
             except Exception as e:
                 logger.exception("Failed to connect to server %s: %s", server_url, str(e))
-                raise RuntimeError(f"Failed to connect to server: {e!s}")
+                raise RuntimeError(f"Failed to connect to server: {e!s}") from e
 
         @self.base_server.tool()
         async def disconnect_server(namespace: str) -> dict[str, Any]:
@@ -131,7 +131,7 @@ class MCPServerComposition:
 
             except Exception as e:
                 logger.exception("Failed to disconnect server %s: %s", namespace, str(e))
-                raise RuntimeError(f"Failed to disconnect server: {e!s}")
+                raise RuntimeError(f"Failed to disconnect server: {e!s}") from e
 
         @app.tool()
         async def call_namespaced_tool(tool_name: str, **kwargs) -> Any:
@@ -164,7 +164,7 @@ class MCPServerComposition:
                 return await client.call(actual_tool_name, **kwargs)
             except Exception as e:
                 logger.exception("Error calling tool %s on server %s: %s", actual_tool_name, namespace, str(e))
-                raise RuntimeError(f"Failed to call tool {tool_name}: {e!s}")
+                raise RuntimeError(f"Failed to call tool {tool_name}: {e!s}") from e
 
     async def close(self) -> None:
         """Close all connections to remote servers."""

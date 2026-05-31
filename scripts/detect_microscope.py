@@ -42,9 +42,7 @@ def detect_usb_devices():
 
                 devices_found.append(device_info)
 
-                logger.info(
-                    f"[CAMERA] Device {device_id}: {width}x{height} - {device_info['type']}"
-                )
+                logger.info(f"[CAMERA] Device {device_id}: {width}x{height} - {device_info['type']}")
 
             cap.release()
         else:

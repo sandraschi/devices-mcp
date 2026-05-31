@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Detect virtual environment python
 VENV_PYTHON = (
-    os.path.join("venv", "Scripts", "python.exe")
-    if os.name == "nt"
-    else os.path.join("venv", "bin", "python")
+    os.path.join("venv", "Scripts", "python.exe") if os.name == "nt" else os.path.join("venv", "bin", "python")
 )
 PYTHON_CMD = VENV_PYTHON if os.path.exists(VENV_PYTHON) else "python"
 
@@ -27,7 +25,7 @@ def run_command(cmd, description):
     """Run a command and handle errors."""
     logger.info(f"START: {description}")
     try:
-        result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
+        subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
         logger.info(f"SUCCESS: {description} completed successfully")
         return True
     except subprocess.CalledProcessError as e:
@@ -38,9 +36,7 @@ def run_command(cmd, description):
 
 def start_mcp_server(debug=False):
     """Start the MCP server."""
-    import_cmd = (
-        "import sys; sys.path.insert(0, 'src'); from devices_mcp.server_v2 import main; main()"
-    )
+    import_cmd = "import sys; sys.path.insert(0, 'src'); from devices_mcp.server_v2 import main; main()"
     cmd = f'{PYTHON_CMD} -c "{import_cmd}" --direct'
     if debug:
         cmd += " --debug"
@@ -120,29 +116,22 @@ def check_dependencies():
     """Check if all dependencies are installed."""
     logger.info("CHECK: Checking dependencies...")
 
-    try:
-        import cv2
+    import importlib.util
 
-        logger.info("SUCCESS: OpenCV installed")
-    except ImportError:
+    if importlib.util.find_spec("cv2") is None:
         logger.exception("ERROR: OpenCV not installed. Run: pip install opencv-python")
         return False
+    logger.info("SUCCESS: OpenCV installed")
 
-    try:
-        import fastapi
-
-        logger.info("SUCCESS: FastAPI installed")
-    except ImportError:
+    if importlib.util.find_spec("fastapi") is None:
         logger.exception("ERROR: FastAPI not installed. Run: pip install fastapi")
         return False
+    logger.info("SUCCESS: FastAPI installed")
 
-    try:
-        import uvicorn
-
-        logger.info("SUCCESS: Uvicorn installed")
-    except ImportError:
+    if importlib.util.find_spec("uvicorn") is None:
         logger.exception("ERROR: Uvicorn not installed. Run: pip install uvicorn")
         return False
+    logger.info("SUCCESS: Uvicorn installed")
 
     logger.info("SUCCESS: All dependencies are installed!")
     return True

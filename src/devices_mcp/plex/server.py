@@ -60,18 +60,12 @@ def main():
     import argparse
 
     # Set up argument parser
-    parser = argparse.ArgumentParser(
-        description="PlexMCP - Austrian efficiency for media streaming"
-    )
-    parser.add_argument(
-        "--stdio", action="store_true", help="Run in STDIO (JSON-RPC) mode (default)"
-    )
+    parser = argparse.ArgumentParser(description="PlexMCP - Austrian efficiency for media streaming")
+    parser.add_argument("--stdio", action="store_true", help="Run in STDIO (JSON-RPC) mode (default)")
     parser.add_argument("--http", action="store_true", help="Run in HTTP mode")
     parser.add_argument("--sse", action="store_true", help="Run in SSE mode (deprecated)")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to (HTTP/SSE mode only)")
-    parser.add_argument(
-        "--port", type=int, default=10763, help="Port to listen on (HTTP/SSE mode only)"
-    )
+    parser.add_argument("--port", type=int, default=10763, help="Port to listen on (HTTP/SSE mode only)")
     parser.add_argument("--path", default="/mcp", help="Path for HTTP mode")
     parser.add_argument("--debug", action="store_true", help="Enable debug mode")
 

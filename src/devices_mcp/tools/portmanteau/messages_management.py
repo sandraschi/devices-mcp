@@ -160,9 +160,7 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     "timestamp": "2025-12-27T04:00:00Z",
                     "status": "sent",
                     "delivery_channels": [channel],
-                    "estimated_delivery_time": "immediate"
-                    if channel == "dashboard"
-                    else "2-5 minutes",
+                    "estimated_delivery_time": "immediate" if channel == "dashboard" else "2-5 minutes",
                     "tracking_id": f"track_{asyncio.get_event_loop().time()}",
                 }
 

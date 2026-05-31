@@ -611,7 +611,7 @@ async def help(level: str = "beginner", section: str = "all") -> dict[str, Any]:
         "api_version": "1.0",
         "documentation_level": level,
         "requested_section": section,
-        "sections_available": ["all"] + list(categories.keys()) + ["info"],
+        "sections_available": ["all", *list(categories.keys()), "info"],
     }
 
     # Add general Plex info if requested

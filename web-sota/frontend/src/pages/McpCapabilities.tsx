@@ -1,7 +1,7 @@
-import { AlertCircle, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { type CapabilitiesResponse, getCapabilities } from '@/common/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function McpCapabilities() {
   const [data, setData] = useState<CapabilitiesResponse | null>(null);

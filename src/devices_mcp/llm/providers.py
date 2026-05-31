@@ -2,7 +2,7 @@
 
 import logging
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import httpx
@@ -10,7 +10,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
-class ProviderType(str, Enum):
+class ProviderType(StrEnum):
     """Supported LLM provider types."""
 
     OLLAMA = "ollama"
@@ -239,13 +239,19 @@ class LMStudioProvider(LLMProvider):
         except Exception:
             return None
 
-    async def chat(self, messages: list[dict[str, str]], stream: bool = False) -> Any:
+    async def chat(
+        self,
+        messages: list[dict[str, str]],
+        stream: bool = False,
+        model_name: str | None = None,
+    ) -> Any:
         """Send chat message to LM Studio (OpenAI-compatible)."""
         try:
+            use_model = model_name or await self.get_current_model() or "local-model"
             response = await self._client.post(
                 f"{self.base_url}/v1/chat/completions",
                 json={
-                    "model": await self.get_current_model() or "local-model",
+                    "model": use_model,
                     "messages": messages,
                     "stream": stream,
                 },
@@ -326,13 +332,18 @@ class OpenAIProvider(LLMProvider):
         """OpenAI doesn't have a concept of 'current' model."""
         return None
 
-    async def chat(self, messages: list[dict[str, str]], stream: bool = False) -> Any:
+    async def chat(
+        self,
+        messages: list[dict[str, str]],
+        stream: bool = False,
+        model_name: str | None = None,
+    ) -> Any:
         """Send chat message to OpenAI."""
         try:
             response = await self._client.post(
                 f"{self.base_url}/chat/completions",
                 json={
-                    "model": "gpt-4",  # Default, should be configurable
+                    "model": model_name or "gpt-4",
                     "messages": messages,
                     "stream": stream,
                 },

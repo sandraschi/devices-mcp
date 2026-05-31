@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 _RUNNING_TASKS: set[asyncio.Task] = set()
 
 
-def run_in_executor(
+def run_in_executor[T](
     func: Callable[..., T],
     *args: Any,
     executor: ThreadPoolExecutor | ProcessPoolExecutor | None = None,
@@ -55,7 +55,7 @@ def run_in_executor(
     return loop.run_in_executor(executor, partial_func)
 
 
-def run_in_process(func: Callable[..., T], *args: Any, **kwargs: Any) -> Coroutine[Any, Any, T]:
+def run_in_process[T](func: Callable[..., T], *args: Any, **kwargs: Any) -> Coroutine[Any, Any, T]:
     """Run a CPU-bound function in a process pool executor.
 
     Args:
@@ -262,7 +262,7 @@ class TaskPool:
         return len(self._completed)
 
 
-def create_task(coro: Coroutine[Any, Any, T], name: str | None = None) -> asyncio.Task[T]:
+def create_task[T](coro: Coroutine[Any, Any, T], name: str | None = None) -> asyncio.Task[T]:
     """Create a task and track it for graceful shutdown.
 
     Args:
@@ -290,7 +290,7 @@ def create_task(coro: Coroutine[Any, Any, T], name: str | None = None) -> asynci
     return task
 
 
-async def gather_with_concurrency(
+async def gather_with_concurrency[T](
     n: int, *coros: Coroutine[Any, Any, T], return_exceptions: bool = False
 ) -> list[T | Exception]:
     """Run coroutines with limited concurrency.
@@ -365,7 +365,9 @@ def async_timeout(
     return decorator
 
 
-async def run_until_complete_with_timeout(coro: Coroutine[Any, Any, T], timeout: float, default: T = None) -> T | None:
+async def run_until_complete_with_timeout[T](
+    coro: Coroutine[Any, Any, T], timeout: float, default: T = None
+) -> T | None:
     """Run a coroutine with a timeout and return a default value on timeout.
 
     Args:

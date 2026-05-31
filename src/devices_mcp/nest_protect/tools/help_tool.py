@@ -250,10 +250,12 @@ async def get_tool_help(tool_name: str) -> dict[str, Any]:
         }
 
 
-async def search_tools(query: str, search_in: list[str] = ["name", "description"]) -> dict[str, Any]:
+async def search_tools(query: str, search_in: list[str] | None = None) -> dict[str, Any]:
     """Search for tools by keyword or description with advanced filtering."""
     from ..fastmcp_server import app
 
+    if search_in is None:
+        search_in = ["name", "description"]
     try:
         query = query.lower()
         results = []

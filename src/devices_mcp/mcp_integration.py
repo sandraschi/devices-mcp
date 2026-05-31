@@ -6,8 +6,8 @@ This module provides base classes and utilities for FastMCP 3.1 compatibility.
 
 import inspect
 import logging
-from enum import Enum
-from typing import Generic, TypeVar
+from enum import StrEnum
+from typing import TypeVar
 
 from fastmcp.tools import Tool as FastMCPTool
 from pydantic import BaseModel, Field
@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 T = TypeVar("T")
 
 
-class ToolResult(BaseModel, Generic[T]):
+class ToolResult[T](BaseModel):
     """Standard response format for tool execution results."""
 
     success: bool = Field(..., description="Whether the operation was successful")
@@ -36,7 +36,7 @@ class ToolResult(BaseModel, Generic[T]):
 logger = logging.getLogger(__name__)
 
 
-class ToolCategory(str, Enum):
+class ToolCategory(StrEnum):
     """Categories for organizing tools in the MCP interface."""
 
     CAMERA = "Camera"

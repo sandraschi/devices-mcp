@@ -1,0 +1,14 @@
+{
+  "name": "devices-mcp-native",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare": "powershell -NoProfile -ExecutionPolicy Bypass -File setup-stub-sidecars.ps1",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "build:debug": "tauri build --debug"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

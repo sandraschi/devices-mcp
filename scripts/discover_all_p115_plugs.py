@@ -88,13 +88,9 @@ async def discover_all_plugs():
 
                 # Get device info
                 device_info = await plug.get_device_info()
-                device_name = getattr(
-                    device_info, "nickname", getattr(device_info, "name", plug_info["alias"])
-                )
+                device_name = getattr(device_info, "nickname", getattr(device_info, "name", plug_info["alias"]))
                 model = getattr(device_info, "model", "P115")
-                firmware = getattr(
-                    device_info, "fw_ver", getattr(device_info, "firmware_version", "Unknown")
-                )
+                firmware = getattr(device_info, "fw_ver", getattr(device_info, "firmware_version", "Unknown"))
                 mac = getattr(device_info, "mac", "Unknown")
 
                 # Try to get state

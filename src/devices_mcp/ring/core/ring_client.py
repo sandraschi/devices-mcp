@@ -73,7 +73,7 @@ class RingClient:
             raise AuthenticationError(f"Authentication failed: {response.status_code}")
 
         except Exception as e:
-            raise AuthenticationError(f"Authentication error: {e!s}")
+            raise AuthenticationError(f"Authentication error: {e!s}") from e
 
     def _setup_session_with_token(self, token: str):
         """Setup session with authentication token."""
@@ -129,7 +129,7 @@ class RingClient:
         return []
 
     def arm_system(
-        self, mode: str, bypass_sensors: list[str] = None, entry_delay_minutes: int | None = None
+        self, mode: str, bypass_sensors: list[str] | None = None, entry_delay_minutes: int | None = None
     ) -> dict[str, Any]:
         """Arm the security system."""
         return {

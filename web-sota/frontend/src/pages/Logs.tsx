@@ -1,7 +1,7 @@
-import { AlertCircle, FileText, Loader2, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, FileText, Loader2, RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface LogEntry {
   timestamp: string;
@@ -40,7 +40,7 @@ export function Logs() {
   const [levelFilter, setLevelFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -69,12 +69,10 @@ export function Logs() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [lines, levelFilter, searchQuery]);
 
   useEffect(() => {
     void load();
-    // Only auto-reload when line count changes; use Refresh for level/search.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
 
   const levelColor = (level: string) => {
@@ -91,8 +89,11 @@ export function Logs() {
       <div className='flex flex-wrap items-center justify-between gap-4'>
         <h1 className='text-2xl font-bold tracking-tight'>Log management</h1>
         <div className='flex flex-wrap items-center gap-2'>
-          <label className='text-sm text-slate-500'>Lines</label>
+          <label htmlFor='logs-lines' className='text-sm text-slate-500'>
+            Lines
+          </label>
           <select
+            id='logs-lines'
             className='rounded border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800'
             value={lines}
             onChange={(e) => setLines(Number(e.target.value))}
@@ -103,8 +104,11 @@ export function Logs() {
               </option>
             ))}
           </select>
-          <label className='text-sm text-slate-500'>Level</label>
+          <label htmlFor='logs-level' className='text-sm text-slate-500'>
+            Level
+          </label>
           <select
+            id='logs-level'
             className='rounded border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800'
             value={levelFilter}
             onChange={(e) => setLevelFilter(e.target.value)}

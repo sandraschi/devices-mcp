@@ -1,13 +1,13 @@
 """Pydantic models for Plex users and authentication."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field
 
 
-class UserRole(str, Enum):
+class UserRole(StrEnum):
     """User roles in Plex."""
 
     OWNER = "owner"

@@ -2,14 +2,14 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 from PIL import Image
 
 
-class CameraType(str, Enum):
+class CameraType(StrEnum):
     """Supported camera types.
 
     Attributes:

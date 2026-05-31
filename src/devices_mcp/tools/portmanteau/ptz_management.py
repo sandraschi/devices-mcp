@@ -25,14 +25,10 @@ async def _ptz_prank_nod(tool: PTZControlTool, camera_name: str, duration: float
 
     while asyncio.get_event_loop().time() < end_time:
         # Look up
-        await tool.execute(
-            operation="move", camera_id=camera_name, pan=0, tilt=0.8, zoom=0, speed=8
-        )
+        await tool.execute(operation="move", camera_id=camera_name, pan=0, tilt=0.8, zoom=0, speed=8)
         await asyncio.sleep(0.2)
         # Look down
-        await tool.execute(
-            operation="move", camera_id=camera_name, pan=0, tilt=-0.8, zoom=0, speed=8
-        )
+        await tool.execute(operation="move", camera_id=camera_name, pan=0, tilt=-0.8, zoom=0, speed=8)
         await asyncio.sleep(0.2)
         cycles += 1
 
@@ -41,23 +37,17 @@ async def _ptz_prank_nod(tool: PTZControlTool, camera_name: str, duration: float
     return {"mode": "nod", "cycles": cycles}
 
 
-async def _ptz_prank_shake(
-    tool: PTZControlTool, camera_name: str, duration: float
-) -> dict[str, Any]:
+async def _ptz_prank_shake(tool: PTZControlTool, camera_name: str, duration: float) -> dict[str, Any]:
     """Shake mode - rapid left/right like 'no no no!'."""
     end_time = asyncio.get_event_loop().time() + duration
     cycles = 0
 
     while asyncio.get_event_loop().time() < end_time:
         # Look left
-        await tool.execute(
-            operation="move", camera_id=camera_name, pan=-0.7, tilt=0, zoom=0, speed=8
-        )
+        await tool.execute(operation="move", camera_id=camera_name, pan=-0.7, tilt=0, zoom=0, speed=8)
         await asyncio.sleep(0.15)
         # Look right
-        await tool.execute(
-            operation="move", camera_id=camera_name, pan=0.7, tilt=0, zoom=0, speed=8
-        )
+        await tool.execute(operation="move", camera_id=camera_name, pan=0.7, tilt=0, zoom=0, speed=8)
         await asyncio.sleep(0.15)
         cycles += 1
 
@@ -66,9 +56,7 @@ async def _ptz_prank_shake(
     return {"mode": "shake", "cycles": cycles}
 
 
-async def _ptz_prank_dizzy(
-    tool: PTZControlTool, camera_name: str, duration: float
-) -> dict[str, Any]:
+async def _ptz_prank_dizzy(tool: PTZControlTool, camera_name: str, duration: float) -> dict[str, Any]:
     """Dizzy mode - circular motion like camera is drunk."""
     end_time = asyncio.get_event_loop().time() + duration
     cycles = 0
@@ -78,9 +66,7 @@ async def _ptz_prank_dizzy(
         # Circular motion using sin/cos
         pan = 0.6 * math.sin(angle)
         tilt = 0.6 * math.cos(angle)
-        await tool.execute(
-            operation="move", camera_id=camera_name, pan=pan, tilt=tilt, zoom=0, speed=6
-        )
+        await tool.execute(operation="move", camera_id=camera_name, pan=pan, tilt=tilt, zoom=0, speed=6)
         angle += 0.5
         if angle >= 2 * math.pi:
             angle = 0
@@ -92,9 +78,7 @@ async def _ptz_prank_dizzy(
     return {"mode": "dizzy", "cycles": cycles}
 
 
-async def _ptz_prank_chaos(
-    tool: PTZControlTool, camera_name: str, duration: float
-) -> dict[str, Any]:
+async def _ptz_prank_chaos(tool: PTZControlTool, camera_name: str, duration: float) -> dict[str, Any]:
     """Chaos mode - random crazy movements."""
     end_time = asyncio.get_event_loop().time() + duration
     moves = 0
@@ -104,9 +88,7 @@ async def _ptz_prank_chaos(
         tilt = random.uniform(-1.0, 1.0)
         zoom = random.uniform(0, 0.5)
         speed = random.randint(5, 8)
-        await tool.execute(
-            operation="move", camera_id=camera_name, pan=pan, tilt=tilt, zoom=zoom, speed=speed
-        )
+        await tool.execute(operation="move", camera_id=camera_name, pan=pan, tilt=tilt, zoom=zoom, speed=speed)
         await asyncio.sleep(random.uniform(0.1, 0.3))
         moves += 1
 
@@ -296,9 +278,7 @@ def register_ptz_management_tool(mcp: FastMCP) -> None:
                 # Cap duration at 10 seconds for safety
                 safe_duration = min(max(1, duration), 10)
 
-                logger.info(
-                    f"Starting PTZ prank mode '{prank_mode}' on {camera_name} for {safe_duration} seconds"
-                )
+                logger.info(f"Starting PTZ prank mode '{prank_mode}' on {camera_name} for {safe_duration} seconds")
 
                 tool = PTZControlTool()
 

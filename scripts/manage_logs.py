@@ -39,9 +39,7 @@ log_manager_spec.loader.exec_module(log_manager_module)
 LogManager = log_manager_module.LogManager
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 LogConfig = log_manager_module.LogConfig
 sanitize_logs_now = log_manager_module.sanitize_logs_now
@@ -96,9 +94,7 @@ def rotate_log(filename):
         if success:
             logger.info(f"SUCCESS: Successfully rotated {filename}")
         else:
-            logger.warning(
-                f"WARNING: Rotation completed with warnings or no action needed for {filename}"
-            )
+            logger.warning(f"WARNING: Rotation completed with warnings or no action needed for {filename}")
 
     except Exception:
         logger.exception("ERROR: Failed to rotate log file:")

@@ -1,25 +1,30 @@
 # Home Security MCP Platform
 
-[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2.0-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+<p align="center">
+  <a href="https://github.com/casey/just"><img src="https://img.shields.io/badge/just-ready_to_go-7c5cfc?style=flat-square&logo=just&logoColor=white" alt="Just"></a>
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
+  <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
+  <a href="https://github.com/PrefectHQ/fastmcp"><img src="https://img.shields.io/badge/FastMCP-3.2-7c5cfc?style=flat-square" alt="FastMCP"></a>
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.20.0-blue.svg)](https://github.com/sandraschi/devices-mcp/releases)
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![MCP Version](https://img.shields.io/badge/MCP-3.1-blue)](https://mcp-standard.org)
-[![FastMCP](https://img.shields.io/badge/FastMCP-3.1-green.svg)](https://github.com/PrefectHQ/fastmcp)
-[![Stdio Stability](https://img.shields.io/badge/Stdio-Pure-success.svg)](https://github.com/sandraschi/devices-mcp)
-[![Cursor MCP](https://img.shields.io/badge/Cursor%20MCP-Working-success.svg)](https://cursor.sh)
-[![Status](https://img.shields.io/badge/status-Beta-yellow.svg)](https://github.com/sandraschi/devices-mcp)
-[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue.svg)](https://github.com/sandraschi/devices-mcp/actions)
-[![Dashboard](https://img.shields.io/badge/Dashboard-Live-green.svg)](http://localhost:7777)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
-[![Energy Dashboard](https://img.shields.io/badge/Energy%20Dashboard-Operational-success.svg)](http://localhost:7777/energy)
-[![Lighting Dashboard](https://img.shields.io/badge/Lighting%20Dashboard-Operational-success.svg)](http://localhost:7777/lighting)
-[![HomeAware Motion](https://img.shields.io/badge/HomeAware-Motion%20Detection-success.svg)](http://localhost:7777/api/lighting/hue/homeaware/status)
-[![Multi-Device](https://img.shields.io/badge/Devices-Tapo%20%7C%20Ring%20%7C%20Nest%20%7C%20Plex%20%7C%20USB-blue.svg)](https://github.com/sandraschi/devices-mcp)
-[![LLM Integration](https://img.shields.io/badge/LLM-Multi--Provider-orange.svg)](https://github.com/sandraschi/devices-mcp)
-[![Error Handling](https://img.shields.io/badge/Error%20Handling-Robust-green.svg)](https://github.com/sandraschi/devices-mcp)
+
+> 📖 **[Installation Guide](INSTALL.md)** — quick start, manual setup, and troubleshooting
+
+## Quick Start
+
+```powershell
+git clone https://github.com/sandraschi/devices-mcp
+cd devices-mcp
+just
+```
+
+This opens an interactive dashboard showing all available commands. Run `just bootstrap` to install dependencies, then `just serve` or `just dev` to start.
+
+**Web dashboard (web-sota):** Vite frontend on **10716**, FastAPI backend on **10717**, USB camera helper on **10715**. Open `http://localhost:10717/app/` (production) or `http://localhost:10716` (Vite dev). **Desktop (Tauri):** `native\` — `npm run dev` or `native\build.ps1` for a Windows installer. Legacy single-port `devices_mcp.web` on 7777 is still available via `start_dashboard.ps1`.
+
+### Manual Setup
+
+If you don't have `just` installed:
 
 ##  **DUAL-NATURE ARCHITECTURE**
 
@@ -53,7 +58,7 @@ Complete orchestration platform that unifies all MCP servers into a single inter
   **ROBUST ERROR HANDLING**: Circuit breakers, timeouts, and graceful degradation prevent system hangs/crashes
  **USB CAMERA SERVER**: Dedicated local capture server integrated into global startup flow on port 10715.
 
-> ** REPOSITORY STRUCTURE FIXED**: Refactored to separate MCP server (`src/devices_mcp/`) from webapp (`webapp/`). All .exe files properly organized in `integrations/` folder.
+> ** REPOSITORY STRUCTURE FIXED**: Refactored to separate MCP server (`src/devices_mcp/`) from web dashboard (`web-sota/`). All .exe files properly organized in `integrations/` folder.
 >
 > **See: [EXE_FILES_ANALYSIS.md](EXE_FILES_ANALYSIS.md)** for detailed breakdown of all 50+ critical executables.
 >
@@ -1269,7 +1274,7 @@ src/devices_mcp/
     camera/         # Camera-related tools
     ptz/            # PTZ controls
     system/         # System tools
- webapp/             # Web application (separated from MCP)
+ web-sota/           # Web dashboard (Vite frontend + FastAPI backend)
  cli_v2.py           # Command-line interface
 ```
 

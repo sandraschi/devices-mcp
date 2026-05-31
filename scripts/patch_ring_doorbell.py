@@ -16,7 +16,7 @@ def patch_ring_doorbell():
 
         # Try to import the specific module that's failing
         try:
-            from websockets.asyncio.client import connect
+            importlib.import_module("websockets.asyncio.client")
 
             logger.info("Successfully imported websockets.asyncio.client")
         except ImportError as e:
@@ -27,7 +27,7 @@ def patch_ring_doorbell():
 
         # Now try to import the ring_doorbell package
         try:
-            from ring_doorbell.webrtcstream import RingWebRtcStream
+            importlib.import_module("ring_doorbell.webrtcstream")
 
             logger.info("Successfully imported RingWebRtcStream")
             return True

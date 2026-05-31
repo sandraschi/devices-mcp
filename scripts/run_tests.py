@@ -13,7 +13,7 @@ from pathlib import Path
 
 def run_pytest(args):
     """Run pytest with specified arguments."""
-    cmd = [sys.executable, "-m", "pytest"] + args
+    cmd = [sys.executable, "-m", "pytest", *args]
     print(f"Running: {' '.join(cmd)}")
     return subprocess.run(cmd, check=False, cwd=Path(__file__).parent.parent)
 
@@ -26,12 +26,8 @@ def main():
         default="all",
         help="Type of tests to run",
     )
-    parser.add_argument(
-        "--mock-only", action="store_true", help="Run only mock tests (no real hardware/network)"
-    )
-    parser.add_argument(
-        "--hardware", action="store_true", help="Include hardware tests (requires real devices)"
-    )
+    parser.add_argument("--mock-only", action="store_true", help="Run only mock tests (no real hardware/network)")
+    parser.add_argument("--hardware", action="store_true", help="Include hardware tests (requires real devices)")
     parser.add_argument("--coverage", action="store_true", help="Generate coverage report")
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
     parser.add_argument("--ci", action="store_true", help="CI mode (fail fast, no hardware tests)")
@@ -56,8 +52,8 @@ def main():
             ]
         )
     elif args.hardware:
-        # Include hardware tests
-        pytest_args.extend(["-m", "not real"])  # Run mocks and integration, but not real hardware
+        pytest_args.extend(["tests/test_hardware_connectivity.py", "--no-cov"])
+        pytest_args.extend(["-m", "hardware"])
     # Default: run unit and mock integration tests
     elif args.type == "unit":
         pytest_args.extend(["-m", "unit"])

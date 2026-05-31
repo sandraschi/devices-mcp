@@ -27,7 +27,7 @@ def detect_usb_cameras(max_devices=10):
             backend = cap.getBackendName()
 
             # Try to read a frame to confirm it's a working camera
-            ret, frame = cap.read()
+            ret, _frame = cap.read()
             if ret:
                 device_info = {
                     "device_id": i,
@@ -76,9 +76,7 @@ otoscope{device["device_id"]}:
     if not otoscope_configs:
         logger.info("No potential otoscope devices detected based on common resolutions.")
         logger.info("Otoscope cameras typically use 640x480 or 800x600 resolution.")
-        logger.info(
-            "If your otoscope uses a different resolution, you can manually configure it as type: otoscope"
-        )
+        logger.info("If your otoscope uses a different resolution, you can manually configure it as type: otoscope")
 
 
 def main():

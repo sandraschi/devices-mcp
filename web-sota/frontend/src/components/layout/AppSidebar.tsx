@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import {
   Activity,
   Bell,
@@ -5,6 +6,7 @@ import {
   CloudRain,
   Cpu,
   FileText,
+  Flame,
   Heart,
   LayoutDashboard,
   Lightbulb,
@@ -14,11 +16,11 @@ import {
   Rocket,
   Settings,
   Shield,
+  Thermometer,
   Video,
   Zap,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,6 +32,8 @@ const nav = [
   { to: '/lighting', label: 'Lighting', icon: Lightbulb },
   { to: '/robots', label: 'Robots', icon: Bot },
   { to: '/ring', label: 'Ring Doorbell', icon: Bell },
+  { to: '/nest', label: 'Nest Protect', icon: Flame },
+  { to: '/shelly', label: 'Shelly', icon: Thermometer },
   { to: '/health', label: 'PC Health', icon: Activity },
   { to: '/human-health', label: 'Human Health', icon: Heart },
   { to: '/alarms', label: 'Alarms', icon: Shield },

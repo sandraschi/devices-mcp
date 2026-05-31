@@ -186,8 +186,11 @@ class LLMManager:
         # Use current model if not specified
         use_model = model_name or self.current_model
 
-        # For Ollama, pass model_name to chat method
         if isinstance(provider, OllamaProvider):
+            return await provider.chat(messages, stream=stream, model_name=use_model)
+        if isinstance(provider, LMStudioProvider):
+            return await provider.chat(messages, stream=stream, model_name=use_model)
+        if isinstance(provider, OpenAIProvider):
             return await provider.chat(messages, stream=stream, model_name=use_model)
         return await provider.chat(messages, stream=stream)
 

@@ -47,7 +47,11 @@ class WebServer:
         # Add CORS middleware for frontend
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["http://localhost:10717"],  # Frontend port
+            allow_origins=[
+                "http://localhost:10717",
+                "http://127.0.0.1:10717",
+                "http://goliath:10717",
+            ],  # Frontend ports
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],

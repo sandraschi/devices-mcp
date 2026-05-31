@@ -19,9 +19,7 @@ async def verify_hardware():
     devices = await tapo_plug_manager.get_all_devices()
 
     if not devices:
-        logger.info(
-            "RESULT: No hardware devices found (Correct if no active ingestion service/bridge)."
-        )
+        logger.info("RESULT: No hardware devices found (Correct if no active ingestion service/bridge).")
     else:
         for dev in devices:
             logger.info(f"DEVICE: {dev.name} ({dev.device_id})")

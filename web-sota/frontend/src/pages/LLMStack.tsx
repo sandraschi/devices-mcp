@@ -1,7 +1,8 @@
-import { AlertCircle, Box, Cpu, Loader2, Play, Square } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { type LLMModelInfo, normalizeModelList } from '@/lib/llmModels';
+import { AlertCircle, Box, Cpu, Loader2, Play, Square } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ProviderInfo {
   type?: string;
@@ -12,42 +13,43 @@ interface ProviderInfo {
 
 export function LLMStack() {
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
-  const [models, setModels] = useState<string[]>([]);
+  const [models, setModels] = useState<LLMModelInfo[]>([]);
   const [provider, setProvider] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [action, setAction] = useState<string | null>(null);
 
-  const loadProviders = async () => {
+  const loadProviders = useCallback(async () => {
     try {
       const r = await fetch('/api/llm/providers');
       const data = await r.json();
       if (data.success && data.providers?.length) {
         setProviders(data.providers);
-        if (!provider && data.providers[0]) {
+        setProvider((current) => {
+          if (current) return current;
           const p = data.providers[0];
-          setProvider(p.type ?? p.name ?? '');
-        }
+          return p.type ?? p.name ?? '';
+        });
       }
     } catch (e) {
       setError(String(e));
     }
-  };
+  }, []);
 
-  const loadModels = async () => {
+  const loadModels = useCallback(async () => {
     if (!provider) return;
     try {
       const r = await fetch(`/api/llm/models?provider=${encodeURIComponent(provider)}`);
       const data = await r.json();
       if (data.success && data.models?.length) {
-        setModels(data.models);
+        setModels(normalizeModelList(data.models));
       } else {
         setModels([]);
       }
     } catch {
       setModels([]);
     }
-  };
+  }, [provider]);
 
   useEffect(() => {
     let cancelled = false;
@@ -197,17 +199,17 @@ export function LLMStack() {
             <ul className='space-y-2'>
               {models.map((m) => (
                 <li
-                  key={m}
+                  key={m.name}
                   className='flex items-center justify-between rounded-lg border border-slate-200 py-2 px-3 dark:border-slate-700'
                 >
-                  <span className='font-medium'>{m}</span>
+                  <span className='font-medium'>{m.name}</span>
                   <Button
                     size='sm'
                     variant='outline'
-                    onClick={() => loadModel(m)}
+                    onClick={() => loadModel(m.name)}
                     disabled={action !== null}
                   >
-                    {action === `load-${m}` ? (
+                    {action === `load-${m.name}` ? (
                       <Loader2 className='h-4 w-4 animate-spin' />
                     ) : (
                       <Play className='h-4 w-4' />

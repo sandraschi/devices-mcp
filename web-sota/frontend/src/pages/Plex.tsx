@@ -1,6 +1,6 @@
-import { AlertCircle, Loader2, Play } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Loader2, Play } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface PlexStatus {
   status?: string;
@@ -24,7 +24,7 @@ export function Plex() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const [sRes, npRes] = await Promise.all([
         fetch('/api/plex/status'),
@@ -38,10 +38,10 @@ export function Plex() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   if (loading) {

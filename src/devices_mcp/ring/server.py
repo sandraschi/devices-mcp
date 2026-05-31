@@ -293,18 +293,18 @@ def register_ring_tools(app: FastMCP, ring_client: RingClient) -> None:
             try:
                 return await func(*args, **kwargs)
             except AuthenticationError as e:
-                raise ValueError(f"Authentication failed: {e!s}")
+                raise ValueError(f"Authentication failed: {e!s}") from e
             except DeviceNotFoundError as e:
-                raise ValueError(f"Device not found: {e!s}")
+                raise ValueError(f"Device not found: {e!s}") from e
             except RateLimitError as e:
-                raise ValueError(f"Rate limit exceeded: {e!s}")
+                raise ValueError(f"Rate limit exceeded: {e!s}") from e
             except StreamingError as e:
-                raise ValueError(f"Streaming error: {e!s}")
+                raise ValueError(f"Streaming error: {e!s}") from e
             except RingError as e:
-                raise ValueError(f"Ring API error: {e!s}")
+                raise ValueError(f"Ring API error: {e!s}") from e
             except Exception as e:
                 logger.exception("Unexpected error: %s", str(e))
-                raise ValueError(f"Internal server error: {e!s}")
+                raise ValueError(f"Internal server error: {e!s}") from e
 
         return wrapper
 

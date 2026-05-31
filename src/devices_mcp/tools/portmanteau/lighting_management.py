@@ -212,9 +212,9 @@ async def _list_lights() -> dict[str, Any]:
         except Exception as e:
             logger.warning(f"Failed to get Hue lights: {e}")
 
-        online_count = len([l for l in all_lights if l.get("reachable", True)])
-        hue_count = len([l for l in all_lights if l.get("light_type") == "hue"])
-        tapo_count = len([l for l in all_lights if l.get("light_type") == "tapo"])
+        online_count = len([light for light in all_lights if light.get("reachable", True)])
+        hue_count = len([light for light in all_lights if light.get("light_type") == "hue"])
+        tapo_count = len([light for light in all_lights if light.get("light_type") == "tapo"])
 
         summary = f"Found {len(all_lights)} smart light{'s' if len(all_lights) != 1 else ''}"
         if hue_count > 0 and tapo_count > 0:

@@ -1,3 +1,13 @@
+param(
+    [switch]$Headless,
+    [switch]$BackendOnly,
+    [switch]$FrontendOnly,
+    [switch]$NoBrowser
+)
+
+. "D:/Dev/repos/mcp-central-docs/standards/FleetStartMode.ps1"
+$FleetStart = Initialize-FleetStartMode @PSBoundParameters
+Enter-FleetHeadlessConsole -Headless:$Headless -BackendOnly:$BackendOnly
 # Webapp Start - Standardized SOTA (Auto-Repaired V2.5) for Devices MCP
 # Usage: .\start.ps1              interactive (backend in new window, frontend in foreground)
 #        .\start.ps1 -Automated   headless: start backend, wait, start frontend, wait, open browser, exit
@@ -108,6 +118,9 @@ $frontendUrl = "http://127.0.0.1:$WebPort/"
 $pollAndOpen = "for (`$i = 0; `$i -lt 60; `$i++) { try { `$null = Invoke-WebRequest -Uri '$frontendUrl' -TimeoutSec 2 -UseBasicParsing -ErrorAction Stop; Start-Process '$frontendUrl'; exit } catch { Start-Sleep -Seconds 1 } }"
 Start-Process powershell -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command", $pollAndOpen
 
+if (-not $FleetStart.RunFrontend) { return }
+
 Write-Host "Starting Vite frontend on port $WebPort ..." -ForegroundColor Green
 Set-Location -LiteralPath $FrontendDir
+if (-not $FleetStart.RunFrontend) { return }
 npm run dev -- --port $WebPort --host

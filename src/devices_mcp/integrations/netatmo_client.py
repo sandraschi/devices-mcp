@@ -746,7 +746,7 @@ class NetatmoService:
                 target_home = None
                 target_station_module = None
 
-                for home_id, home in self._account.homes.items():
+                for _home_id, home in self._account.homes.items():
                     for mod_id, module in home.modules.items():
                         # Check if this is the station we're looking for
                         if mod_id == station_id and "NAMain" in str(getattr(module, "device_type", "")):

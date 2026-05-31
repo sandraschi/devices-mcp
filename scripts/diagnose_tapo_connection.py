@@ -57,11 +57,11 @@ try:
 except ImportError:
     logger.info("   ⚠️  python-kasa not installed (alternative library)")
 
-try:
-    from onvif import ONVIFCamera
+import importlib.util
 
+if importlib.util.find_spec("onvif") is not None:
     logger.info("   ✅ python-onvif-zeep installed (ONVIF support)")
-except ImportError:
+else:
     logger.info("   ⚠️  python-onvif-zeep not installed (ONVIF fallback)")
 
 # Test connection with config

@@ -27,9 +27,7 @@ async def inspect_plug_methods(host: str, name: str):
 
         logger.info(f"\nPlug object type: {type(plug)}")
         logger.info("\nPlug object methods:")
-        methods = [
-            attr for attr in dir(plug) if not attr.startswith("_") and callable(getattr(plug, attr))
-        ]
+        methods = [attr for attr in dir(plug) if not attr.startswith("_") and callable(getattr(plug, attr))]
         for method in sorted(methods):
             logger.info(f"  - {method}")
 
@@ -37,9 +35,7 @@ async def inspect_plug_methods(host: str, name: str):
         logger.info("\nDevice info:")
         device_info = await plug.get_device_info()
         logger.info(f"  Device info type: {type(device_info)}")
-        logger.info(
-            f"  Device info attributes: {[attr for attr in dir(device_info) if not attr.startswith('_')]}"
-        )
+        logger.info(f"  Device info attributes: {[attr for attr in dir(device_info) if not attr.startswith('_')]}")
 
         # Try to see if device_info has energy data
         logger.info("\nDevice info values:")
@@ -56,9 +52,7 @@ async def inspect_plug_methods(host: str, name: str):
         logger.info("\nEnergy usage:")
         energy = await plug.get_energy_usage()
         logger.info(f"  Energy type: {type(energy)}")
-        logger.info(
-            f"  Energy attributes: {[attr for attr in dir(energy) if not attr.startswith('_')]}"
-        )
+        logger.info(f"  Energy attributes: {[attr for attr in dir(energy) if not attr.startswith('_')]}")
         logger.info(f"  today_energy: {energy.today_energy}")
         logger.info(f"  month_energy: {energy.month_energy}")
 

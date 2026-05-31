@@ -7,13 +7,13 @@ This module provides real-time camera metrics in a format compatible with Grafan
 import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class CameraStatus(str, Enum):
+class CameraStatus(StrEnum):
     ONLINE = "online"
     OFFLINE = "offline"
     CONNECTING = "connecting"

@@ -1,45 +1,41 @@
 set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 
+MCP_CENTRAL_DIR := "..\\mcp-central-docs"
+WEBROOT := "web-sota"
+
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
-# Display the SOTA Industrial Dashboard
+# Open the interactive recipe dashboard in the browser
 default:
-    @$lines = Get-Content '{{justfile()}}'; \
-    Write-Host ' [SOTA] Industrial Operations Dashboard v1.3.2' -ForegroundColor White -BackgroundColor Cyan; \
-    Write-Host '' ; \
-    $currentCategory = ''; \
-    foreach ($line in $lines) { \
-        if ($line -match '^# ── ([^─]+) ─') { \
-            $currentCategory = $matches[1].Trim(); \
-            Write-Host "`n  $currentCategory" -ForegroundColor Cyan; \
-            Write-Host ('  ' + ('─' * 45)) -ForegroundColor Gray; \
-        } elseif ($line -match '^# ([^─].+)') { \
-            $desc = $matches[1].Trim(); \
-            $idx = [array]::IndexOf($lines, $line); \
-            if ($idx -lt $lines.Count - 1) { \
-                $nextLine = $lines[$idx + 1]; \
-                if ($nextLine -match '^([a-z0-9-]+):') { \
-                    $recipe = $matches[1]; \
-                    $pad = ' ' * [math]::Max(2, (18 - $recipe.Length)); \
-                    Write-Host "    $recipe" -ForegroundColor White -NoNewline; \
-                    Write-Host "$pad$desc" -ForegroundColor Gray; \
-                } \
-            } \
-        } \
-    } \
-    Write-Host "`n  [System State: PROD/HARDENED]" -ForegroundColor DarkGray; \
-    Write-Host ''
+    @pwsh.exe -NoProfile -ExecutionPolicy Bypass -File "{{MCP_CENTRAL_DIR}}\scripts\just-dashboard.ps1" -Path "{{justfile_directory()}}"
+
+# ── Dev ───────────────────────────────────────────────────────────────────────
+
+# Start web-sota dev server (frontend + backend)
+dev:
+    Set-Location "{{justfile_directory()}}\{{WEBROOT}}"
+    .\start.ps1
+
+# Run frontend TypeScript type-check
+typecheck:
+    Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"
+    npx tsc --noEmit
+
+# Build frontend for production
+build:
+    Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"
+    npm run build
 
 # ── Quality ───────────────────────────────────────────────────────────────────
 
-# Execute Ruff SOTA v13.1 linting
+# Execute Ruff linting
 lint:
-    Set-Location '{{justfile_directory()}}'
+    Set-Location "{{justfile_directory()}}"
     uv run ruff check .
 
-# Execute Ruff SOTA v13.1 fix and formatting
+# Execute Ruff fix and formatting
 fix:
-    Set-Location '{{justfile_directory()}}'
+    Set-Location "{{justfile_directory()}}"
     uv run ruff check . --fix --unsafe-fixes
     uv run ruff format .
 
@@ -47,10 +43,16 @@ fix:
 
 # Execute Bandit security audit
 check-sec:
-    Set-Location '{{justfile_directory()}}'
-    uv run bandit -r src/
+    Set-Location "{{justfile_directory()}}"
+    uv run bandit -r src\
 
 # Execute safety audit of dependencies
 audit-deps:
-    Set-Location '{{justfile_directory()}}'
+    Set-Location "{{justfile_directory()}}"
     uv run safety check
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+
+# Run e2e Playwright tests
+e2e:
+    pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File "D:\Dev\repos\mcp-central-docs\scripts\playwright-audit.ps1" -RepoPath "{{justfile_directory()}}"

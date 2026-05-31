@@ -232,7 +232,6 @@ class HardwareInitializer:
         """Initialize and test Hue Bridge connection."""
         try:
             from ..config import get_config
-            from ..tools.lighting.hue_tools import hue_manager
 
             logger.info("[LIGHTING] Initializing Philips Hue Bridge...")
 
@@ -437,9 +436,9 @@ class HardwareInitializer:
                 return {"success": True, "message": "Netatmo not enabled in config"}
 
             # Check if pyatmo available
-            try:
-                import pyatmo
-            except ImportError:
+            import importlib.util
+
+            if importlib.util.find_spec("pyatmo") is None:
                 return {"success": False, "error": "pyatmo library not installed"}
 
             service = None

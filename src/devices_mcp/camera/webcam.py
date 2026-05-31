@@ -300,7 +300,7 @@ class WebCamera(BaseCamera):
 
                     if platform.system() == "Windows":
                         try:
-                            ret, frame = self._cap.read()
+                            ret, _frame = self._cap.read()
                             if not ret:
                                 self._in_use_by_another_app = True
                                 self._in_use_error_message = (
@@ -553,7 +553,7 @@ class WebCamera(BaseCamera):
 
                     if platform.system() == "Windows":
                         try:
-                            ret, frame = self._cap.read()
+                            ret, _frame = self._cap.read()
                             if not ret:
                                 self._in_use_by_another_app = True
                                 self._in_use_error_message = f"USB camera device {self._device_id} is in use by another application (e.g., Microsoft Teams, Zoom, Skype)."
@@ -639,9 +639,9 @@ class WebCamera(BaseCamera):
         self,
         interval: int = 30,
         motion_threshold: float = 0.05,
-        led_control: bool = None,
-        led_flash_interval: int = None,
-        led_flash_duration: float = None,
+        led_control: bool | None = None,
+        led_flash_interval: int | None = None,
+        led_flash_duration: float | None = None,
     ) -> bool:
         """Start surveillance mode with periodic motion detection."""
         if not self._is_connected:
@@ -947,7 +947,6 @@ class WebCamera(BaseCamera):
                 # Method 1: Try Logitech LED SDK (if installed)
                 try:
                     import ctypes
-                    from ctypes import wintypes
 
                     # Try Logitech LED SDK (for gaming peripherals, not webcams)
                     try:
@@ -979,7 +978,7 @@ class WebCamera(BaseCamera):
 
                     # Try Logitech G SDK (different DLL)
                     try:
-                        g_dll = ctypes.WinDLL("LogitechG.dll")
+                        ctypes.WinDLL("LogitechG.dll")
                         # Logitech G SDK has different functions
                         logger.debug("Logitech G SDK detected, attempting LED control")
                         # Implementation would depend on Logitech G SDK
@@ -994,7 +993,6 @@ class WebCamera(BaseCamera):
                 # Some Logitech webcams support LED control through device properties
                 try:
                     import win32api
-                    import win32con
                     import win32gui
 
                     # Enumerate windows to find Logitech webcam control windows
@@ -1011,7 +1009,7 @@ class WebCamera(BaseCamera):
                     win32gui.EnumWindows(enum_windows_callback, results)
 
                     # If we found Logitech control windows, try to send LED control messages
-                    for hwnd, title, class_name in results:
+                    for hwnd, title, _class_name in results:
                         try:
                             # Try to send custom message to Logitech webcam control
                             # This is highly device-specific and may not work
@@ -1075,7 +1073,6 @@ class WebCamera(BaseCamera):
                         # Logitech Capture or Logitech Webcam Software may provide APIs
                         try:
                             import os
-                            import subprocess
 
                             # Check if Logitech Webcam Software is installed
                             program_files = os.environ.get("PROGRAMFILES", "C:\\Program Files")
@@ -1345,8 +1342,6 @@ class WebCamera(BaseCamera):
                 return None
 
             # Check for common video applications using various methods
-            import subprocess
-
             import psutil
 
             # Method 1: Check running processes for known video apps
@@ -1377,7 +1372,7 @@ class WebCamera(BaseCamera):
                     proc_name = proc.info["name"].lower()
                     if proc_name in [app.lower() for app in known_video_apps]:
                         # Found a known video app, return the executable name
-                        for exe_name, display_name in known_video_apps.items():
+                        for exe_name, _display_name in known_video_apps.items():
                             if proc_name == exe_name.lower():
                                 return exe_name
                 except (psutil.NoSuchProcess, psutil.AccessDenied):

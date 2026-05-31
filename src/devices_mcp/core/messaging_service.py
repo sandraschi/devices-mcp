@@ -18,13 +18,13 @@ import logging
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-class MessageSeverity(str, Enum):
+class MessageSeverity(StrEnum):
     """Message severity levels."""
 
     INFO = "info"
@@ -32,7 +32,7 @@ class MessageSeverity(str, Enum):
     ALARM = "alarm"
 
 
-class MessageCategory(str, Enum):
+class MessageCategory(StrEnum):
     """Message categories for filtering."""
 
     DEVICE_CONNECTION = "device_connection"

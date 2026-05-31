@@ -2,343 +2,156 @@
 
 ## Executive Summary
 
-The Devices MCP repository is a comprehensive Model Context Protocol (MCP) server implementation for managing and controlling Tapo cameras (TP-Link). The project successfully integrates with FastMCP 3.1 and provides **25+ functional tools** for camera management, media operations, PTZ control, and system management. The repository includes advanced features like Grafana integration, vision analysis with DINOv3, **real-time video streaming dashboard**, and complete mock removal.
+The Devices MCP repository is a comprehensive Model Context Protocol (MCP) server implementation for home security, IoT device management, and smart home orchestration. It integrates with FastMCP 3.1+ and provides **40+ functional tools** across portmanteau and atomic tool patterns for camera management, lighting control, energy monitoring, weather tracking, security systems, and fleet management. The project includes a **web-sota SPA dashboard** (Vite + React, ports 10716/10717) with dark mode, real-time health monitoring, and device-specific control panels.
 
-## Current Status: ✅ PRODUCTION READY
+## Current Status: ✅ BETA (Active Deployment)
 
-- **Server Status**: ✅ Fully functional with FastMCP 3.1
-- **Tool Registration**: ✅ 25+ tools properly registered and visible
-- **Claude Desktop Integration**: ✅ Working with corrected configuration
-- **Video Streaming Dashboard**: ✅ Real-time MJPEG streaming from USB webcams
-- **Mock Removal**: ✅ All mocks replaced with real implementations
-- **Architecture**: ✅ Well-structured with proper separation of concerns
+- **Server Status**: ✅ Fully functional with FastMCP 3.1+
+- **Tool Registration**: ✅ 40+ tools across portmanteau and atomic patterns
+- **Web Dashboard**: ✅ Vite + React SPA at port 10716 (frontend), 10717 (backend)
+- **Portmanteau Architecture**: ✅ Consolidated tool interfaces for lighting, energy, camera, security, weather
+- **Health Supervision**: ✅ Connection supervisor with 60s polling, circuit breakers, auto-reconnect
+- **Dual-Architecture**: ✅ Individual device MCP servers + unified orchestration platform
 
 ## Tool Inventory
 
-### ✅ Implemented and Working (25+ tools)
+### ✅ Portmanteau Tools (Consolidated Interfaces)
 
-#### Camera Management Tools (6 tools) - **REAL IMPLEMENTATIONS**
-1. **`list_cameras`** - List all registered cameras with real status
-2. **`add_camera`** - Add new camera to system with real connection
-3. **`connect_camera`** - Connect to Tapo camera using pytapo
-4. **`disconnect_camera`** - Disconnect from current camera
-5. **`get_camera_info`** - Get detailed camera information from camera manager
-6. **`get_camera_status`** - Get real camera status and health
+#### Energy Management
+- **`energy_management`** - Tapo P115 power consumption tracking and smart plug control
+- **`lighting_management`** - Philips Hue + Tapo lighting orchestration (status, control, effects)
 
-#### PTZ Control Tools (7 tools) - **REAL IMPLEMENTATIONS**
-7. **`move_ptz`** - Move PTZ camera using real pytapo motor control
-8. **`get_ptz_position`** - Get current PTZ position from camera
-9. **`save_ptz_preset`** - Save current position as preset
-10. **`recall_ptz_preset`** - Move to saved preset position
-11. **`get_ptz_presets`** - Get list of saved presets
-12. **`go_to_home_ptz`** - Return to home position
-13. **`stop_ptz`** - Stop PTZ movement
+#### Device Management
+- **`camera_management`** - Multi-camera management (Tapo, Ring, USB webcam, Furbo)
+- **`security_management`** - Unified alarm monitoring and event correlation
+- **`weather_management`** - Netatmo weather station data and environmental monitoring
+- **`ptz_management`** - Pan-Tilt-Zoom control with "Prank Modes" (nod, shake, dizzy)
 
-#### Media Operations Tools (4 tools) - **REAL IMPLEMENTATIONS**
-14. **`capture_image`** - Capture real image from camera with base64/save options
-15. **`start_recording`** - Start video recording
-16. **`stop_recording`** - Stop video recording
-17. **`get_recording_status`** - Get recording status
+#### Infrastructure
+- **`ring_management`** - Ring doorbell orchestration
+- **`messages_management`** - Internal messaging and alert routing
+- **`automation_management`** - Device automation and scheduling
+- **`alerts_management`** - Alert configuration and dispatch
+- **`analytics_management`** - Usage analytics and metrics
+- **`configuration_management`** - Dynamic configuration
+- **`robotics_management`** - Robot vacuum control
+- **`medical_management`** - Health device integration
+- **`kitchen_management`** - Kitchen appliance monitoring
+- **`thermal_management`** - Thermal camera support
+- **`motion_management`** - Motion detection aggregation
+- **`audio_management`** - Audio device management
+- **`dymo_management`** - Label printing
 
-#### System Management Tools (8 tools) - **REAL IMPLEMENTATIONS**
-18. **`get_system_info`** - Get camera system information
-19. **`reboot_camera`** - Reboot the camera
-20. **`get_logs`** - Get system logs
-21. **`get_help`** - Get help information
-22. **`set_motion_detection`** - Configure motion detection
-23. **`set_led_enabled`** - Control LED status
-24. **`set_privacy_mode`** - Enable/disable privacy mode
-25. **`help`** - General help tool
+### ✅ Atomic Tools (Fine-Grained)
 
-#### Grafana Integration Tools (4 tools) - **REAL IMPLEMENTATIONS**
-26. **`get_camera_metrics`** - Get real camera metrics for Grafana
-27. **`get_motion_events`** - Get real motion detection events
-28. **`get_streaming_stats`** - Get streaming statistics
-29. **`get_system_health`** - Get system health metrics
+#### Camera Tools
+- `list_cameras`, `add_camera`, `connect_camera`, `disconnect_camera`
+- `get_camera_info`, `get_camera_status`
+- `move_ptz`, `get_ptz_position`, `save_ptz_preset`, `recall_ptz_preset`
+- `get_ptz_presets`, `go_to_home_ptz`, `stop_ptz`
+- `capture_image`, `start_recording`, `stop_recording`, `get_recording_status`
 
-### ✅ All Import Errors Fixed
-- **PTZ Tools**: All 7 tools properly imported and registered
-- **System Tools**: All 8 tools properly imported and registered
-- **No More Discovery Failures**: All tools register correctly
+#### System Tools
+- `get_system_info`, `reboot_camera`, `get_logs`, `help`, `get_help`
+- `set_motion_detection`, `set_led_enabled`, `set_privacy_mode`
+
+#### Grafana Integration
+- `get_camera_metrics`, `get_motion_events`, `get_streaming_stats`, `get_system_health`
+
+### ✅ Lighting-Specific Tools (Hue + Tapo)
+- `get_hue_lights`, `control_hue_light`, `get_hue_groups`, `control_hue_group`
+- `get_homeaware_status`, `monitor_homeaware_motion`
 
 ## Architecture Analysis
 
 ### ✅ Strengths
 
-1. **Well-Structured Codebase**
-   - Clear separation of concerns with dedicated modules for tools, cameras, vision, and web
-   - Proper use of abstract base classes and factory patterns
-   - Good use of Pydantic for data validation
+1. **Clean Web-SOTA Architecture**
+   - Modular FastAPI backend with 37 route modules under `web-sota/backend/routes/`
+   - Vite + React 18 frontend with 20 page components and shadcn/ui
+   - Clear separation: frontend port 10716 proxies `/api` to backend port 10717
+   - Proper SPA routing with `BrowserRouter` under `/app/` base
 
-2. **FastMCP 3.1 Integration**
-   - Successfully adapted to FastMCP 3.1 API changes
-   - Proper tool registration with explicit parameters
-   - Correct handling of async operations
+2. **FastMCP 3.1+ Integration**
+   - Portmanteau tool consolidation (20+ management tools from 40+ atomic tools)
+   - Skills directory provider for Cursor/Codex integration
+   - Sampling-ready with multi-LLM provider support
 
-3. **Comprehensive Camera Support**
-   - Support for multiple camera types (Tapo, Ring, Webcam, Furbo)
-   - Unified camera interface with factory pattern
-   - Camera group management
+3. **Comprehensive Device Support**
+   - Multi-protocol: Tapo (pytapo), Ring (oAuth), Nest (Home Assistant bridge), Hue (phue)
+   - Netatmo weather, Shelly devices, Home Assistant bridge
+   - USB webcam server on port 10715
 
-4. **Advanced Features**
-   - DINOv3 vision model integration for image analysis
-   - Grafana plugin with PTZ controls
-   - Web interface with FastAPI
+4. **Production-Grade Observability**
+   - Connection supervisor with circuit breakers (5 failures → 15min backoff)
+   - Log management dashboard with rotation, compression, cleanup
+   - Grafana/metrics integration
 
-### ✅ Recent Improvements
+### ✅ Recent Improvements (v1.21.1)
 
-1. **Complete Mock Removal**
-   - All tools now use real camera API calls
-   - PTZ controls use actual pytapo motor control
-   - Media tools capture real images and video
-   - System tools interact with real camera systems
+1. **Webapp Bug Fixes**
+   - Log page: Fixed React `useEffect` infinite re-render loop
+   - Lighting page: Fixed lights not showing (wrong response nesting in portmanteau)
+   - Lighting scenes/control: Rewrote 5 endpoints importing non-existent class
+   - PC Health page: Added 15s fetch timeout with AbortController
 
-2. **Real Video Streaming Dashboard**
-   - Live MJPEG streaming from USB webcams
-   - RTSP integration for Tapo cameras
-   - Dynamic camera management
-   - Real-time status updates
-
-3. **Fixed Import Errors**
-   - All PTZ and System tools properly imported
-   - Consistent tool registration patterns
-   - No more discovery failures
-
-4. **Enhanced Error Handling**
-   - Comprehensive error handling for camera operations
-   - Graceful fallbacks for connection failures
-   - Detailed logging for debugging
-
-## Detailed Tool Analysis
-
-### Camera Management Tools - **REAL IMPLEMENTATIONS**
-
-#### ✅ Fully Working Tools
-- **`list_cameras`**: Returns real camera list from camera manager
-- **`add_camera`**: Adds cameras with real connection testing
-- **`connect_camera`**: Uses pytapo for actual camera connection
-- **`get_camera_info`**: Retrieves real camera information
-- **`get_camera_status`**: Gets actual camera health and status
-
-### PTZ Control Tools - **REAL IMPLEMENTATIONS**
-
-#### ✅ Fully Working Tools
-- **`move_ptz`**: Uses pytapo motor control for actual movement
-- **`get_ptz_position`**: Gets real position from camera motor capability
-- **`save_ptz_preset`**: Saves actual camera positions
-- **`recall_ptz_preset`**: Moves to real saved positions
-- **`go_to_home_ptz`**: Returns to actual home position
-- **`stop_ptz`**: Stops real camera movement
-
-### Media Operations Tools - **REAL IMPLEMENTATIONS**
-
-#### ✅ Fully Working Tools
-- **`capture_image`**: Captures real images with base64/save options
-- **`start_recording`**: Starts actual video recording
-- **`stop_recording`**: Stops real recording
-- **`get_recording_status`**: Gets actual recording status
-
-### System Management Tools - **REAL IMPLEMENTATIONS**
-
-#### ✅ Fully Working Tools
-- **`get_system_info`**: Gets real camera system information
-- **`reboot_camera`**: Actually reboots the camera
-- **`get_logs`**: Retrieves real system logs
-- **`set_motion_detection`**: Configures real motion detection
-- **`set_led_enabled`**: Controls actual LED status
-- **`set_privacy_mode`**: Enables/disables real privacy mode
-
-## Advanced Features
-
-### ✅ Grafana Integration
-- **Status**: Well-implemented with comprehensive dashboard
-- **Features**: PTZ controls, stream viewing, preset management
-- **UI**: Professional-looking interface with responsive design
-- **Integration**: Proper API endpoints for camera control
-
-### ✅ Vision Analysis
-- **DINOv3 Integration**: Complete implementation for image analysis
-- **Similarity Search**: Functional similarity matching
-- **Feature Extraction**: Proper feature extraction pipeline
-- **Performance**: GPU acceleration support
-
-### ✅ Video Streaming Dashboard - **NEW FEATURE**
-- **Status**: Fully implemented with real video streaming
-- **Features**: Live MJPEG streaming from USB webcams, RTSP integration for Tapo cameras
-- **UI**: Modern responsive dashboard with real-time camera management
-- **Integration**: Real camera data with dynamic loading and stream controls
-- **Performance**: 30 FPS streaming with ~100ms latency
-
-## Recommendations
-
-### ✅ Completed Improvements
-
-1. **✅ Fixed Import Errors**
-   - All PTZ tools properly imported and registered
-   - All System tools properly imported and registered
-   - No more discovery failures
-
-2. **✅ Completed Tool Implementations**
-   - All mock implementations replaced with real camera API calls
-   - Comprehensive error handling implemented
-   - Full parameter validation added
-
-3. **✅ Fixed PTZ Functionality**
-   - Real PTZ control using pytapo motor control
-   - Complete preset management system
-   - Real-time position tracking
-
-### 🚀 Enhancement Opportunities
-
-1. **Additional Camera Support**
-   - Add support for more camera brands
-   - Implement ONVIF support
-   - Add IP camera discovery
-
-2. **Advanced Features**
-   - Motion detection and alerts
-   - Face recognition
-   - Object detection
-   - Time-lapse recording
-   - Scheduled recordings
-
-3. **System Tools**
-   - Camera firmware updates
-   - System health monitoring
-   - Log management
-   - Backup and restore
-
-4. **Integration Improvements**
-   - Home Assistant integration
-   - MQTT support
-   - Webhook notifications
-   - Cloud storage integration
-
-### 📊 Suggested New Tools
-
-#### Security & Monitoring
-- **`motion_detection`** - Configure motion detection zones
-- **`face_recognition`** - Recognize faces in video stream
-- **`object_detection`** - Detect objects in camera feed
-- **`alert_management`** - Manage alerts and notifications
-- **`privacy_mode`** - Control privacy mode settings
-
-#### Recording & Storage
-- **`schedule_recording`** - Schedule automatic recordings
-- **`time_lapse`** - Create time-lapse videos
-- **`backup_videos`** - Backup recorded videos
-- **`storage_management`** - Manage storage space
-- **`export_videos`** - Export videos in different formats
-
-#### System Management
-- **`firmware_update`** - Update camera firmware
-- **`system_health`** - Check system health status
-- **`log_management`** - View and manage system logs
-- **`network_settings`** - Configure network settings
-- **`user_management`** - Manage user accounts
-
-#### Advanced PTZ
-- **`auto_tracking`** - Enable automatic object tracking
-- **`patrol_mode`** - Configure patrol patterns
-- **`preset_tour`** - Create preset tours
-- **`zoom_preset`** - Save zoom presets
-- **`focus_control`** - Manual focus control
-
-## Configuration Issues
-
-### ✅ All Issues Fixed
-- **Claude Desktop Integration**: Fixed with correct `cwd` path
-- **Tool Registration**: Fixed FastMCP 3.1 compatibility
-- **Import Errors**: Fixed server startup issues
-- **Mock Implementations**: All replaced with real implementations
-- **Error Handling**: Comprehensive error handling implemented
-- **Video Streaming**: Real-time streaming dashboard implemented
+2. **Webapp Stability**
+   - All UI components use `Promise.allSettled` for independent tile loading
+   - Error boundaries prevent one API failure from blocking others
 
 ## Testing Status
 
-### ✅ Working Tests
-- Server startup and tool registration
-- All tool execution with real implementations
-- FastMCP 3.1 integration
-- Claude Desktop integration
-- Video streaming dashboard
-- Real camera operations
-- PTZ functionality
-- Media operations
-- Error handling
+### ✅ Automated
+- TypeScript type-checking via `tsc --noEmit`
+- Ruff linting and formatting
+- Bandit security scanning
+- Playwright e2e tests for webapp audit
 
-## Conclusion
+### ⚠️ Manual
+- Real device testing requires physical hardware
+- Hue bridge pairing requires link button press
+- Ring 2FA flow requires manual code entry
 
-The Devices MCP repository is now a **production-ready, comprehensive camera management solution**. All major issues have been resolved:
+## Recommendations
 
-### ✅ **COMPLETED ACHIEVEMENTS**
+### ✅ Completed
+- Portmanteau tool consolidation (reduced tool surface from 40+ to ~20)
+- Dark mode UI with consistent design system
+- Connection supervisor with circuit breakers
+- Log management dashboard with AI synopsis
+- Webapp error resilience (allSettled, fetch timeouts)
 
-1. **✅ All Import Errors Fixed**: PTZ and System tools properly imported and registered
-2. **✅ Complete Mock Removal**: All tools now use real camera API calls
-3. **✅ Real Video Streaming**: Live MJPEG streaming dashboard implemented
-4. **✅ Full PTZ Functionality**: Real motor control using pytapo
-5. **✅ Comprehensive Error Handling**: Robust error handling throughout
-6. **✅ Production Ready**: 25+ tools fully functional with real implementations
+### 🚀 Enhancement Opportunities
+1. **Test Coverage**: Add unit tests for route modules and frontend components
+2. **CI/CD Pipeline**: Formalize GitHub Actions for automated build + test + deploy
+3. **Mobile Support**: Native Tauri 2.0 wrapper for desktop deployment
+4. **Real Device CI**: Hardware-in-loop testing for camera, Hue, Ring devices
 
-### 🎯 **CURRENT STATUS: PRODUCTION READY**
+## Configuration & Quick Start
 
-The project now provides:
-- **25+ functional tools** with real implementations
-- **Real-time video streaming** from USB webcams and Tapo cameras
-- **Complete PTZ control** with actual motor movement
-- **Dynamic camera management** with real status monitoring
-- **Modern web dashboard** with responsive design
-- **Comprehensive error handling** and logging
-
-### 🚀 **READY FOR PRODUCTION USE**
-
-The repository demonstrates excellent software engineering practices and provides a solid foundation for camera management. All core functionality is working correctly with FastMCP 3.1, and the advanced features like Grafana integration, vision analysis, and real-time video streaming make it a comprehensive solution.
-
-## Quick Start Guide
-
-### 🚀 **Easiest Way to Start Dashboard**
-```bash
-# Start web dashboard with video streaming
-python start.py dashboard
-
-# Dashboard available at: http://localhost:7777
+### Web-SOTA Dashboard
+```powershell
+# Start webapp (clears zombies, launches backend + Vite frontend)
+.\web-sota\start.ps1
+# Frontend: http://localhost:10716/app/
+# Backend:  http://localhost:10717/api/health
 ```
 
-### 🔧 **For Claude Desktop Integration**
-```json
-{
-  "tapo": {
-    "command": "python",
-    "args": ["-m", "devices_mcp.server_v2", "--direct"],
-    "cwd": "D:/Dev/repos/devices-mcp",
-    "env": {
-      "TAPO_CAMERA_HOST": "192.168.1.100",
-      "TAPO_CAMERA_USERNAME": "your_username",
-      "TAPO_CAMERA_PASSWORD": "your_password",
-      "PYTHONPATH": "D:/Dev/repos/devices-mcp/src",
-      "PYTHONUNBUFFERED": "1"
-    }
-  }
-}
+### Port Reference
+| Port | Service |
+|------|---------|
+| 10715 | USB Camera helper (Windows, optional) |
+| 10716 | Frontend (Vite dev) |
+| 10717 | Backend (FastAPI + FastMCP) |
+
+### Development
+```powershell
+# Lint
+just lint
+# Fix + format
+just fix
+# TypeScript check
+just typecheck
 ```
 
-### 📺 **For Video Streaming Dashboard**
-```bash
-# Test webcam first
-python start.py test
-
-# Start dashboard
-python start.py dashboard
-
-# Or start both MCP server and dashboard
-python start.py both
-```
-
-### 🎥 **What You'll See**
-- **Real-time video streams** from USB webcams
-- **Live camera management** with actual status
-- **PTZ controls** with real motor movement
-- **Dynamic camera loading** from real camera manager
-- **Responsive design** for mobile and desktop
-
-**The repository is now production-ready with 25+ fully functional tools and real-time video streaming capabilities!** 🎉
+**Version**: v1.21.1 | **Status**: BETA (Active Deployment)

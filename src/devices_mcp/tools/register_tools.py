@@ -69,7 +69,7 @@ def _register_plex_tools_with_mcp(mcp: FastMCP, tool_mode: str = "production") -
 
     @mcp.tool()
     async def plex_library_browse(
-        operation: str = "list", library_key: str = None, include_details: bool = False
+        operation: str = "list", library_key: str | None = None, include_details: bool = False
     ) -> dict:
         """Browse Plex media libraries."""
         try:
@@ -95,9 +95,7 @@ def _register_plex_tools_with_mcp(mcp: FastMCP, tool_mode: str = "production") -
             # Import the actual Plex search function
             from devices_mcp.plex.tools.portmanteau.search import _plex_search_operation
 
-            result = await _plex_search_operation(
-                operation="search", query=query, media_type=media_type, limit=limit
-            )
+            result = await _plex_search_operation(operation="search", query=query, media_type=media_type, limit=limit)
             return result
         except Exception as e:
             return {

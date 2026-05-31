@@ -101,10 +101,10 @@ async def set_light_intensity(request: SetLightIntensityRequest):
         await camera.set_light_intensity(request.intensity)
         return {"success": True, "message": f"Light intensity set to {request.intensity}%"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to set light intensity")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/focus_mode")
@@ -115,10 +115,10 @@ async def set_focus_mode(request: SetFocusModeRequest):
         await camera.set_focus_mode(request.mode)
         return {"success": True, "message": f"Focus mode set to '{request.mode}'"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to set focus mode")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/specimen_type")
@@ -129,10 +129,10 @@ async def set_specimen_type(request: SetSpecimenTypeRequest):
         await camera.set_specimen_type(request.specimen_type)
         return {"success": True, "message": f"Specimen type set to '{request.specimen_type}'"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to set specimen type")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/magnification")
@@ -143,10 +143,10 @@ async def set_magnification(request: SetMagnificationRequest):
         await camera.set_magnification(request.magnification)
         return {"success": True, "message": f"Magnification set to {request.magnification}x"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to set magnification")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/calibrate")
@@ -157,10 +157,10 @@ async def calibrate_otoscope(request: CalibrateRequest):
         await camera.calibrate(request.reference_size_mm, request.pixels)
         return {"success": True, "message": "Otoscope calibrated successfully"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to calibrate otoscope")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/measure_distance")
@@ -175,10 +175,10 @@ async def measure_distance(request: MeasureRequest):
             "message": f"{request.pixels} pixels = {distance_mm:.4f} mm",
         }
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to measure distance")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/measure_area")
@@ -193,10 +193,10 @@ async def measure_area(request: MeasureRequest):
             "message": f"{request.pixels} sq pixels = {area_sq_mm:.4f} sq mm",
         }
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to measure area")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/capture_medical")
@@ -208,7 +208,7 @@ async def capture_medical_image(request: CaptureMedicalImageRequest):
         return {"success": True, "message": f"Medical image captured: {filename}"}
     except Exception as e:
         logger.exception("Failed to capture medical image")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/start_recording")
@@ -220,7 +220,7 @@ async def start_medical_recording(request: StartRecordingRequest):
         return {"success": True, "message": f"Medical recording started: {recording_id}"}
     except Exception as e:
         logger.exception("Failed to start medical recording")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/stop_recording")
@@ -232,7 +232,7 @@ async def stop_medical_recording(camera_name: str):
         return {"success": True, "message": "Medical recording stopped"}
     except Exception as e:
         logger.exception("Failed to stop medical recording")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/presets/{camera_name}")
@@ -244,7 +244,7 @@ async def get_medical_presets(camera_name: str):
         return {"success": True, "presets": presets}
     except Exception as e:
         logger.exception("Failed to get medical presets")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/apply_preset")
@@ -255,7 +255,7 @@ async def apply_medical_preset(request: ApplyPresetRequest):
         await camera.apply_medical_preset(request.preset_name)
         return {"success": True, "message": f"Applied medical preset '{request.preset_name}'"}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to apply medical preset")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e

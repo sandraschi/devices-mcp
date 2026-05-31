@@ -16,13 +16,13 @@ def main():
     repo_root = Path(__file__).parent.parent
 
     # Only process files in src and scripts directories
-    for root, dirs, files in os.walk(repo_root / "src"):
+    for root, _dirs, files in os.walk(repo_root / "src"):
         for file in files:
             if file.endswith(".py"):
                 file_path = Path(root) / file
                 replace_in_file(file_path)
 
-    for root, dirs, files in os.walk(repo_root / "scripts"):
+    for root, _dirs, files in os.walk(repo_root / "scripts"):
         for file in files:
             if file.endswith(".py"):
                 file_path = Path(root) / file

@@ -254,3 +254,5 @@ docker-compose.override.yml
 # Git
 .git/
 .gitignore.backup
+
+_dashboard/

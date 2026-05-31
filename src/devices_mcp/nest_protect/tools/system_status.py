@@ -80,7 +80,7 @@ async def get_system_status() -> dict[str, Any]:
         return {"status": "error", "message": f"Failed to get system status: {e!s}"}
 
 
-async def get_process_status(pid: int = None) -> dict[str, Any]:
+async def get_process_status(pid: int | None = None) -> dict[str, Any]:
     """Get status of the Nest Protect MCP process."""
     try:
         if pid is None:

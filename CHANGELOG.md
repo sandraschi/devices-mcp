@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.21.1] - 2026-05-25 🔧 **Webapp Bug Fixes**
+
+### 🔧 **FIXES**
+- **✅ Log Page Infinite Loop**: Fixed React `useEffect` dependency causing infinite re-renders on the Log Management page (`web-sota/frontend/src/pages/Logs.tsx`).
+- **✅ Lighting Page Not Showing Lights**: Fixed `GET /api/lighting/status` extracting lights from wrong response nesting — portmanteau `build_success_response()` nests lights under `result.result`, endpoint was reading `result.lights` (always empty).
+- **✅ Lighting Scenes/Ctrl/Device/Groups Endpoints**: Rewrote 5 API endpoints that imported non-existent `LightingManagementTool` class — now use actual portmanteau functions and Hue manager directly.
+- **✅ Lighting Page Infinite Loop**: Fixed same `useEffect([load])` infinite re-render bug in `web-sota/frontend/src/pages/Lighting.tsx`.
+- **✅ PC Health Page Hang**: Added 15s `AbortController` timeout to prevent page spinner hanging when backend APIs are slow; improved error handling for network failures.
+
 ## [1.21.0] - 2026-03-15 ⬆️ **FastMCP 3.1 Upgrade & Completion**
 
 ### 🆕 **FASTMCP 3.1**

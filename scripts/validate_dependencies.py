@@ -14,9 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +82,7 @@ def check_dependencies():
 
     logger.info("SYSTEM DEPENDENCIES:")
     logger.info("-" * 70)
-    for module, name, install_cmd, feature in system_checks:
+    for module, name, install_cmd, _feature in system_checks:
         try:
             __import__(module)
             logger.info(f"   SUCCESS: {name}")

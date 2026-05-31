@@ -507,7 +507,7 @@ async def get_dymo_status():
         return {"success": True, "status": status}
     except Exception as e:
         logger.exception("Failed to get Dymo status")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/print")
@@ -525,7 +525,7 @@ async def print_label(request: PrintLabelRequest):
         return {"success": True, "message": "Label printed successfully", "result": result}
     except Exception as e:
         logger.exception("Failed to print label")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/batch")
@@ -542,7 +542,7 @@ async def print_batch_labels(request: BatchLabelsRequest):
         }
     except Exception as e:
         logger.exception("Failed to print batch labels")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/shopping")
@@ -558,7 +558,7 @@ async def create_shopping_labels(request: CreateShoppingLabelsRequest):
         return {"success": True, "message": "Shopping labels created and printed", "result": result}
     except Exception as e:
         logger.exception("Failed to create shopping labels")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/inventory")
@@ -577,7 +577,7 @@ async def create_inventory_labels(request: CreateInventoryLabelsRequest):
         }
     except Exception as e:
         logger.exception("Failed to create inventory labels")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.post("/template")
@@ -594,7 +594,7 @@ async def create_custom_template(request: LabelTemplateRequest):
         }
     except Exception as e:
         logger.exception("Failed to create custom template labels")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/templates")
@@ -697,7 +697,7 @@ async def generate_humorous_labels(request: GenerateHumorousLabelsRequest):
         raise
     except Exception as e:
         logger.exception("Failed to generate humorous labels")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @router.get("/humorous-themes")

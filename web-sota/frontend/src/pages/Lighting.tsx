@@ -1,7 +1,7 @@
-import { AlertCircle, CheckCircle, Hand, Lightbulb, Loader2, Radio } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, CheckCircle, Hand, Lightbulb, Loader2, Radio } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface LightDevice {
   device_id?: string;
@@ -43,10 +43,17 @@ interface HueStatus {
   phue_available?: boolean;
   bridge_ip?: string | null;
   has_username?: boolean;
+  username_valid?: boolean;
+  username_error?: string | null;
   connected?: boolean;
   needs_bridge_ip?: boolean;
   needs_pairing?: boolean;
   needs_reconnect?: boolean;
+  requires_https?: boolean;
+  bridge_model?: string | null;
+  bridge_name?: string | null;
+  bridge_reachable?: boolean;
+  bridge_port?: number;
   lights_count?: number;
   clip_v2_available?: boolean;
   clip_v2_error?: string | null;
@@ -97,7 +104,7 @@ function rgbToHex(r: number, g: number, b: number): string {
 function hexToRgb(hex: string): [number, number, number] {
   const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
   if (!m) return [255, 255, 255];
-  return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+  return [Number.parseInt(m[1], 16), Number.parseInt(m[2], 16), Number.parseInt(m[3], 16)];
 }
 
 export function Lighting() {
@@ -113,7 +120,7 @@ export function Lighting() {
   const [discoverLoading, setDiscoverLoading] = useState(false);
   const [motionAware, setMotionAware] = useState<MotionAwareDetail | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const [statusRes, scenesRes, hueRes, maRes] = await Promise.allSettled([
         fetch('/api/lighting/status'),
@@ -132,7 +139,9 @@ export function Lighting() {
       if (hueRes.status === 'fulfilled' && hueRes.value.ok) {
         const h = await hueRes.value.json();
         setHueStatus(h);
-        if (h.bridge_ip && !bridgeIpInput) setBridgeIpInput(String(h.bridge_ip));
+        if (h.bridge_ip) {
+          setBridgeIpInput((prev) => prev || String(h.bridge_ip));
+        }
       } else {
         setHueStatus(null);
       }
@@ -149,7 +158,7 @@ export function Lighting() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void load();
@@ -302,6 +311,19 @@ export function Lighting() {
           </CardHeader>
           <CardContent className='space-y-3 text-sm'>
             <p>{hueStatus?.message}</p>
+            {hueStatus?.bridge_name && (
+              <p className='text-xs text-slate-500'>
+                {hueStatus.bridge_name}
+                {hueStatus.bridge_model ? ` (${hueStatus.bridge_model})` : ''}
+                {hueStatus.requires_https ? ' · HTTPS' : ''}
+                {hueStatus.lights_count != null ? ` · ${hueStatus.lights_count} lights` : ''}
+              </p>
+            )}
+            {hueStatus?.username_error && (
+              <p className='text-xs text-amber-700 dark:text-amber-300/90'>
+                {hueStatus.username_error}
+              </p>
+            )}
             {hueStatus?.phue_available === false && (
               <p className='text-amber-700 dark:text-amber-300'>
                 Install the Python package: <code className='text-xs'>pip install phue</code>, then
@@ -318,8 +340,11 @@ export function Lighting() {
               <>
                 <div className='flex flex-wrap items-end gap-2'>
                   <div className='flex flex-col gap-1'>
-                    <label className='text-xs text-slate-500'>Bridge IP (LAN)</label>
+                    <label htmlFor='hue-bridge-ip' className='text-xs text-slate-500'>
+                      Bridge IP (LAN)
+                    </label>
                     <input
+                      id='hue-bridge-ip'
                       type='text'
                       placeholder='e.g. 192.168.0.236'
                       value={bridgeIpInput}

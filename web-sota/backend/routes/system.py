@@ -167,7 +167,7 @@ async def get_capabilities():
             "server": {
                 "name": "devices-mcp",
                 "version": "1.0.0",
-                "fastmcp": "3.1+",
+                "fastmcp": "3.2+",
             },
             "tool_surface": {
                 "total": len(tool_names),

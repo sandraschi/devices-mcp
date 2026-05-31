@@ -1,4 +1,3 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Alarms } from '@/pages/Alarms';
 import { Cameras } from '@/pages/Cameras';
@@ -7,17 +6,20 @@ import { Dashboard } from '@/pages/Dashboard';
 import { Energy } from '@/pages/Energy';
 import { Health } from '@/pages/Health';
 import { HumanHealth } from '@/pages/HumanHealth';
-import { Lighting } from '@/pages/Lighting';
 import { LLMStack } from '@/pages/LLMStack';
+import { Lighting } from '@/pages/Lighting';
 import { Logs } from '@/pages/Logs';
 import { McpCapabilities } from '@/pages/McpCapabilities';
+import { Nest } from '@/pages/Nest';
 import { Onboarding } from '@/pages/Onboarding';
 import { Placeholder } from '@/pages/Placeholder';
 import { Plex } from '@/pages/Plex';
 import { Ring } from '@/pages/Ring';
 import { Robots } from '@/pages/Robots';
 import { Settings } from '@/pages/Settings';
+import { Shelly } from '@/pages/Shelly';
 import { Weather } from '@/pages/Weather';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
           <Route path='lighting' element={<Lighting />} />
           <Route path='robots' element={<Robots />} />
           <Route path='ring' element={<Ring />} />
+          <Route path='nest' element={<Nest />} />
+          <Route path='shelly' element={<Shelly />} />
           <Route path='health' element={<Health />} />
           <Route path='human-health' element={<HumanHealth />} />
           <Route path='alarms' element={<Alarms />} />

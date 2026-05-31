@@ -173,9 +173,7 @@ async def run_demo(camera_name: str = "kitchen_cam", skip_ptz: bool = False):
 
     # Create camera
     logger.info(f"\n🔌 Connecting to {camera_name}...")
-    camera_cfg = CameraConfig(
-        name=camera_name, type=CameraType(cam_config["type"]), params=cam_config["params"]
-    )
+    camera_cfg = CameraConfig(name=camera_name, type=CameraType(cam_config["type"]), params=cam_config["params"])
     camera = ONVIFBasedCamera(camera_cfg)
 
     try:

@@ -28,7 +28,12 @@ class ChatRequest(BaseModel):
 
     messages: list[ChatMessage] = Field(..., description="List of chat messages")
     provider: str | None = Field(None, description="Provider type (ollama, lm_studio, openai)")
+    model: str | None = Field(None, description="Model name to use for this chat")
     stream: bool = Field(False, description="Whether to stream the response")
+    include_device_context: bool = Field(
+        True,
+        description="Inject live home device inventory as system prompt (devices-mcp skill)",
+    )
 
 
 class ProviderConfig(BaseModel):
@@ -134,6 +139,19 @@ async def unload_model(request: UnloadModelRequest) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@router.get("/device-context", summary="Live device inventory for chat preprompt")
+async def get_device_context() -> dict[str, Any]:
+    """Return the device snapshot injected into chat system messages."""
+    try:
+        from devices_mcp.chat.device_context import build_device_context_snapshot
+
+        text = await build_device_context_snapshot()
+        return {"success": True, "context": text, "chars": len(text)}
+    except Exception as e:
+        logger.exception("Failed to build device context")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
 @router.post("/chat", summary="Send a chat message")
 async def chat(request: ChatRequest) -> dict[str, Any]:
     """Send a chat message to the LLM."""
@@ -144,16 +162,35 @@ async def chat(request: ChatRequest) -> dict[str, Any]:
         # Convert Pydantic models to dicts
         messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
 
+        if request.include_device_context:
+            from devices_mcp.chat.device_context import (
+                build_device_context_snapshot,
+                merge_device_context_into_messages,
+            )
+
+            context = await build_device_context_snapshot()
+            messages = merge_device_context_into_messages(messages, context)
+
         if request.stream:
             from fastapi.responses import StreamingResponse
 
             async def generate():
-                async for chunk in await manager.chat(messages, provider_type, stream=True):
+                async for chunk in await manager.chat(
+                    messages,
+                    provider_type,
+                    stream=True,
+                    model_name=request.model,
+                ):
                     yield f"data: {chunk}\n\n"
                 yield "data: [DONE]\n\n"
 
             return StreamingResponse(generate(), media_type="text/event-stream")
-        response = await manager.chat(messages, provider_type, stream=False)
+        response = await manager.chat(
+            messages,
+            provider_type,
+            stream=False,
+            model_name=request.model,
+        )
         return {"success": True, "response": response}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e

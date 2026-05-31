@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 
-def safe_create_task(
+def safe_create_task[T](
     coro: Coroutine[Any, Any, T],
     *,
     name: str | None = None,

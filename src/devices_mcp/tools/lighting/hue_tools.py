@@ -6,6 +6,7 @@ This module provides MCP tools for controlling Philips Hue lights, groups, and s
 
 import json
 import logging
+import ssl
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -16,6 +17,9 @@ from ...config import get_config
 from ...tools.base_tool import BaseTool, ToolCategory, tool
 
 logger = logging.getLogger(__name__)
+
+# Hue Bridge Pro (BSB003) and newer bridges require HTTPS on port 443 for the v1 local API.
+HUE_HTTPS_MODEL_IDS = frozenset({"BSB003"})
 
 
 # Repo-local cache (optional): bridge_ip + username when not only in config.yaml
@@ -45,6 +49,120 @@ def save_hue_bridge_cache(data: dict[str, Any]) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(data, indent=2), encoding="utf-8")
     logger.info("Saved Hue bridge cache to %s", p)
+
+
+def _hue_api_error(payload: Any) -> dict[str, Any] | None:
+    if isinstance(payload, list) and payload and isinstance(payload[0], dict):
+        err = payload[0].get("error")
+        if isinstance(err, dict):
+            return err
+    if isinstance(payload, dict) and isinstance(payload.get("error"), dict):
+        return payload["error"]
+    return None
+
+
+async def probe_hue_bridge(bridge_ip: str) -> dict[str, Any]:
+    """Detect bridge model and whether HTTPS is required (Hue Bridge Pro)."""
+    import httpx
+
+    ip = bridge_ip.strip()
+    result: dict[str, Any] = {
+        "bridge_ip": ip,
+        "reachable": False,
+        "requires_https": False,
+        "modelid": None,
+        "name": None,
+        "apiversion": None,
+        "port": 80,
+    }
+    if not ip:
+        result["error"] = "bridge_ip is empty"
+        return result
+
+    async with httpx.AsyncClient(verify=False, timeout=12.0) as client:
+        try:
+            resp = await client.get(f"https://{ip}/api/config")
+            if resp.status_code == 200:
+                cfg = resp.json()
+                if isinstance(cfg, dict):
+                    result["reachable"] = True
+                    result["requires_https"] = True
+                    result["port"] = 443
+                    result["modelid"] = cfg.get("modelid")
+                    result["name"] = cfg.get("name")
+                    result["apiversion"] = cfg.get("apiversion")
+                    if cfg.get("modelid") in HUE_HTTPS_MODEL_IDS:
+                        result["bridge_type"] = "Hue Bridge Pro"
+                    return result
+        except Exception as exc:
+            result["https_error"] = str(exc)
+
+        try:
+            resp = await client.get(f"http://{ip}/api/config")
+            if resp.status_code == 200:
+                cfg = resp.json()
+                if isinstance(cfg, dict):
+                    result["reachable"] = True
+                    result["requires_https"] = False
+                    result["port"] = 80
+                    result["modelid"] = cfg.get("modelid")
+                    result["name"] = cfg.get("name")
+                    result["apiversion"] = cfg.get("apiversion")
+                    return result
+        except Exception as exc:
+            result["http_error"] = str(exc)
+
+    if not result["reachable"]:
+        result["error"] = result.get("https_error") or result.get("http_error") or "Bridge not reachable"
+    return result
+
+
+async def validate_hue_username(bridge_ip: str, username: str, bridge: Any | None = None) -> tuple[bool, str | None]:
+    """Return (ok, error_message). Detects stale credentials after bridge replacement."""
+    if not username:
+        return False, "Hue API username missing — pair with the link button."
+
+    if bridge is not None:
+        try:
+            payload = bridge.request("GET", f"/api/{username}/config")
+        except Exception as exc:
+            return False, f"Cannot reach Hue Bridge API: {exc}"
+    else:
+        import httpx
+
+        probe = await probe_hue_bridge(bridge_ip)
+        if not probe.get("reachable"):
+            return False, probe.get("error") or "Bridge not reachable"
+        scheme = "https" if probe.get("requires_https") else "http"
+        try:
+            async with httpx.AsyncClient(verify=False, timeout=12.0) as client:
+                resp = await client.get(f"{scheme}://{bridge_ip}/api/{username}/config")
+            payload = resp.json()
+        except Exception as exc:
+            return False, f"Cannot validate Hue username: {exc}"
+
+    err = _hue_api_error(payload)
+    if err:
+        if err.get("type") == 1:
+            return False, (
+                "Hue API username is unauthorized — typical after replacing the bridge. "
+                "Press the link button on the new bridge and pair again."
+            )
+        return False, err.get("description") or str(err)
+    if not isinstance(payload, dict):
+        return False, "Unexpected Hue bridge response while validating username"
+    return True, None
+
+
+def create_hue_bridge_client(bridge_ip: str, username: str | None, requires_https: bool) -> Any:
+    """Create a phue Bridge client using HTTP or HTTPS as required."""
+    if not PHUE_AVAILABLE or Bridge is None:
+        raise RuntimeError("phue is not installed")
+    if requires_https:
+        if HueHttpsBridge is None:
+            raise RuntimeError("HTTPS Hue bridge support unavailable")
+        return HueHttpsBridge(bridge_ip, username=username)
+    return Bridge(bridge_ip, username=username)
 
 
 def _clip_v2_data_rows(payload: Any) -> list[dict[str, Any]]:
@@ -121,12 +239,45 @@ async def hue_clip_v2_get(
 
 # Try to import phue library
 try:
+    import http.client as httplib
+
     from phue import Bridge
 
     PHUE_AVAILABLE = True
+
+    class HueHttpsBridge(Bridge):
+        """phue Bridge using HTTPS — required for Hue Bridge Pro (BSB003)."""
+
+        def request(self, mode="GET", address=None, data=None):
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            connection = httplib.HTTPSConnection(self.ip, port=443, timeout=15, context=ctx)
+            try:
+                if mode in ("GET", "DELETE"):
+                    connection.request(mode, address)
+                elif mode in ("PUT", "POST"):
+                    connection.request(mode, address, json.dumps(data))
+                else:
+                    raise ValueError(f"Unsupported HTTP mode: {mode}")
+            except TimeoutError as exc:
+                error = f"{mode} request to {self.ip}{address} timed out."
+                logger.exception(error)
+                from phue import PhueRequestTimeout
+
+                raise PhueRequestTimeout(None, error) from exc
+
+            result = connection.getresponse()
+            response = result.read()
+            connection.close()
+            response_text = response.decode("utf-8")
+            logger.debug(response_text)
+            return json.loads(response_text)
+
 except ImportError:
     PHUE_AVAILABLE = False
     Bridge = None  # type: ignore[assignment, misc]
+    HueHttpsBridge = None  # type: ignore[assignment, misc]
 
 
 class HueLight(BaseModel):
@@ -209,6 +360,9 @@ class HueManager:
         self._motionaware_last_state: dict[str, bool] = {}
         self._bridge_ip: str | None = None
         self._bridge_username: str | None = None
+        self._requires_https = False
+        self._bridge_model: str | None = None
+        self._bridge_name: str | None = None
         self._connection_error: str | None = None
         self._cache_loaded = False  # Track if we've loaded from bridge at least once
         self._last_scan_time: datetime | None = None
@@ -245,13 +399,42 @@ class HueManager:
             self._bridge_ip = str(bridge_ip).strip()
             self._bridge_username = str(bridge_username).strip() if bridge_username else None
 
+            probe = await probe_hue_bridge(self._bridge_ip)
+            if not probe.get("reachable"):
+                self._connection_error = probe.get("error") or f"Cannot reach Hue Bridge at {self._bridge_ip}"
+                logger.warning(self._connection_error)
+                return False
+
+            self._requires_https = bool(probe.get("requires_https"))
+            self._bridge_model = probe.get("modelid")
+            self._bridge_name = probe.get("name")
+            logger.info(
+                "Hue bridge probe: %s model=%s https=%s",
+                self._bridge_name or self._bridge_ip,
+                self._bridge_model,
+                self._requires_https,
+            )
+
             # Connect to bridge
             try:
                 if self._bridge_username:
-                    self._bridge = Bridge(self._bridge_ip, username=self._bridge_username)
+                    self._bridge = create_hue_bridge_client(
+                        self._bridge_ip,
+                        self._bridge_username,
+                        self._requires_https,
+                    )
+                    valid, auth_err = await validate_hue_username(
+                        self._bridge_ip,
+                        self._bridge_username,
+                        self._bridge,
+                    )
+                    if not valid:
+                        self._connection_error = auth_err
+                        logger.warning(self._connection_error)
+                        return False
                 else:
                     # First-time connection - user needs to press bridge button (or use web UI pairing)
-                    self._bridge = Bridge(self._bridge_ip)
+                    self._bridge = create_hue_bridge_client(self._bridge_ip, None, self._requires_https)
                     self._bridge_username = self._bridge.username
                     logger.info("Hue Bridge connected. Username: %s", self._bridge_username)
                     merged = {**cache, "bridge_ip": self._bridge_ip, "username": self._bridge_username}
@@ -262,6 +445,17 @@ class HueManager:
                 if "link button not pressed" in str(e).lower():
                     self._connection_error += " - Press the button on your Hue Bridge and try again"
                 return False
+
+            save_hue_bridge_cache(
+                {
+                    **cache,
+                    "bridge_ip": self._bridge_ip,
+                    "username": self._bridge_username,
+                    "requires_https": self._requires_https,
+                    "modelid": self._bridge_model,
+                    "name": self._bridge_name,
+                }
+            )
 
             # Skip initial discovery - do lazy loading instead
             # This makes initialization near-instant instead of 10-30 seconds
@@ -716,9 +910,9 @@ class HueManager:
             b_norm = max(0.0, min(1.0, inv_gamma_correct(b_linear)))
 
             # Convert to 0-255 RGB
-            r = int(round(r_norm * 255))
-            g = int(round(g_norm * 255))
-            b = int(round(b_norm * 255))
+            r = round(r_norm * 255)
+            g = round(g_norm * 255)
+            b = round(b_norm * 255)
 
             return [r, g, b]
         except Exception:
@@ -909,7 +1103,7 @@ class HueManager:
             await asyncio.wait_for(self._discover_devices(), timeout=15.0)  # 15 second timeout for rescans
         except TimeoutError:
             logger.warning("Hue bridge rescan timed out after 15 seconds")
-            raise RuntimeError("Hue bridge rescan timed out - bridge may be unresponsive")
+            raise RuntimeError("Hue bridge rescan timed out - bridge may be unresponsive") from None
         except Exception:
             logger.exception("Hue bridge rescan failed")
             raise
@@ -1062,6 +1256,8 @@ async def discover_hue_bridges_cloud() -> list[dict[str, Any]]:
                     "internalipaddress": ip,
                     "macaddress": b.get("macaddress"),
                     "name": b.get("name") or "Hue Bridge",
+                    "port": b.get("port") or 443,
+                    "requires_https": bool(b.get("port") == 443),
                 }
             )
         return out
@@ -1083,11 +1279,16 @@ async def pair_philips_hue_bridge(bridge_ip: str) -> dict[str, Any]:
     if not ip:
         return {"success": False, "error": "bridge_ip is required"}
 
-    url = f"http://{ip}/api"
+    probe = await probe_hue_bridge(ip)
+    if not probe.get("reachable"):
+        return {"success": False, "error": probe.get("error") or f"Cannot reach bridge at {ip}"}
+
+    scheme = "https" if probe.get("requires_https") else "http"
+    url = f"{scheme}://{ip}/api"
     payload = {"devicetype": "devices-mcp#web"}
 
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(verify=False, timeout=20.0) as client:
             resp = await client.post(url, json=payload)
     except Exception as e:
         return {"success": False, "error": f"Cannot reach bridge at {ip}: {e}"}
@@ -1130,6 +1331,9 @@ async def pair_philips_hue_bridge(bridge_ip: str) -> dict[str, Any]:
     cache = load_hue_bridge_cache()
     cache["bridge_ip"] = ip
     cache["username"] = username
+    cache["requires_https"] = probe.get("requires_https", False)
+    cache["modelid"] = probe.get("modelid")
+    cache["name"] = probe.get("name")
     save_hue_bridge_cache(cache)
 
     reset_hue_manager()
