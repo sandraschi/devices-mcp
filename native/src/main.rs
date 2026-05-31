@@ -135,8 +135,7 @@ async fn start_backend(
                 app,
                 "devices-mcp-backend",
                 &["--host", "127.0.0.1", "--port", "10717"],
-            )
-            .await?
+            )?
         }
     };
 

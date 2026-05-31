@@ -134,9 +134,15 @@ export function Weather() {
     try {
       const [nm, mod, hist, fc] = await Promise.all([
         fetch('/api/netatmo/status').then((r) => (r.ok ? r.json() : null)),
-        fetch('/api/weather/modules').then((r) => (r.ok ? r.json() : null)),
-        fetch('/api/weather/history?days=7').then((r) => (r.ok ? r.json() : null)),
-        fetch('/api/weather/forecast?days=7').then((r) => (r.ok ? r.json() : null)),
+        fetch('/api/weather/modules').then((r) =>
+          r.ok ? (r.json() as Promise<ModulesResponse>) : null,
+        ),
+        fetch('/api/weather/history?days=7').then((r) =>
+          r.ok ? (r.json() as Promise<HistoryResponse>) : null,
+        ),
+        fetch('/api/weather/forecast?days=7').then((r) =>
+          r.ok ? (r.json() as Promise<ForecastResponse>) : null,
+        ),
       ]);
       setNetatmoStatus(nm ?? null);
       if (mod?.success) setModules(mod.modules ?? {});

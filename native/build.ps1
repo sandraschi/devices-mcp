@@ -37,6 +37,22 @@ try {
     Pop-Location
 }
 
+$releaseDir = "$Root\dist"
+New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
+
+$appExe = "$PSScriptRoot\target\release\devices-mcp-native.exe"
+if (-not (Test-Path $appExe)) {
+    $appExe = Get-ChildItem "$PSScriptRoot\target\release\*.exe" -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notmatch '^(WebView2|msiexec)' } |
+        Sort-Object Length -Descending |
+        Select-Object -First 1 -ExpandProperty FullName
+}
+if (-not $appExe -or -not (Test-Path $appExe)) {
+    throw "Tauri app executable not found under native/target/release"
+}
+Copy-Item $appExe "$releaseDir\tauri.exe" -Force
+Write-Host "Release asset: $releaseDir\tauri.exe" -ForegroundColor Cyan
+
 $nsis = Get-ChildItem "$PSScriptRoot\target\release\bundle\nsis\*-setup.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
 Write-Host "=== Build complete ===" -ForegroundColor Green
 if ($nsis) {
