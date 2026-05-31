@@ -2,7 +2,7 @@
 # Platform: https://glama.ai
 # Documentation: https://docs.glama.ai
 
-name: tapo-camera-mcp
+name: devices-mcp
 display_name: "Tapo Camera MCP Server"
 description: "Comprehensive camera management MCP server supporting Tapo, Ring, Furbo, and USB webcams with 26+ tools"
 
@@ -17,9 +17,9 @@ quality:
 
 # Repository Information
 repository:
-  url: "https://github.com/sandraschi/tapo-camera-mcp"
+  url: "https://github.com/sandraschi/devices-mcp"
   primary_branch: "main"
-  homepage: "https://github.com/sandraschi/tapo-camera-mcp"
+  homepage: "https://github.com/sandraschi/devices-mcp"
 
 # MCP Server Details
 mcp:
@@ -134,7 +134,7 @@ packaging:
 
   pypi:
     enabled: true
-    package_name: "tapo-camera-mcp"
+    package_name: "devices-mcp"
 
 # Security
 security:
@@ -190,5 +190,5 @@ maintenance:
 # Contact and Support
 support:
   email: "sandraschipal@hotmail.com"
-  issues: "https://github.com/sandraschi/tapo-camera-mcp/issues"
-  documentation: "https://github.com/sandraschi/tapo-camera-mcp/blob/main/README.md"
+  issues: "https://github.com/sandraschi/devices-mcp/issues"
+  documentation: "https://github.com/sandraschi/devices-mcp/blob/main/README.md"

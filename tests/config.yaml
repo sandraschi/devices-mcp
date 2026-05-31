@@ -26,7 +26,7 @@ security:
   enable_rate_limiting: true
 logging:
   level: INFO
-  file: tapo-camera-mcp.log
+  file: devices-mcp.log
   max_size_mb: 10
   backup_count: 5
   format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

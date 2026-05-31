@@ -1,11 +1,11 @@
-name: tapo-camera-mcp
+name: devices-mcp
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tapo-camera-mcp
+    container_name: devices-mcp
     network_mode: host
     volumes:
       - ./config.yaml:/app/config.yaml:ro

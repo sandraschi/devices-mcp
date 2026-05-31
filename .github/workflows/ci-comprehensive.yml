@@ -384,13 +384,13 @@ jobs:
           context: .
           file: Dockerfile
           push: false
-          tags: tapo-camera-mcp:test
+          tags: devices-mcp:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Test container startup
         run: |
-          docker run --rm -d --name test-container -p 8000:8000 tapo-camera-mcp:test
+          docker run --rm -d --name test-container -p 8000:8000 devices-mcp:test
           sleep 30
           docker logs test-container
           curl -f http://localhost:8000/api/health || exit 1
@@ -398,7 +398,7 @@ jobs:
 
       - name: Run containerized tests
         run: |
-          docker run --rm -v $(pwd):/app -w /app tapo-camera-mcp:test \
+          docker run --rm -v $(pwd):/app -w /app devices-mcp:test \
             python -m pytest tests/unit/test_imports.py -v
 
   # ============================================================================
@@ -433,7 +433,7 @@ jobs:
 
       - name: Test CLI commands
         run: |
-          tapo-camera-mcp --help || echo "CLI not available in test environment"
+          devices-mcp --help || echo "CLI not available in test environment"
 
   # ============================================================================
   # COMPREHENSIVE TEST REPORT
@@ -490,9 +490,9 @@ jobs:
       - name: Build and push Docker image
         run: |
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-          docker build -t tapo-camera-mcp:${{ github.sha }} .
-          docker tag tapo-camera-mcp:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/tapo-camera-mcp:${{ github.sha }}
-          docker push ${{ secrets.ECR_REGISTRY }}/tapo-camera-mcp:${{ github.sha }}
+          docker build -t devices-mcp:${{ github.sha }} .
+          docker tag devices-mcp:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/devices-mcp:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/devices-mcp:${{ github.sha }}
 
       - name: Deploy to production
         run: |
