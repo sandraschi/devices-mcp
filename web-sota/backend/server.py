@@ -39,9 +39,20 @@ class WebServer:
         @asynccontextmanager
         async def _lifespan(app: FastAPI):
             try:
+                from devices_mcp.config import get_config
+                from devices_mcp.config.log_paths import configure_root_file_logging
+
+                configure_root_file_logging(get_config())
+            except Exception:
+                logger.debug("Startup file logging skipped", exc_info=True)
+
+            try:
+                from devices_mcp.config import get_config
                 from devices_mcp.llm.manager import get_llm_manager
 
-                await get_llm_manager().glom_local_providers_if_up()
+                mgr = get_llm_manager()
+                mgr.ensure_catalog_registered(get_config())
+                await mgr.glom_local_providers_if_up()
             except Exception:
                 logger.debug("Startup LLM glom skipped", exc_info=True)
 
@@ -321,6 +332,7 @@ class WebServer:
                 scanner,
                 security,
                 sensors,
+                settings_prefs,
                 shelly,
                 system,
                 thermal,
@@ -357,6 +369,7 @@ class WebServer:
             self.app.include_router(audio.router, tags=["Audio"])
             self.app.include_router(camera_names.router, tags=["Camera Names"])
             self.app.include_router(config_editor.router, tags=["Config"])
+            self.app.include_router(settings_prefs.router, tags=["Settings"])
             self.app.include_router(custom_presets.router, tags=["Custom Presets"])
             self.app.include_router(dymo.router, tags=["Dymo Labels"])
             self.app.include_router(health.router, tags=["Health"])

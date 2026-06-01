@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { type LLMModelInfo, normalizeModelList } from '@/lib/llmModels';
+import { LOCAL_LLM_CATALOG, mergeProviderTypes } from '@/lib/llmProviders';
 import { AlertCircle, Loader2, MessageCircle, Send } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -30,15 +31,24 @@ export function Chat() {
     try {
       const r = await fetch('/api/llm/providers');
       const data = await r.json();
-      if (data.success && data.providers?.length) {
-        const names = data.providers.map(
+      if (data.success) {
+        const fromApi = (data.providers ?? []).map(
           (p: { type?: string; name?: string }) => p.type ?? p.name ?? '',
         );
+        const names = mergeProviderTypes(fromApi);
         setProviders(names);
-        setProvider((current) => current || names[0] || '');
+        const preferred =
+          (data as { preferred_provider?: string }).preferred_provider ??
+          LOCAL_LLM_CATALOG[0].type;
+        setProvider((current) => current || preferred || names[0] || '');
+      } else {
+        setProviders(mergeProviderTypes([]));
+        setProvider(LOCAL_LLM_CATALOG[0].type);
       }
     } catch {
-      setError('Could not load providers');
+      setProviders(mergeProviderTypes([]));
+      setProvider(LOCAL_LLM_CATALOG[0].type);
+      setError('Could not reach LLM API — using Ollama / LM Studio defaults. Configure in Settings.');
     }
   }, []);
 
@@ -144,23 +154,21 @@ export function Chat() {
             <MessageCircle className='h-5 w-5' /> Local LLM
           </CardTitle>
           <div className='flex flex-wrap items-center gap-2'>
-            {providers.length > 0 && (
-              <select
-                value={provider}
-                onChange={(e) => {
-                  setProvider(e.target.value);
-                  setModel('');
-                  setModelLoaded(false);
-                }}
-                className='rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800'
-              >
-                {providers.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            )}
+            <select
+              value={provider}
+              onChange={(e) => {
+                setProvider(e.target.value);
+                setModel('');
+                setModelLoaded(false);
+              }}
+              className='rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800'
+            >
+              {(providers.length ? providers : LOCAL_LLM_CATALOG.map((c) => c.type)).map((p) => (
+                <option key={p} value={p}>
+                  {LOCAL_LLM_CATALOG.find((c) => c.type === p)?.label ?? p}
+                </option>
+              ))}
+            </select>
             {models.length > 0 && (
               <select
                 value={model}

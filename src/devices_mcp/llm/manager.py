@@ -18,6 +18,12 @@ from .providers import (
 
 logger = logging.getLogger(__name__)
 
+# Built-in local providers (always shown in UI catalog)
+PROVIDER_CATALOG: list[tuple[ProviderType, str, str]] = [
+    (ProviderType.OLLAMA, "Ollama", "http://127.0.0.1:11434"),
+    (ProviderType.LM_STUDIO, "LM Studio", "http://127.0.0.1:1234"),
+]
+
 
 class LLMManager:
     """Manager for LLM providers and models."""
@@ -65,32 +71,53 @@ class LLMManager:
             logger.exception("Failed to register %s provider", provider_type.value)
             return False
 
+    def _llm_urls_from_config(self, config: dict[str, Any] | None) -> dict[ProviderType, str]:
+        llm = (config or {}).get("llm") or {}
+        return {
+            ProviderType.OLLAMA: str(llm.get("ollama_url") or "http://127.0.0.1:11434"),
+            ProviderType.LM_STUDIO: str(llm.get("lm_studio_url") or "http://127.0.0.1:1234"),
+        }
+
+    def ensure_catalog_registered(self, config: dict[str, Any] | None = None) -> None:
+        """Register Ollama and LM Studio stubs so the UI always has both providers."""
+        urls = self._llm_urls_from_config(config)
+        for provider_type, _label, _default in PROVIDER_CATALOG:
+            if provider_type not in self.providers:
+                self.register_provider(provider_type, urls[provider_type])
+
     async def list_providers(self) -> list[dict[str, Any]]:
-        """List all registered providers."""
-        providers = []
-        for provider_type, provider in self.providers.items():
-            try:
-                models = await provider.list_models()
-                current_model = await provider.get_current_model()
-                providers.append(
-                    {
-                        "type": provider_type.value,
-                        "base_url": provider.base_url,
-                        "model_count": len(models),
-                        "current_model": current_model,
-                        "available": True,
-                    }
-                )
-            except Exception:
-                providers.append(
-                    {
-                        "type": provider_type.value,
-                        "base_url": provider.base_url,
-                        "model_count": 0,
-                        "current_model": None,
-                        "available": False,
-                    }
-                )
+        """List catalog providers (Ollama, LM Studio) with registration and reachability."""
+        try:
+            from devices_mcp.config import get_config
+
+            self.ensure_catalog_registered(get_config())
+        except Exception:
+            self.ensure_catalog_registered(None)
+
+        providers: list[dict[str, Any]] = []
+        for provider_type, label, default_url in PROVIDER_CATALOG:
+            provider = self.providers.get(provider_type)
+            base_url = provider.base_url if provider else default_url
+            entry: dict[str, Any] = {
+                "type": provider_type.value,
+                "label": label,
+                "base_url": base_url,
+                "default_base_url": default_url,
+                "registered": provider is not None,
+                "model_count": 0,
+                "current_model": None,
+                "available": False,
+            }
+            if provider:
+                try:
+                    models = await provider.list_models()
+                    current_model = await provider.get_current_model()
+                    entry["model_count"] = len(models)
+                    entry["current_model"] = current_model
+                    entry["available"] = True
+                except Exception:
+                    entry["available"] = False
+            providers.append(entry)
         return providers
 
     async def list_models(self, provider_type: ProviderType | None = None) -> list[dict[str, Any]]:
@@ -219,30 +246,38 @@ class LLMManager:
         self.providers.clear()
 
     async def glom_local_providers_if_up(self) -> None:
-        """Fleet SOTA: auto-register Ollama (11434) and LM Studio (1234) when reachable.
+        """Re-register catalog providers from config and probe default ports when reachable.
 
         Disable with DEVICES_MCP_LLM_GLOM=0.
         """
+        try:
+            from devices_mcp.config import get_config
+
+            config = get_config()
+        except Exception:
+            config = None
+        self.ensure_catalog_registered(config)
+
         if os.getenv("DEVICES_MCP_LLM_GLOM", "1").strip().lower() in ("0", "false", "no", "off"):
             return
+
+        urls = self._llm_urls_from_config(config)
         timeout = httpx.Timeout(2.0)
         async with httpx.AsyncClient(timeout=timeout) as client:
-            if ProviderType.OLLAMA not in self.providers:
+            for provider_type, _label, default_url in PROVIDER_CATALOG:
+                base = urls.get(provider_type, default_url)
+                probe = (
+                    f"{base.rstrip('/')}/api/tags"
+                    if provider_type == ProviderType.OLLAMA
+                    else f"{base.rstrip('/')}/v1/models"
+                )
                 try:
-                    r = await client.get("http://127.0.0.1:11434/api/tags")
+                    r = await client.get(probe)
                     if r.status_code == 200:
-                        if self.register_provider(ProviderType.OLLAMA, "http://127.0.0.1:11434"):
-                            logger.info("LLM glom: registered Ollama at 127.0.0.1:11434")
+                        self.register_provider(provider_type, base)
+                        logger.info("LLM glom: %s reachable at %s", provider_type.value, base)
                 except Exception:
-                    logger.debug("LLM glom: Ollama not reachable", exc_info=True)
-            if ProviderType.LM_STUDIO not in self.providers:
-                try:
-                    r = await client.get("http://127.0.0.1:1234/v1/models")
-                    if r.status_code == 200:
-                        if self.register_provider(ProviderType.LM_STUDIO, "http://127.0.0.1:1234"):
-                            logger.info("LLM glom: registered LM Studio at 127.0.0.1:1234")
-                except Exception:
-                    logger.debug("LLM glom: LM Studio not reachable", exc_info=True)
+                    logger.debug("LLM glom: %s not reachable at %s", provider_type.value, base)
 
 
 # Global manager instance

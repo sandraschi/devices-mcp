@@ -1,7 +1,19 @@
 import { type CapabilitiesResponse, getCapabilities } from '@/common/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Check, Edit3, Loader2, Save, Shield, User, X } from 'lucide-react';
+import { LOCAL_LLM_CATALOG } from '@/lib/llmProviders';
+import {
+  AlertCircle,
+  Check,
+  Cpu,
+  Edit3,
+  FileText,
+  Loader2,
+  Save,
+  Shield,
+  User,
+  X,
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 interface AuthStatus {
@@ -18,6 +30,31 @@ interface ConfigData {
   error?: string;
 }
 
+interface LoggingSettings {
+  success: boolean;
+  file?: string;
+  default_file?: string;
+  path_exists?: boolean;
+  error?: string;
+}
+
+interface LlmProviderRow {
+  type?: string;
+  label?: string;
+  base_url?: string;
+  available?: boolean;
+  model_count?: number;
+}
+
+interface LlmSettings {
+  success: boolean;
+  ollama_url?: string;
+  lm_studio_url?: string;
+  preferred_provider?: string;
+  providers?: LlmProviderRow[];
+  error?: string;
+}
+
 export function Settings() {
   const [auth, setAuth] = useState<AuthStatus | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
@@ -29,6 +66,46 @@ export function Settings() {
   const [editYaml, setEditYaml] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const [logSettings, setLogSettings] = useState<LoggingSettings | null>(null);
+  const [logPathEdit, setLogPathEdit] = useState('');
+  const [logSaving, setLogSaving] = useState(false);
+  const [logMsg, setLogMsg] = useState<string | null>(null);
+
+  const [llmSettings, setLlmSettings] = useState<LlmSettings | null>(null);
+  const [ollamaUrl, setOllamaUrl] = useState('http://127.0.0.1:11434');
+  const [lmStudioUrl, setLmStudioUrl] = useState('http://127.0.0.1:1234');
+  const [preferredProvider, setPreferredProvider] = useState('ollama');
+  const [llmSaving, setLlmSaving] = useState(false);
+  const [llmMsg, setLlmMsg] = useState<string | null>(null);
+
+  const loadLogging = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings/logging');
+      const data: LoggingSettings = await res.json();
+      if (data.success) {
+        setLogSettings(data);
+        setLogPathEdit(data.file ?? data.default_file ?? '');
+      }
+    } catch {
+      /* optional */
+    }
+  }, []);
+
+  const loadLlm = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings/llm');
+      const data: LlmSettings = await res.json();
+      if (data.success) {
+        setLlmSettings(data);
+        setOllamaUrl(data.ollama_url ?? LOCAL_LLM_CATALOG[0].defaultUrl);
+        setLmStudioUrl(data.lm_studio_url ?? LOCAL_LLM_CATALOG[1].defaultUrl);
+        setPreferredProvider(data.preferred_provider ?? 'ollama');
+      }
+    } catch {
+      /* optional */
+    }
+  }, []);
 
   const loadConfig = useCallback(async () => {
     try {
@@ -46,6 +123,13 @@ export function Settings() {
   }, []);
 
   useEffect(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [loading]);
+
+  useEffect(() => {
     let cancelled = false;
     Promise.allSettled([
       fetch('/api/auth/status').then((r) =>
@@ -53,6 +137,8 @@ export function Settings() {
       ),
       getCapabilities(),
       loadConfig(),
+      loadLogging(),
+      loadLlm(),
     ])
       .then(([authResult, capsResult]) => {
         if (cancelled) return;
@@ -69,7 +155,62 @@ export function Settings() {
     return () => {
       cancelled = true;
     };
-  }, [loadConfig]);
+  }, [loadConfig, loadLogging, loadLlm]);
+
+  const handleSaveLogging = async () => {
+    setLogSaving(true);
+    setLogMsg(null);
+    try {
+      const res = await fetch('/api/settings/logging', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: logPathEdit.trim() || null }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setLogMsg('Log path saved.');
+        await loadLogging();
+      } else {
+        setLogMsg(data.error ?? 'Save failed');
+      }
+    } catch (e) {
+      setLogMsg(String(e));
+    } finally {
+      setLogSaving(false);
+    }
+  };
+
+  const handleResetLogPath = () => {
+    setLogPathEdit(logSettings?.default_file ?? '');
+  };
+
+  const handleSaveLlm = async () => {
+    setLlmSaving(true);
+    setLlmMsg(null);
+    try {
+      const res = await fetch('/api/settings/llm', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ollama_url: ollamaUrl.trim(),
+          lm_studio_url: lmStudioUrl.trim(),
+          preferred_provider: preferredProvider,
+          reconnect: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setLlmMsg('Local LLM settings saved.');
+        setLlmSettings((prev) => ({ ...prev, success: true, providers: data.providers }));
+      } else {
+        setLlmMsg(data.error ?? 'Save failed');
+      }
+    } catch (e) {
+      setLlmMsg(String(e));
+    } finally {
+      setLlmSaving(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -137,6 +278,117 @@ export function Settings() {
               {auth.user}
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      <Card id='logging'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2'>
+          <CardTitle className='text-base flex items-center gap-2'>
+            <FileText className='h-4 w-4 text-slate-400' />
+            Logging
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-3 text-sm'>
+          <p className='text-slate-600 dark:text-slate-400'>
+            New installs write logs here by default. You only need to change this if you want a
+            different folder.
+          </p>
+          {logSettings?.default_file && (
+            <p className='text-xs text-slate-500'>
+              Default: <code className='break-all'>{logSettings.default_file}</code>
+            </p>
+          )}
+          <label className='block'>
+            <span className='mb-1 block font-medium text-slate-700 dark:text-slate-300'>
+              Log file path
+            </span>
+            <input
+              type='text'
+              value={logPathEdit}
+              onChange={(e) => setLogPathEdit(e.target.value)}
+              className='w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900'
+              spellCheck={false}
+            />
+          </label>
+          {logSettings?.path_exists === false && (
+            <p className='text-amber-600 text-xs'>File will be created on next log write.</p>
+          )}
+          <div className='flex flex-wrap items-center gap-2'>
+            <Button size='sm' onClick={handleSaveLogging} disabled={logSaving}>
+              {logSaving ? <Loader2 className='mr-1 h-3 w-3 animate-spin' /> : <Save className='mr-1 h-3 w-3' />}
+              Save log path
+            </Button>
+            <Button size='sm' variant='outline' onClick={handleResetLogPath}>
+              Use default
+            </Button>
+            {logMsg && <span className='text-xs text-slate-500'>{logMsg}</span>}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card id='local-llm'>
+        <CardHeader className='flex flex-row items-center justify-between pb-2'>
+          <CardTitle className='text-base flex items-center gap-2'>
+            <Cpu className='h-4 w-4 text-slate-400' />
+            Local LLM
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4 text-sm'>
+          <p className='text-slate-600 dark:text-slate-400'>
+            Ollama and LM Studio are always available in Chat. Start the app on your PC, then save
+            URLs below and pick a default provider.
+          </p>
+          <label className='block'>
+            <span className='mb-1 block font-medium'>Ollama URL</span>
+            <input
+              type='url'
+              value={ollamaUrl}
+              onChange={(e) => setOllamaUrl(e.target.value)}
+              className='w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900'
+            />
+          </label>
+          <label className='block'>
+            <span className='mb-1 block font-medium'>LM Studio URL</span>
+            <input
+              type='url'
+              value={lmStudioUrl}
+              onChange={(e) => setLmStudioUrl(e.target.value)}
+              className='w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900'
+            />
+          </label>
+          <label className='block'>
+            <span className='mb-1 block font-medium'>Default provider (Chat)</span>
+            <select
+              value={preferredProvider}
+              onChange={(e) => setPreferredProvider(e.target.value)}
+              className='rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900'
+            >
+              {LOCAL_LLM_CATALOG.map((c) => (
+                <option key={c.type} value={c.type}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {llmSettings?.providers && llmSettings.providers.length > 0 && (
+            <ul className='space-y-1 rounded-md border border-slate-200 p-3 text-xs dark:border-slate-700'>
+              {llmSettings.providers.map((p) => (
+                <li key={p.type} className='flex justify-between gap-2'>
+                  <span className='font-medium'>{p.label ?? p.type}</span>
+                  <span className={p.available ? 'text-emerald-600' : 'text-slate-500'}>
+                    {p.available ? `up · ${p.model_count ?? 0} models` : 'not reachable'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className='flex items-center gap-2'>
+            <Button size='sm' onClick={handleSaveLlm} disabled={llmSaving}>
+              {llmSaving ? <Loader2 className='mr-1 h-3 w-3 animate-spin' /> : <Save className='mr-1 h-3 w-3' />}
+              Save & connect
+            </Button>
+            {llmMsg && <span className='text-xs text-slate-500'>{llmMsg}</span>}
+          </div>
         </CardContent>
       </Card>
 

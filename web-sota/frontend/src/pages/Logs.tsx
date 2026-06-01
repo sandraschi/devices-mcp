@@ -133,10 +133,9 @@ export function Logs() {
         </div>
       </div>
       <p className='text-sm text-slate-500 dark:text-slate-400'>
-        Reads the log file configured in <code className='text-xs'>config.yaml</code> under{' '}
-        <code className='text-xs'>logging.file</code> (relative paths resolve from the devices-mcp
-        repo root). Uvicorn-only lines may still appear in the terminal; file logging must be
-        enabled for the backend process.
+        Tails the default log under your user profile (
+        <code className='text-xs'>.local\share\devices-mcp\devices-mcp.log</code>). Change the path
+        in Settings → Logging if needed.
       </p>
       {error && (
         <div className='flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200'>

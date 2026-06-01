@@ -111,8 +111,16 @@ class ConfigManager:
         default_config["logging"].update(
             {
                 "file": str(user_data_dir / "devices-mcp.log"),
-                "max_size_mb": 10,
+                "max_size": 10,
                 "backup_count": 5,
+            }
+        )
+        default_config.setdefault("llm", {})
+        default_config["llm"].update(
+            {
+                "ollama_url": "http://127.0.0.1:11434",
+                "lm_studio_url": "http://127.0.0.1:1234",
+                "preferred_provider": "ollama",
             }
         )
         default_config.setdefault("storage", {})

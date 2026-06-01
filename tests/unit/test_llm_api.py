@@ -31,12 +31,13 @@ class TestLLMProvidersAPI:
 
     @pytest.mark.asyncio
     async def test_list_providers_empty(self, client, mock_manager):
-        """Test listing providers when none are registered."""
+        """Catalog always includes Ollama and LM Studio stubs."""
         response = client.get("/api/llm/providers")
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
-        assert data["providers"] == []
+        types = {p["type"] for p in data["providers"]}
+        assert types == {"ollama", "lm_studio"}
 
     @pytest.mark.asyncio
     async def test_register_ollama_provider(self, client, mock_manager):

@@ -48,9 +48,12 @@ class ProviderConfig(BaseModel):
 async def list_providers() -> dict[str, Any]:
     """List all registered LLM providers."""
     try:
+        from devices_mcp.config import get_config
+
         manager = get_llm_manager()
         providers = await manager.list_providers()
-        return {"success": True, "providers": providers}
+        preferred = (get_config() or {}).get("llm", {}).get("preferred_provider", "ollama")
+        return {"success": True, "providers": providers, "preferred_provider": preferred}
     except Exception as e:
         logger.exception("Failed to list providers")
         raise HTTPException(status_code=500, detail=str(e)) from e

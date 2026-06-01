@@ -1,0 +1,434 @@
+{
+  "disabled_at": "2026-05-31T23:16:07.9836359Z",
+  "owner": "sandraschi",
+  "repos": [
+    {
+      "name": "-myhomeserver",
+      "previously_enabled": true
+    },
+    {
+      "name": "advanced-memory-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "ai-producer-hub",
+      "previously_enabled": true
+    },
+    {
+      "name": "aiwatcher-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "alexa-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "arr-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "arxiv-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "audiotools-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "autohotkey-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "basic-memory",
+      "previously_enabled": true
+    },
+    {
+      "name": "beyondcompare-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "blender-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "browser-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "bumi-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "calibremcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "database-operations-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "deepfang",
+      "previously_enabled": true
+    },
+    {
+      "name": "devices-mcp",
+      "previously_enabled": false
+    },
+    {
+      "name": "discord-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "documentation-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "dreame-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "edge-bookmark-mcp-server",
+      "previously_enabled": true
+    },
+    {
+      "name": "ednaficator",
+      "previously_enabled": true
+    },
+    {
+      "name": "email-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "fastsearch-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "filesystem-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "filesystem-mcp-server",
+      "previously_enabled": true
+    },
+    {
+      "name": "fleet-agent-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "freecad-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "fritz-test",
+      "previously_enabled": true
+    },
+    {
+      "name": "fullstack-builder-script",
+      "previously_enabled": true
+    },
+    {
+      "name": "fullstack-demo",
+      "previously_enabled": true
+    },
+    {
+      "name": "gazebo-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "gimp-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "git-github-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "glance-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "godot-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "google-ai-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "goose-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "grandorgue-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "handbrakemcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "home-assistant-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "homecontrol-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "inkscape-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "jellyfin-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "komga",
+      "previously_enabled": true
+    },
+    {
+      "name": "kyutai-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "lewm-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "local-llm-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "magentart-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "mcp-studio",
+      "previously_enabled": true
+    },
+    {
+      "name": "minimail-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "monitoring-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "multi-database-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "mycalibretools",
+      "previously_enabled": true
+    },
+    {
+      "name": "myconf",
+      "previously_enabled": true
+    },
+    {
+      "name": "mydoctools",
+      "previously_enabled": true
+    },
+    {
+      "name": "mygames",
+      "previously_enabled": true
+    },
+    {
+      "name": "myhomecontrol",
+      "previously_enabled": true
+    },
+    {
+      "name": "myhomeserver",
+      "previously_enabled": true
+    },
+    {
+      "name": "mymcpservers",
+      "previously_enabled": true
+    },
+    {
+      "name": "myvrworlds",
+      "previously_enabled": true
+    },
+    {
+      "name": "mywienerlinien",
+      "previously_enabled": true
+    },
+    {
+      "name": "nest-protect-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "netatmo-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "notepadpp-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "notion-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "nuki-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "observability-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "ocr-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "openbci-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "openclaude-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "openclaw-molt-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "opencode-cli-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "OpenManus",
+      "previously_enabled": true
+    },
+    {
+      "name": "openmanus-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "osc-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "plexmcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "pywinauto-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "qcad-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "readly-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "resonite-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "robofang",
+      "previously_enabled": true
+    },
+    {
+      "name": "robotics-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "sakana-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "sandraschi",
+      "previously_enabled": true
+    },
+    {
+      "name": "sdr-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "songgeneration-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "speech-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "steam-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "streamfog-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "system-admin-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "tahoma2d-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "tailscale-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "telephony-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "toolbench-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "triton-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "uitars-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "unity3d-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "Unity_TransparentWindowManager",
+      "previously_enabled": true
+    },
+    {
+      "name": "vienna-life-assistant",
+      "previously_enabled": true
+    },
+    {
+      "name": "vienna-live-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "virtualization-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "windows-operations-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "worldlabs-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "xkcd-mcp",
+      "previously_enabled": true
+    },
+    {
+      "name": "yahboom-mcp",
+      "previously_enabled": true
+    }
+  ]
+}

@@ -1,4 +1,7 @@
 # MCPB Pack Exclusion List
+.ruff-errors.json
+native/binaries/
+native/target/
 tests/
 .git/
 __pycache__/

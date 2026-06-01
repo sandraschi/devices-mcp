@@ -38,23 +38,11 @@ logging.basicConfig(
 # Add rotating file handler using config values
 try:
     from devices_mcp.config import get_config
+    from devices_mcp.config.log_paths import configure_root_file_logging
 
     _cfg = get_config() or {}
-    _log_cfg = _cfg.get("logging") or {}
-    _log_file = _log_cfg.get("file", "tapo_mcp.log")
-    _max_mb = int(_log_cfg.get("max_size", 10))
-    _backup = int(_log_cfg.get("backup_count", 5))
-
-    _fh = logging.handlers.RotatingFileHandler(
-        _log_file,
-        maxBytes=_max_mb * 1024 * 1024,
-        backupCount=_backup,
-        encoding="utf-8",
-    )
-    _fh.setLevel(logging.INFO)
-    _fh.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-    logging.getLogger().addHandler(_fh)
-    logging.getLogger().info(f"File logging active: {_log_file} ({_max_mb}MB x {_backup})")
+    _log_path = configure_root_file_logging(_cfg)
+    logging.getLogger().info("File logging active: %s", _log_path)
 except Exception as _e:
     logging.getLogger(__name__).warning(f"File logging setup skipped: {_e}")
 

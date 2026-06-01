@@ -4,7 +4,6 @@ import {
   Bell,
   Bot,
   CloudRain,
-  Cpu,
   FileText,
   Flame,
   Heart,
@@ -39,7 +38,6 @@ const nav = [
   { to: '/alarms', label: 'Alarms', icon: Shield },
   { to: '/onboarding', label: 'Onboarding', icon: Rocket },
   { to: '/chat', label: 'Chat', icon: MessageCircle },
-  { to: '/llm', label: 'Local LLM', icon: Cpu },
   { to: '/mcp-capabilities', label: 'MCP Capabilities', icon: Puzzle },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

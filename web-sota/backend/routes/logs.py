@@ -1,9 +1,6 @@
 import json
 import logging
-import os
 import re
-import sys
-from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Query
@@ -11,49 +8,6 @@ from fastapi import APIRouter, Query
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-
-def _resolve_log_file_path(config: dict[str, Any]) -> Path:
-    """Resolve logging.file for dev, PyInstaller sidecar, NSSM service, and Tauri install."""
-    raw = (config.get("logging") or {}).get("file") or "devices-mcp.log"
-    p = Path(str(raw)).expanduser()
-    if p.is_absolute():
-        return p
-
-    search_dirs: list[Path] = []
-    try:
-        from devices_mcp.config import _get_config_manager
-
-        cfg_path = _get_config_manager().config_path
-        if cfg_path.exists():
-            search_dirs.append(cfg_path.parent)
-    except Exception:
-        pass
-
-    search_dirs.extend(
-        [
-            Path.cwd(),
-            Path.home() / ".local" / "share" / "devices-mcp",
-            Path.home() / ".config" / "devices-mcp",
-        ]
-    )
-    if getattr(sys, "frozen", False):
-        search_dirs.insert(0, Path(sys.executable).resolve().parent)
-    if os.name == "nt":
-        program_data = os.environ.get("PROGRAMDATA")
-        if program_data:
-            search_dirs.append(Path(program_data) / "devices-mcp")
-
-    for directory in search_dirs:
-        if not directory or not str(directory):
-            continue
-        candidate = (directory / p).resolve()
-        if candidate.exists():
-            return candidate
-
-    default_dir = Path.home() / ".local" / "share" / "devices-mcp"
-    default_dir.mkdir(parents=True, exist_ok=True)
-    return (default_dir / p.name).resolve()
 
 
 def _parse_log_line(line: str) -> dict[str, str] | None:
@@ -117,9 +71,10 @@ async def get_logs(
     """Tail the configured application log file (same file as devices_mcp file logging)."""
     try:
         from devices_mcp.config import get_config
+        from devices_mcp.config.log_paths import touch_log_file
 
         config = get_config()
-        log_file = _resolve_log_file_path(config)
+        log_file = touch_log_file(config=config)
         log_path_str = str(log_file)
 
         if not log_file.exists():
@@ -129,11 +84,7 @@ async def get_logs(
                 "message": "Log file not found",
                 "log_path": log_path_str,
                 "path_exists": False,
-                "hint": (
-                    "Set logging.file in config.yaml to an absolute path, e.g. "
-                    "%USERPROFILE%\\.local\\share\\devices-mcp\\devices-mcp.log. "
-                    "NSSM/service logs may live next to the service executable or in that folder."
-                ),
+                "hint": "Open Settings → Logging to change the path. Default: %USERPROFILE%\\.local\\share\\devices-mcp\\devices-mcp.log",
             }
 
         log_entries: list[dict[str, str]] = []
@@ -331,9 +282,10 @@ async def get_log_stats():
     """Log file size and rotated siblings (same basename prefix)."""
     try:
         from devices_mcp.config import get_config
+        from devices_mcp.config.log_paths import touch_log_file
 
         config = get_config()
-        log_file = _resolve_log_file_path(config)
+        log_file = touch_log_file(config=config)
         log_path_str = str(log_file)
 
         stats: dict[str, Any] = {

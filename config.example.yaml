@@ -333,13 +333,18 @@ security_integrations:
     server_path: "D:\\Dev\\repos\\ring-mcp"  # Path to Ring MCP server
     proxy_port: 8124  # Port for MCP proxy (if needed)
 
-# Logging configuration (use absolute path for NSSM / Tauri install)
+# Logging (optional override — default is %USERPROFILE%\.local\share\devices-mcp\devices-mcp.log)
 logging:
-  file: "devices-mcp.log"
-  # e.g. C:/Users/YOU/.local/share/devices-mcp/devices-mcp.log
+  # file: "C:/Users/YOU/.local/share/devices-mcp/devices-mcp.log"
   max_size: 10  # MB
   backup_count: 5
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Local LLM (Ollama / LM Studio) — configure in web Settings → Local LLM
+llm:
+  ollama_url: "http://127.0.0.1:11434"
+  lm_studio_url: "http://127.0.0.1:1234"
+  preferred_provider: "ollama"  # ollama | lm_studio
 
 # Advanced settings
 advanced:
