@@ -37,8 +37,15 @@ async def get_connection_health() -> dict[str, Any]:
         except Exception as e:
             logger.warning(f"Health check failed: {e}, returning cached data")
 
-        # Now return current health data
-        return supervisor.get_health_summary()
+        from devices_mcp.config import get_config
+        from devices_mcp.core.device_registry import build_device_inventory
+
+        health = supervisor.get_health_summary()
+        config = get_config() or {}
+        inventory = build_device_inventory(config, health)
+        health["devices_table"] = inventory.get("devices", [])
+        health["home_preset"] = inventory.get("home_preset")
+        return health
     except Exception as e:
         logger.exception("Error getting connection health")
         return {"error": str(e), "total_devices": 0, "online": 0, "offline": 0, "devices": []}

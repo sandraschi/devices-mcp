@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Devices MCP</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-family: system-ui, Segoe UI, sans-serif;
+      }
+      .card { text-align: center; max-width: 440px; padding: 2rem; }
+      h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+      p { color: #94a3b8; font-size: 0.95rem; line-height: 1.5; }
+      .spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid #334155;
+        border-top-color: #38bdf8;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 1.25rem auto;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .err { color: #fbbf24; }
+      button {
+        margin-top: 1rem;
+        padding: 0.5rem 1rem;
+        border: 0;
+        border-radius: 6px;
+        background: #38bdf8;
+        color: #0f172a;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover { background: #7dd3fc; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Devices MCP</h1>
+      <div class="spinner" id="spin" aria-hidden="true"></div>
+      <p id="status">Connecting to dashboard…</p>
+      <button type="button" id="openBtn" hidden>Open dashboard anyway</button>
+    </div>
+    <script>
+      const statusEl = document.getElementById('status');
+      const spinEl = document.getElementById('spin');
+      const openBtn = document.getElementById('openBtn');
+      const APP = 'http://127.0.0.1:10717/app/';
+      const HEALTH = 'http://127.0.0.1:10717/api/health';
+      let attempt = 0;
+      const maxAttempts = 90;
+
+      function goDashboard() {
+        statusEl.textContent = 'Opening dashboard…';
+        window.location.replace(APP);
+      }
+
+      openBtn.addEventListener('click', goDashboard);
+
+      async function probeHealth() {
+        try {
+          const res = await fetch(HEALTH, { cache: 'no-store', mode: 'cors' });
+          return res.ok;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      async function poll() {
+        attempt += 1;
+        if (await probeHealth()) {
+          spinEl.hidden = true;
+          goDashboard();
+          return;
+        }
+        if (attempt >= 8) {
+          openBtn.hidden = false;
+        }
+        if (attempt === 12) {
+          statusEl.textContent = 'Backend detected — opening dashboard…';
+          goDashboard();
+          return;
+        }
+        if (attempt >= maxAttempts) {
+          spinEl.hidden = true;
+          statusEl.innerHTML =
+            '<span class="err">Splash could not verify the backend (CORS or slow start).</span><br>If the dashboard works in your browser, click below.';
+          openBtn.hidden = false;
+          return;
+        }
+        statusEl.textContent = 'Connecting… (' + attempt + 's)';
+        setTimeout(poll, 1000);
+      }
+      poll();
+    </script>
+  </body>
+</html>

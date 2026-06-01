@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::net::{SocketAddr, TcpStream};
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -9,8 +10,11 @@ use std::time::Duration;
 use tauri::{Emitter, Manager};
 use tauri_plugin_shell::ShellExt;
 
-const BACKEND_PORT: u16 = 10717;
 const APP_URL: &str = "http://127.0.0.1:10717/app/";
+const BACKEND_ADDR: &str = "127.0.0.1:10717";
+
+const SIDECAR_CAMERA: &str = "binaries/devices-mcp-camera";
+const SIDECAR_BACKEND: &str = "binaries/devices-mcp-backend";
 
 struct SidecarState {
     camera: Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
@@ -19,6 +23,11 @@ struct SidecarState {
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..")
+}
+
+fn is_backend_listening() -> bool {
+    let addr: SocketAddr = BACKEND_ADDR.parse().expect("valid backend addr");
+    TcpStream::connect_timeout(&addr, Duration::from_millis(500)).is_ok()
 }
 
 fn spawn_sidecar(
@@ -38,6 +47,12 @@ fn spawn_sidecar(
         .map_err(|e| format!("Sidecar {name}: {e}"))?;
     for arg in args {
         cmd = cmd.arg(arg);
+    }
+    #[cfg(not(debug_assertions))]
+    {
+        cmd = cmd.env("TAPO_MCP_SKIP_HARDWARE_INIT", "true");
+        cmd = cmd.env("TAPO_MCP_LAZY_INIT", "true");
+        cmd = cmd.env("DEVICES_MCP_PACKAGED", "1");
     }
     cmd.spawn().map_err(|e| format!("Spawn {name}: {e}"))
 }
@@ -68,9 +83,11 @@ async fn watch_backend_stdout(
         if let CommandEvent::Stdout(line) | CommandEvent::Stderr(line) = event {
             let text = String::from_utf8_lossy(&line);
             eprintln!("[backend] {}", text.trim());
-            if text.contains("Uvicorn running") || text.contains("Application startup complete") {
+            if text.contains("Uvicorn running")
+                || text.contains("Application startup complete")
+                || text.contains("Started server process")
+            {
                 ready.store(true, Ordering::SeqCst);
-                break;
             }
         }
     }
@@ -97,7 +114,7 @@ async fn start_camera(app: &tauri::AppHandle, state: &tauri::State<'_, SidecarSt
 
     #[cfg(not(debug_assertions))]
     {
-        let (_rx, child) = spawn_sidecar(app, "devices-mcp-camera", &[])?;
+        let (_rx, child) = spawn_sidecar(app, SIDECAR_CAMERA, &[])?;
         *state.camera.lock().unwrap() = Some(child);
         Ok(())
     }
@@ -108,7 +125,13 @@ async fn start_backend(
     state: &tauri::State<'_, SidecarState>,
     ready: Arc<AtomicBool>,
 ) -> Result<(), String> {
-    let (rx, child) = {
+    if is_backend_listening() {
+        eprintln!("Reusing existing backend on {BACKEND_ADDR} (NSSM/service or prior instance)");
+        ready.store(true, Ordering::SeqCst);
+        return Ok(());
+    }
+
+    let spawn_result = {
         #[cfg(debug_assertions)]
         {
             let web_sota = repo_root().join("web-sota");
@@ -126,16 +149,28 @@ async fn start_backend(
                     "10717".into(),
                 ],
             )
-            .await?
+            .await
         }
 
         #[cfg(not(debug_assertions))]
         {
             spawn_sidecar(
                 app,
-                "devices-mcp-backend",
+                SIDECAR_BACKEND,
                 &["--host", "127.0.0.1", "--port", "10717"],
-            )?
+            )
+        }
+    };
+
+    let (rx, child) = match spawn_result {
+        Ok(pair) => pair,
+        Err(e) => {
+            if is_backend_listening() {
+                eprintln!("Sidecar spawn failed but backend is up: {e}");
+                ready.store(true, Ordering::SeqCst);
+                return Ok(());
+            }
+            return Err(e);
         }
     };
 
@@ -156,8 +191,13 @@ async fn boot_services(app: tauri::AppHandle) {
     let ready = Arc::new(AtomicBool::new(false));
     let state = app.state::<SidecarState>();
 
+    if is_backend_listening() {
+        ready.store(true, Ordering::SeqCst);
+    }
+
     if let Err(e) = start_camera(&app, &state).await {
         eprintln!("Camera helper error: {e}");
+        let _ = app.emit("backend-status", format!("camera error: {e}"));
     }
 
     tokio::time::sleep(Duration::from_secs(1)).await;
@@ -165,12 +205,26 @@ async fn boot_services(app: tauri::AppHandle) {
     if let Err(e) = start_backend(&app, &state, ready.clone()).await {
         eprintln!("Backend error: {e}");
         let _ = app.emit("backend-status", format!("error: {e}"));
+        if is_backend_listening() {
+            open_dashboard(&app);
+        }
         return;
     }
 
-    for _ in 0..120 {
+    if ready.load(Ordering::SeqCst) {
+        let _ = app.emit("backend-status", "ready");
+        open_dashboard(&app);
+        return;
+    }
+
+    for _ in 0..90 {
         if ready.load(Ordering::SeqCst) {
             let _ = app.emit("backend-status", "ready");
+            open_dashboard(&app);
+            return;
+        }
+        if is_backend_listening() {
+            ready.store(true, Ordering::SeqCst);
             open_dashboard(&app);
             return;
         }
@@ -178,7 +232,9 @@ async fn boot_services(app: tauri::AppHandle) {
     }
 
     let _ = app.emit("backend-status", "error: backend timeout");
-    open_dashboard(&app);
+    if is_backend_listening() {
+        open_dashboard(&app);
+    }
 }
 
 fn main() {

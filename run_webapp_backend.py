@@ -12,7 +12,15 @@ def _configure_paths() -> None:
     if getattr(sys, "frozen", False):
         root = Path(sys._MEIPASS)
         sys.path.insert(0, str(root))
-        os.chdir(root)
+        # Prefer install/portable dir for config.yaml; fall back to MEIPASS for bundled assets.
+        exe_dir = Path(sys.executable).resolve().parent
+        if (exe_dir / "config.yaml").exists():
+            os.chdir(exe_dir)
+        else:
+            os.chdir(root)
+        os.environ.setdefault("TAPO_MCP_SKIP_HARDWARE_INIT", "true")
+        os.environ.setdefault("TAPO_MCP_LAZY_INIT", "true")
+        os.environ.setdefault("DEVICES_MCP_PACKAGED", "1")
     else:
         repo = Path(__file__).resolve().parent
         sys.path.insert(0, str(repo / "src"))

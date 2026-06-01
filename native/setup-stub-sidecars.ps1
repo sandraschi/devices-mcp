@@ -10,8 +10,16 @@ $stub = Join-Path $dst "_stub-host.exe"
 if (-not (Test-Path $stub)) {
     Copy-Item $env:ComSpec $stub -Force
 }
-Copy-Item $stub $camera -Force
-Copy-Item $stub $backend -Force
+$minBytes = 5MB
+foreach ($pair in @(@($camera, "camera"), @($backend, "backend"))) {
+    $path = $pair[0]
+    $label = $pair[1]
+    if ((Test-Path $path) -and ((Get-Item $path).Length -ge $minBytes)) {
+        Write-Host "Keep existing $label sidecar ($([math]::Round((Get-Item $path).Length/1MB,1)) MB)" -ForegroundColor Gray
+        continue
+    }
+    Copy-Item $stub $path -Force
+}
 Write-Host "Stub sidecars: $camera" -ForegroundColor Gray
 Write-Host "Stub sidecars: $backend" -ForegroundColor Gray
 Write-Host "Replace with .\build-sidecar.ps1 before release." -ForegroundColor Yellow

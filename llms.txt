@@ -1,32 +1,21 @@
 # devices-mcp
-> Home security and IoT orchestration MCP server. Unified dashboard for Tapo cameras, Ring doorbells, Nest Protect, Philips Hue lighting, Netatmo weather, Shelly devices, and more.
+> Beta home IoT MCP + FastAPI/React dashboard + optional Windows Tauri installer. Three legs: MCP tools, webapp :10717/app/, desktop NSIS bundle.
 
 ## Docs
-- [Readme](README.md): Home Security MCP Platform — dual-architecture with individual device MCP servers + unified surveillance dashboard.
-- [Changelog](CHANGELOG.md): v1.21.1 — webapp bug fixes (lighting, logs, PC health).
-- [Assessment](docs/assessment.md): Comprehensive repository assessment with tool inventory and architecture analysis.
-- [Web-SOTA](web-sota/README.md): Vite + React SPA dashboard on ports 10716/10717 (created if needed).
-- [Justfile](justfile): Task runner — `just lint`, `just fix`, `just dev`, `just typecheck`, `just build`.
-
-## API
-- [Health](web-sota/backend/routes/system.py): `GET /api/health`, `GET /api/system/connection-health`
-- [Lighting](web-sota/backend/routes/lighting.py): `GET /api/lighting/status`, `GET /api/lighting/scenes`, `GET /api/lighting/hue/status`
-- [Logs](web-sota/backend/routes/logs.py): `GET /api/logs`, `GET /api/logs/stats`, `POST /api/logs/analyze`
-- [Cameras](web-sota/backend/routes/cameras.py): Camera management endpoints
-- [Energy](web-sota/backend/routes/energy.py): Smart plug power monitoring
-- [Weather](web-sota/backend/routes/weather.py): Netatmo weather station data
-- [Ring](web-sota/backend/routes/ring.py): Ring doorbell and alarm
-- [Nest](web-sota/backend/routes/nest.py): Nest Protect smoke/CO alarms
-
-## Tools
-- **Portmanteau**: `camera_management`, `lighting_management`, `energy_management`, `weather_management`, `security_management`, `ring_management`, `ptz_management`, `messages_management`, `automation_management`
-- **Atomic**: `list_cameras`, `move_ptz`, `capture_image`, `get_hue_lights`, `control_hue_light`, `get_homeaware_status`, and 30+ more
-
-## Config
-- [Pyproject](pyproject.toml): Python project dependencies and metadata
-- [Frontend](web-sota/frontend/package.json): Vite + React 18 + shadcn/ui
+- [README](README.md): Overview, TOC, three delivery legs (not production-ready).
+- [INSTALL](INSTALL.md): Tauri installer, MCPB, clone, NSSM.
+- [Architecture](docs/ARCHITECTURE.md): MCP + web-sota + Tauri sidecars.
+- [Desktop](docs/DESKTOP.md): Installer, splash, NSSM coexistence.
+- [Configuration](docs/CONFIGURATION.md): config.yaml, Vienna preset, discovery.
+- [Troubleshooting](docs/TROUBLESHOOTING.md): Splash CORS, logs path.
+- [Full corpus](llms-full.txt): Deep tool and env reference.
 
 ## Ports
-- 10715: USB Camera helper (Windows, optional)
-- 10716: Frontend Vite dev
-- 10717: Backend FastAPI + FastMCP
+- 10717: FastAPI backend + SPA /app/
+- 10716: Vite dev only
+- 10715: Camera sidecar (optional)
+
+## Releases
+- devices-mcp.mcpb (MCP leg)
+- Devices-MCP-*-x64-setup.exe (desktop leg)
+- Devices-MCP-*-windows-x64.zip (portable)

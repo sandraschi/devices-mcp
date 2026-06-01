@@ -1,6 +1,25 @@
 # Changelog
 
-## [1.21.1] - 2026-05-25 🔧 **Webapp Bug Fixes**
+## [1.21.5] - 2026-06-01 — Beta docs, splash/CORS, three delivery legs
+
+### Added
+- Fleet-style README with TOC; `docs/` hub (ARCHITECTURE, DESKTOP, CONFIGURATION, TOOLS, DEVELOPMENT, TROUBLESHOOTING).
+- Tauri as documented **third leg** beside MCP server and webapp.
+
+### Fixed
+- Desktop splash false timeout when backend already up (NSSM): CORS for Tauri origins, reuse port 10717, sidecar spawn fallback.
+- Log path resolution for installed/service (no longer hardcoded to dev repo).
+- Sidecar names `binaries/devices-mcp-*` and shell capabilities.
+
+## [1.21.4] - 2026-06-01 — Desktop white screen
+
+- Tauri sidecar permissions, splash.html, PyInstaller SPA paths, fast hardware init in packaged build.
+
+## [1.21.3] - 2026-06-01 — Full desktop bundle
+
+- Production NSIS installer with real PyInstaller sidecars (~247 MB).
+
+## [1.21.1] - 2026-05-25 — Webapp bug fixes
 
 ### 🔧 **FIXES**
 - **✅ Log Page Infinite Loop**: Fixed React `useEffect` dependency causing infinite re-renders on the Log Management page (`web-sota/frontend/src/pages/Logs.tsx`).

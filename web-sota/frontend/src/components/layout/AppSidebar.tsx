@@ -34,7 +34,7 @@ const nav = [
   { to: '/ring', label: 'Ring Doorbell', icon: Bell },
   { to: '/nest', label: 'Nest Protect', icon: Flame },
   { to: '/shelly', label: 'Shelly', icon: Thermometer },
-  { to: '/health', label: 'PC Health', icon: Activity },
+  { to: '/health', label: 'Status', icon: Activity },
   { to: '/human-health', label: 'Human Health', icon: Heart },
   { to: '/alarms', label: 'Alarms', icon: Shield },
   { to: '/onboarding', label: 'Onboarding', icon: Rocket },

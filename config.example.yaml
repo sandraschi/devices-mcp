@@ -16,6 +16,95 @@
 # - ring: Ring doorbell cameras (requires ring-doorbell)
 # - furbo: Furbo pet cameras (uses built-in API client)
 
+# --- Home preset & discovery (switchable) ---
+# home_preset: vienna | generic | off
+#   vienna  = Stroheckgasse-style 192.168.0.x template (see src/devices_mcp/config/vienna_defaults.py)
+#   generic = minimal 192.168.1.x placeholders
+#   off     = empty device list
+home_preset: vienna
+
+discovery:
+  enabled: true
+  tapo_p115: true
+  tapo_p115_broadcast: "192.168.0.255"
+  usb_cameras: true
+  philips_hue: true
+  tapo_lighting: true
+  ring: false
+  shelly: false
+  nest_home_assistant: true
+
+# Vienna LAN examples (replace YOUR_* credentials; disable discovery to use only static hosts)
+energy:
+  tapo_p115:
+    account:
+      username: YOUR_TAPO_CLOUD_EMAIL
+      password: YOUR_TAPO_CLOUD_PASSWORD
+    devices:
+      - host: 192.168.0.17
+        device_id: tapo_p115_aircon
+        name: Aircon
+      - host: 192.168.0.137
+        device_id: tapo_p115_kitchen
+        name: Kitchen Zojirushi
+      - host: 192.168.0.38
+        device_id: tapo_p115_server
+        name: Server rack
+    discovery:
+      enabled: true
+      broadcast: "192.168.0.255"
+      timeout: 10
+
+lighting:
+  philips_hue:
+    bridge_ip: 192.168.0.83
+    username: YOUR_HUE_API_KEY
+    auto_discover: true
+  tapo_lighting:
+    account:
+      username: YOUR_TAPO_CLOUD_EMAIL
+      password: YOUR_TAPO_CLOUD_PASSWORD
+    devices:
+      - host: 192.168.0.172
+        device_id: tapo_l900_lightstrip
+        name: Lightstrip L900
+
+ring:
+  enabled: false
+  email: YOUR_RING_EMAIL
+  password: YOUR_RING_PASSWORD
+  token_file: ring_token.cache
+
+shelly:
+  enabled: false
+  devices: []
+
+security:
+  integrations:
+    homeassistant:
+      enabled: false
+      url: http://192.168.0.10:8123
+      access_token: YOUR_HA_LONG_LIVED_TOKEN
+
+weather:
+  integrations:
+    openmeteo:
+      enabled: true
+      latitude: 48.2082
+      longitude: 16.3738
+      location_name: Vienna, Austria
+      timezone: Europe/Vienna
+    netatmo:
+      enabled: false
+
+public_webcams:
+  vienna_webcams:
+    enabled: true
+    region: Wien
+
+alerts:
+  regions: [Wien]
+
 # Server configuration
 server:
   host: "0.0.0.0"  # Listen on all interfaces
@@ -23,9 +112,33 @@ server:
   debug: false     # Enable debug mode
   log_level: "INFO"  # Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 
-# Camera configurations
+# Camera configurations (Vienna ONVIF examples — or use generic tapo below)
 cameras:
-  # Tapo Camera Example
+  tapo_kitchen:
+    type: onvif
+    host: 192.168.0.164
+    username: YOUR_TAPO_USERNAME
+    password: YOUR_TAPO_PASSWORD
+    rtsp_port: 554
+    onvif_port: 2020
+
+  tapo_living_room:
+    type: onvif
+    host: 192.168.0.206
+    username: YOUR_TAPO_USERNAME
+    password: YOUR_TAPO_PASSWORD
+    rtsp_port: 554
+    onvif_port: 2020
+
+  usb_microscope:
+    type: microscope
+    device_id: 0
+
+  usb_webcam:
+    type: webcam
+    device_id: 1
+
+  # Generic Tapo Camera Example
   living_room:
     type: tapo
     host: 192.168.1.100
@@ -220,9 +333,10 @@ security_integrations:
     server_path: "D:\\Dev\\repos\\ring-mcp"  # Path to Ring MCP server
     proxy_port: 8124  # Port for MCP proxy (if needed)
 
-# Logging configuration
+# Logging configuration (use absolute path for NSSM / Tauri install)
 logging:
-  file: "tapo_mcp.log"
+  file: "devices-mcp.log"
+  # e.g. C:/Users/YOU/.local/share/devices-mcp/devices-mcp.log
   max_size: 10  # MB
   backup_count: 5
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

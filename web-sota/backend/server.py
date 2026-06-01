@@ -192,17 +192,24 @@ class WebServer:
             lifespan=_lifespan,
         )
 
-        # Add CORS middleware for frontend
+        # CORS: Vite dev, direct browser, Tauri splash (asset.localhost), packaged desktop
+        cors_origins = [
+            "http://localhost:10717",
+            "http://localhost:10716",
+            "http://127.0.0.1:10716",
+            "http://127.0.0.1:10717",
+            "http://goliath:10716",
+            "http://goliath:10717",
+            "https://asset.localhost",
+            "http://asset.localhost",
+            "https://tauri.localhost",
+            "http://tauri.localhost",
+        ]
+        if getattr(sys, "frozen", False) or os.getenv("DEVICES_MCP_PACKAGED") == "1":
+            cors_origins = ["*"]
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=[
-                "http://localhost:10717",
-                "http://localhost:10716",
-                "http://127.0.0.1:10716",
-                "http://127.0.0.1:10717",
-                "http://goliath:10716",
-                "http://goliath:10717",
-            ],
+            allow_origins=cors_origins,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
@@ -231,6 +238,24 @@ class WebServer:
         except Exception as e:
             logger.warning(f"Could not load security middleware: {e}")
 
+    def _resolve_frontend_dist(self) -> Path | None:
+        """Locate Vite build output (dev tree or PyInstaller bundle)."""
+        candidates: list[Path] = []
+        if getattr(sys, "frozen", False):
+            meipass = Path(getattr(sys, "_MEIPASS", ""))
+            candidates.extend(
+                [
+                    meipass / "frontend" / "dist",
+                    Path(__file__).resolve().parent.parent / "frontend" / "dist",
+                ]
+            )
+        else:
+            candidates.append(Path(__file__).resolve().parent.parent / "frontend" / "dist")
+        for path in candidates:
+            if path.is_dir() and (path / "index.html").exists():
+                return path
+        return None
+
     def _setup_static_files(self) -> None:
         """Setup static file serving."""
         static_dir = Path(__file__).parent / "static"
@@ -239,8 +264,8 @@ class WebServer:
             logger.info(f"Static files mounted from {static_dir}")
 
         # SPA (React + Vite) at /app when frontend is built
-        frontend_dist = Path(__file__).parent.parent / "frontend" / "dist"
-        if frontend_dist.exists() and (frontend_dist / "index.html").exists():
+        frontend_dist = self._resolve_frontend_dist()
+        if frontend_dist and (frontend_dist / "index.html").exists():
             self.app.mount(
                 "/app",
                 StaticFiles(directory=str(frontend_dist), html=True),
@@ -273,6 +298,7 @@ class WebServer:
                 config_editor,
                 custom_presets,
                 dashboard_api,
+                devices,
                 dymo,
                 energy,
                 events,
@@ -311,6 +337,7 @@ class WebServer:
             self.app.include_router(system.router, tags=["System"])
             self.app.include_router(cameras.router, tags=["Cameras"])
             self.app.include_router(dashboard_api.router, tags=["Dashboard API"])
+            self.app.include_router(devices.router, tags=["Devices"])
             self.app.include_router(energy.router, tags=["Energy"])
             self.app.include_router(events.router, tags=["Events"])
             self.app.include_router(fleet.router, tags=["Fleet Management"])

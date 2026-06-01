@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Activity,
@@ -7,9 +8,11 @@ import {
   HardDrive,
   Loader2,
   MemoryStick,
+  RefreshCw,
+  Radar,
   Video,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface HealthData {
   success?: boolean;
@@ -24,6 +27,33 @@ interface HealthData {
   process?: { memory_rss?: number; cpu_percent?: number };
   cameras?: { total: number; online: number; offline: number; error?: string };
   databases?: Record<string, { status: string; size_mb?: number; error?: string }>;
+}
+
+interface DeviceRow {
+  id: string;
+  name: string;
+  type: string;
+  integration: string;
+  address: string;
+  source: string;
+  enabled: boolean;
+  connected: boolean | null;
+  status: string;
+  last_error?: string | null;
+  last_check?: string | null;
+}
+
+interface DeviceInventory {
+  home_preset?: string;
+  discovery?: Record<string, boolean>;
+  total_devices?: number;
+  online?: number;
+  offline?: number;
+  unknown?: number;
+  by_type?: Record<string, number>;
+  devices?: DeviceRow[];
+  error?: string;
+  newly_discovered?: number;
 }
 
 function formatBytes(n: number): string {
@@ -41,63 +71,93 @@ function formatUptime(sec?: number): string {
   return `${h}h ${m}m`;
 }
 
-interface ConnectionHealth {
-  total_devices?: number;
-  online?: number;
-  offline?: number;
-  devices?: Array<{
-    name?: string;
-    type?: string;
-    connected?: boolean;
-    error?: string | null;
-  }>;
-  error?: string;
+function statusBadgeClass(status: string): string {
+  switch (status) {
+    case 'online':
+      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300';
+    case 'offline':
+      return 'bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200';
+    case 'disabled':
+      return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+    case 'error':
+      return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300';
+    default:
+      return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
+  }
+}
+
+function typeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    camera: 'Camera',
+    plug: 'Energy plug',
+    lighting: 'Lighting',
+    light: 'Light',
+    security: 'Security',
+    sensor: 'Sensor',
+    nest: 'Nest',
+    weather: 'Weather',
+    webcam: 'Webcam',
+    robot: 'Robot',
+  };
+  return labels[type] ?? type;
 }
 
 export function Health() {
   const [data, setData] = useState<HealthData | null>(null);
-  const [connection, setConnection] = useState<ConnectionHealth | null>(null);
+  const [inventory, setInventory] = useState<DeviceInventory | null>(null);
   const [loading, setLoading] = useState(true);
+  const [discovering, setDiscovering] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string>('all');
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const ctrl = new AbortController();
-        const timeout = setTimeout(() => ctrl.abort(), 15000);
-        const [healthRes, connRes] = await Promise.allSettled([
-          fetch('/api/health', { signal: ctrl.signal }),
-          fetch('/api/system/connection-health', { signal: ctrl.signal }),
-        ]);
-        clearTimeout(timeout);
+  const load = useCallback(async (runDiscovery = false) => {
+    setLoading(true);
+    try {
+      const ctrl = new AbortController();
+      const timeout = setTimeout(() => ctrl.abort(), 20000);
+      const q = runDiscovery ? '?run_discovery=true' : '';
+      const [healthRes, devicesRes] = await Promise.allSettled([
+        fetch('/api/health', { signal: ctrl.signal }),
+        fetch(`/api/devices${q}`, { signal: ctrl.signal }),
+      ]);
+      clearTimeout(timeout);
 
-        if (cancelled) return;
-        if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
-          setData(await healthRes.value.json());
-          setError(null);
-        } else if (healthRes.status === 'fulfilled') {
-          const json = await healthRes.value.json().catch(() => ({}));
-          setError((json as { error?: string }).error ?? 'Health check failed');
-        } else {
-          setError('Health API request failed');
-        }
-        if (connRes.status === 'fulfilled' && connRes.value.ok) {
-          setConnection(await connRes.value.json());
-        }
-      } catch (e) {
-        if (!cancelled) setError(String(e));
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (healthRes.status === 'fulfilled' && healthRes.value.ok) {
+        setData(await healthRes.value.json());
+        setError(null);
+      } else if (healthRes.status === 'fulfilled') {
+        const json = await healthRes.value.json().catch(() => ({}));
+        setError((json as { error?: string }).error ?? 'Health check failed');
       }
+
+      if (devicesRes.status === 'fulfilled' && devicesRes.value.ok) {
+        setInventory(await devicesRes.value.json());
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+      setDiscovering(false);
     }
-    load();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
-  if (loading) {
+  useEffect(() => {
+    load(false);
+  }, [load]);
+
+  const runDiscover = async () => {
+    setDiscovering(true);
+    try {
+      const res = await fetch('/api/devices/discover', { method: 'POST' });
+      if (res.ok) {
+        setInventory(await res.json());
+      }
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  if (loading && !inventory) {
     return (
       <div className='flex items-center justify-center py-12'>
         <Loader2 className='h-8 w-8 animate-spin text-slate-400' />
@@ -110,17 +170,126 @@ export function Health() {
   const disk = sys?.disk;
   const cameras = data?.cameras;
   const dbs = data?.databases;
+  const rows = inventory?.devices ?? [];
+  const filtered =
+    filter === 'all' ? rows : rows.filter((r) => r.type === filter || r.status === filter);
 
   return (
     <div className='space-y-6'>
-      <h1 className='text-2xl font-bold tracking-tight'>PC Health</h1>
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <div>
+          <h1 className='text-2xl font-bold tracking-tight'>Status & health</h1>
+          <p className='text-sm text-slate-500 dark:text-slate-400'>
+            Preset: <span className='font-medium text-slate-700 dark:text-slate-200'>{inventory?.home_preset ?? '—'}</span>
+            {inventory?.discovery?.tapo_p115 && (
+              <span className='ml-2 text-xs text-slate-400'>· LAN autodiscover on</span>
+            )}
+          </p>
+        </div>
+        <div className='flex gap-2'>
+          <Button variant='outline' size='sm' onClick={() => load(false)} disabled={loading}>
+            <RefreshCw className={`mr-1 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button variant='default' size='sm' onClick={runDiscover} disabled={discovering}>
+            <Radar className={`mr-1 h-4 w-4 ${discovering ? 'animate-pulse' : ''}`} />
+            Autodiscover
+          </Button>
+        </div>
+      </div>
+
       {error && (
         <div className='flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200'>
           <AlertCircle className='h-5 w-5 shrink-0' />
           {error}
         </div>
       )}
-      {!data?.success && !error && <p className='text-slate-500'>No health data available.</p>}
+
+      {inventory && (inventory.total_devices ?? 0) > 0 && (
+        <Card>
+          <CardHeader className='pb-2'>
+            <CardTitle className='text-base'>All devices</CardTitle>
+            <p className='text-sm font-normal text-slate-500'>
+              {inventory.online ?? 0} online · {inventory.offline ?? 0} offline ·{' '}
+              {inventory.unknown ?? 0} unknown · {inventory.total_devices} total
+              {inventory.newly_discovered != null && inventory.newly_discovered > 0 && (
+                <span className='ml-1 text-emerald-600'> (+{inventory.newly_discovered} discovered)</span>
+              )}
+            </p>
+          </CardHeader>
+          <CardContent className='p-0'>
+            <div className='flex flex-wrap gap-2 border-b border-slate-200 px-4 py-2 dark:border-slate-800'>
+              {['all', 'online', 'offline', 'camera', 'plug', 'lighting', 'weather', 'nest'].map((f) => (
+                <button
+                  key={f}
+                  type='button'
+                  onClick={() => setFilter(f)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    filter === f
+                      ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                >
+                  {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+            <div className='overflow-x-auto'>
+              <table className='w-full min-w-[720px] text-left text-sm'>
+                <thead>
+                  <tr className='border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/50'>
+                    <th className='px-4 py-3 font-semibold'>Name</th>
+                    <th className='px-4 py-3 font-semibold'>Type</th>
+                    <th className='px-4 py-3 font-semibold'>Address</th>
+                    <th className='px-4 py-3 font-semibold'>Integration</th>
+                    <th className='px-4 py-3 font-semibold'>Source</th>
+                    <th className='px-4 py-3 font-semibold'>Status</th>
+                    <th className='px-4 py-3 font-semibold'>Detail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className='px-4 py-8 text-center text-slate-500'>
+                        No devices match this filter.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((d, i) => (
+                      <tr
+                        key={d.id}
+                        className={`border-b border-slate-100 dark:border-slate-800/80 ${
+                          i % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-slate-50/40 dark:bg-slate-900/20'
+                        }`}
+                      >
+                        <td className='px-4 py-2.5 font-medium text-slate-900 dark:text-slate-100'>{d.name}</td>
+                        <td className='px-4 py-2.5 text-slate-600 dark:text-slate-400'>{typeLabel(d.type)}</td>
+                        <td className='px-4 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400'>
+                          {d.address}
+                        </td>
+                        <td className='px-4 py-2.5 text-slate-600 dark:text-slate-400'>{d.integration}</td>
+                        <td className='px-4 py-2.5 text-xs text-slate-500'>{d.source}</td>
+                        <td className='px-4 py-2.5'>
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusBadgeClass(d.status)}`}
+                          >
+                            {d.status}
+                          </span>
+                        </td>
+                        <td className='max-w-[200px] truncate px-4 py-2.5 text-xs text-slate-500' title={d.last_error ?? ''}>
+                          {d.last_error ?? (d.enabled ? '—' : 'disabled in config')}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <h2 className='text-lg font-semibold text-slate-700 dark:text-slate-300'>Host metrics</h2>
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
         {sys?.cpu_percent != null && (
           <Card>
@@ -213,32 +382,6 @@ export function Health() {
           </Card>
         )}
       </div>
-
-      {connection && (connection.total_devices ?? 0) > 0 && (
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-base'>Device connectivity</CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-2'>
-            <p className='text-sm text-slate-600 dark:text-slate-400'>
-              {connection.online ?? 0} online · {connection.offline ?? 0} offline ·{' '}
-              {connection.total_devices ?? 0} total
-            </p>
-            <ul className='space-y-1 text-sm'>
-              {(connection.devices ?? []).map((d) => (
-                <li key={`${d.type}-${d.name}`} className='flex justify-between gap-2'>
-                  <span>
-                    {d.name} ({d.type})
-                  </span>
-                  <span className={d.connected ? 'text-green-600' : 'text-amber-600'}>
-                    {d.connected ? 'online' : (d.error ?? 'offline')}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

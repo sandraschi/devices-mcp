@@ -1,8 +1,9 @@
 # devices-mcp — Per-Repo Agent Instructions
 
-**Last updated**: 2026-05-25
+**Last updated**: 2026-06-01
 **Fleet standard**: `D:\Dev\repos\mcp-central-docs\standards\AGENTS.md`
-**Version**: v1.21.1
+**Version**: v1.21.5 (beta)
+**Delivery legs**: MCP (`devices_mcp.server_v2` / MCPB) · webapp (`web-sota/`) · desktop (`native/build.ps1` → NSIS)
 
 ---
 
@@ -30,6 +31,8 @@ uv run python src/devices_mcp/server.py
 | 10717 | Backend FastAPI + FastMCP |
 
 ## Architecture
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). One backend on **10717**; NSSM and Tauri must not fight for the port.
 
 - **Web frontend**: `web-sota/frontend/` — Vite + React 18 + shadcn/ui + Tailwind, routes under `/app/`
 - **Backend routes**: `web-sota/backend/routes/` — 37 route modules, registered in `_setup_routes()` in `server.py`

@@ -11,11 +11,13 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Devices MCP",
         "width": 1280,
         "height": 860,
         "minWidth": 900,
-        "minHeight": 600
+        "minHeight": 600,
+        "url": "splash.html"
       }
     ],
     "security": {

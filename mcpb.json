@@ -1,6 +1,6 @@
 {
     "name": "devices-mcp",
-    "version": "1.21.1",
+    "version": "1.21.5",
     "type": "server",
     "runtime": "python",
     "entry_point": "src/devices_mcp/server_v2.py",

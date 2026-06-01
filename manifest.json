@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "devices-mcp",
-  "version": "1.21.1",
+  "version": "1.21.5",
   "description": "Home security and IoT orchestration MCP server. Supports Tapo cameras, Ring, Nest Protect, Philips Hue, Netatmo weather, Shelly, USB webcams. 40+ tools.",
   "long_description": "Comprehensive home security and IoT orchestration platform. Dual-architecture: individual device MCP servers + unified web-sota SPA dashboard (Vite + React, ports 10716/10717). Supports TP-Link Tapo cameras, Ring doorbells, Nest Protect, Philips Hue lighting, Netatmo weather stations, Shelly devices, and USB webcams. Includes PTZ control, motion detection, energy monitoring, lighting scenes, HomeAware motion detection via Zigbee mesh, log management, and health supervision with circuit breakers.",
   "author": {

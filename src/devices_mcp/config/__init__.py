@@ -104,81 +104,25 @@ class ConfigManager:
         user_data_dir = Path("~/.local/share/devices-mcp").expanduser()
         user_data_dir.mkdir(parents=True, exist_ok=True)
 
-        default_config = {
-            "host": "0.0.0.0",  # nosec B104
-            "port": 10716,
-            "debug": False,
-            "web": {
-                "enabled": True,
-                "host": "0.0.0.0",  # nosec B104
-                "port": 10716,
-                "title": "Devices MCP",
-                "theme": "dark",
-                "enable_swagger": True,
-                "enable_redoc": False,
-                "enable_cors": True,
-                "cors_origins": ["*"],
-                "session_secret": "change-this-in-production",
-                "session_lifetime": 86400,
-            },
-            "security": {
-                "secret_key": "change-this-in-production",
-                "algorithm": "HS256",
-                "access_token_expire_minutes": 1440,
-                "password_min_length": 8,
-                "password_require_digit": True,
-                "password_require_uppercase": True,
-                "password_require_special_char": True,
-                "rate_limit": "100/minute",
-                "enable_rate_limiting": True,
-            },
-            "logging": {
-                "level": "INFO",
+        from .vienna_defaults import get_vienna_default_config
+
+        default_config = get_vienna_default_config()
+        default_config.setdefault("logging", {})
+        default_config["logging"].update(
+            {
                 "file": str(user_data_dir / "devices-mcp.log"),
                 "max_size_mb": 10,
                 "backup_count": 5,
-                "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                "date_format": "%Y-%m-%d %H:%M:%S",
-            },
-            "storage": {
+            }
+        )
+        default_config.setdefault("storage", {})
+        default_config["storage"].update(
+            {
                 "recordings_dir": str(user_data_dir / "recordings"),
                 "snapshots_dir": str(user_data_dir / "snapshots"),
                 "temp_dir": str(user_data_dir / "temp"),
-                "max_storage_gb": 100,
-                "retention_days": 30,  # Legacy: kept for backward compatibility
-                "retention_policies": {
-                    "video_recordings": 30,  # Days to keep video recordings
-                    "snapshots": 90,  # Days to keep snapshots
-                    "environment_data": 365,  # Days to keep weather/energy time series data
-                },
-            },
-            "camera_scan_interval": 300,
-            "max_workers": 4,
-            "request_timeout": 30,
-            "log_level": "INFO",
-            "cameras": [],  # Empty cameras list for initial setup
-            "energy": {
-                "tapo_p115": {
-                    "electricity_rate": 0.12,
-                    "account": {
-                        "username": "",
-                        "password": "",
-                    },
-                    "devices": [
-                        {
-                            "host": "192.168.1.120",
-                            "device_id": "tapo_p115_living_room_tv",
-                            "name": "Living Room TV Plug",
-                            "location": "Living Room",
-                        }
-                    ],
-                    "discovery": {
-                        "enabled": False,
-                        "timeout": 4,
-                    },
-                }
-            },
-        }
+            }
+        )
 
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
