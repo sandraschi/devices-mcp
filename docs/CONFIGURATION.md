@@ -27,16 +27,27 @@ discovery:
 - **LAN discovery** — Tapo P115 and USB cameras can augment static `devices[]` lists when enabled.
 - Disable per-flag to use **static IPs only**.
 
-## Logging (important for dashboard Logs page)
+## Logging
 
-Use an **absolute** path for installed/service use:
+**Default (no config edit):** `%USERPROFILE%\.local\share\devices-mcp\devices-mcp.log` — created on first backend start.
+
+**Change path:** web app **Settings → Logging**, or:
 
 ```yaml
 logging:
-  file: "C:/Users/YOU/.local/share/devices-mcp/devices-mcp.log"
+  file: "D:/other/path/devices-mcp.log"
 ```
 
-Relative `tapo_mcp.log` resolves against the **dev repo** when the API runs from source — wrong for NSSM/Tauri.
+## Local LLM
+
+**Settings → Local LLM** in the web app (Ollama `11434`, LM Studio `1234`). Optional `config.yaml`:
+
+```yaml
+llm:
+  ollama_url: "http://127.0.0.1:11434"
+  lm_studio_url: "http://127.0.0.1:1234"
+  preferred_provider: "ollama"
+```
 
 ## Environment (optional)
 
