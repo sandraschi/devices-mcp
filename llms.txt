@@ -1,21 +1,42 @@
 # devices-mcp
-> Beta home IoT MCP + FastAPI/React dashboard + optional Windows Tauri installer. Three legs: MCP tools, webapp :10717/app/, desktop NSIS bundle.
+> Beta home IoT: MCP tools (FastMCP 3.2) + FastAPI/React dashboard + optional Windows Tauri installer.
+> Version: 2.4.0 · Generated: 2026-06-01 21:50 UTC
+> Repo: https://github.com/sandraschi/devices-mcp · Default branch: **main** (do not use legacy `master`)
 
-## Docs
-- [README](README.md): Overview, TOC, three delivery legs (not production-ready).
-- [INSTALL](INSTALL.md): Tauri installer, MCPB, clone, NSSM.
-- [Architecture](docs/ARCHITECTURE.md): MCP + web-sota + Tauri sidecars.
-- [Desktop](docs/DESKTOP.md): Installer, splash, NSSM coexistence.
-- [Configuration](docs/CONFIGURATION.md): config.yaml, Vienna preset, discovery.
-- [Troubleshooting](docs/TROUBLESHOOTING.md): Splash CORS, logs path.
-- [Full corpus](llms-full.txt): Deep tool and env reference.
+## Status
+- Beta — not production-hardened; requires `config.yaml` for LAN devices.
+- Three delivery legs: MCP · webapp · desktop (see Architecture).
+
+## Core docs
+- [README](https://github.com/sandraschi/devices-mcp/blob/main/README.md): Overview, TOC, quick install, ports.
+- [INSTALL](https://github.com/sandraschi/devices-mcp/blob/main/INSTALL.md): Desktop NSIS, MCPB, clone, NSSM.
+- [docs index](https://github.com/sandraschi/devices-mcp/blob/main/docs/README.md): Documentation map.
+- [Architecture](https://github.com/sandraschi/devices-mcp/blob/main/docs/ARCHITECTURE.md): Three legs, sidecars, single backend :10717.
+- [Desktop](https://github.com/sandraschi/devices-mcp/blob/main/docs/DESKTOP.md): Tauri installer, splash, NSSM coexistence.
+- [Configuration](https://github.com/sandraschi/devices-mcp/blob/main/docs/CONFIGURATION.md): config.yaml, Vienna preset, logging default path, local LLM URLs.
+- [Tools](https://github.com/sandraschi/devices-mcp/blob/main/docs/TOOLS.md): MCP portmanteau families + stdio snippet.
+- [Development](https://github.com/sandraschi/devices-mcp/blob/main/docs/DEVELOPMENT.md): uv, just, PyInstaller, Tauri build.
+- [Troubleshooting](https://github.com/sandraschi/devices-mcp/blob/main/docs/TROUBLESHOOTING.md): White screen, logs, firewall.
+- [AGENTS](https://github.com/sandraschi/devices-mcp/blob/main/AGENTS.md): Agent startup, ports, repo layout.
+- [Full corpus](https://github.com/sandraschi/devices-mcp/blob/main/llms-full.txt): Concatenated markdown above.
+
+## Web dashboard (leg 2)
+- URL: http://127.0.0.1:10717/app/
+- Settings → Logging: default `%USERPROFILE%\.local\share\devices-mcp\devices-mcp.log`
+- Settings → Local LLM: Ollama (11434), LM Studio (1234); Chat uses same catalog.
 
 ## Ports
-- 10717: FastAPI backend + SPA /app/
-- 10716: Vite dev only
-- 10715: Camera sidecar (optional)
+| Port | Service |
+|------|---------|
+| 10717 | FastAPI backend + SPA `/app/` |
+| 10716 | Vite dev only |
+| 10715 | Camera sidecar (optional) |
 
-## Releases
-- devices-mcp.mcpb (MCP leg)
-- Devices-MCP-*-x64-setup.exe (desktop leg)
-- Devices-MCP-*-windows-x64.zip (portable)
+## Releases (https://github.com/sandraschi/devices-mcp/releases)
+- `devices-mcp.mcpb` — MCP leg
+- `Devices-MCP-*-x64-setup.exe` — desktop leg (~247 MB with sidecars)
+- `Devices-MCP-*-windows-x64.zip` — portable
+
+## MCP entry
+- Module: `devices_mcp.server_v2` (stdio / HTTP)
+- Package root: `src/devices_mcp/`
