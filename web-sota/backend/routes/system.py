@@ -8,6 +8,7 @@ from pathlib import Path
 
 import psutil
 from fastapi import APIRouter, Request
+from fastapi.responses import Response
 
 from devices_mcp.config import get_config
 
@@ -226,6 +227,14 @@ async def get_capabilities():
             "runtime": {"transport": "http", "surface_mode": "unknown"},
             "timestamp": datetime.now(UTC).isoformat(),
         }
+
+
+@router.get("/metrics", summary="Prometheus metrics (fleet mcp_tool_* and process defaults)")
+async def prometheus_metrics():
+    from devices_mcp.fleet_tool_metrics import prometheus_metrics_body_and_type
+
+    body, media_type = prometheus_metrics_body_and_type()
+    return Response(content=body, media_type=media_type)
 
 
 @router.get("/api/health", summary="Get comprehensive system health metrics")

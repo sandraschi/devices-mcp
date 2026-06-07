@@ -206,6 +206,10 @@ class DevicesMCPServer:
                             except Exception:
                                 pass
                 _register_fastmcp_32_parity(self.mcp)
+                from devices_mcp.fleet_tool_metrics import register_mcp_tool_metrics
+
+                if register_mcp_tool_metrics(self.mcp):
+                    logger.info("MCP tool-call Prometheus metrics middleware registered")
             else:
                 logger.debug("FastMCP instance already exists, reusing")
 

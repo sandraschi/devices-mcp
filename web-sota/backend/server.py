@@ -314,6 +314,7 @@ class WebServer:
                 energy,
                 events,
                 fleet,
+                fleet_priority,
                 health,
                 ikettle,
                 lighting,
@@ -353,6 +354,7 @@ class WebServer:
             self.app.include_router(energy.router, tags=["Energy"])
             self.app.include_router(events.router, tags=["Events"])
             self.app.include_router(fleet.router, tags=["Fleet Management"])
+            self.app.include_router(fleet_priority.router, tags=["Fleet Priority"])
             self.app.include_router(logs.router, tags=["Logs"])
 
             # Specialized Device API Routes

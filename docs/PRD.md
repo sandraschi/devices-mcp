@@ -332,6 +332,22 @@ docs/
 
 ---
 
-**Last Updated**: March 2026
-**Version**: 1.20.0
-**Status**: Production Ready ✅
+## Fleet integration (2026-06)
+
+**Requirement:** Expose aggregated home-safety priority incidents for Fritz urgent dispatch without pushing webhooks.
+
+| Item | Status |
+|------|--------|
+| `GET /api/fleet/priority` on backend `:10717` | Implemented |
+| Shelly kitchen/temp thresholds | Implemented |
+| Nest CO/smoke via Home Assistant | Implemented |
+| Ring intrusion window (configurable minutes) | Implemented |
+| Consumer: Fritz `coworker_devices_watch` (5m poll) | Implemented |
+
+See [FLEET_INTEGRATION.md](FLEET_INTEGRATION.md).
+
+---
+
+**Last Updated**: June 2026
+**Version**: 1.21.5+
+**Status**: Beta

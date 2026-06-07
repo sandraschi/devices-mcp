@@ -50,6 +50,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 - **Security / sensors:** Ring, Nest Protect via Home Assistant, Shelly, Netatmo, Open-Meteo (Vienna default).
 - **Dashboard:** Status table with device health, per-domain pages (cameras, energy, weather, robots, …).
 - **MCP:** Portmanteau tools (camera, energy, lighting, ring, nest, weather, …) on FastMCP 3.2.
+- **Fleet priority:** `GET /api/fleet/priority` — home-safety incidents for Fritz urgent dispatch (kitchen temp, CO, smoke, Ring).
 
 **Not included:** guaranteed uptime SLA, cloud hosting, plug-and-play without `config.yaml`, or a single 12 MB exe (full desktop bundle is ~247 MB with embedded Python sidecars).
 
@@ -85,6 +86,7 @@ uv sync
 | [docs/TOOLS.md](docs/TOOLS.md) | MCP tool families (summary) |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | `just`, build scripts, contributing |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | White screen, logs path, firewall |
+| [docs/FLEET_INTEGRATION.md](docs/FLEET_INTEGRATION.md) | Fritz `/api/fleet/priority` consumer contract |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 
 LLM index: [llms.txt](llms.txt) · full: [llms-full.txt](llms-full.txt)

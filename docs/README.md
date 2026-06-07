@@ -10,6 +10,7 @@
 | [TOOLS.md](TOOLS.md) | MCP portmanteau tool overview |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Clone, `just`, PyInstaller, Tauri build |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Splash timeout, logs, firewall |
+| [FLEET_INTEGRATION.md](FLEET_INTEGRATION.md) | Fritz priority API (`/api/fleet/priority`) |
 
 **Also at repo root:** [INSTALL.md](../INSTALL.md) · [CHANGELOG.md](../CHANGELOG.md) · [native/README.md](../native/README.md)
 

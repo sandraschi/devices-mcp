@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **Fritz priority API** — `GET /api/fleet/priority` aggregates Shelly temps, Nest CO/smoke (HA), Ring events, unacked alarm messages
+- **`integrations/fritz_priority.py`** — urgency scoring (kitchen ≥45°C, threshold breaches, CO/smoke emergency)
+- **Docs** — [docs/FLEET_INTEGRATION.md](docs/FLEET_INTEGRATION.md) for Fritz `coworker_devices_watch` consumer
+
+### Integration
+- [fleet-agent-mcp](https://github.com/sandraschi/fleet-agent-mcp) polls every 5m; urgent email + Intel Hub on new critical incidents
+
 ## [1.21.5] - 2026-06-01 — Beta docs, splash/CORS, three delivery legs
 
 ### Added

@@ -1,51 +1,102 @@
-{
-  "identifier": "default",
-  "description": "Default capability set for Devices MCP desktop",
-  "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "shell:allow-open",
-    {
-      "identifier": "shell:allow-spawn",
-      "allow": [
-        {
-          "name": "binaries/devices-mcp-backend",
-          "sidecar": true,
-          "args": [
-            "--host",
-            { "validator": ".+" },
-            "--port",
-            { "validator": "^[0-9]+$" }
-          ]
-        },
-        {
-          "name": "binaries/devices-mcp-camera",
-          "sidecar": true,
-          "args": true
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "binaries/devices-mcp-backend",
-          "sidecar": true,
-          "args": [
-            "--host",
-            { "validator": ".+" },
-            "--port",
-            { "validator": "^[0-9]+$" }
-          ]
-        },
-        {
-          "name": "binaries/devices-mcp-camera",
-          "sidecar": true,
-          "args": true
-        }
-      ]
-    },
-    "fs:default",
-    "process:default"
-  ]
-}
+{
+
+  "identifier": "default",
+
+  "description": "Default capability set for Devices MCP desktop",
+
+  "windows": ["main"],
+
+  "permissions": [
+
+    "core:default",
+
+    "shell:allow-open",
+
+    {
+
+      "identifier": "shell:allow-spawn",
+
+      "allow": [
+
+        {
+
+          "name": "binaries/devices-mcp-backend",
+
+          "sidecar": true,
+
+          "args": [
+
+            "--host",
+
+            { "validator": ".+" },
+
+            "--port",
+
+            { "validator": "^[0-9]+$" }
+
+          ]
+
+        },
+
+        {
+
+          "name": "binaries/devices-mcp-camera",
+
+          "sidecar": true,
+
+          "args": true
+
+        }
+
+      ]
+
+    },
+
+    {
+
+      "identifier": "shell:allow-execute",
+
+      "allow": [
+
+        {
+
+          "name": "binaries/devices-mcp-backend",
+
+          "sidecar": true,
+
+          "args": [
+
+            "--host",
+
+            { "validator": ".+" },
+
+            "--port",
+
+            { "validator": "^[0-9]+$" }
+
+          ]
+
+        },
+
+        {
+
+          "name": "binaries/devices-mcp-camera",
+
+          "sidecar": true,
+
+          "args": true
+
+        }
+
+      ]
+
+    },
+
+    "fs:default",
+
+    "process:default"
+
+  ]
+
+}
+
