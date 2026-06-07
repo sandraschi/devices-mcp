@@ -23,6 +23,8 @@ $FleetStart = Initialize-FleetStartMode @PSBoundParameters
 Enter-FleetHeadlessConsole -Headless:$Headless -BackendOnly:$BackendOnly
 Stop-FleetPortSquatters -Ports @($WebPort, $BackendPort, $CameraPort) -Label "devices-mcp"
 
+if (-not (Assert-FleetPortsAvailable -Ports @($WebPort, $BackendPort, $CameraPort) -Label "devices-mcp")) { exit 1 }
+
 # 2. Setup
 Set-Location -LiteralPath $ScriptDir
 if (Test-Path (Join-Path $FrontendDir "package.json")) {
@@ -119,5 +121,6 @@ Write-Host "Starting Vite frontend on port $WebPort ..." -ForegroundColor Green
 Set-Location -LiteralPath $FrontendDir
 if (-not $FleetStart.RunFrontend) { return }
 npm run dev -- --port $WebPort --host
+
 
 
