@@ -1,17 +1,10 @@
-param(
+﻿param(
     [switch]$Headless,
     [switch]$BackendOnly,
     [switch]$FrontendOnly,
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [switch]$Automated
 )
-
-. "D:/Dev/repos/mcp-central-docs/standards/FleetStartMode.ps1"
-$FleetStart = Initialize-FleetStartMode @PSBoundParameters
-Enter-FleetHeadlessConsole -Headless:$Headless -BackendOnly:$BackendOnly
-# Webapp Start - Standardized SOTA (Auto-Repaired V2.5) for Devices MCP
-# Usage: .\start.ps1              interactive (backend in new window, frontend in foreground)
-#        .\start.ps1 -Automated   headless: start backend, wait, start frontend, wait, open browser, exit
-param([switch]$Automated)
 
 $CameraPort = 10715
 $WebPort = 10716
@@ -20,13 +13,15 @@ $ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyI
 $ProjectRoot = Split-Path -Parent $ScriptDir
 $FrontendDir = Join-Path $ScriptDir "frontend"
 
-# 1. Kill any process squatting on the ports
-Write-Host "Checking for port squatters on $WebPort, $BackendPort, and $CameraPort..." -ForegroundColor Yellow
-$pids = Get-NetTCPConnection -LocalPort $WebPort, $BackendPort, $CameraPort -ErrorAction SilentlyContinue | Where-Object { $_.OwningProcess -gt 4 } | Select-Object -ExpandProperty OwningProcess -Unique
-foreach ($p in $pids) {
-    Write-Host "Found squatter (PID: $p). Terminating..." -ForegroundColor Red
-    try { Stop-Process -Id $p -Force -ErrorAction Stop } catch { Write-Host "Warning: Could not terminate PID $p." -ForegroundColor Gray }
+$FleetStartPath = Join-Path $ProjectRoot "scripts\FleetStartMode.ps1"
+if (-not (Test-Path -LiteralPath $FleetStartPath)) {
+    Write-Host "ERROR: Missing vendored launcher helper: $FleetStartPath" -ForegroundColor Red
+    exit 1
 }
+. $FleetStartPath
+$FleetStart = Initialize-FleetStartMode @PSBoundParameters
+Enter-FleetHeadlessConsole -Headless:$Headless -BackendOnly:$BackendOnly
+Stop-FleetPortSquatters -Ports @($WebPort, $BackendPort, $CameraPort) -Label "devices-mcp"
 
 # 2. Setup
 Set-Location -LiteralPath $ScriptDir
@@ -124,3 +119,5 @@ Write-Host "Starting Vite frontend on port $WebPort ..." -ForegroundColor Green
 Set-Location -LiteralPath $FrontendDir
 if (-not $FleetStart.RunFrontend) { return }
 npm run dev -- --port $WebPort --host
+
+

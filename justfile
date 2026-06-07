@@ -1,4 +1,4 @@
-set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+﻿set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 
 MCP_CENTRAL_DIR := "..\\mcp-central-docs"
 WEBROOT := "web-sota"
@@ -7,7 +7,7 @@ WEBROOT := "web-sota"
 
 # Open the interactive recipe dashboard in the browser
 default:
-    @pwsh.exe -NoProfile -ExecutionPolicy Bypass -File "{{MCP_CENTRAL_DIR}}\scripts\just-dashboard.ps1" -Path "{{justfile_directory()}}"
+    @just --list
 
 # ── Dev ───────────────────────────────────────────────────────────────────────
 
@@ -56,3 +56,4 @@ audit-deps:
 # Run e2e Playwright tests
 e2e:
     pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File "D:\Dev\repos\mcp-central-docs\scripts\playwright-audit.ps1" -RepoPath "{{justfile_directory()}}"
+
