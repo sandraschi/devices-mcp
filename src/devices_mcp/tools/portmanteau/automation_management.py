@@ -209,6 +209,8 @@ def register_automation_management_tool(mcp: FastMCP) -> None:
 
             return {
                 "success": result.get("success", True),
+                "message": result.get("message", "Action completed"),
+                "next_steps": result.get("next_steps", []),
                 "action": action,
                 "data": result,
                 "error": result.get("error"),

@@ -148,6 +148,8 @@ def register_analytics_management_tool(mcp: FastMCP) -> None:
 
             return {
                 "success": result.get("status") == "success",
+                "message": result.get("message", "Analysis completed"),
+                "next_steps": result.get("next_steps", []),
                 "action": action,
                 "data": analysis_data,
                 "error": result.get("error"),

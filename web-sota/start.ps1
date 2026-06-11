@@ -1,10 +1,10 @@
-﻿param(
+param(
     [switch]$Headless,
     [switch]$BackendOnly,
     [switch]$FrontendOnly,
     [switch]$NoBrowser,
-    [switch]$Automated
-)
+    [switch]$Automated,
+    [switch]$ReuseIfRunning)
 
 $CameraPort = 10715
 $WebPort = 10716
@@ -21,9 +21,22 @@ if (-not (Test-Path -LiteralPath $FleetStartPath)) {
 . $FleetStartPath
 $FleetStart = Initialize-FleetStartMode @PSBoundParameters
 Enter-FleetHeadlessConsole -Headless:$Headless -BackendOnly:$BackendOnly
-Stop-FleetPortSquatters -Ports @($WebPort, $BackendPort, $CameraPort) -Label "devices-mcp"
 
-if (-not (Assert-FleetPortsAvailable -Ports @($WebPort, $BackendPort, $CameraPort) -Label "devices-mcp")) { exit 1 }
+$portResolve = @{
+    Ports      = @($WebPort, $BackendPort, $CameraPort)
+    Label      = "devices-mcp"
+    AllowReuse = $ReuseIfRunning
+}
+if ($ReuseIfRunning) {
+    $portResolve.HealthChecks = @{
+        $WebPort = "http://127.0.0.1:$WebPort/"
+        $BackendPort = "http://127.0.0.1:$BackendPort/health"
+        $CameraPort = "http://127.0.0.1:$CameraPort/health"
+    }
+}
+$portState = Resolve-FleetPortConflict @portResolve
+if ($portState.Action -eq 'Blocked') { exit 1 }
+if ($portState.Reuse) { return }
 
 # 2. Setup
 Set-Location -LiteralPath $ScriptDir
