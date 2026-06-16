@@ -1,3 +1,55 @@
+
+## [1.22.1] — 2026-06-16
+
+### Fixed
+- Camera page crash: removed invalid `ConfigDict(use_enum_values=True)` from `CameraStatus(StrEnum)` that raised `ValueError` at import time
+- Ring integration on Cameras page: fixed dead import (`backend.api.ring` → `devices_mcp.integrations.ring_client`)
+- Lighting control: `_control_light()` parameters now have `= None` defaults (was failing with missing positional args)
+- Lighting control: restructured to detect light type BEFORE executing control (was calling Tapo toggle for Hue lights)
+- Lighting control: fixed `light.effect` AttributeError on HueLight (uses `getattr` now)
+- Lighting control: post-control state fetch now uses correct manager per light type
+- Camera status endpoint: handles both string ("online") and dict ({"connected": true}) status formats — fixes 0/5 display
+- Cameras page Ring link: uses React Router `<Link>` respecting `/app/` basename (fixes redirect warning)
+
+### Added
+- System tray app (Tauri): tray icon with "Open Dashboard" / "Quit" menu
+- Ring page: ding/motion event feed (polled every 15s, no subscription required)
+- Ring page: doorbell status, battery level, online/offline
+- Cameras page: Ring cameras listed with "Ring events & live view" link
+- Lighting page: scenes are now clickable buttons (activate via `POST /api/lighting/scene`)
+- Tauri: native doorbell ding notifications (Rust side, Tauri notification plugin)
+
+### Ring Integration Notes
+- **Ring Protect subscription required**: live snapshots, WebRTC live view, cloud recordings
+- **No subscription required**: ding events, motion alerts, alarm arm/disarm, battery/status, contact/motion sensors
+- Ring gating is purely API-side; hardware supports local video. WebRTC live view component exists but returns 503 without subscription.
+
+### Removed
+- Shelly: removed page, sidebar entry, dashboard card, and route (not in use)
+
+## [1.22.0] — 2026-06-14
+
+### Added
+- CUA-NSIS: 11-phase smoke test (scripts/cua-smoke.py, scripts/cua-nsis-config.json)
+- CUA-NSIS: just cua-nsis-test recipe, just build-native recipe
+- CUA-NSIS: feature-route smoke (GET /api/system/connection-health)
+- CUA-NSIS: WebView bridge OCR proof, nav click-through, log analysis
+- CUA-NSIS: config-driven design — fleet-reusable with no code changes
+- CUA-NSIS: local certification — all 11 phases pass locally (2026-06-14)
+- GET /api/v1/diagnostics endpoint for CUA
+- NSIS hooks: added devices-mcp-backend.exe kill target
+
+### Changed
+- PyInstaller spec: added hidden import for cua_diagnostics route
+- Dashboard: data-testid attributes added for CUA parseability
+- Single NSIS installer ships both sidecars (backend + camera)
+- Dashboard: exponential backoff retry on health check
+- CORS: explicit origins for Tauri WebView (`tauri://localhost`, `tauri.localhost`)
+
+### Documentation
+- CUA-NSIS smoke testing added to README, CHANGELOG, docs/TESTING.md
+- MCD project page updated with build/release info
+
 # Changelog
 
 ## [Unreleased]
@@ -1509,3 +1561,5 @@ For questions, suggestions, or issues, please:
 **Last Updated**: October 1, 2025
 **Repository**: devices-mcp
 **Status**: Gold Tier (85/100) 🏆
+
+

@@ -664,11 +664,27 @@ export function Lighting() {
         <Card>
           <CardContent className='p-4'>
             <p className='mb-2 text-sm font-medium'>Scenes</p>
-            <ul className='flex flex-wrap gap-2 text-sm text-slate-600 dark:text-slate-400'>
+            <div className='flex flex-wrap gap-2'>
               {scenes.scenes.map((s) => (
-                <li key={s}>{s}</li>
+                <button
+                  key={s}
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/lighting/scene?scene_name=${encodeURIComponent(s)}`, { method: 'POST' });
+                      if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        console.error('Scene activation failed:', err);
+                      }
+                    } catch (e) {
+                      console.error('Scene activation error:', e);
+                    }
+                  }}
+                  className='rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-amber-900/20 dark:hover:border-amber-500 dark:hover:text-amber-400'
+                >
+                  {s}
+                </button>
               ))}
-            </ul>
+            </div>
           </CardContent>
         </Card>
       )}

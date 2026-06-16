@@ -9,7 +9,7 @@ import logging
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import ConfigDict, Field
+from pydantic import Field
 
 from devices_mcp.exceptions import AuthenticationError, ConnectionError
 from devices_mcp.tools.base_tool import BaseTool, ToolCategory, ToolResult, register_tool, tool
@@ -30,8 +30,6 @@ class CameraStatus(StrEnum):
     OFFLINE = "offline"
     CONNECTING = "connecting"
     ERROR = "error"
-
-    model_config = ConfigDict(use_enum_values=True)
 
 
 @tool("list_cameras")
@@ -204,6 +202,7 @@ class ListCamerasTool(BaseTool):
             logger.exception("Failed to list cameras")
             return {
                 "success": False,
+                "message": f"Failed to list cameras: {e!s}",
                 "error": f"Failed to list cameras: {e!s}",
                 "cameras": [],
             }
@@ -428,7 +427,7 @@ class AddCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
-                    "error": f"Failed to add camera '{camera_name}'",
+                    "message": f"Failed to add camera '{camera_name}'",
                     "camera_name": camera_name,
                 },
                 is_error=True,
@@ -439,6 +438,7 @@ class AddCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Validation error: {e.message}",
                     "error": f"Validation error: {e.message}",
                     "field": e.field,
                 },
@@ -449,6 +449,7 @@ class AddCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Failed to add camera: {e!s}",
                     "error": f"Failed to add camera: {e!s}",
                     "camera_name": self.camera_name,
                 },
@@ -584,6 +585,7 @@ class GetCameraStatusTool(BaseTool):
                     return ToolResult(
                         content={
                             "success": False,
+                            "message": f"Camera '{self.camera_id}' not found",
                             "error": f"Camera '{self.camera_id}' not found",
                             "camera_id": self.camera_id,
                         },
@@ -636,6 +638,7 @@ class GetCameraStatusTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Failed to get camera status: {e!s}",
                     "error": f"Failed to get camera status: {e!s}",
                     "camera_id": self.camera_id,
                 },
@@ -717,6 +720,7 @@ class ConnectCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": result.get("error", "Connection failed"),
                     "error": result.get("error", "Connection failed"),
                     "host": host,
                 },
@@ -728,6 +732,7 @@ class ConnectCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Validation error: {e.message}",
                     "error": f"Validation error: {e.message}",
                     "field": e.field,
                 },
@@ -738,6 +743,7 @@ class ConnectCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Connection failed: {e!s}",
                     "error": f"Connection failed: {e!s}",
                     "host": self.host,
                 },
@@ -748,6 +754,7 @@ class ConnectCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Authentication failed: {e!s}",
                     "error": f"Authentication failed: {e!s}",
                     "host": self.host,
                 },
@@ -758,6 +765,7 @@ class ConnectCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Connection error: {e!s}",
                     "error": f"Connection error: {e!s}",
                     "host": self.host,
                 },
@@ -824,6 +832,7 @@ class DisconnectCameraTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Failed to disconnect cameras: {e!s}",
                     "error": f"Failed to disconnect cameras: {e!s}",
                 },
                 is_error=True,
@@ -1004,6 +1013,7 @@ class CaptureSnapshotTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": result.get("error", "Failed to capture snapshot"),
                     "error": result.get("error", "Failed to capture snapshot"),
                     "camera_id": self.camera_id,
                 },
@@ -1014,6 +1024,7 @@ class CaptureSnapshotTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Failed to capture snapshot: {e!s}",
                     "error": f"Failed to capture snapshot: {e!s}",
                     "camera_id": self.camera_id,
                 },
@@ -1078,6 +1089,7 @@ class GetStreamUrlTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": camera_info.get("error", "Failed to get camera info"),
                     "error": camera_info.get("error", "Failed to get camera info"),
                     "camera_id": self.camera_id,
                 },
@@ -1088,6 +1100,7 @@ class GetStreamUrlTool(BaseTool):
             return ToolResult(
                 content={
                     "success": False,
+                    "message": f"Failed to get stream URL: {e!s}",
                     "error": f"Failed to get stream URL: {e!s}",
                     "camera_id": self.camera_id,
                 },

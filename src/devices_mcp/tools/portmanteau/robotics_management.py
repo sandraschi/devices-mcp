@@ -134,7 +134,7 @@ def register_robotics_management_tool(mcp: FastMCP) -> None:
             if action not in ROBOTICS_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(ROBOTICS_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(ROBOTICS_ACTIONS.keys())}",
                 }
 
             logger.info(f"Executing robotics management action: {action}")
@@ -143,6 +143,7 @@ def register_robotics_management_tool(mcp: FastMCP) -> None:
                 if not ip_address:
                     return {
                         "success": False,
+                        "message": "ip_address is required for initialize action",
                         "error": "ip_address is required for initialize action",
                     }
                 initialize_moorebot_client(ip_address, mock_mode)
@@ -162,6 +163,7 @@ def register_robotics_management_tool(mcp: FastMCP) -> None:
             except RuntimeError:
                 return {
                     "success": False,
+                    "message": "Robot client not initialized. Use initialize action first.",
                     "error": "Robot client not initialized. Use initialize action first.",
                 }
 

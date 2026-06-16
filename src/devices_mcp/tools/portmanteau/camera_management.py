@@ -337,6 +337,7 @@ async def _handle_add_camera(
         return {
             "success": False,
             "action": "add",
+            "message": "camera_name is required for add action",
             "error": "camera_name is required for add action",
         }
 
@@ -344,6 +345,7 @@ async def _handle_add_camera(
         return {
             "success": False,
             "action": "add",
+            "message": "camera_type is required for add action",
             "error": "camera_type is required for add action",
         }
 
@@ -351,6 +353,7 @@ async def _handle_add_camera(
         return {
             "success": False,
             "action": "add",
+            "message": "host is required for add action",
             "error": "host is required for add action",
         }
 
@@ -369,6 +372,7 @@ async def _handle_add_camera(
             "success": False,
             "action": "add",
             "camera_name": camera_name,
+            "message": f"Failed to add camera: {e!s}",
             "error": f"Failed to add camera: {e!s}",
         }
 
@@ -380,6 +384,7 @@ async def _handle_remove_camera(camera_name: str | None = None, camera_id: str |
         return {
             "success": False,
             "action": "remove",
+            "message": "camera_name or camera_id is required for remove action",
             "error": "camera_name or camera_id is required for remove action",
         }
 
@@ -392,6 +397,7 @@ async def _handle_remove_camera(camera_name: str | None = None, camera_id: str |
             "success": False,
             "action": "remove",
             "camera_id": identifier,
+            "message": f"Failed to remove camera: {e!s}",
             "error": f"Failed to remove camera: {e!s}",
         }
 
@@ -403,6 +409,7 @@ async def _handle_connect_camera(camera_name: str | None = None, camera_id: str 
         return {
             "success": False,
             "action": "connect",
+            "message": "camera_name or camera_id is required for connect action",
             "error": "camera_name or camera_id is required for connect action",
         }
 
@@ -415,6 +422,7 @@ async def _handle_connect_camera(camera_name: str | None = None, camera_id: str 
             "success": False,
             "action": "connect",
             "camera_id": identifier,
+            "message": f"Failed to connect camera: {e!s}",
             "error": f"Failed to connect camera: {e!s}",
         }
 
@@ -426,6 +434,7 @@ async def _handle_disconnect_camera(camera_name: str | None = None, camera_id: s
         return {
             "success": False,
             "action": "disconnect",
+            "message": "camera_name or camera_id is required for disconnect action",
             "error": "camera_name or camera_id is required for disconnect action",
         }
 
@@ -438,6 +447,7 @@ async def _handle_disconnect_camera(camera_name: str | None = None, camera_id: s
             "success": False,
             "action": "disconnect",
             "camera_id": identifier,
+            "message": f"Failed to disconnect camera: {e!s}",
             "error": f"Failed to disconnect camera: {e!s}",
         }
 
@@ -449,6 +459,7 @@ async def _handle_get_camera_info(camera_name: str | None = None, camera_id: str
         return {
             "success": False,
             "action": "info",
+            "message": "camera_name or camera_id is required for info action",
             "error": "camera_name or camera_id is required for info action",
         }
 
@@ -461,6 +472,7 @@ async def _handle_get_camera_info(camera_name: str | None = None, camera_id: str
             "success": False,
             "action": "info",
             "camera_id": identifier,
+            "message": f"Failed to get camera info: {e!s}",
             "error": f"Failed to get camera info: {e!s}",
         }
 
@@ -472,6 +484,7 @@ async def _handle_get_camera_status(camera_name: str | None = None, camera_id: s
         return {
             "success": False,
             "action": "status",
+            "message": "camera_name or camera_id is required for status action",
             "error": "camera_name or camera_id is required for status action",
         }
 
@@ -484,6 +497,7 @@ async def _handle_get_camera_status(camera_name: str | None = None, camera_id: s
             "success": False,
             "action": "status",
             "camera_id": identifier,
+            "message": f"Failed to get camera status: {e!s}",
             "error": f"Failed to get camera status: {e!s}",
         }
 
@@ -495,6 +509,7 @@ async def _handle_set_active_camera(camera_name: str | None = None, camera_id: s
         return {
             "success": False,
             "action": "set_active",
+            "message": "camera_name or camera_id is required for set_active action",
             "error": "camera_name or camera_id is required for set_active action",
         }
 
@@ -507,6 +522,7 @@ async def _handle_set_active_camera(camera_name: str | None = None, camera_id: s
             "success": False,
             "action": "set_active",
             "camera_id": identifier,
+            "message": f"Failed to set active camera: {e!s}",
             "error": f"Failed to set active camera: {e!s}",
         }
 
@@ -521,6 +537,7 @@ async def _handle_manage_groups(
         return {
             "success": False,
             "action": "manage_groups",
+            "message": "group_action is required for manage_groups action",
             "error": "group_action is required for manage_groups action",
         }
 
@@ -537,5 +554,6 @@ async def _handle_manage_groups(
         return {
             "success": False,
             "action": "manage_groups",
+            "message": f"Failed to manage groups: {e!s}",
             "error": f"Failed to manage groups: {e!s}",
         }

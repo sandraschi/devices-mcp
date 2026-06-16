@@ -29,13 +29,14 @@ pwsh -NoLogo -File "$PSScriptRoot\build-sidecar.ps1"
 if ($LASTEXITCODE -ne 0) { throw "Sidecar build failed (exit $LASTEXITCODE)" }
 
 $triple = "x86_64-pc-windows-msvc"
-foreach ($sidecar in @("devices-mcp-camera-$triple.exe", "devices-mcp-backend-$triple.exe")) {
-    $p = Join-Path $PSScriptRoot "binaries\$sidecar"
-    if (-not (Test-Path $p)) { throw "Missing sidecar $p" }
-    $mb = [math]::Round((Get-Item $p).Length / 1MB, 1)
-    if ($mb -lt 5) { throw "Sidecar $sidecar is only ${mb} MB — stub detected; PyInstaller build failed" }
-    Write-Host "  OK $sidecar (${mb} MB)" -ForegroundColor Green
-}
+
+# Backend embedded via bundle.resources, check in resources/
+$backend = "devices-mcp-backend.exe"
+$pBe = Join-Path $PSScriptRoot "resources\$backend"
+if (-not (Test-Path $pBe)) { throw "Missing backend resource $pBe" }
+$mbBe = [math]::Round((Get-Item $pBe).Length / 1MB, 1)
+if ($mbBe -lt 5) { throw "Backend $backend is only ${mbBe} MB — stub detected" }
+Write-Host "  OK $backend (${mbBe} MB)" -ForegroundColor Green
 
 Write-Host "-> [4/4] Tauri bundle..." -ForegroundColor Yellow
 Push-Location $PSScriptRoot
@@ -75,7 +76,8 @@ $portableDir = "$releaseDir\Devices-MCP-$version-portable"
 if (Test-Path $portableDir) { Remove-Item $portableDir -Recurse -Force }
 New-Item -ItemType Directory -Path $portableDir -Force | Out-Null
 Copy-Item $appExe "$portableDir\Devices-MCP.exe" -Force
-Copy-Item "$PSScriptRoot\binaries\devices-mcp-*-$triple.exe" $portableDir -Force
+Copy-Item "$PSScriptRoot\binaries\devices-mcp-camera-$triple.exe" $portableDir -Force
+Copy-Item "$PSScriptRoot\resources\devices-mcp-backend.exe" "$portableDir\devices-mcp-backend-$triple.exe" -Force
 $configExample = "$Root\config.example.yaml"
 if (Test-Path $configExample) {
     Copy-Item $configExample "$portableDir\config.example.yaml" -Force

@@ -206,6 +206,7 @@ async def plex_integration(
             if not content_type:
                 return {
                     "success": False,
+                    "message": "content_type is required for vienna_recommendations operation",
                     "error": "content_type is required for vienna_recommendations operation",
                     "error_code": "MISSING_CONTENT_TYPE",
                     "suggestions": ["Provide content_type parameter (e.g., 'movie', 'show')"],
@@ -247,6 +248,7 @@ async def plex_integration(
             if year is None:
                 return {
                     "success": False,
+                    "message": "year is required for anime_season_info operation",
                     "error": "year is required for anime_season_info operation",
                     "error_code": "MISSING_YEAR",
                     "suggestions": ["Provide year parameter (e.g., 2024)"],
@@ -254,6 +256,7 @@ async def plex_integration(
             if not season:
                 return {
                     "success": False,
+                    "message": "season is required for anime_season_info operation",
                     "error": "season is required for anime_season_info operation",
                     "error_code": "MISSING_SEASON",
                     "suggestions": ["Provide season parameter: winter, spring, summer, or fall"],
@@ -276,6 +279,7 @@ async def plex_integration(
             if not integration_name:
                 return {
                     "success": False,
+                    "message": "integration_name is required for configure operation",
                     "error": "integration_name is required for configure operation",
                     "error_code": "MISSING_INTEGRATION_NAME",
                     "suggestions": ["Provide integration_name parameter"],
@@ -283,6 +287,7 @@ async def plex_integration(
             if not config:
                 return {
                     "success": False,
+                    "message": "config dictionary is required for configure operation",
                     "error": "config dictionary is required for configure operation",
                     "error_code": "MISSING_CONFIG",
                     "suggestions": ["Provide config parameter with configuration dictionary"],
@@ -302,6 +307,7 @@ async def plex_integration(
             if not integration_name:
                 return {
                     "success": False,
+                    "message": "integration_name is required for sync operation",
                     "error": "integration_name is required for sync operation",
                     "error_code": "MISSING_INTEGRATION_NAME",
                     "suggestions": ["Provide integration_name parameter"],
@@ -318,7 +324,7 @@ async def plex_integration(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: list_integrations, vienna_recommendations, european_content, anime_season_info, configure, sync",
@@ -339,6 +345,7 @@ async def plex_integration(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -352,7 +359,7 @@ async def plex_integration(
         )
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

@@ -138,7 +138,7 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error monitoring system health:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     @app.tool(
         name="get_real_time_activity",
@@ -238,4 +238,4 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error getting real-time activity:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}

@@ -1,6 +1,5 @@
 """
 Ring Doorbell Management Portmanteau Tool
-
 Consolidates all Ring doorbell operations into a single tool with action-based interface.
 """
 
@@ -10,7 +9,6 @@ from typing import Any, Literal
 from fastmcp import FastMCP
 
 logger = logging.getLogger(__name__)
-
 RING_ACTIONS = {
     "status": "Get Ring connection status and summary",
     "doorbells": "List all Ring doorbells",
@@ -63,12 +61,10 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """
         Comprehensive Ring doorbell management portmanteau tool.
-
         PORTMANTEAU PATTERN RATIONALE:
         Instead of creating 9+ separate tools (one per operation), this tool consolidates related
         Ring operations into a single interface. Prevents tool explosion while maintaining
         full functionality. Follows FastMCP 3.1+ best practices.
-
         Args:
             action (Literal, required): The operation to perform. Must be one of:
                 - "status": Get Ring connection status and device summary (no params required)
@@ -87,58 +83,40 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                 - "capabilities": Get Ring device capabilities (optional: device_id)
                 - "2fa": Submit 2FA verification code (requires: code)
                 - "initialize": Initialize Ring client (requires: email, password)
-
             device_id (str | None): Ring device ID. Required for: live_view, snapshot.
                 Optional for: events, capabilities.
-
             limit (int): Maximum number of events to return. Used by: events, alarm_events. Default: 10
-
             code (str | None): 2FA verification code. Required for: 2fa action.
-
             email (str | None): Ring account email. Required for: initialize action.
-
             password (str | None): Ring account password. Required for: initialize action.
-
             siren_duration (int): Duration in seconds for siren. Used by: trigger_siren. Default: 30
-
         Returns:
             dict[str, Any]: Dictionary containing:
                 - success (bool): Whether operation succeeded
                 - action (str): The action that was performed
                 - data (dict): Operation-specific result data
                 - error (str | None): Error message if success is False
-
         Examples:
             # Get Ring status
             result = await ring_management(action="status")
-
             # List doorbells
             result = await ring_management(action="doorbells")
-
             # Get recent events
             result = await ring_management(action="events", limit=20)
-
             # Arm alarm in HOME mode (doors/windows only)
             result = await ring_management(action="arm_home")
-
             # Arm alarm in AWAY mode (all sensors)
             result = await ring_management(action="arm_away")
-
             # Disarm the alarm
             result = await ring_management(action="disarm")
-
             # Trigger siren for 30 seconds
             result = await ring_management(action="trigger_siren", siren_duration=30)
-
             # Stop the siren
             result = await ring_management(action="stop_siren")
-
             # Get sensor status
             result = await ring_management(action="sensors")
-
             # Get alarm events (arm/disarm history)
             result = await ring_management(action="alarm_events", limit=20)
-
             # Submit 2FA code
             result = await ring_management(action="2fa", code="123456")
         """
@@ -146,12 +124,10 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
             if action not in RING_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(RING_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(RING_ACTIONS.keys())}",
                     "available_actions": RING_ACTIONS,
                 }
-
             logger.info(f"Executing Ring management action: {action}")
-
             # Import Ring client
             from devices_mcp.integrations.ring_client import (
                 get_ring_client,
@@ -164,6 +140,7 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "email and password are required for initialize action",
                         "error": "email and password are required for initialize action",
                     }
                 success = await init_ring_client(email=email, password=password)
@@ -180,20 +157,22 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "success": False,
                         "action": action,
                         "needs_2fa": True,
+                        "message": "2FA required. Use action='2fa' with your verification code.",
                         "error": "2FA required. Use action='2fa' with your verification code.",
                     }
                 return {
                     "success": False,
                     "action": action,
+                    "message": "Failed to initialize Ring client",
                     "error": "Failed to initialize Ring client",
                 }
-
             # Handle 2FA action
             if action == "2fa":
                 if not code:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "code is required for 2fa action",
                         "error": "code is required for 2fa action",
                     }
                 client = get_ring_client("default")
@@ -201,6 +180,7 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "Ring client not initialized. Use initialize action first.",
                         "error": "Ring client not initialized. Use initialize action first.",
                     }
                 success = await client.submit_2fa_code(code)
@@ -209,21 +189,19 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                     "action": action,
                     "data": {"message": "2FA code accepted" if success else "2FA code rejected"},
                 }
-
             # For other actions, get the client
             client = get_ring_client()
             if not client or not client.is_initialized:
                 return {
                     "success": False,
                     "action": action,
+                    "message": "Ring not initialized. Check config.yaml or use initialize action.",
                     "error": "Ring not initialized. Check config.yaml or use initialize action.",
                 }
-
             # Route to appropriate handler
             if action == "status":
                 summary = await client.get_summary()
                 return {"success": True, "action": action, "data": summary}
-
             if action == "doorbells":
                 summary = await client.get_summary()
                 return {
@@ -234,7 +212,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "count": len(summary.get("doorbells", [])),
                     },
                 }
-
             if action == "events":
                 events = await client.get_events(device_id=device_id, limit=limit)
                 return {
@@ -242,7 +219,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                     "action": action,
                     "data": {"events": events, "count": len(events)},
                 }
-
             if action == "live_view":
                 if not device_id:
                     # Get first doorbell
@@ -254,6 +230,7 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         return {
                             "success": False,
                             "action": action,
+                            "message": "No doorbells found. Provide device_id.",
                             "error": "No doorbells found. Provide device_id.",
                         }
                 return {
@@ -266,31 +243,35 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "note": "Use WebRTC API or open /alarms page for live view",
                     },
                 }
-
             if action == "snapshot":
                 if not device_id:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "device_id is required for snapshot action",
                         "error": "device_id is required for snapshot action",
                     }
                 # Note: snapshots require Ring Protect subscription
                 return {
                     "success": False,
                     "action": action,
+                    "message": "Snapshots require Ring Protect subscription. Use live_view instead.",
                     "error": "Snapshots require Ring Protect subscription. Use live_view instead.",
                     "data": {
                         "device_id": device_id,
                         "alternative": "Use action='live_view' for WebRTC stream (no subscription needed)",
                     },
                 }
-
             if action == "alarm_status":
                 alarm_status = await client.get_alarm_status()
                 if alarm_status:
                     return {"success": True, "action": action, "data": alarm_status.to_dict()}
-                return {"success": False, "action": action, "error": "No alarm system found"}
-
+                return {
+                    "success": False,
+                    "message": "No alarm system found",
+                    "action": action,
+                    "error": "No alarm system found",
+                }
             if action == "arm_home":
                 from devices_mcp.integrations.ring_client import RingAlarmMode
 
@@ -303,7 +284,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "message": "Ring alarm armed in HOME mode" if success else "Failed to arm alarm",
                     },
                 }
-
             if action == "arm_away":
                 from devices_mcp.integrations.ring_client import RingAlarmMode
 
@@ -316,7 +296,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "message": "Ring alarm armed in AWAY mode" if success else "Failed to arm alarm",
                     },
                 }
-
             if action == "disarm":
                 from devices_mcp.integrations.ring_client import RingAlarmMode
 
@@ -329,7 +308,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "message": "Ring alarm disarmed" if success else "Failed to disarm alarm",
                     },
                 }
-
             if action == "trigger_siren":
                 success = await client.trigger_siren(activate=True, duration=siren_duration)
                 return {
@@ -341,7 +319,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "message": f"Siren activated for {siren_duration}s" if success else "Failed to activate siren",
                     },
                 }
-
             if action == "stop_siren":
                 success = await client.trigger_siren(activate=False)
                 return {
@@ -352,7 +329,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                         "message": "Siren deactivated" if success else "Failed to stop siren",
                     },
                 }
-
             if action == "alarm_events":
                 events = await client.get_alarm_events(limit=limit)
                 return {
@@ -360,7 +336,6 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                     "action": action,
                     "data": {"events": events, "count": len(events)},
                 }
-
             if action == "sensors":
                 alarm_status = await client.get_alarm_status()
                 if alarm_status:
@@ -373,8 +348,12 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                             "base_station": alarm_status.base_station.to_dict() if alarm_status.base_station else None,
                         },
                     }
-                return {"success": False, "action": action, "error": "No alarm system found"}
-
+                return {
+                    "success": False,
+                    "message": "No alarm system found",
+                    "action": action,
+                    "error": "No alarm system found",
+                }
             if action == "capabilities":
                 summary = await client.get_summary()
                 capabilities = {
@@ -387,9 +366,11 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                     "note": "Live view and two-way talk work WITHOUT Ring Protect subscription",
                 }
                 return {"success": True, "action": action, "data": capabilities}
-
-            return {"success": False, "error": f"Action '{action}' not implemented"}
-
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
         except Exception as e:
             logger.exception(f"Error in Ring management action '{action}'")
-            return {"success": False, "action": action, "error": str(e)}
+            return {"success": False, "message": str(e), "action": action, "error": str(e)}

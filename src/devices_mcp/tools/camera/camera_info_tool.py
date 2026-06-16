@@ -66,7 +66,7 @@ class CameraInfoTool(BaseTool):
                 return await self._manage_groups(group_action, group_name, camera_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'info', 'status', or 'groups'",
+                "message": f"Invalid operation: {operation}. Must be 'info', 'status', or 'groups'",
                 "timestamp": time.time(),
             }
 
@@ -74,6 +74,7 @@ class CameraInfoTool(BaseTool):
             logger.exception(f"Camera info {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -84,6 +85,7 @@ class CameraInfoTool(BaseTool):
         if not camera_id:
             return {
                 "success": False,
+                "message": "Camera ID is required for info operation",
                 "error": "Camera ID is required for info operation",
                 "timestamp": time.time(),
             }
@@ -170,7 +172,7 @@ class CameraInfoTool(BaseTool):
 
             return {
                 "success": False,
-                "error": f"Camera {camera_id} not found",
+                "message": f"Camera {camera_id} not found",
                 "timestamp": time.time(),
             }
 
@@ -178,6 +180,7 @@ class CameraInfoTool(BaseTool):
             logger.exception("Failed to get camera info for")
             return {
                 "success": False,
+                "message": f"Failed to get camera info: {e!s}",
                 "error": f"Failed to get camera info: {e!s}",
                 "timestamp": time.time(),
             }
@@ -187,6 +190,7 @@ class CameraInfoTool(BaseTool):
         if not camera_id:
             return {
                 "success": False,
+                "message": "Camera ID is required for status operation",
                 "error": "Camera ID is required for status operation",
                 "timestamp": time.time(),
             }
@@ -272,7 +276,7 @@ class CameraInfoTool(BaseTool):
 
             return {
                 "success": False,
-                "error": f"Camera {camera_id} not found",
+                "message": f"Camera {camera_id} not found",
                 "timestamp": time.time(),
             }
 
@@ -280,6 +284,7 @@ class CameraInfoTool(BaseTool):
             logger.exception("Failed to get camera status for")
             return {
                 "success": False,
+                "message": f"Failed to get camera status: {e!s}",
                 "error": f"Failed to get camera status: {e!s}",
                 "timestamp": time.time(),
             }
@@ -291,6 +296,7 @@ class CameraInfoTool(BaseTool):
         if not group_action:
             return {
                 "success": False,
+                "message": "Group action is required for groups operation",
                 "error": "Group action is required for groups operation",
                 "timestamp": time.time(),
             }
@@ -328,6 +334,7 @@ class CameraInfoTool(BaseTool):
             if not group_name:
                 return {
                     "success": False,
+                    "message": "Group name is required for create action",
                     "error": "Group name is required for create action",
                     "timestamp": time.time(),
                 }
@@ -355,6 +362,7 @@ class CameraInfoTool(BaseTool):
             if not camera_id:
                 return {
                     "success": False,
+                    "message": "Camera ID is required for add/remove actions",
                     "error": "Camera ID is required for add/remove actions",
                     "timestamp": time.time(),
                 }
@@ -370,6 +378,6 @@ class CameraInfoTool(BaseTool):
 
         return {
             "success": False,
-            "error": f"Invalid group action: {group_action}. Must be 'list', 'create', 'add', or 'remove'",
+            "message": f"Invalid group action: {group_action}. Must be 'list', 'create', 'add', or 'remove'",
             "timestamp": time.time(),
         }

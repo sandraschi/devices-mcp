@@ -112,6 +112,7 @@ class MockMoorebotScout:
             return {"success": True, "docking_status": "success", "mock_mode": True}
         return {
             "success": False,
+            "message": "Docking failed - alignment issue",
             "error": "Docking failed - alignment issue",
             "suggestion": "Manually place robot on dock or retry",
             "attempts": random.randint(2, 5),
@@ -234,6 +235,7 @@ MOCK_DOCK_SUCCESS = {"success": True, "docking_status": "success", "mock_mode": 
 
 MOCK_DOCK_FAILURE = {
     "success": False,
+    "message": "Docking failed - alignment issue",
     "error": "Docking failed - alignment issue",
     "suggestion": "Manually place robot on dock or retry",
     "attempts": 3,

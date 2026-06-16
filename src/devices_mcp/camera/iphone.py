@@ -181,6 +181,7 @@ class IPhoneCamera(Webcam):
             logger.exception(f"iPhone {self.config.name}: Connection test failed")
             return {
                 "success": False,
+                "message": "Operation failed",
                 "error": str(e),
                 "troubleshooting": self._get_troubleshooting_steps(),
             }

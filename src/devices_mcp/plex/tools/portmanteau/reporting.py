@@ -138,7 +138,7 @@ async def plex_reporting(
                 if not libraries:
                     return {
                         "success": False,
-                        "error": f"Library with ID '{library_id}' not found",
+                        "message": f"Library with ID '{library_id}' not found",
                         "error_code": "LIBRARY_NOT_FOUND",
                         "suggestions": [
                             "Verify library_id is correct",
@@ -186,7 +186,7 @@ async def plex_reporting(
                 if not libraries:
                     return {
                         "success": False,
-                        "error": f"Library with ID '{library_id}' not found",
+                        "message": f"Library with ID '{library_id}' not found",
                         "error_code": "LIBRARY_NOT_FOUND",
                     }
                 libraries = [libraries]
@@ -237,6 +237,7 @@ async def plex_reporting(
             if not format:
                 return {
                     "success": False,
+                    "message": "format is required for export_report operation",
                     "error": "format is required for export_report operation",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Specify format: json, csv, or html"],
@@ -252,7 +253,7 @@ async def plex_reporting(
 
         return {
             "success": False,
-            "error": f"Unknown operation: {operation}",
+            "message": f"Unknown operation: {operation}",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Use one of: library_stats, usage_report, content_report, user_activity, performance_report, export_report"
@@ -263,6 +264,7 @@ async def plex_reporting(
         logger.exception("Error in plex_reporting operation '{operation}':")
         return {
             "success": False,
+            "message": str(e),
             "error": str(e),
             "error_code": "EXECUTION_ERROR",
             "suggestions": [

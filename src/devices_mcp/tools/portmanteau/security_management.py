@@ -1,6 +1,5 @@
 """
 Security Management Portmanteau Tool
-
 Consolidates all security-related operations into a single tool with action-based interface.
 Now with REAL Nest Protect API integration (requires one-time OAuth setup).
 """
@@ -21,7 +20,6 @@ from devices_mcp.utils.response_builders import (
 )
 
 logger = logging.getLogger(__name__)
-
 # Global Nest client instance
 _nest_client: NestClient | None = None
 
@@ -48,7 +46,7 @@ async def _handle_real_nest_action(
                 }
             return {
                 "success": False,
-                "error": f"Device {device_id} not found",
+                "message": f"Device {device_id} not found",
                 "timestamp": time.time(),
             }
         # Get all devices
@@ -59,7 +57,6 @@ async def _handle_real_nest_action(
             **summary,
             "timestamp": time.time(),
         }
-
     if action == "nest_alerts":
         # Real API doesn't have historical alerts, return current status as "alerts"
         devices = await client.get_devices()
@@ -103,7 +100,6 @@ async def _handle_real_nest_action(
             "active_alerts": len(alerts),
             "timestamp": time.time(),
         }
-
     if action == "nest_battery":
         devices = await client.get_devices()
         battery_info = []
@@ -125,7 +121,6 @@ async def _handle_real_nest_action(
             "needs_attention": len(needs_attention),
             "timestamp": time.time(),
         }
-
     if action == "test_nest":
         # Can't trigger remote test via API (safety feature)
         return {
@@ -135,7 +130,6 @@ async def _handle_real_nest_action(
             "instruction": "Press the button on your Nest Protect to run a manual test",
             "timestamp": time.time(),
         }
-
     if action == "correlate_events":
         # Would need camera integration
         return {
@@ -144,8 +138,7 @@ async def _handle_real_nest_action(
             "note": "Event correlation requires Nest camera integration",
             "timestamp": time.time(),
         }
-
-    return {"success": False, "error": f"Unknown action: {action}"}
+    return {"success": False, "message": f"Unknown action: {action}", "error": f"Unknown action: {action}"}
 
 
 SECURITY_ACTIONS = {
@@ -196,18 +189,15 @@ def register_security_management_tool(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """
         Comprehensive security management portmanteau tool.
-
         PORTMANTEAU PATTERN RATIONALE:
         Instead of creating 7+ separate tools (one per operation), this tool consolidates related
         security operations into a single interface. Prevents tool explosion (7+ tools → 1 tool) while maintaining
         full functionality and improving discoverability. Follows FastMCP 3.1+ best practices.
-
         NEST PROTECT INTEGRATION:
         Uses real Google Nest API when authenticated. One-time OAuth setup required:
         1. Call nest_oauth_start → get URL
         2. Visit URL, login with Google, copy code
         3. Call nest_oauth_complete with oauth_code → done forever
-
         Args:
             action (Literal, required): The operation to perform. Must be one of: "nest_status", "nest_alerts",
                 "nest_battery", "test_nest", "correlate_events", "security_scan", "analyze_scene",
@@ -222,69 +212,50 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                 - "correlate_events": Correlate Nest camera events (optional: alert_id, time_window_minutes)
                 - "security_scan": Perform security scan (requires: camera_name, threat_types)
                 - "analyze_scene": Analyze camera scene (requires: camera_name, analysis_type)
-
             device_id (str | None): Device ID for Nest Protect operations. Used by: nest_status, nest_alerts,
                 nest_battery, test_nest operations.
-
             camera_name (str | None): Camera name for security scan/analysis. Required for: security_scan,
                 analyze_scene operations.
-
             hours (int): Hours to look back for alerts. Used by: nest_alerts operation. Default: 24
-
             alert_id (str | None): Alert ID for correlation. Used by: correlate_events operation.
-
             time_window_minutes (int): Time window for event correlation. Used by: correlate_events operation.
                 Default: 5
-
             threat_types (list[str] | None): Threat types to detect. Required for: security_scan operation.
                 Default: ["person", "package"]. Valid: "person", "package", "vehicle", "animal"
-
             save_images (bool): Save images from scan. Used by: security_scan, analyze_scene operations.
                 Default: False
-
             analysis_type (str | None): Type of scene analysis. Required for: analyze_scene operation.
                 Valid: "objects", "faces", "motion", "security"
-
             confidence_threshold (float): Confidence threshold for analysis. Used by: analyze_scene operation.
                 Default: 0.5. Range: 0.0 to 1.0
-
             oauth_code (str | None): OAuth authorization code from Google. Required for: nest_oauth_complete.
-
         Returns:
             dict[str, Any]: Dictionary containing:
                 - success (bool): Boolean indicating if operation succeeded
                 - action (str): The action that was performed
                 - data (dict): Operation-specific result data (status, alerts, threats, etc.)
                 - error (str | None): Error message if success is False
-
         Examples:
             # Step 1: Start OAuth flow
             result = await security_management(action="nest_oauth_start")
             # Returns: {"oauth_url": "https://accounts.google.com/...", "instructions": [...]}
-
             # Step 2: After visiting URL and getting code
             result = await security_management(action="nest_oauth_complete", oauth_code="4/0ABC...")
-
             # Step 3: Now Nest operations use real API!
             result = await security_management(action="nest_status")
-
             # Check auth status
             result = await security_management(action="nest_oauth_status")
-
             # Security scan
             result = await security_management(action="security_scan", camera_name="Front Door", threat_types=["person", "package"])
         """
         global _nest_client
-
         try:
             if action not in SECURITY_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(SECURITY_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(SECURITY_ACTIONS.keys())}",
                 }
-
             logger.info(f"Executing security management action: {action}")
-
             # ===== NEST OAUTH ACTIONS =====
             if action == "nest_oauth_start":
                 oauth_url = NestClient.get_oauth_url()
@@ -303,19 +274,17 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                         "note": "This is a one-time setup. Token will be cached for future use.",
                     },
                 }
-
             if action == "nest_oauth_complete":
                 if not oauth_code:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "oauth_code is required. Get it from the Google OAuth page.",
                         "error": "oauth_code is required. Get it from the Google OAuth page.",
                     }
-
                 # Create client and exchange code
                 _nest_client = NestClient()
                 success = await _nest_client.exchange_code(oauth_code)
-
                 if success:
                     # Initialize with the new token
                     await _nest_client.initialize()
@@ -333,9 +302,9 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                 return {
                     "success": False,
                     "action": action,
+                    "message": "Failed to exchange OAuth code. Make sure the code is correct and not expired.",
                     "error": "Failed to exchange OAuth code. Make sure the code is correct and not expired.",
                 }
-
             if action == "nest_oauth_status":
                 # Try to get existing client or initialize from cache
                 client = get_nest_client()
@@ -345,7 +314,6 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                         client = _nest_client
                     else:
                         _nest_client = None
-
                 if client and client.is_initialized:
                     devices = await client.get_devices()
                     return {
@@ -367,7 +335,6 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                         "note": "Run nest_oauth_start to authenticate with Google Nest",
                     },
                 }
-
             # ===== NEST PROTECT OPERATIONS =====
             if action in [
                 "nest_status",
@@ -385,14 +352,12 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                         client = _nest_client
                     else:
                         _nest_client = None
-
                 if client and client.is_initialized:
                     # Use REAL Nest API
                     logger.info("Using real Nest API")
                     result = await _handle_real_nest_action(client, action, device_id)
                     result["using_real_api"] = True
                     return {"success": True, "action": action, "data": result}
-
                 # Fall back to mock data
                 logger.info("Nest not authenticated, using mock data")
                 tool = NestProtectTool()
@@ -411,7 +376,6 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                 result["using_real_api"] = False
                 result["note"] = "Using mock data. Run nest_oauth_start to use real Nest API."
                 return {"success": True, "action": action, "data": result}
-
             # ===== SECURITY ANALYSIS =====
             if action in ["security_scan", "analyze_scene"]:
                 tool = SecurityAnalysisTool()
@@ -424,16 +388,16 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                     confidence_threshold=confidence_threshold,
                 )
                 return {"success": True, "action": action, "data": result}
-
-            return {"success": False, "error": f"Action '{action}' not implemented"}
-
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
         except Exception as e:
             logger.exception(f"Error in security management action '{action}'")
-
             # Intelligent error analysis for security system issues
             error_str = str(e).lower()
             recovery_options = []
-
             if "oauth" in error_str or "authorization" in error_str or "token" in error_str:
                 recovery_options = [
                     "Complete Nest OAuth setup with 'nest_oauth_helper.py'",
@@ -471,7 +435,6 @@ def register_security_management_tool(mcp: FastMCP) -> None:
                     "Try restarting the MCP server",
                     "Check Nest service status online",
                 ]
-
             device_info = f" for device '{device_id}'" if device_id else ""
             return build_network_error_response(
                 error=f"Nest security operation failed during {action}{device_info}",

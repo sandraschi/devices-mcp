@@ -51,6 +51,18 @@ audit-deps:
     Set-Location "{{justfile_directory()}}"
     uv run safety check
 
+# ── Native Desktop ────────────────────────────────────────────────────────────
+
+# Build Tauri NSIS desktop installer
+build-native:
+    Set-Location '{{justfile_directory()}}\native'
+    $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
+    .\build.ps1
+
+# Run CUA smoke test against installed NSIS app
+cua-nsis-test:
+    C:\Windows\py.exe scripts/cua-smoke.py
+
 # ── Testing ───────────────────────────────────────────────────────────────────
 
 # Run e2e Playwright tests

@@ -51,6 +51,7 @@ class GrafanaSnapshotsTool(BaseTool):
         except Exception as e:
             return {
                 "success": False,
+                "message": f"Failed to capture snapshot: {e!s}",
                 "error": f"Failed to capture snapshot: {e!s}",
                 "content_type": "application/json",
             }

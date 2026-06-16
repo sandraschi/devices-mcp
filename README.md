@@ -58,7 +58,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 
 ## Quick install
 
-**Windows desktop (leg 3):** [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases) → `Devices-MCP-1.21.5-x64-setup.exe` (or portable zip). Copy `config.example.yaml` → `%USERPROFILE%\.config\devices-mcp\config.yaml`.
+**Windows desktop (leg 3):** [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases) → `Devices MCP_*_x64-setup.exe` (single NSIS installer — that's all you need).
 
 **MCP bundle (leg 1):** Releases → `devices-mcp.mcpb` → Claude Desktop.
 
@@ -71,6 +71,26 @@ uv sync
 .\web-sota\start.ps1
 # http://127.0.0.1:10717/app/
 ```
+
+## Build & Test (NSIS installer)
+
+The desktop installer bundles TWO sidecars (backend + camera helper) into a single `Devices MCP_*_x64-setup.exe` (~247 MB).
+
+```powershell
+just build-native      # Full pipeline: frontend → PyInstaller → Rust → NSIS
+just cua-nsis-test     # Install → CUA test → screenshot → uninstall
+```
+
+The **CUA smoke test** (`scripts/cua-smoke.py`) verifies:
+1. Silent install succeeds
+2. Backend health responds 200 on port 10717
+3. Window renders at correct size
+4. Diagnostics endpoint reports all systems
+5. Clean uninstall
+
+> See [CUA-NSIS Smoke Testing](https://github.com/sandraschi/mcp-central-docs/blob/main/standards/rules/cua_nsis_smoke_testing.md) — fleet standard.
+
+Prerequisites: Rust toolchain, MSVC Build Tools, Tauri CLI 2.x.
 
 ---
 

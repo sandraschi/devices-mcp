@@ -66,6 +66,7 @@ class ViennaDashboardTool(BaseTool):
         except Exception as e:
             return {
                 "success": False,
+                "message": f"Failed to generate dashboard data: {e!s}",
                 "error": f"Failed to generate dashboard data: {e!s}",
                 "content_type": "application/json",
             }

@@ -1,6 +1,5 @@
 """
 Appliance Monitor Management Portmanteau Tool
-
 Consolidates appliance monitoring operations into a single tool for tracking
 power consumption patterns, detecting appliance issues, and monitoring
 device health through energy usage analysis.
@@ -12,8 +11,6 @@ from typing import Any
 from fastmcp import FastMCP  # type: ignore[import]
 
 logger = logging.getLogger(__name__)
-
-
 APPLIANCE_ACTIONS = {
     "list_appliances": "List monitored appliances",
     "get_appliance_status": "Get detailed appliance status and metrics",
@@ -40,12 +37,10 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """
         Comprehensive appliance monitoring and analysis portmanteau tool.
-
         PORTMANTEAU PATTERN RATIONALE:
         Appliance monitoring (power analysis, anomaly detection, predictive
         maintenance) shares common operational patterns across different
         appliance types. This tool consolidates them for unified management.
-
         Args:
             action (str, required): The operation to perform. Must be one of:
                 - "list_appliances": List all monitored appliances
@@ -56,13 +51,11 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                 - "set_monitoring_rules": Configure rules (requires: appliance_id)
                 - "get_energy_report": Generate energy report (optional: time_range, report_format)
                 - "troubleshoot_appliance": Get troubleshooting help (requires: appliance_id)
-
             appliance_id (str | None): Specific appliance identifier
             time_range (str): Analysis time range ("1h", "24h", "7d", "30d")
             analysis_depth (str): Analysis detail level ("basic", "detailed", "expert")
             threshold_multiplier (float): Anomaly detection threshold (default: 1.5x normal)
             report_format (str): Report format ("summary", "detailed", "chart_data")
-
         Returns:
             dict[str, Any]: Operation result with appliance data and analysis
         """
@@ -70,14 +63,11 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
             if action not in APPLIANCE_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(APPLIANCE_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(APPLIANCE_ACTIONS.keys())}",
                 }
-
             logger.info(f"Executing appliance monitor action: {action}")
-
             # Mock implementations for appliance monitoring
             # In a real implementation, these would analyze actual power consumption data
-
             if action == "list_appliances":
                 appliances = [
                     {
@@ -137,7 +127,6 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                         "daily_consumption_kwh": 0.15,
                     },
                 ]
-
                 return {
                     "success": True,
                     "action": action,
@@ -145,14 +134,13 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     "count": len(appliances),
                     "monitored_count": len([a for a in appliances if a.get("monitoring_enabled")]),
                 }
-
             if action == "get_appliance_status":
                 if not appliance_id:
                     return {
                         "success": False,
+                        "message": "appliance_id is required for get_appliance_status",
                         "error": "appliance_id is required for get_appliance_status",
                     }
-
                 # Mock detailed appliance status
                 appliance_status = {
                     "id": appliance_id,
@@ -188,20 +176,18 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     },
                     "timestamp": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "appliance": appliance_status,
                 }
-
             if action == "analyze_power_pattern":
                 if not appliance_id:
                     return {
                         "success": False,
+                        "message": "appliance_id is required for analyze_power_pattern",
                         "error": "appliance_id is required for analyze_power_pattern",
                     }
-
                 # Mock power pattern analysis
                 pattern_analysis = {
                     "appliance_id": appliance_id,
@@ -241,20 +227,18 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     ],
                     "timestamp": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "analysis": pattern_analysis,
                 }
-
             if action == "detect_anomalies":
                 if not appliance_id:
                     return {
                         "success": False,
+                        "message": "appliance_id is required for detect_anomalies",
                         "error": "appliance_id is required for detect_anomalies",
                     }
-
                 # Mock anomaly detection
                 anomalies = [
                     {
@@ -275,7 +259,6 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                         "recommendations": ["Check door seal", "Verify temperature settings"],
                     }
                 ]
-
                 detection_result = {
                     "appliance_id": appliance_id,
                     "threshold_multiplier": threshold_multiplier,
@@ -286,20 +269,18 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     "next_scan_scheduled": "2025-12-27T05:00:00Z",
                     "timestamp": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "detection": detection_result,
                 }
-
             if action == "predict_maintenance":
                 if not appliance_id:
                     return {
                         "success": False,
+                        "message": "appliance_id is required for predict_maintenance",
                         "error": "appliance_id is required for predict_maintenance",
                     }
-
                 # Mock maintenance prediction
                 maintenance_prediction = {
                     "appliance_id": appliance_id,
@@ -332,20 +313,18 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     },
                     "timestamp": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "prediction": maintenance_prediction,
                 }
-
             if action == "set_monitoring_rules":
                 if not appliance_id:
                     return {
                         "success": False,
+                        "message": "appliance_id is required for set_monitoring_rules",
                         "error": "appliance_id is required for set_monitoring_rules",
                     }
-
                 # Mock monitoring rules configuration
                 monitoring_rules = {
                     "appliance_id": appliance_id,
@@ -377,13 +356,11 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     "data_retention_days": 365,
                     "updated_at": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "rules": monitoring_rules,
                 }
-
             if action == "get_energy_report":
                 # Mock energy report generation
                 energy_report = {
@@ -436,20 +413,18 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     "data_quality": "high",
                     "next_report_available": "2025-12-28T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "report": energy_report,
                 }
-
             if action == "troubleshoot_appliance":
                 if not appliance_id:
                     return {
                         "success": False,
+                        "message": "appliance_id is required for troubleshoot_appliance",
                         "error": "appliance_id is required for troubleshoot_appliance",
                     }
-
                 # Mock troubleshooting recommendations
                 troubleshooting = {
                     "appliance_id": appliance_id,
@@ -498,15 +473,20 @@ def register_appliance_monitor_management_tool(mcp: FastMCP) -> None:
                     ],
                     "timestamp": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "troubleshooting": troubleshooting,
                 }
-
-            return {"success": False, "error": f"Action '{action}' not implemented"}
-
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
         except Exception as e:
             logger.exception("Error in appliance monitor action '{action}':")
-            return {"success": False, "error": f"Failed to execute action '{action}': {e!s}"}
+            return {
+                "success": False,
+                "message": f"Failed to execute action '{action}': {e!s}",
+                "error": f"Failed to execute action '{action}': {e!s}",
+            }

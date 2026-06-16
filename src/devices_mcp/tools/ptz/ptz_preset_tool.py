@@ -68,7 +68,7 @@ class PTZPresetTool(BaseTool):
                 return await self._go_home(camera_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'list', 'save', 'recall', or 'home'",
+                "message": f"Invalid operation: {operation}. Must be 'list', 'save', 'recall', or 'home'",
                 "timestamp": time.time(),
             }
 
@@ -76,6 +76,7 @@ class PTZPresetTool(BaseTool):
             logger.exception(f"PTZ preset {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "camera_id": camera_id,
@@ -107,6 +108,7 @@ class PTZPresetTool(BaseTool):
         if not preset_name:
             return {
                 "success": False,
+                "message": "Preset name is required for save operation",
                 "error": "Preset name is required for save operation",
                 "timestamp": time.time(),
             }
@@ -150,6 +152,7 @@ class PTZPresetTool(BaseTool):
         if preset_id is None:
             return {
                 "success": False,
+                "message": "Preset ID or preset_name is required for recall operation",
                 "error": "Preset ID or preset_name is required for recall operation",
                 "timestamp": time.time(),
             }
@@ -165,7 +168,7 @@ class PTZPresetTool(BaseTool):
         if preset_id not in preset_positions:
             return {
                 "success": False,
-                "error": f"Preset ID {preset_id} not found",
+                "message": f"Preset ID {preset_id} not found",
                 "timestamp": time.time(),
             }
 

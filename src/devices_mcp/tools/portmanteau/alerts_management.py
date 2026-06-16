@@ -1,6 +1,5 @@
 """
 Alerts Management Portmanteau Tool
-
 Consolidates alert and notification operations into a single tool for
 emergency alerts, weather warnings, system notifications, and messaging.
 """
@@ -12,8 +11,6 @@ from typing import Any
 from fastmcp import FastMCP
 
 logger = logging.getLogger(__name__)
-
-
 ALERTS_ACTIONS = {
     "list_alerts": "List all active alerts and notifications",
     "get_alert_details": "Get detailed information about a specific alert",
@@ -43,12 +40,10 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """
         Comprehensive alerts and notifications management portmanteau tool.
-
         PORTMANTEAU PATTERN RATIONALE:
         Alerts from various sources (weather, security, system, emergency)
         share common operational patterns. This tool consolidates them to
         reduce complexity while maintaining source-specific functionality.
-
         Args:
             action (str, required): The operation to perform. Must be one of:
                 - "list_alerts": List all active alerts
@@ -59,7 +54,6 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                 - "get_alert_history": Get historical alerts (optional: duration_hours, limit)
                 - "set_alert_filters": Configure filters (requires: alert_type)
                 - "test_alert_system": Test alert delivery
-
             alert_id (str | None): Specific alert identifier
             alert_type (str | None): Alert type filter ("weather", "security", "system", "emergency")
             severity (str): Alert severity ("info", "warning", "error", "critical")
@@ -68,7 +62,6 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
             source (str): Alert source ("system", "weather", "security", "user")
             duration_hours (int): History duration in hours (default: 24)
             limit (int): Maximum alerts to return (default: 50)
-
         Returns:
             dict[str, Any]: Operation result with alert data and status
         """
@@ -76,14 +69,11 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
             if action not in ALERTS_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(ALERTS_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(ALERTS_ACTIONS.keys())}",
                 }
-
             logger.info(f"Executing alerts management action: {action}")
-
             # Mock implementations for alerts system
             # In a real implementation, these would connect to actual alert sources
-
             if action == "list_alerts":
                 alerts = [
                     {
@@ -139,11 +129,9 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                         "actions_available": ["acknowledge", "shutdown_device", "view_history"],
                     },
                 ]
-
                 # Filter by type if specified
                 if alert_type:
                     alerts = [a for a in alerts if a.get("type") == alert_type]
-
                 return {
                     "success": True,
                     "action": action,
@@ -151,11 +139,13 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                     "count": len(alerts),
                     "filter_applied": alert_type,
                 }
-
             if action == "get_alert_details":
                 if not alert_id:
-                    return {"success": False, "error": "alert_id is required for get_alert_details"}
-
+                    return {
+                        "success": False,
+                        "message": "alert_id is required for get_alert_details",
+                        "error": "alert_id is required for get_alert_details",
+                    }
                 # Mock detailed alert info
                 alert_details = {
                     "id": alert_id,
@@ -192,17 +182,18 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                         "battery_level": 92,
                     },
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "alert": alert_details,
                 }
-
             if action == "acknowledge_alert":
                 if not alert_id:
-                    return {"success": False, "error": "alert_id is required for acknowledge_alert"}
-
+                    return {
+                        "success": False,
+                        "message": "alert_id is required for acknowledge_alert",
+                        "error": "alert_id is required for acknowledge_alert",
+                    }
                 # Mock alert acknowledgment
                 ack_result = {
                     "alert_id": alert_id,
@@ -213,17 +204,18 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                     "notification_sent": True,
                     "escalation_cancelled": False,
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "acknowledgment": ack_result,
                 }
-
             if action == "dismiss_alert":
                 if not alert_id:
-                    return {"success": False, "error": "alert_id is required for dismiss_alert"}
-
+                    return {
+                        "success": False,
+                        "message": "alert_id is required for dismiss_alert",
+                        "error": "alert_id is required for dismiss_alert",
+                    }
                 # Mock alert dismissal
                 dismiss_result = {
                     "alert_id": alert_id,
@@ -234,20 +226,18 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                     "notification_cancelled": True,
                     "archived": True,
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "dismissal": dismiss_result,
                 }
-
             if action == "create_alert":
                 if not title or not message:
                     return {
                         "success": False,
+                        "message": "title and message are required for create_alert",
                         "error": "title and message are required for create_alert",
                     }
-
                 # Mock alert creation
                 new_alert = {
                     "id": f"alert_custom_{asyncio.get_event_loop().time()}",
@@ -263,13 +253,11 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                     "expires_at": None,
                     "metadata": {"custom_alert": True, "created_via": "mcp_tool"},
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "alert_created": new_alert,
                 }
-
             if action == "get_alert_history":
                 # Mock historical alerts
                 history_alerts = [
@@ -294,7 +282,6 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                         "resolution_time": "2025-12-26T09:16:00Z",
                     },
                 ]
-
                 return {
                     "success": True,
                     "action": action,
@@ -303,14 +290,13 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                     "duration_hours": duration_hours,
                     "total_available": len(history_alerts),
                 }
-
             if action == "set_alert_filters":
                 if not alert_type:
                     return {
                         "success": False,
+                        "message": "alert_type is required for set_alert_filters",
                         "error": "alert_type is required for set_alert_filters",
                     }
-
                 # Mock filter configuration
                 filter_config = {
                     "alert_type": alert_type,
@@ -331,13 +317,11 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                     },
                     "updated_at": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "filters": filter_config,
                 }
-
             if action == "test_alert_system":
                 # Mock alert system test
                 test_results = {
@@ -352,15 +336,20 @@ def register_alerts_management_tool(mcp: FastMCP) -> None:
                     "test_alert_id": f"test_alert_{asyncio.get_event_loop().time()}",
                     "cleanup_performed": True,
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "test_results": test_results,
                 }
-
-            return {"success": False, "error": f"Action '{action}' not implemented"}
-
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
         except Exception as e:
             logger.exception("Error in alerts management action '{action}':")
-            return {"success": False, "error": f"Failed to execute action '{action}': {e!s}"}
+            return {
+                "success": False,
+                "message": f"Failed to execute action '{action}': {e!s}",
+                "error": f"Failed to execute action '{action}': {e!s}",
+            }

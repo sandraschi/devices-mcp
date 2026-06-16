@@ -75,7 +75,7 @@ class SystemInfoTool(BaseTool):
                 return await self._health_check(health_check_type)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'info', 'logs', or 'health'",
+                "message": f"Invalid operation: {operation}. Must be 'info', 'logs', or 'health'",
                 "timestamp": time.time(),
             }
 
@@ -83,6 +83,7 @@ class SystemInfoTool(BaseTool):
             logger.exception(f"System {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -219,13 +220,14 @@ class SystemInfoTool(BaseTool):
         if log_level.lower() not in valid_levels and log_level.lower() != "all":
             return {
                 "success": False,
-                "error": f"Invalid log level: {log_level}. Must be one of: {valid_levels}",
+                "message": f"Invalid log level: {log_level}. Must be one of: {valid_levels}",
                 "timestamp": time.time(),
             }
 
         if log_lines < 1 or log_lines > 5000:
             return {
                 "success": False,
+                "message": "Log lines must be between 1 and 5000",
                 "error": "Log lines must be between 1 and 5000",
                 "timestamp": time.time(),
             }
@@ -266,6 +268,7 @@ class SystemInfoTool(BaseTool):
         if not log_file:
             return {
                 "success": False,
+                "message": "Log file not found. Checked standard locations.",
                 "error": "Log file not found. Checked standard locations.",
                 "log_entries": [],
                 "timestamp": time.time(),
@@ -347,6 +350,7 @@ class SystemInfoTool(BaseTool):
             logger.exception("Failed to read log file")
             return {
                 "success": False,
+                "message": f"Failed to read logs: {e!s}",
                 "error": f"Failed to read logs: {e!s}",
                 "timestamp": time.time(),
             }
@@ -358,7 +362,7 @@ class SystemInfoTool(BaseTool):
         if health_check_type not in valid_types:
             return {
                 "success": False,
-                "error": f"Invalid health check type: {health_check_type}. Must be one of: {valid_types}",
+                "message": f"Invalid health check type: {health_check_type}. Must be one of: {valid_types}",
                 "timestamp": time.time(),
             }
 

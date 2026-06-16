@@ -17,7 +17,6 @@ import { Plex } from '@/pages/Plex';
 import { Ring } from '@/pages/Ring';
 import { Robots } from '@/pages/Robots';
 import { Settings } from '@/pages/Settings';
-import { Shelly } from '@/pages/Shelly';
 import { Weather } from '@/pages/Weather';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
@@ -36,7 +35,6 @@ function App() {
           <Route path='robots' element={<Robots />} />
           <Route path='ring' element={<Ring />} />
           <Route path='nest' element={<Nest />} />
-          <Route path='shelly' element={<Shelly />} />
           <Route path='health' element={<Health />} />
           <Route path='human-health' element={<HumanHealth />} />
           <Route path='alarms' element={<Alarms />} />

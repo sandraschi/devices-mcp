@@ -1,6 +1,5 @@
 """
 Weather Management Portmanteau Tool
-
 Consolidates all weather-related operations into a single tool with action-based interface.
 """
 
@@ -13,7 +12,6 @@ from devices_mcp.tools.weather.netatmo_analysis_tool import NetatmoAnalysisTool
 from devices_mcp.tools.weather.netatmo_weather_tool import NetatmoWeatherTool
 
 logger = logging.getLogger(__name__)
-
 WEATHER_ACTIONS = {
     "current": "Get current weather data",
     "historical": "Get historical weather data",
@@ -37,12 +35,10 @@ def register_weather_management_tool(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """
         Comprehensive weather management portmanteau tool.
-
         PORTMANTEAU PATTERN RATIONALE:
         Instead of creating 6+ separate tools (one per operation), this tool consolidates related
         weather operations into a single interface. Prevents tool explosion (6+ tools → 1 tool) while maintaining
         full functionality and improving discoverability. Follows FastMCP 3.1+ best practices.
-
         Args:
             action (Literal, required): The operation to perform. Must be one of: "current", "historical",
                 "stations", "alerts", "health", "analyze".
@@ -52,37 +48,28 @@ def register_weather_management_tool(mcp: FastMCP) -> None:
                 - "alerts": Configure weather alerts (optional: alert_config)
                 - "health": Get weather station health (optional: station_id)
                 - "analyze": Analyze weather patterns (requires: start_date, end_date, optional: station_id)
-
             station_id (str | None): Weather station ID. Used by: current, historical, health, analyze operations
                 to filter to specific station.
-
             start_date (str | None): Start date for historical data. Required for: historical, analyze operations.
                 Format: "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
-
             end_date (str | None): End date for historical data. Required for: historical, analyze operations.
                 Format: "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS"
-
             alert_config (dict[str, Any] | None): Alert configuration. Used by: alerts operation.
                 Required keys: "thresholds" (dict), "conditions" (list).
                 Optional keys: "enabled" (bool), "notifications" (list)
-
         Returns:
             dict[str, Any]: Dictionary containing:
                 - success (bool): Boolean indicating if operation succeeded
                 - action (str): The action that was performed
                 - data (dict): Operation-specific result data (weather data, stations, alerts, etc.)
                 - error (str | None): Error message if success is False
-
         Examples:
             # Get current weather
             result = await weather_management(action="current", station_id="station_001")
-
             # Get historical data
             result = await weather_management(action="historical", start_date="2024-01-01", end_date="2024-01-31")
-
             # List stations
             result = await weather_management(action="stations")
-
             # Analyze patterns
             result = await weather_management(action="analyze", start_date="2024-01-01", end_date="2024-01-31")
         """
@@ -90,11 +77,9 @@ def register_weather_management_tool(mcp: FastMCP) -> None:
             if action not in WEATHER_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(WEATHER_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(WEATHER_ACTIONS.keys())}",
                 }
-
             logger.info(f"Executing weather management action: {action}")
-
             if action == "stations":
                 tool = NetatmoWeatherTool()
                 result = await tool.execute(
@@ -102,7 +87,6 @@ def register_weather_management_tool(mcp: FastMCP) -> None:
                     station_id=station_id,
                 )
                 return {"success": True, "action": action, "data": result}
-
             if action == "current":
                 tool = NetatmoWeatherTool()
                 result = await tool.execute(
@@ -110,14 +94,12 @@ def register_weather_management_tool(mcp: FastMCP) -> None:
                     station_id=station_id,
                 )
                 return {"success": True, "action": action, "data": result}
-
             if action in ["historical", "alerts", "health"]:
                 # These operations are not yet implemented in NetatmoWeatherTool
                 return {
                     "success": False,
-                    "error": f"Action '{action}' is not yet implemented. Available actions: current, stations, analyze",
+                    "message": f"Action '{action}' is not yet implemented. Available actions: current, stations, analyze",
                 }
-
             if action == "analyze":
                 tool = NetatmoAnalysisTool()
                 result = await tool.execute(
@@ -126,9 +108,15 @@ def register_weather_management_tool(mcp: FastMCP) -> None:
                     end_date=end_date,
                 )
                 return {"success": True, "action": action, "data": result}
-
-            return {"success": False, "error": f"Action '{action}' not implemented"}
-
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
         except Exception as e:
             logger.exception("Error in weather management action '{action}':")
-            return {"success": False, "error": f"Failed to execute action '{action}': {e!s}"}
+            return {
+                "success": False,
+                "message": f"Failed to execute action '{action}': {e!s}",
+                "error": f"Failed to execute action '{action}': {e!s}",
+            }

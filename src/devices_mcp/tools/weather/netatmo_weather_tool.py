@@ -56,7 +56,7 @@ class NetatmoWeatherTool(BaseTool):
                 return await self._get_weather_data(station_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'stations' or 'data'",
+                "message": f"Invalid operation: {operation}. Must be 'stations' or 'data'",
                 "timestamp": time.time(),
             }
 
@@ -64,6 +64,7 @@ class NetatmoWeatherTool(BaseTool):
             logger.exception(f"Netatmo weather {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),

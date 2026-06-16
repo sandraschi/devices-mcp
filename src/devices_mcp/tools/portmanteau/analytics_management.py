@@ -93,7 +93,7 @@ def register_analytics_management_tool(mcp: FastMCP) -> None:
             if action not in ANALYTICS_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(ANALYTICS_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(ANALYTICS_ACTIONS.keys())}",
                 }
 
             logger.info(f"Executing analytics management action: {action}")
@@ -159,5 +159,5 @@ def register_analytics_management_tool(mcp: FastMCP) -> None:
             logger.exception("Error in analytics management action '{action}':")
             return {
                 "success": False,
-                "error": f"Failed to execute analytics action '{action}': {e!s}",
+                "message": f"Failed to execute analytics action '{action}': {e!s}",
             }

@@ -266,6 +266,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for get operation",
                     "error": "library_id is required for get operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Use plex_library('list') to find available library IDs"],
@@ -275,7 +276,7 @@ async def plex_library(
             if library is None:
                 return {
                     "success": False,
-                    "error": f"Library {library_id} not found",
+                    "message": f"Library {library_id} not found",
                     "error_code": "LIBRARY_NOT_FOUND",
                     "suggestions": [
                         "Use plex_library(operation='list') to find available library IDs",
@@ -289,6 +290,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for scan operation",
                     "error": "library_id is required for scan operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to scan"],
@@ -310,6 +312,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for refresh operation",
                     "error": "library_id is required for refresh operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to refresh"],
@@ -328,6 +331,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for empty_trash operation",
                     "error": "library_id is required for empty_trash operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to empty trash"],
@@ -346,6 +350,7 @@ async def plex_library(
             if not name:
                 return {
                     "success": False,
+                    "message": "name is required for create operation",
                     "error": "name is required for create operation",
                     "error_code": "MISSING_NAME",
                     "suggestions": ["Provide name parameter for the new library"],
@@ -353,6 +358,7 @@ async def plex_library(
             if not library_type:
                 return {
                     "success": False,
+                    "message": "library_type is required for create operation",
                     "error": "library_type is required for create operation",
                     "error_code": "MISSING_LIBRARY_TYPE",
                     "suggestions": ["Provide library_type: movie, show, music, or photo"],
@@ -360,6 +366,7 @@ async def plex_library(
             if not path:
                 return {
                     "success": False,
+                    "message": "path is required for create operation",
                     "error": "path is required for create operation",
                     "error_code": "MISSING_PATH",
                     "suggestions": ["Provide path parameter for the media folder"],
@@ -377,6 +384,7 @@ async def plex_library(
             if result is None:
                 return {
                     "success": False,
+                    "message": "Library creation not fully supported via Plex API",
                     "error": "Library creation not fully supported via Plex API",
                     "error_code": "NOT_SUPPORTED",
                     "suggestions": [
@@ -395,6 +403,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for update operation",
                     "error": "library_id is required for update operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to update"],
@@ -415,6 +424,7 @@ async def plex_library(
             if not update_kwargs:
                 return {
                     "success": False,
+                    "message": "At least one update field (name, agent, scanner, language, thumb) is required",
                     "error": "At least one update field (name, agent, scanner, language, thumb) is required",
                     "error_code": "MISSING_UPDATE_FIELDS",
                     "suggestions": ["Provide at least one field to update"],
@@ -424,7 +434,7 @@ async def plex_library(
             if result is None:
                 return {
                     "success": False,
-                    "error": f"Failed to update library {library_id}",
+                    "message": f"Failed to update library {library_id}",
                     "error_code": "UPDATE_FAILED",
                     "suggestions": [
                         "Verify library_id is correct",
@@ -444,6 +454,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for delete operation",
                     "error": "library_id is required for delete operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to delete"],
@@ -462,6 +473,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for optimize operation",
                     "error": "library_id is required for optimize operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to optimize"],
@@ -480,6 +492,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for add_location operation",
                     "error": "library_id is required for add_location operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to add location"],
@@ -487,6 +500,7 @@ async def plex_library(
             if not path:
                 return {
                     "success": False,
+                    "message": "path is required for add_location operation",
                     "error": "path is required for add_location operation",
                     "error_code": "MISSING_PATH",
                     "suggestions": ["Provide path parameter for the new location"],
@@ -506,6 +520,7 @@ async def plex_library(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for remove_location operation",
                     "error": "library_id is required for remove_location operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id to remove location"],
@@ -513,6 +528,7 @@ async def plex_library(
             if not path:
                 return {
                     "success": False,
+                    "message": "path is required for remove_location operation",
                     "error": "path is required for remove_location operation",
                     "error_code": "MISSING_PATH",
                     "suggestions": ["Provide path parameter for the location to remove"],
@@ -541,7 +557,7 @@ async def plex_library(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: list, get, create, update, delete, scan, refresh, optimize, empty_trash, add_location, remove_location, clean_bundles",
@@ -553,6 +569,7 @@ async def plex_library(
         logger.exception("Error in plex_library operation '{operation}':")
         return {
             "success": False,
+            "message": str(e),
             "error": str(e),
             "error_code": "EXECUTION_ERROR",
             "operation": operation,

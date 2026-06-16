@@ -9,7 +9,6 @@ from typing import Any
 import httpx
 
 logger = logging.getLogger(__name__)
-
 DEFAULT_YAHBOOM_MCP_URL = "http://127.0.0.1:10892"
 
 
@@ -62,12 +61,21 @@ class YahboomMcpClient:
                 detail = payload.get("detail", detail)
             except Exception:
                 pass
-            return {"success": False, "error": str(detail), "status_code": exc.response.status_code}
+            return {
+                "success": False,
+                "message": str(detail),
+                "error": str(detail),
+                "status_code": exc.response.status_code,
+            }
         except httpx.RequestError as exc:
-            return {"success": False, "error": f"yahboom-mcp unreachable at {self.base_url}: {exc}"}
+            return {
+                "success": False,
+                "message": f"yahboom-mcp unreachable at {self.base_url}: {exc}",
+                "error": f"yahboom-mcp unreachable at {self.base_url}: {exc}",
+            }
         except Exception as exc:
             logger.exception("Yahboom MCP request failed: %s %s", method, path)
-            return {"success": False, "error": str(exc)}
+            return {"success": False, "message": str(exc), "error": str(exc)}
 
     async def health(self) -> dict[str, Any]:
         return await self._request("GET", "/api/v1/health")

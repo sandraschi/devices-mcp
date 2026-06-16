@@ -283,7 +283,7 @@ class PetcubeCamera(BaseCamera):
         try:
             result = await self.api.dispense_treat(self.device_id, amount)
         except Exception as e:
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
         else:
             return {
                 "success": True,

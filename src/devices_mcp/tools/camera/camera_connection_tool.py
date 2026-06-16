@@ -62,7 +62,7 @@ class CameraConnectionTool(BaseTool):
                 return await self._set_active_camera(camera_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'connect', 'disconnect', or 'set_active'",
+                "message": f"Invalid operation: {operation}. Must be 'connect', 'disconnect', or 'set_active'",
                 "timestamp": time.time(),
             }
 
@@ -70,6 +70,7 @@ class CameraConnectionTool(BaseTool):
             logger.exception(f"Camera connection {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "camera_id": camera_id,

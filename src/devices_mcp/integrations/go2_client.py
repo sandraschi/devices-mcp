@@ -134,7 +134,7 @@ class UnitreeGo2Client:
             return {"success": True, "ip_address": self.ip_address, "mock_mode": False}
         except Exception as e:
             logger.exception("Failed to connect to Unitree Go2:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     async def disconnect(self):
         """Disconnect from robot"""
@@ -150,7 +150,7 @@ class UnitreeGo2Client:
             Status dict with battery, position, sensors, etc.
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected to robot"}
+            return {"success": False, "message": "Not connected to robot", "error": "Not connected to robot"}
 
         if self.mock_mode:
             import random
@@ -188,7 +188,7 @@ class UnitreeGo2Client:
             Stand command result
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info("Mock: Go2 standing up")
@@ -207,7 +207,7 @@ class UnitreeGo2Client:
             Sit command result
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info("Mock: Go2 sitting down")
@@ -238,7 +238,7 @@ class UnitreeGo2Client:
             Movement confirmation
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info(f"Mock move: x={linear_x}, y={linear_y}, rot={angular_z}, gait={gait}")
@@ -284,7 +284,7 @@ class UnitreeGo2Client:
             Patrol status
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info(f"Mock patrol started: route={route}")
@@ -317,7 +317,7 @@ class UnitreeGo2Client:
             Docking status
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info("Mock: Go2 returning to dock")
@@ -331,6 +331,7 @@ class UnitreeGo2Client:
                 return {"success": True, "docking_status": "success", "mock_mode": True}
             return {
                 "success": False,
+                "message": "Docking failed - navigation issue",
                 "error": "Docking failed - navigation issue",
                 "suggestion": "Clear path to dock",
                 "mock_mode": True,

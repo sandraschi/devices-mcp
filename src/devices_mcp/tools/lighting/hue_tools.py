@@ -1,6 +1,5 @@
 """
 Philips Hue Lighting Control Tools for Devices MCP
-
 This module provides MCP tools for controlling Philips Hue lights, groups, and scenes.
 """
 
@@ -17,7 +16,6 @@ from ...config import get_config
 from ...tools.base_tool import BaseTool, ToolCategory, tool
 
 logger = logging.getLogger(__name__)
-
 # Hue Bridge Pro (BSB003) and newer bridges require HTTPS on port 443 for the v1 local API.
 HUE_HTTPS_MODEL_IDS = frozenset({"BSB003"})
 
@@ -78,7 +76,6 @@ async def probe_hue_bridge(bridge_ip: str) -> dict[str, Any]:
     if not ip:
         result["error"] = "bridge_ip is empty"
         return result
-
     async with httpx.AsyncClient(verify=False, timeout=12.0) as client:
         try:
             resp = await client.get(f"https://{ip}/api/config")
@@ -96,7 +93,6 @@ async def probe_hue_bridge(bridge_ip: str) -> dict[str, Any]:
                     return result
         except Exception as exc:
             result["https_error"] = str(exc)
-
         try:
             resp = await client.get(f"http://{ip}/api/config")
             if resp.status_code == 200:
@@ -111,7 +107,6 @@ async def probe_hue_bridge(bridge_ip: str) -> dict[str, Any]:
                     return result
         except Exception as exc:
             result["http_error"] = str(exc)
-
     if not result["reachable"]:
         result["error"] = result.get("https_error") or result.get("http_error") or "Bridge not reachable"
     return result
@@ -121,7 +116,6 @@ async def validate_hue_username(bridge_ip: str, username: str, bridge: Any | Non
     """Return (ok, error_message). Detects stale credentials after bridge replacement."""
     if not username:
         return False, "Hue API username missing — pair with the link button."
-
     if bridge is not None:
         try:
             payload = bridge.request("GET", f"/api/{username}/config")
@@ -140,7 +134,6 @@ async def validate_hue_username(bridge_ip: str, username: str, bridge: Any | Non
             payload = resp.json()
         except Exception as exc:
             return False, f"Cannot validate Hue username: {exc}"
-
     err = _hue_api_error(payload)
     if err:
         if err.get("type") == 1:
@@ -206,7 +199,6 @@ async def hue_clip_v2_get(
     resource_path: str,
 ) -> tuple[int, Any | None, str | None]:
     """GET ``/clip/v2/resource/{resource_path}`` (Signify Hue API v2).
-
     Uses the v1 local API username as ``hue-application-key``. Tries HTTPS first
     (bridge self-signed cert), then HTTP.
     """
@@ -266,14 +258,12 @@ try:
                 from phue import PhueRequestTimeout
 
                 raise PhueRequestTimeout(None, error) from exc
-
             result = connection.getresponse()
             response = result.read()
             connection.close()
             response_text = response.decode("utf-8")
             logger.debug(response_text)
             return json.loads(response_text)
-
 except ImportError:
     PHUE_AVAILABLE = False
     Bridge = None  # type: ignore[assignment, misc]
@@ -342,7 +332,6 @@ class HueScene(BaseModel):
 
 class HueManager:
     """Manager for Philips Hue lights, groups, and scenes.
-
     Uses caching to avoid slow bridge queries on every operation.
     Call rescan() to refresh the cache when needed.
     """
@@ -374,20 +363,16 @@ class HueManager:
                 self._connection_error = "phue library not installed. Install with: pip install phue"
                 logger.warning(self._connection_error)
                 return False
-
             # Load configuration (YAML overrides hue_bridge.cache)
             cfg = get_config() or {}
             hue_cfg = cfg.get("lighting", {}).get("philips_hue", {})
-
             if hue_cfg.get("enabled") is False:
                 self._connection_error = "Philips Hue is disabled in config (lighting.philips_hue.enabled)"
                 logger.info(self._connection_error)
                 return False
-
             cache = load_hue_bridge_cache()
             bridge_ip = hue_cfg.get("bridge_ip") or cache.get("bridge_ip")
             bridge_username = hue_cfg.get("username") or cache.get("username")
-
             if not bridge_ip:
                 self._connection_error = (
                     "Hue Bridge IP not set. Use the Lighting page to discover the bridge or "
@@ -395,16 +380,13 @@ class HueManager:
                 )
                 logger.warning(self._connection_error)
                 return False
-
             self._bridge_ip = str(bridge_ip).strip()
             self._bridge_username = str(bridge_username).strip() if bridge_username else None
-
             probe = await probe_hue_bridge(self._bridge_ip)
             if not probe.get("reachable"):
                 self._connection_error = probe.get("error") or f"Cannot reach Hue Bridge at {self._bridge_ip}"
                 logger.warning(self._connection_error)
                 return False
-
             self._requires_https = bool(probe.get("requires_https"))
             self._bridge_model = probe.get("modelid")
             self._bridge_name = probe.get("name")
@@ -414,7 +396,6 @@ class HueManager:
                 self._bridge_model,
                 self._requires_https,
             )
-
             # Connect to bridge
             try:
                 if self._bridge_username:
@@ -445,7 +426,6 @@ class HueManager:
                 if "link button not pressed" in str(e).lower():
                     self._connection_error += " - Press the button on your Hue Bridge and try again"
                 return False
-
             save_hue_bridge_cache(
                 {
                     **cache,
@@ -456,20 +436,17 @@ class HueManager:
                     "name": self._bridge_name,
                 }
             )
-
             # Skip initial discovery - do lazy loading instead
             # This makes initialization near-instant instead of 10-30 seconds
             self.lights.clear()
             self.groups.clear()
             self.scenes.clear()
-
             self._initialized = True
             self._cache_loaded = False  # Will load on first access
             self._last_scan_time = None
             logger.info("Philips Hue bridge connection initialized (lazy loading enabled)")
             await self._probe_clip_v2()
             return True
-
         except Exception as e:
             logger.exception("Failed to initialize Philips Hue")
             self._connection_error = str(e)
@@ -510,21 +487,18 @@ class HueManager:
         sec_err: str | None = None
         conv: list[dict[str, Any]] = []
         sec: list[dict[str, Any]] = []
-
         c1, p1, e1 = await hue_clip_v2_get(self._bridge_ip, self._bridge_username, "convenience_area_motion")
         if c1 == 200 and p1 is not None:
             conv = _clip_v2_data_rows(p1)
             conv_err = _clip_v2_errors_hint(p1)
         else:
             conv_err = e1 or f"HTTP {c1}"
-
         c2, p2, e2 = await hue_clip_v2_get(self._bridge_ip, self._bridge_username, "security_area_motion")
         if c2 == 200 and p2 is not None:
             sec = _clip_v2_data_rows(p2)
             sec_err = _clip_v2_errors_hint(p2)
         else:
             sec_err = e2 or f"HTTP {c2}"
-
         merge_err = conv_err or sec_err
         return conv, sec, merge_err
 
@@ -532,7 +506,6 @@ class HueManager:
         """Discover all Hue lights, groups, and scenes."""
         if not self._bridge:
             return
-
         try:
             # Discover lights (handle individual light errors gracefully)
             # Limit processing to essential data for faster startup
@@ -545,7 +518,6 @@ class HueManager:
                 except Exception as e:
                     logger.debug(f"Failed to process light {getattr(light, 'light_id', 'unknown')}: {e}")
                     # Continue with other lights even if one fails
-
             # Discover groups
             self.groups.clear()
             try:
@@ -558,7 +530,6 @@ class HueManager:
                         logger.warning(f"Failed to process group {getattr(group, 'group_id', 'unknown')}: {e}")
             except Exception as e:
                 logger.warning(f"Failed to discover groups: {e}")
-
             # Discover scenes
             self.scenes.clear()
             try:
@@ -571,21 +542,18 @@ class HueManager:
                         logger.warning(f"Failed to process scene {getattr(scene, 'scene_id', 'unknown')}: {e}")
             except Exception as e:
                 logger.warning(f"Failed to discover scenes: {e}")
-
             logger.info(
                 "Discovered %s lights, %s groups, %s scenes",
                 len(self.lights),
                 len(self.groups),
                 len(self.scenes),
             )
-
         except Exception:
             logger.exception("Failed to discover Hue devices")
             # Don't raise - return what we have
 
     def _create_light_from_bridge(self, light: Any) -> HueLight:
         """Create HueLight from phue Light object.
-
         Note: phue raises exceptions when accessing properties that don't exist
         for certain light types (e.g., colormode on white-only bulbs). We wrap
         all property accesses in try/except to handle this gracefully.
@@ -597,7 +565,6 @@ class HueManager:
         except Exception as e:
             logger.debug(f"Could not get brightness for light {light.name}: {e}")
         brightness_percent = int((brightness / 254) * 100) if brightness > 0 else 0
-
         # Get color temperature safely (not all lights support this)
         color_temp = 0
         color_temp_mireds = 0
@@ -609,7 +576,6 @@ class HueManager:
             color_temp_mireds = light.colortemp
         except Exception as e:
             logger.debug(f"Could not get color temp mireds for light {light.name}: {e}")
-
         # Get XY color coordinates safely (color bulbs only)
         xy = []
         rgb = []
@@ -621,7 +587,6 @@ class HueManager:
                 rgb = self._xy_to_rgb(xy[0], xy[1], brightness) if len(xy) >= 2 else [255, 255, 255]
         except Exception as e:
             logger.debug(f"Could not get XY color for light {light.name}: {e}")
-
         # Get hue and saturation safely (color bulbs only)
         hue = 0
         saturation = 0
@@ -633,7 +598,6 @@ class HueManager:
             saturation = light.saturation
         except Exception:
             pass
-
         # Get color mode safely - determines if bulb is color-capable
         # Possible values: 'xy', 'ct' (color temp), 'hs' (hue/sat), or None for white-only
         color_mode = "none"  # Default for white-only bulbs
@@ -641,7 +605,6 @@ class HueManager:
             color_mode = light.colormode or "none"
         except Exception:
             pass  # White-only bulbs don't have colormode
-
         # Get model info safely
         model = "Unknown"
         manufacturer = "Philips"
@@ -653,14 +616,12 @@ class HueManager:
             manufacturer = light.manufacturername or "Philips"
         except Exception:
             pass
-
         # Get reachable status safely
         reachable = True
         try:
             reachable = light.reachable
         except Exception:
             pass
-
         return HueLight(
             light_id=str(light.light_id),
             name=light.name,
@@ -684,7 +645,6 @@ class HueManager:
 
     def _create_group_from_bridge(self, group: Any) -> HueGroup:
         """Create HueGroup from phue Group object.
-
         Note: phue raises exceptions when accessing certain properties,
         so we wrap all accesses in try/except.
         """
@@ -694,12 +654,10 @@ class HueManager:
             light_ids = [str(lid) for lid in group.lights]
         except Exception:
             pass
-
         # Calculate group state from individual lights
         on = False
         total_brightness = 0
         reachable_count = 0
-
         for light_id in light_ids:
             if light_id in self.lights:
                 light = self.lights[light_id]
@@ -708,23 +666,19 @@ class HueManager:
                     total_brightness += light.brightness
                 if light.reachable:
                     reachable_count += 1
-
         avg_brightness = int(total_brightness / len(light_ids)) if light_ids else 0
-
         # Get group name safely
         name = "Unknown"
         try:
             name = group.name or "Unknown"
         except Exception:
             pass
-
         # Get group type safely - phue raises exception if not available
         group_type = "Room"
         try:
             group_type = group.type or "Room"
         except Exception:
             pass  # Default to "Room" if type property not accessible
-
         return HueGroup(
             group_id=str(group.group_id),
             name=name,
@@ -738,7 +692,6 @@ class HueManager:
     def _create_scene_from_bridge(self, scene: Any) -> HueScene:
         """Create HueScene from phue Scene object."""
         light_ids = [str(lid) for lid in scene.lights] if hasattr(scene, "lights") else []
-
         return HueScene(
             scene_id=scene.scene_id,
             name=scene.name,
@@ -751,14 +704,12 @@ class HueManager:
         """
         Poll MotionAware motion areas via Hue CLIP v2 (Signify ``convenience_area_motion`` /
         ``security_area_motion``).
-
         Emits events on false-to-true motion edges per area (same poll interval as caller).
         """
         if not self._initialized:
             await self.initialize()
         if not self._clip_v2_available:
             return []
-
         motion_events: list[dict[str, Any]] = []
         try:
             conv, sec, _err = await self._fetch_motionaware_area_lists()
@@ -796,24 +747,20 @@ class HueManager:
         """MotionAware status from Signify Hue API v2 (motion areas configured in the Hue app)."""
         if not self._initialized:
             await self.initialize()
-
         base: dict[str, Any] = {
             "feature": "MotionAware",
             "api": "hue_clip_v2",
             "clip_v2_available": self._clip_v2_available,
             "clip_v2_error": self._clip_v2_error,
         }
-
         if not self._bridge_ip or not self._bridge_username:
             return {**base, "enabled": False, "reason": "Bridge not configured"}
-
         if not self._clip_v2_available:
             return {
                 **base,
                 "enabled": False,
                 "reason": self._clip_v2_error or "Hue CLIP v2 not available",
             }
-
         conv, sec, err = await self._fetch_motionaware_area_lists()
         conv_areas = [
             {
@@ -847,23 +794,19 @@ class HueManager:
         """Get all discovered lights (from cache, with auto-rescan if stale)."""
         if not self._initialized:
             await self.initialize()
-
         # Auto-rescan if cache is older than 30 minutes OR if we have no cache at all
         # Removed the flawed "all lights off" logic that caused constant rescanning
         now = datetime.now()
         cache_age_minutes = (now - self._last_scan_time).total_seconds() / 60 if self._last_scan_time else float("inf")
-
         if not self.lights or cache_age_minutes > 10:
             logger.info(f"Cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning...")
             await self.rescan()
-
         return list(self.lights.values())
 
     async def get_light(self, light_id: str) -> HueLight | None:
         """Get a specific light by ID (from cache, fast)."""
         if not self._initialized:
             await self.initialize()
-        # Return from cache - don't do full discovery on every get
         return self.lights.get(light_id)
 
     def _get_light_by_id(self, light_id: int):
@@ -875,25 +818,21 @@ class HueManager:
 
     def _xy_to_rgb(self, x: float, y: float, brightness: int = 254) -> list[int]:
         """Convert CIE 1931 XY color space to RGB for Hue lights.
-
         Converts XY coordinates back to RGB for display purposes.
         Uses sRGB color space with D65 white point.
         """
         try:
             # Normalize brightness (0-254 to 0-1)
             brightness_norm = brightness / 254.0 if brightness > 0 else 1.0
-
             # Convert xy to XYZ (using Y as brightness)
             # We need to reconstruct Z from x, y, and Y
             # x = X / (X + Y + Z), y = Y / (X + Y + Z)
             # If we set Y = brightness_norm, we can solve for X and Z
             if y == 0:
                 return [255, 255, 255]  # Avoid division by zero
-
             Y = brightness_norm
             X = (x / y) * Y
             Z = ((1 - x - y) / y) * Y
-
             # Convert XYZ to linear RGB (inverse of sRGB to XYZ matrix)
             r_linear = X * 3.2404542 + Y * -1.5371385 + Z * -0.4985314
             g_linear = X * -0.9692660 + Y * 1.8760108 + Z * 0.0415560
@@ -908,12 +847,10 @@ class HueManager:
             r_norm = max(0.0, min(1.0, inv_gamma_correct(r_linear)))
             g_norm = max(0.0, min(1.0, inv_gamma_correct(g_linear)))
             b_norm = max(0.0, min(1.0, inv_gamma_correct(b_linear)))
-
             # Convert to 0-255 RGB
             r = round(r_norm * 255)
             g = round(g_norm * 255)
             b = round(b_norm * 255)
-
             return [r, g, b]
         except Exception:
             logger.exception("Failed to convert XY to RGB")
@@ -921,7 +858,6 @@ class HueManager:
 
     def _rgb_to_xy(self, r: int, g: int, b: int) -> list[float] | None:
         """Convert RGB (0-255) to CIE 1931 XY color space for Hue lights.
-
         Based on Philips Hue API specification for RGB to XY conversion.
         Uses sRGB color space with D65 white point.
         """
@@ -940,25 +876,20 @@ class HueManager:
             r_gamma = gamma_correct(r_norm)
             g_gamma = gamma_correct(g_norm)
             b_gamma = gamma_correct(b_norm)
-
             # Convert to XYZ color space (sRGB to XYZ matrix, D65 white point)
             x = r_gamma * 0.4124564 + g_gamma * 0.3575761 + b_gamma * 0.1804375
             y = r_gamma * 0.2126729 + g_gamma * 0.7151522 + b_gamma * 0.0721750
             z = r_gamma * 0.0193339 + g_gamma * 0.1191920 + b_gamma * 0.9503041
-
             # Convert XYZ to xy (chromaticity coordinates)
             total = x + y + z
             if total == 0:
                 return None
-
             x_xy = x / total
             y_xy = y / total
-
             # Hue lights use a specific color gamut (most use Gamut B)
             # Clamp to valid range for Hue lights (approximate)
             x_xy = max(0.0, min(1.0, x_xy))
             y_xy = max(0.0, min(1.0, y_xy))
-
             return [round(x_xy, 4), round(y_xy, 4)]
         except Exception:
             logger.exception("Failed to convert RGB to XY")
@@ -985,32 +916,26 @@ class HueManager:
         """Set light state."""
         if not self._bridge:
             raise RuntimeError("Hue Bridge not connected")
-
         try:
             light = self._get_light_by_id(int(light_id))
             if not light:
                 raise ValueError(f"Light {light_id} not found")
-
             # Set power state
             if on is not None:
                 light.on = on
-
             # Set brightness (accept both 0-254 and 0-100)
             if brightness is not None:
                 light.brightness = max(0, min(254, brightness))
             elif brightness_percent is not None:
                 light.brightness = int((brightness_percent / 100) * 254)
-
             # Set color temperature (mireds)
             if color_temp is not None:
                 light.colortemp_k = color_temp
-
             # Set hue and saturation
             if hue is not None:
                 light.hue = hue
             if saturation is not None:
                 light.saturation = saturation
-
             # Set RGB (convert to XY)
             if rgb and len(rgb) == 3:
                 # Convert RGB to XY color space (CIE 1931)
@@ -1023,7 +948,6 @@ class HueManager:
                         light.colormode = "xy"
                     except Exception:
                         pass  # Some lights may not support setting colormode
-
             # Update local cache instead of re-querying entire bridge
             # The phue library sends the command directly, we just update our cache
             if light_id in self.lights:
@@ -1046,9 +970,7 @@ class HueManager:
                     if xy:
                         self.lights[light_id].xy = xy
                         self.lights[light_id].color_mode = "xy"
-
             return True
-
         except Exception:
             logger.exception(f"Failed to set light {light_id} state")
             raise
@@ -1057,30 +979,24 @@ class HueManager:
         """Get all groups/rooms (from cache, with auto-rescan if stale)."""
         if not self._initialized:
             await self.initialize()
-
         # Use same time-based staleness check as lights
         now = datetime.now()
         cache_age_minutes = (now - self._last_scan_time).total_seconds() / 60 if self._last_scan_time else float("inf")
-
         if not self.groups or cache_age_minutes > 10:
             logger.info(f"Groups cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning...")
             await self.rescan()
-
         return list(self.groups.values())
 
     async def get_all_scenes(self) -> list[HueScene]:
         """Get all scenes (from cache, with auto-rescan if stale)."""
         if not self._initialized:
             await self.initialize()
-
         # Use same time-based staleness check as lights/groups
         now = datetime.now()
         cache_age_minutes = (now - self._last_scan_time).total_seconds() / 60 if self._last_scan_time else float("inf")
-
         if not self.scenes or cache_age_minutes > 10:
             logger.info(f"Scenes cache is stale (age: {cache_age_minutes:.1f} minutes), rescanning...")
             await self.rescan()
-
         return list(self.scenes.values())
 
     async def rescan(self) -> dict[str, int]:
@@ -1091,11 +1007,9 @@ class HueManager:
             if not init_success:
                 error_msg = self._connection_error or "Hue Bridge not connected"
                 raise RuntimeError(error_msg)
-
         if not self._bridge:
             error_msg = self._connection_error or "Hue Bridge not connected"
             raise RuntimeError(error_msg)
-
         # Add timeout protection to prevent hanging
         try:
             import asyncio
@@ -1107,11 +1021,9 @@ class HueManager:
         except Exception:
             logger.exception("Hue bridge rescan failed")
             raise
-
         self._last_scan_time = datetime.now()
         self._cache_loaded = True
         await self._probe_clip_v2()
-
         return {
             "lights": len(self.lights),
             "groups": len(self.groups),
@@ -1128,28 +1040,22 @@ class HueManager:
         """Set group/room state."""
         if not self._bridge:
             raise RuntimeError("Hue Bridge not connected")
-
         try:
             group = self._get_group_by_id(int(group_id))
             if not group:
                 raise ValueError(f"Group {group_id} not found")
-
             if on is not None:
                 group.on = on
-
             if brightness is not None:
                 brightness_val = max(0, min(254, brightness))
                 group.brightness = brightness_val
-
             # Update local cache instead of re-querying entire bridge
             if group_id in self.groups:
                 if on is not None:
                     self.groups[group_id].on = on
                 if brightness is not None:
                     self.groups[group_id].brightness = brightness
-
             return True
-
         except Exception:
             logger.exception(f"Failed to set group {group_id} state")
             raise
@@ -1158,7 +1064,6 @@ class HueManager:
         """Activate a scene."""
         if not self._bridge:
             raise RuntimeError("Hue Bridge not connected")
-
         try:
             # Find scene by iterating through scenes
             scene = None
@@ -1166,10 +1071,8 @@ class HueManager:
                 if s.scene_id == scene_id:
                     scene = s
                     break
-
             if not scene:
                 raise ValueError(f"Scene {scene_id} not found")
-
             # Determine which group to use
             target_group_id = None
             if group_id:
@@ -1191,18 +1094,14 @@ class HueManager:
                             if scene_light_ids.intersection(group_light_ids):
                                 target_group_id = grp.group_id
                                 break
-
             if target_group_id is None:
                 raise ValueError(f"Could not determine group for scene {scene_id}")
-
             # Activate scene using the bridge's set_group method
             # The phue Group object's .scene property doesn't work for activation
             # Must use bridge.set_group(group_id, 'scene', scene_id)
             self._bridge.set_group(target_group_id, "scene", scene_id)
-
             logger.info(f"Activated scene {scene_id} on group {target_group_id}")
             return True
-
         except Exception:
             logger.exception("Failed to activate scene")
             raise
@@ -1273,34 +1172,40 @@ async def pair_philips_hue_bridge(bridge_ip: str) -> dict[str, Any]:
     cfg = get_config() or {}
     hue_cfg = (cfg.get("lighting") or {}).get("philips_hue") or {}
     if hue_cfg.get("enabled") is False:
-        return {"success": False, "error": "Philips Hue is disabled in config (lighting.philips_hue.enabled)."}
-
+        return {
+            "success": False,
+            "message": "Philips Hue is disabled in config (lighting.philips_hue.enabled).",
+            "error": "Philips Hue is disabled in config (lighting.philips_hue.enabled).",
+        }
     ip = bridge_ip.strip()
     if not ip:
-        return {"success": False, "error": "bridge_ip is required"}
-
+        return {"success": False, "message": "bridge_ip is required", "error": "bridge_ip is required"}
     probe = await probe_hue_bridge(ip)
     if not probe.get("reachable"):
-        return {"success": False, "error": probe.get("error") or f"Cannot reach bridge at {ip}"}
-
+        msg = probe.get("error") or f"Cannot reach bridge at {ip}"
+        return {"success": False, "message": msg, "error": msg}
     scheme = "https" if probe.get("requires_https") else "http"
     url = f"{scheme}://{ip}/api"
     payload = {"devicetype": "devices-mcp#web"}
-
     try:
         async with httpx.AsyncClient(verify=False, timeout=20.0) as client:
             resp = await client.post(url, json=payload)
     except Exception as e:
-        return {"success": False, "error": f"Cannot reach bridge at {ip}: {e}"}
-
+        return {
+            "success": False,
+            "message": f"Cannot reach bridge at {ip}: {e}",
+            "error": f"Cannot reach bridge at {ip}: {e}",
+        }
     try:
         data = resp.json()
     except Exception:
-        return {"success": False, "error": f"Invalid response (HTTP {resp.status_code})"}
-
+        return {
+            "success": False,
+            "message": f"Invalid response (HTTP {resp.status_code})",
+            "error": f"Invalid response (HTTP {resp.status_code})",
+        }
     if not isinstance(data, list):
-        return {"success": False, "error": "Unexpected bridge response"}
-
+        return {"success": False, "message": "Unexpected bridge response", "error": "Unexpected bridge response"}
     username: str | None = None
     for item in data:
         if not isinstance(item, dict):
@@ -1312,6 +1217,7 @@ async def pair_philips_hue_bridge(bridge_ip: str) -> dict[str, Any]:
             if typ == 101:
                 return {
                     "success": False,
+                    "message": "Link button not pressed on the bridge",
                     "error": "Link button not pressed on the bridge",
                     "needs_button": True,
                     "hint": (
@@ -1319,15 +1225,17 @@ async def pair_philips_hue_bridge(bridge_ip: str) -> dict[str, Any]:
                         "then tap Pair again within about 30 seconds. The phone app does not replace this step."
                     ),
                 }
-            return {"success": False, "error": desc or str(err)}
+            return {"success": False, "message": desc or str(err), "error": desc or str(err)}
         if "success" in item:
             su = item["success"]
             if isinstance(su, dict) and su.get("username"):
                 username = str(su["username"])
-
     if not username:
-        return {"success": False, "error": "No username in bridge response"}
-
+        return {
+            "success": False,
+            "message": "No username in bridge response",
+            "error": "No username in bridge response",
+        }
     cache = load_hue_bridge_cache()
     cache["bridge_ip"] = ip
     cache["username"] = username
@@ -1335,13 +1243,13 @@ async def pair_philips_hue_bridge(bridge_ip: str) -> dict[str, Any]:
     cache["modelid"] = probe.get("modelid")
     cache["name"] = probe.get("name")
     save_hue_bridge_cache(cache)
-
     reset_hue_manager()
     mgr = get_hue_manager()
     ok = await mgr.initialize()
     if not ok:
         return {
             "success": False,
+            "message": mgr._connection_error or "Initialization failed after pairing",
             "error": mgr._connection_error or "Initialization failed after pairing",
             "username_saved": True,
         }
@@ -1450,7 +1358,11 @@ class GetHomeAwareStatus(BaseTool):
             status = await hue_manager.get_homeaware_status()
             return {"success": True, "motionaware": status, "homeaware": status}
         except Exception as e:
-            return {"success": False, "error": f"Failed to get MotionAware status: {e}"}
+            return {
+                "success": False,
+                "message": f"Failed to get MotionAware status: {e}",
+                "error": f"Failed to get MotionAware status: {e}",
+            }
 
 
 @tool()
@@ -1467,7 +1379,6 @@ class MonitorHomeAwareMotion(BaseTool):
         """Poll MotionAware motion areas (CLIP v2)."""
         try:
             motion_events = await hue_manager.monitor_homeaware_motion()
-
             if motion_events:
                 return {
                     "success": True,
@@ -1482,4 +1393,8 @@ class MonitorHomeAwareMotion(BaseTool):
                 "message": "No new motion edges",
             }
         except Exception as e:
-            return {"success": False, "error": f"Failed to monitor motion: {e}"}
+            return {
+                "success": False,
+                "message": f"Failed to monitor motion: {e}",
+                "error": f"Failed to monitor motion: {e}",
+            }

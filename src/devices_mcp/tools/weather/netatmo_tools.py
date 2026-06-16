@@ -111,7 +111,7 @@ class GetNetatmoStationsTool(BaseTool):
 
         except Exception as e:
             logger.exception("Failed to get Netatmo stations")
-            return {"success": False, "error": str(e), "stations": [], "timestamp": time.time()}
+            return {"success": False, "message": str(e), "error": str(e), "stations": [], "timestamp": time.time()}
 
     async def _discover_stations(self) -> list[NetatmoWeatherStation]:
         """Simulate Netatmo stations discovery."""
@@ -215,6 +215,7 @@ class GetNetatmoWeatherDataTool(BaseTool):
             logger.exception("Failed to get weather data")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "station_id": station_id,
                 "data": None,
@@ -317,7 +318,7 @@ class GetNetatmoHistoricalDataTool(BaseTool):
 
         except Exception as e:
             logger.exception("Failed to get historical data")
-            return {"success": False, "error": str(e), "data": [], "timestamp": time.time()}
+            return {"success": False, "message": str(e), "error": str(e), "data": [], "timestamp": time.time()}
 
     async def _generate_historical_data(self, data_type: str, time_range: str) -> list[dict[str, Any]]:
         """Generate simulated historical data."""
@@ -431,7 +432,7 @@ class ConfigureNetatmoAlertsTool(BaseTool):
             if alert_type not in valid_types:
                 return {
                     "success": False,
-                    "error": f"Invalid alert type. Must be one of: {valid_types}",
+                    "message": f"Invalid alert type. Must be one of: {valid_types}",
                     "timestamp": time.time(),
                 }
 
@@ -440,7 +441,7 @@ class ConfigureNetatmoAlertsTool(BaseTool):
             if comparison not in valid_comparisons:
                 return {
                     "success": False,
-                    "error": f"Invalid comparison operator. Must be one of: {valid_comparisons}",
+                    "message": f"Invalid comparison operator. Must be one of: {valid_comparisons}",
                     "timestamp": time.time(),
                 }
 
@@ -465,7 +466,7 @@ class ConfigureNetatmoAlertsTool(BaseTool):
 
         except Exception as e:
             logger.exception("Failed to configure alert")
-            return {"success": False, "error": str(e), "timestamp": time.time()}
+            return {"success": False, "message": str(e), "error": str(e), "timestamp": time.time()}
 
 
 @tool("get_netatmo_health_report")
@@ -513,7 +514,7 @@ class GetNetatmoHealthReportTool(BaseTool):
 
         except Exception as e:
             logger.exception("Failed to generate health report")
-            return {"success": False, "error": str(e), "timestamp": time.time()}
+            return {"success": False, "message": str(e), "error": str(e), "timestamp": time.time()}
 
     async def _get_station_data(self, _station_id: str, _module_type: str) -> dict[str, Any]:
         """Get station data (reused from other tools)."""

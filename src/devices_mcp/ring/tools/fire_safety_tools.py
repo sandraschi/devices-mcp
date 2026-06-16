@@ -134,7 +134,7 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error getting fire alarm status:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     @app.tool(
         name="test_fire_safety_system",
@@ -251,4 +251,4 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error testing fire safety system:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}

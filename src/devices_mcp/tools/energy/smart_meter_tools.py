@@ -65,6 +65,7 @@ class SmartMeterStatusTool(BaseTool):
             if not service:
                 return {
                     "success": False,
+                    "message": "Smart meter service not available. Check configuration and adapter connection.",
                     "error": "Smart meter service not available. Check configuration and adapter connection.",
                     "timestamp": time.time(),
                 }
@@ -74,6 +75,7 @@ class SmartMeterStatusTool(BaseTool):
             if not meter_info:
                 return {
                     "success": False,
+                    "message": "Unable to discover smart meter. Check adapter connection and security key.",
                     "error": "Unable to discover smart meter. Check adapter connection and security key.",
                     "timestamp": time.time(),
                 }
@@ -83,6 +85,7 @@ class SmartMeterStatusTool(BaseTool):
             if not reading:
                 return {
                     "success": False,
+                    "message": "Unable to fetch current reading from smart meter.",
                     "error": "Unable to fetch current reading from smart meter.",
                     "meter_info": meter_info,
                     "timestamp": time.time(),
@@ -106,6 +109,7 @@ class SmartMeterStatusTool(BaseTool):
             logger.exception("Smart meter status query failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "timestamp": time.time(),
             }
@@ -148,6 +152,7 @@ class SmartMeterConsumptionTool(BaseTool):
             if not service:
                 return {
                     "success": False,
+                    "message": "Smart meter service not available.",
                     "error": "Smart meter service not available.",
                     "timestamp": time.time(),
                 }
@@ -193,6 +198,7 @@ class SmartMeterConsumptionTool(BaseTool):
             logger.exception("Smart meter consumption query failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "timestamp": time.time(),
             }
@@ -235,6 +241,7 @@ class SmartMeterCostTool(BaseTool):
             if not service:
                 return {
                     "success": False,
+                    "message": "Smart meter service not available.",
                     "error": "Smart meter service not available.",
                     "timestamp": time.time(),
                 }
@@ -260,6 +267,7 @@ class SmartMeterCostTool(BaseTool):
                 else:
                     return {
                         "success": False,
+                        "message": "Unable to fetch current reading. Please provide energy_kwh parameter.",
                         "error": "Unable to fetch current reading. Please provide energy_kwh parameter.",
                         "timestamp": time.time(),
                     }
@@ -285,6 +293,7 @@ class SmartMeterCostTool(BaseTool):
             logger.exception("Smart meter cost calculation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "timestamp": time.time(),
             }

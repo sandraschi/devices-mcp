@@ -575,7 +575,6 @@ async def get_doorbell_snapshot(device_id: str):
                 # Get last recording ID
                 last_id = await doorbell.async_get_last_recording_id()
                 if last_id:
-                    # Get recording URL for thumbnail
                     url = await doorbell.async_recording_url(last_id)
                     return {
                         "message": "Snapshot unavailable",

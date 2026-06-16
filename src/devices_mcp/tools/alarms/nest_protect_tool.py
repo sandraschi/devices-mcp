@@ -62,7 +62,7 @@ class NestProtectTool(BaseTool):
                 return await self._get_battery_status(device_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'status', 'alerts', or 'battery'",
+                "message": f"Invalid operation: {operation}. Must be 'status', 'alerts', or 'battery'",
                 "timestamp": time.time(),
             }
 
@@ -70,6 +70,7 @@ class NestProtectTool(BaseTool):
             logger.exception(f"Nest Protect {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -131,7 +132,7 @@ class NestProtectTool(BaseTool):
             if not device:
                 return {
                     "success": False,
-                    "error": f"Device {device_id} not found",
+                    "message": f"Device {device_id} not found",
                     "timestamp": time.time(),
                 }
             devices = [device]
@@ -261,7 +262,7 @@ class NestProtectTool(BaseTool):
             if not device:
                 return {
                     "success": False,
-                    "error": f"Device {device_id} not found",
+                    "message": f"Device {device_id} not found",
                     "timestamp": time.time(),
                 }
             devices = [device]

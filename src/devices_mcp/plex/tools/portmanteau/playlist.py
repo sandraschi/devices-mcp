@@ -225,6 +225,7 @@ async def plex_playlist(
             if not playlist_id:
                 return {
                     "success": False,
+                    "message": "playlist_id is required for get operation",
                     "error": "playlist_id is required for get operation",
                     "error_code": "MISSING_PLAYLIST_ID",
                     "suggestions": ["Use plex_playlist(operation='list') to find available playlist IDs"],
@@ -241,7 +242,7 @@ async def plex_playlist(
                 logger.exception("Error getting playlist {playlist_id}:")
                 return {
                     "success": False,
-                    "error": f"Playlist {playlist_id} not found: {e!s}",
+                    "message": f"Playlist {playlist_id} not found: {e!s}",
                     "error_code": "PLAYLIST_NOT_FOUND",
                     "suggestions": [
                         "Use plex_playlist(operation='list') to find valid playlist IDs",
@@ -254,6 +255,7 @@ async def plex_playlist(
             if not title:
                 return {
                     "success": False,
+                    "message": "title is required for create operation",
                     "error": "title is required for create operation",
                     "error_code": "MISSING_TITLE",
                     "suggestions": ["Provide title parameter (min 1 character, max 255)"],
@@ -261,6 +263,7 @@ async def plex_playlist(
             if not items:
                 return {
                     "success": False,
+                    "message": "items list is required for create operation",
                     "error": "items list is required for create operation",
                     "error_code": "MISSING_ITEMS",
                     "suggestions": ["Provide items parameter with list of media item IDs"],
@@ -278,6 +281,7 @@ async def plex_playlist(
             if not items_to_add:
                 return {
                     "success": False,
+                    "message": "No valid media items found to create playlist",
                     "error": "No valid media items found to create playlist",
                     "error_code": "NO_VALID_ITEMS",
                     "suggestions": [
@@ -305,6 +309,7 @@ async def plex_playlist(
             if not playlist_id:
                 return {
                     "success": False,
+                    "message": "playlist_id is required for update operation",
                     "error": "playlist_id is required for update operation",
                     "error_code": "MISSING_PLAYLIST_ID",
                     "suggestions": ["Provide playlist_id to update"],
@@ -333,6 +338,7 @@ async def plex_playlist(
                 logger.exception("Error updating playlist {playlist_id}:")
                 return {
                     "success": False,
+                    "message": f"Failed to update playlist: {e!s}",
                     "error": f"Failed to update playlist: {e!s}",
                     "error_code": "UPDATE_FAILED",
                     "suggestions": [
@@ -346,6 +352,7 @@ async def plex_playlist(
             if not playlist_id:
                 return {
                     "success": False,
+                    "message": "playlist_id is required for delete operation",
                     "error": "playlist_id is required for delete operation",
                     "error_code": "MISSING_PLAYLIST_ID",
                     "suggestions": ["Provide playlist_id to delete"],
@@ -364,6 +371,7 @@ async def plex_playlist(
                 logger.exception("Error deleting playlist {playlist_id}:")
                 return {
                     "success": False,
+                    "message": f"Failed to delete playlist: {e!s}",
                     "error": f"Failed to delete playlist: {e!s}",
                     "error_code": "DELETE_FAILED",
                     "suggestions": [
@@ -377,6 +385,7 @@ async def plex_playlist(
             if not playlist_id:
                 return {
                     "success": False,
+                    "message": "playlist_id is required for add_items operation",
                     "error": "playlist_id is required for add_items operation",
                     "error_code": "MISSING_PLAYLIST_ID",
                     "suggestions": ["Provide playlist_id to add items"],
@@ -384,6 +393,7 @@ async def plex_playlist(
             if not items:
                 return {
                     "success": False,
+                    "message": "items list is required for add_items operation",
                     "error": "items list is required for add_items operation",
                     "error_code": "MISSING_ITEMS",
                     "suggestions": ["Provide items parameter with list of media item IDs"],
@@ -404,6 +414,7 @@ async def plex_playlist(
                 if not items_to_add:
                     return {
                         "success": False,
+                        "message": "No valid media items found to add to playlist",
                         "error": "No valid media items found to add to playlist",
                         "error_code": "NO_VALID_ITEMS",
                         "suggestions": [
@@ -426,6 +437,7 @@ async def plex_playlist(
                 logger.exception("Error adding items to playlist {playlist_id}:")
                 return {
                     "success": False,
+                    "message": f"Failed to add items: {e!s}",
                     "error": f"Failed to add items: {e!s}",
                     "error_code": "ADD_ITEMS_FAILED",
                     "suggestions": [
@@ -439,6 +451,7 @@ async def plex_playlist(
             if not playlist_id:
                 return {
                     "success": False,
+                    "message": "playlist_id is required for remove_items operation",
                     "error": "playlist_id is required for remove_items operation",
                     "error_code": "MISSING_PLAYLIST_ID",
                     "suggestions": ["Provide playlist_id to remove items"],
@@ -446,6 +459,7 @@ async def plex_playlist(
             if not items:
                 return {
                     "success": False,
+                    "message": "items list is required for remove_items operation",
                     "error": "items list is required for remove_items operation",
                     "error_code": "MISSING_ITEMS",
                     "suggestions": ["Provide items parameter with list of media item IDs to remove"],
@@ -487,6 +501,7 @@ async def plex_playlist(
                 logger.exception("Error removing items from playlist {playlist_id}:")
                 return {
                     "success": False,
+                    "message": f"Failed to remove items: {e!s}",
                     "error": f"Failed to remove items: {e!s}",
                     "error_code": "REMOVE_ITEMS_FAILED",
                     "suggestions": [
@@ -500,6 +515,7 @@ async def plex_playlist(
             if not playlist_id:
                 return {
                     "success": False,
+                    "message": "playlist_id is required for get_analytics operation",
                     "error": "playlist_id is required for get_analytics operation",
                     "error_code": "MISSING_PLAYLIST_ID",
                     "suggestions": ["Provide playlist_id to get analytics"],
@@ -560,6 +576,7 @@ async def plex_playlist(
                 logger.exception("Error getting analytics for playlist {playlist_id}:")
                 return {
                     "success": False,
+                    "message": f"Failed to get analytics: {e!s}",
                     "error": f"Failed to get analytics: {e!s}",
                     "error_code": "ANALYTICS_FAILED",
                     "suggestions": [
@@ -571,7 +588,7 @@ async def plex_playlist(
         else:
             return {
                 "success": False,
-                "error": f"Invalid operation: '{operation}'",
+                "message": f"Invalid operation: '{operation}'",
                 "error_code": "INVALID_OPERATION",
                 "suggestions": [
                     "Valid operations: list, get, create, update, delete, add_items, remove_items, get_analytics",
@@ -597,6 +614,7 @@ async def plex_playlist(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -610,7 +628,7 @@ async def plex_playlist(
         )
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

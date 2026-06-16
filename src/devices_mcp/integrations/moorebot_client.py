@@ -137,7 +137,7 @@ class MoorebotScoutClient:
             return {"success": True, "ip_address": self.ip_address, "mock_mode": False}
         except Exception as e:
             logger.exception("Failed to connect to Moorebot Scout:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     async def disconnect(self):
         """Disconnect from robot"""
@@ -153,7 +153,7 @@ class MoorebotScoutClient:
             Status dict with battery, position, sensors, etc.
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected to robot"}
+            return {"success": False, "message": "Not connected to robot", "error": "Not connected to robot"}
 
         if self.mock_mode:
             import random
@@ -226,7 +226,7 @@ class MoorebotScoutClient:
             Movement confirmation
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info(f"Mock move: linear={linear}, angular={angular}, duration={duration}")
@@ -262,7 +262,7 @@ class MoorebotScoutClient:
             Patrol status
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info(f"Mock patrol started: route={route}")
@@ -295,7 +295,7 @@ class MoorebotScoutClient:
             Docking status (may fail due to alignment issues)
         """
         if not self._connected:
-            return {"success": False, "error": "Not connected"}
+            return {"success": False, "message": "Not connected", "error": "Not connected"}
 
         if self.mock_mode:
             logger.info("Mock: Returning to dock")
@@ -309,6 +309,7 @@ class MoorebotScoutClient:
                 return {"success": True, "docking_status": "success", "mock_mode": True}
             return {
                 "success": False,
+                "message": "Docking failed - alignment issue",
                 "error": "Docking failed - alignment issue",
                 "suggestion": "Manually place robot on dock",
                 "mock_mode": True,

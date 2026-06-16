@@ -50,6 +50,7 @@ def handle_tool_error(
     # Build base error response
     error_response: dict[str, Any] = {
         "success": False,
+        "message": error_message,
         "error": error_message,
         "error_type": error_type,
         "tool_name": tool_name,
@@ -119,6 +120,7 @@ def format_error_response(
     """
     response = {
         "success": False,
+        "message": error_msg,
         "error": error_msg,
         "error_code": error_code,
     }

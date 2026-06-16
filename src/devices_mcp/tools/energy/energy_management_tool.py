@@ -70,7 +70,7 @@ class EnergyManagementTool(BaseTool):
                 return await self._get_cost_analysis(time_range)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'status', 'control', 'consumption', or 'cost'",
+                "message": f"Invalid operation: {operation}. Must be 'status', 'control', 'consumption', or 'cost'",
                 "timestamp": time.time(),
             }
 
@@ -78,6 +78,7 @@ class EnergyManagementTool(BaseTool):
             logger.exception(f"Energy {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -132,7 +133,7 @@ class EnergyManagementTool(BaseTool):
                 if not device:
                     return {
                         "success": False,
-                        "error": f"Device {device_id} not found",
+                        "message": f"Device {device_id} not found",
                         "available_devices": [d["device_id"] for d in devices_data],
                         "timestamp": time.time(),
                     }
@@ -165,6 +166,7 @@ class EnergyManagementTool(BaseTool):
         if not device_id:
             return {
                 "success": False,
+                "message": "Device ID is required for control operation",
                 "error": "Device ID is required for control operation",
                 "timestamp": time.time(),
             }
@@ -172,6 +174,7 @@ class EnergyManagementTool(BaseTool):
         if not action:
             return {
                 "success": False,
+                "message": "Action is required for control operation",
                 "error": "Action is required for control operation",
                 "timestamp": time.time(),
             }
@@ -180,7 +183,7 @@ class EnergyManagementTool(BaseTool):
         if action not in valid_actions:
             return {
                 "success": False,
-                "error": f"Invalid action: {action}. Must be one of: {valid_actions}",
+                "message": f"Invalid action: {action}. Must be one of: {valid_actions}",
                 "timestamp": time.time(),
             }
 
@@ -193,7 +196,7 @@ class EnergyManagementTool(BaseTool):
             if device_id not in devices:
                 return {
                     "success": False,
-                    "error": f"Device {device_id} not found",
+                    "message": f"Device {device_id} not found",
                     "available_devices": list(devices.keys()),
                     "timestamp": time.time(),
                 }
@@ -210,7 +213,7 @@ class EnergyManagementTool(BaseTool):
             else:
                 return {
                     "success": False,
-                    "error": f"Invalid action: {action}",
+                    "message": f"Invalid action: {action}",
                     "timestamp": time.time(),
                 }
 
@@ -231,7 +234,7 @@ class EnergyManagementTool(BaseTool):
                 }
             return {
                 "success": False,
-                "error": f"Failed to control device {device_id}",
+                "message": f"Failed to control device {device_id}",
                 "device_id": device_id,
                 "action": action,
                 "timestamp": time.time(),
@@ -290,7 +293,7 @@ class EnergyManagementTool(BaseTool):
             else:
                 return {
                     "success": False,
-                    "error": f"Invalid time range: {time_range}. Must be one of: 1h, 24h, 7d, 30d",
+                    "message": f"Invalid time range: {time_range}. Must be one of: 1h, 24h, 7d, 30d",
                     "timestamp": time.time(),
                 }
 

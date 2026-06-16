@@ -8,7 +8,6 @@ import {
   Flame,
   Loader2,
   Puzzle,
-  Thermometer,
   Video,
   Zap,
 } from 'lucide-react';
@@ -63,16 +62,13 @@ interface NestStatus {
   error?: string;
 }
 
-interface ShellySummary {
-  sensor_count?: number;
-  alert_count?: number;
-}
+
 
 export function Dashboard() {
   const [cameras, setCameras] = useState<CameraStatus | null>(null);
   const [ring, setRing] = useState<RingStatus | null>(null);
   const [nest, setNest] = useState<NestStatus | null>(null);
-  const [shelly, setShelly] = useState<ShellySummary | null>(null);
+
   const [sensors, setSensors] = useState<SensorsResponse | null>(null);
   const [capabilities, setCapabilities] = useState<CapabilitiesResponse | null>(null);
   const [alerts, setAlerts] = useState<AlertSummary | null>(null);
@@ -99,12 +95,11 @@ export function Dashboard() {
 
     const load = async () => {
       try {
-        const [camRes, ringRes, nestRes, shellyRes, sensorsRes, capabilitiesRes, alertsRes] =
+        const [camRes, ringRes, nestRes, sensorsRes, capabilitiesRes, alertsRes] =
           await Promise.allSettled([
             fetch('/api/cameras/status'),
             fetch('/api/ring/status'),
             fetch('/api/nest/status'),
-            fetch('/api/shelly/summary'),
             fetch('/api/sensors/tapo-p115'),
             getCapabilities(),
             fetch('/alerts/summary'),
@@ -124,9 +119,7 @@ export function Dashboard() {
         if (nestRes.status === 'fulfilled' && nestRes.value.ok) {
           setNest(await nestRes.value.json());
         }
-        if (shellyRes.status === 'fulfilled' && shellyRes.value.ok) {
-          setShelly(await shellyRes.value.json());
-        }
+
         if (sensorsRes.status === 'fulfilled' && sensorsRes.value.ok) {
           setSensors(await sensorsRes.value.json());
         }
@@ -281,27 +274,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between pb-2'>
-            <CardTitle className='text-sm font-medium text-slate-500 dark:text-slate-400'>
-              Shelly
-            </CardTitle>
-            <Thermometer className='h-4 w-4 text-slate-400' />
-          </CardHeader>
-          <CardContent>
-            <p className='text-2xl font-bold'>{shelly?.sensor_count ?? 0}</p>
-            <p className='text-xs text-slate-500 dark:text-slate-400'>
-              {(shelly?.alert_count ?? 0) > 0
-                ? `${shelly?.alert_count} alert(s)`
-                : 'temperature sensors'}
-            </p>
-            <Link to='/shelly'>
-              <Button variant='ghost' size='sm' className='mt-2 px-0'>
-                Shelly sensors
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+
 
         <Card>
           <CardHeader className='flex flex-row items-center justify-between pb-2'>

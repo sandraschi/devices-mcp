@@ -185,12 +185,13 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Authentication failed:")
             return {
                 "success": False,
+                "message": "Ring authentication failed. Please check credentials.",
                 "error": "Ring authentication failed. Please check credentials.",
                 "error_type": "authentication",
             }
         except Exception as e:
             logger.exception("Error getting security status:")
-            return {"success": False, "error": str(e), "error_type": "system"}
+            return {"success": False, "message": str(e), "error": str(e), "error_type": "system"}
 
     @app.tool(
         name="arm_security_system",
@@ -245,7 +246,7 @@ def register_tools(app: FastMCP) -> None:
             if mode not in valid_modes:
                 return {
                     "success": False,
-                    "error": f"Invalid mode '{mode}'. Must be one of: {valid_modes}",
+                    "message": f"Invalid mode '{mode}'. Must be one of: {valid_modes}",
                 }
 
             # Pre-arm system check
@@ -253,6 +254,7 @@ def register_tools(app: FastMCP) -> None:
             if system_status.get("maintenance_mode"):
                 return {
                     "success": False,
+                    "message": "System is in maintenance mode. Cannot arm at this time.",
                     "error": "System is in maintenance mode. Cannot arm at this time.",
                     "maintenance_info": system_status.get("maintenance_info"),
                 }
@@ -302,6 +304,7 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Device not found during arming:")
             return {
                 "success": False,
+                "message": f"Device not found: {e!s}",
                 "error": f"Device not found: {e!s}",
                 "error_type": "device_not_found",
             }
@@ -309,12 +312,13 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Ring API error during arming:")
             return {
                 "success": False,
+                "message": f"Ring system error: {e!s}",
                 "error": f"Ring system error: {e!s}",
                 "error_type": "ring_api",
             }
         except Exception as e:
             logger.exception("Unexpected error during arming:")
-            return {"success": False, "error": str(e), "error_type": "unexpected"}
+            return {"success": False, "message": str(e), "error": str(e), "error_type": "unexpected"}
 
     @app.tool(
         name="disarm_security_system",
@@ -419,6 +423,7 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Authentication failed during disarm:")
             return {
                 "success": False,
+                "message": "Authentication failed. Cannot disarm system.",
                 "error": "Authentication failed. Cannot disarm system.",
                 "error_type": "authentication",
                 "security_implication": "System remains armed for protection",
@@ -427,6 +432,7 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Ring API error during disarm:")
             return {
                 "success": False,
+                "message": f"Ring system error: {e!s}",
                 "error": f"Ring system error: {e!s}",
                 "error_type": "ring_api",
             }
@@ -434,6 +440,7 @@ def register_tools(app: FastMCP) -> None:
             logger.exception("Unexpected error during disarm:")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "error_type": "unexpected",
                 "security_implication": "System status unknown - manual verification recommended",
@@ -573,4 +580,4 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error retrieving security history:")
-            return {"success": False, "error": str(e), "time_range_requested": f"{hours} hours"}
+            return {"success": False, "message": str(e), "error": str(e), "time_range_requested": f"{hours} hours"}

@@ -67,13 +67,13 @@ def create_mcp_server() -> FastMCP:
                             # Call the instance directly
                             result = tool_instance(**kwargs)
                         else:
-                            result = {"error": "Tool not callable", "success": False}
+                            result = {"success": False, "message": "Tool not callable", "error": "Tool not callable"}
 
                         return result
 
                     except Exception as e:
                         logger.exception("Error executing tool")
-                        return {"error": str(e), "success": False}
+                        return {"success": False, "message": str(e), "error": str(e)}
 
                 return sync_tool_wrapper
 

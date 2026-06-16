@@ -73,7 +73,7 @@ class PTZControlTool(BaseTool):
                 return await self._stop_ptz(camera_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'move', 'position', or 'stop'",
+                "message": f"Invalid operation: {operation}. Must be 'move', 'position', or 'stop'",
                 "timestamp": time.time(),
             }
 
@@ -81,6 +81,7 @@ class PTZControlTool(BaseTool):
             logger.exception(f"PTZ {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "camera_id": camera_id,
@@ -100,6 +101,7 @@ class PTZControlTool(BaseTool):
         if pan is None and tilt is None and zoom is None:
             return {
                 "success": False,
+                "message": "At least one movement parameter (pan, tilt, zoom) must be provided",
                 "error": "At least one movement parameter (pan, tilt, zoom) must be provided",
                 "timestamp": time.time(),
             }
@@ -109,7 +111,7 @@ class PTZControlTool(BaseTool):
             if value is not None and not (-1 <= value <= 1):
                 return {
                     "success": False,
-                    "error": f"{param} value must be between -1 and 1",
+                    "message": f"{param} value must be between -1 and 1",
                     "timestamp": time.time(),
                 }
 

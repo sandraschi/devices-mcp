@@ -62,7 +62,7 @@ class SystemControlTool(BaseTool):
                 return await self._get_system_status(status_type)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'reboot_camera' or 'status'",
+                "message": f"Invalid operation: {operation}. Must be 'reboot_camera' or 'status'",
                 "timestamp": time.time(),
             }
 
@@ -70,6 +70,7 @@ class SystemControlTool(BaseTool):
             logger.exception(f"System control {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -80,6 +81,7 @@ class SystemControlTool(BaseTool):
         if not camera_id:
             return {
                 "success": False,
+                "message": "Camera ID is required for reboot operations",
                 "error": "Camera ID is required for reboot operations",
                 "timestamp": time.time(),
             }
@@ -88,7 +90,7 @@ class SystemControlTool(BaseTool):
         if reboot_type not in valid_reboot_types:
             return {
                 "success": False,
-                "error": f"Invalid reboot type: {reboot_type}. Must be one of: {valid_reboot_types}",
+                "message": f"Invalid reboot type: {reboot_type}. Must be one of: {valid_reboot_types}",
                 "timestamp": time.time(),
             }
 
@@ -125,7 +127,7 @@ class SystemControlTool(BaseTool):
         if status_type not in valid_status_types:
             return {
                 "success": False,
-                "error": f"Invalid status type: {status_type}. Must be one of: {valid_status_types}",
+                "message": f"Invalid status type: {status_type}. Must be one of: {valid_status_types}",
                 "timestamp": time.time(),
             }
 

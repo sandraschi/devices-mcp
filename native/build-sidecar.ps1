@@ -27,34 +27,39 @@ try {
         Pop-Location
     }
 
-    Remove-Item -Recurse -Force "$Root\build\devices-mcp-camera" -ErrorAction SilentlyContinue
     Remove-Item -Recurse -Force "$Root\build\devices-mcp-backend" -ErrorAction SilentlyContinue
-    Remove-Item -Force "$Root\dist\devices-mcp-camera.exe" -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force "$Root\build\devices-mcp-camera" -ErrorAction SilentlyContinue
     Remove-Item -Force "$Root\dist\devices-mcp-backend.exe" -ErrorAction SilentlyContinue
-
-    Write-Host "-> PyInstaller camera helper..." -ForegroundColor Yellow
-    uv run pyinstaller devices-mcp-camera.spec --clean --noconfirm
-    if ($LASTEXITCODE -ne 0) { throw "Camera PyInstaller failed (exit $LASTEXITCODE)" }
+    Remove-Item -Force "$Root\dist\devices-mcp-camera.exe" -ErrorAction SilentlyContinue
 
     Write-Host "-> PyInstaller web backend..." -ForegroundColor Yellow
     uv run pyinstaller devices-mcp-backend.spec --clean --noconfirm
     if ($LASTEXITCODE -ne 0) { throw "Backend PyInstaller failed (exit $LASTEXITCODE)" }
 
+    Write-Host "-> PyInstaller camera helper (lean)..." -ForegroundColor Yellow
+    uv run pyinstaller devices-mcp-camera.spec --clean --noconfirm
+    if ($LASTEXITCODE -ne 0) { throw "Camera PyInstaller failed (exit $LASTEXITCODE)" }
+
     $triple = "x86_64-pc-windows-msvc"
-    $dstDir = "$Root\native\binaries"
-    New-Item -ItemType Directory -Path $dstDir -Force | Out-Null
-
-    $cameraSrc = "$Root\dist\devices-mcp-camera.exe"
     $backendSrc = "$Root\dist\devices-mcp-backend.exe"
-    if (-not (Test-Path $cameraSrc)) { throw "Missing $cameraSrc" }
+    $cameraSrc = "$Root\dist\devices-mcp-camera.exe"
     if (-not (Test-Path $backendSrc)) { throw "Missing $backendSrc" }
+    if (-not (Test-Path $cameraSrc)) { throw "Missing $cameraSrc" }
 
-    Copy-Item $cameraSrc "$dstDir\devices-mcp-camera-$triple.exe" -Force
-    Copy-Item $backendSrc "$dstDir\devices-mcp-backend-$triple.exe" -Force
+    $resDir = "$Root\native\resources"
+    New-Item -ItemType Directory -Path $resDir -Force | Out-Null
+    Copy-Item $backendSrc "$resDir\devices-mcp-backend.exe" -Force
+    Copy-Item $cameraSrc "$resDir\devices-mcp-camera.exe" -Force
 
+    $binDir = "$Root\native\binaries"
+    New-Item -ItemType Directory -Path $binDir -Force | Out-Null
+    Copy-Item $backendSrc "$binDir\devices-mcp-backend-$triple.exe" -Force
+
+    $mbBe = [math]::Round((Get-Item "$resDir\devices-mcp-backend.exe").Length / 1MB, 1)
+    $mbCam = [math]::Round((Get-Item "$resDir\devices-mcp-camera.exe").Length / 1MB, 1)
     Write-Host "=== Sidecars ready ===" -ForegroundColor Green
-    Write-Host "  $dstDir\devices-mcp-camera-$triple.exe" -ForegroundColor Cyan
-    Write-Host "  $dstDir\devices-mcp-backend-$triple.exe" -ForegroundColor Cyan
+    Write-Host "  Backend: ${mbBe} MB" -ForegroundColor Cyan
+    Write-Host "  Camera:  ${mbCam} MB (lean, no DNN/CUDA)" -ForegroundColor Cyan
 } finally {
     Pop-Location
 }

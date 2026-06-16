@@ -15,7 +15,6 @@ import {
   Rocket,
   Settings,
   Shield,
-  Thermometer,
   Video,
   Zap,
 } from 'lucide-react';
@@ -32,7 +31,6 @@ const nav = [
   { to: '/robots', label: 'Robots', icon: Bot },
   { to: '/ring', label: 'Ring Doorbell', icon: Bell },
   { to: '/nest', label: 'Nest Protect', icon: Flame },
-  { to: '/shelly', label: 'Shelly', icon: Thermometer },
   { to: '/health', label: 'Status', icon: Activity },
   { to: '/human-health', label: 'Human Health', icon: Heart },
   { to: '/alarms', label: 'Alarms', icon: Shield },

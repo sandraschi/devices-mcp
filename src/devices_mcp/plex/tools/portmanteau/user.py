@@ -190,6 +190,7 @@ async def plex_user(
             if not user_id:
                 return {
                     "success": False,
+                    "message": "user_id is required for get operation",
                     "error": "user_id is required for get operation",
                     "error_code": "MISSING_USER_ID",
                     "suggestions": ["Use plex_user(operation='list') to find available user IDs"],
@@ -199,7 +200,7 @@ async def plex_user(
             if user_data is None:
                 return {
                     "success": False,
-                    "error": f"User {user_id} not found",
+                    "message": f"User {user_id} not found",
                     "error_code": "USER_NOT_FOUND",
                     "suggestions": [
                         "Use plex_user(operation='list') to find valid user IDs",
@@ -213,6 +214,7 @@ async def plex_user(
             if not username:
                 return {
                     "success": False,
+                    "message": "username is required for create operation",
                     "error": "username is required for create operation",
                     "error_code": "MISSING_USERNAME",
                     "suggestions": ["Provide username parameter (min 3 characters)"],
@@ -220,6 +222,7 @@ async def plex_user(
             if not email:
                 return {
                     "success": False,
+                    "message": "email is required for create operation",
                     "error": "email is required for create operation",
                     "error_code": "MISSING_EMAIL",
                     "suggestions": ["Provide email parameter (valid email format)"],
@@ -227,6 +230,7 @@ async def plex_user(
             if not password:
                 return {
                     "success": False,
+                    "message": "password is required for create operation",
                     "error": "password is required for create operation",
                     "error_code": "MISSING_PASSWORD",
                     "suggestions": ["Provide password parameter (min 8 characters)"],
@@ -235,6 +239,7 @@ async def plex_user(
             if len(username) < 3:
                 return {
                     "success": False,
+                    "message": "username must be at least 3 characters",
                     "error": "username must be at least 3 characters",
                     "error_code": "INVALID_USERNAME",
                     "suggestions": ["Provide a username with at least 3 characters"],
@@ -242,6 +247,7 @@ async def plex_user(
             if len(password) < 8:
                 return {
                     "success": False,
+                    "message": "password must be at least 8 characters",
                     "error": "password must be at least 8 characters",
                     "error_code": "INVALID_PASSWORD",
                     "suggestions": ["Provide a password with at least 8 characters"],
@@ -266,6 +272,7 @@ async def plex_user(
             if not user_id:
                 return {
                     "success": False,
+                    "message": "user_id is required for update operation",
                     "error": "user_id is required for update operation",
                     "error_code": "MISSING_USER_ID",
                     "suggestions": ["Provide user_id to update"],
@@ -276,6 +283,7 @@ async def plex_user(
                 if len(username) < 3:
                     return {
                         "success": False,
+                        "message": "username must be at least 3 characters",
                         "error": "username must be at least 3 characters",
                         "error_code": "INVALID_USERNAME",
                         "suggestions": ["Provide a username with at least 3 characters"],
@@ -287,6 +295,7 @@ async def plex_user(
                 if len(password) < 8:
                     return {
                         "success": False,
+                        "message": "password must be at least 8 characters",
                         "error": "password must be at least 8 characters",
                         "error_code": "INVALID_PASSWORD",
                         "suggestions": ["Provide a password with at least 8 characters"],
@@ -301,6 +310,7 @@ async def plex_user(
             if not update_kwargs:
                 return {
                     "success": False,
+                    "message": "At least one update field (username, email, password, role, restricted) is required",
                     "error": "At least one update field (username, email, password, role, restricted) is required",
                     "error_code": "MISSING_UPDATE_FIELDS",
                     "suggestions": ["Provide at least one field to update"],
@@ -319,6 +329,7 @@ async def plex_user(
             if not user_id:
                 return {
                     "success": False,
+                    "message": "user_id is required for delete operation",
                     "error": "user_id is required for delete operation",
                     "error_code": "MISSING_USER_ID",
                     "suggestions": ["Provide user_id to delete"],
@@ -337,6 +348,7 @@ async def plex_user(
             if not user_id:
                 return {
                     "success": False,
+                    "message": "user_id is required for update_permissions operation",
                     "error": "user_id is required for update_permissions operation",
                     "error_code": "MISSING_USER_ID",
                     "suggestions": ["Provide user_id to update permissions"],
@@ -344,6 +356,7 @@ async def plex_user(
             if not permissions:
                 return {
                     "success": False,
+                    "message": "permissions dictionary is required for update_permissions operation",
                     "error": "permissions dictionary is required for update_permissions operation",
                     "error_code": "MISSING_PERMISSIONS",
                     "suggestions": [
@@ -364,7 +377,7 @@ async def plex_user(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: list, get, create, update, delete, update_permissions",
@@ -395,6 +408,7 @@ async def plex_user(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -405,7 +419,7 @@ async def plex_user(
         logger.exception("Unexpected error in plex_user operation '{operation}':")
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

@@ -199,6 +199,7 @@ async def plex_search(
             if not query and not summary_contains:
                 return {
                     "success": False,
+                    "message": "query or summary_contains is required for search operation",
                     "error": "query or summary_contains is required for search operation",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": [
@@ -270,6 +271,7 @@ async def plex_search(
             if not query and not title and not genre and not actor:
                 return {
                     "success": False,
+                    "message": "At least one search criterion (query, title, genre, actor, etc.) is required",
                     "error": "At least one search criterion (query, title, genre, actor, etc.) is required",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Provide at least one search filter"],
@@ -327,6 +329,7 @@ async def plex_search(
             if not query:
                 return {
                     "success": False,
+                    "message": "query is required for suggest operation",
                     "error": "query is required for suggest operation",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Provide a partial search query"],
@@ -355,6 +358,7 @@ async def plex_search(
             if not search_name:
                 return {
                     "success": False,
+                    "message": "search_name is required for save_search operation",
                     "error": "search_name is required for save_search operation",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Provide a name for the saved search"],
@@ -363,6 +367,7 @@ async def plex_search(
             if not query and not title and not genre and not actor:
                 return {
                     "success": False,
+                    "message": "At least one search criterion is required to save a search",
                     "error": "At least one search criterion is required to save a search",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Provide search parameters to save"],
@@ -397,7 +402,7 @@ async def plex_search(
 
         return {
             "success": False,
-            "error": f"Unknown operation: {operation}",
+            "message": f"Unknown operation: {operation}",
             "error_code": "INVALID_OPERATION",
             "suggestions": ["Use one of: search, advanced_search, suggest, recent_searches, save_search"],
         }
@@ -406,6 +411,7 @@ async def plex_search(
         logger.exception("Error in plex_search operation '{operation}':")
         return {
             "success": False,
+            "message": str(e),
             "error": str(e),
             "error_code": "EXECUTION_ERROR",
             "suggestions": [

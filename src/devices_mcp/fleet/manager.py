@@ -46,7 +46,7 @@ class FleetManager:
             return {"success": True, "node_id": node_id, "status": status, "timestamp": timestamp}
         except Exception as e:
             logger.error(f"Failed to record heartbeat for {node_id}: {e}")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     async def get_fleet_status(self) -> list[dict[str, Any]]:
         """Get the current status of all known nodes."""

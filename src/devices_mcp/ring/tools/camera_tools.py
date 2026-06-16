@@ -99,7 +99,7 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error getting camera status:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     @app.tool(name="stream_all_cameras", description="Start live streams from all available Ring cameras")
     async def stream_all_cameras() -> dict[str, Any]:
@@ -158,4 +158,4 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error starting camera streams:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}

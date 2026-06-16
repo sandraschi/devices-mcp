@@ -345,6 +345,7 @@ Use list_tools to see all available tools, or tool_info to get details about a s
             if not tool_name:
                 return {
                     "success": False,
+                    "message": "tool_name is required for tool_info operation",
                     "error": "tool_name is required for tool_info operation",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Provide a tool name"],
@@ -353,7 +354,7 @@ Use list_tools to see all available tools, or tool_info to get details about a s
             if tool_name not in tools_info:
                 return {
                     "success": False,
-                    "error": f"Tool '{tool_name}' not found",
+                    "message": f"Tool '{tool_name}' not found",
                     "error_code": "TOOL_NOT_FOUND",
                     "suggestions": ["Use list_tools to see available tools"],
                 }
@@ -372,7 +373,7 @@ Use list_tools to see all available tools, or tool_info to get details about a s
                 if tool_name not in tools_info:
                     return {
                         "success": False,
-                        "error": f"Tool '{tool_name}' not found",
+                        "message": f"Tool '{tool_name}' not found",
                         "error_code": "TOOL_NOT_FOUND",
                     }
                 tools_to_show = [tools_info[tool_name]]
@@ -394,7 +395,7 @@ Use list_tools to see all available tools, or tool_info to get details about a s
 
         return {
             "success": False,
-            "error": f"Unknown operation: {operation}",
+            "message": f"Unknown operation: {operation}",
             "error_code": "INVALID_OPERATION",
             "suggestions": ["Use one of: help, list_tools, tool_info, examples"],
         }
@@ -403,6 +404,7 @@ Use list_tools to see all available tools, or tool_info to get details about a s
         logger.exception("Error in plex_help operation '{operation}':")
         return {
             "success": False,
+            "message": str(e),
             "error": str(e),
             "error_code": "EXECUTION_ERROR",
             "suggestions": ["This is a help tool and should not normally fail"],

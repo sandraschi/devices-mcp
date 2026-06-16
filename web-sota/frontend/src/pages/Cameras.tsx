@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface Camera {
   id?: string;
@@ -16,6 +17,15 @@ interface Camera {
 function supportsMjpegPreview(t: string | undefined): boolean {
   const x = (t ?? '').toLowerCase();
   return x === 'tapo' || x === 'onvif' || x === 'webcam' || x === 'microscope';
+}
+
+function isRingCamera(t: string | undefined): boolean {
+  return (t ?? '').toLowerCase() === 'ring';
+}
+
+function ringSnapshotUrl(cameraId: string): string {
+  const deviceId = cameraId.replace(/^ring_/, '');
+  return `/api/ring/snapshot/${encodeURIComponent(deviceId)}`;
 }
 
 function supportsPtz(t: string | undefined): boolean {
@@ -204,6 +214,16 @@ export function Cameras() {
                         />
                       </div>
                     )}
+                    {isRingCamera(cam.type) && cameraId && (
+                      <div className='overflow-hidden rounded-lg border border-slate-200 bg-black dark:border-slate-700'>
+                        <img
+                          src={ringSnapshotUrl(cameraId)}
+                          alt={`Snapshot: ${name}`}
+                          className='aspect-video w-full object-contain'
+                          loading='lazy'
+                        />
+                      </div>
+                    )}
                     {(cam.type ?? '').toLowerCase() === 'webcam' && (
                       <p className='text-xs text-slate-500'>
                         USB: if the preview stays black, close Teams/Zoom/OBS using the camera, or
@@ -226,6 +246,13 @@ export function Cameras() {
                             RTSP / external
                           </Button>
                         </a>
+                      )}
+                      {isRingCamera(cam.type) && (
+                        <Link to='/ring'>
+                          <Button variant='outline' size='sm'>
+                            Ring events &amp; live view
+                          </Button>
+                        </Link>
                       )}
                     </div>
                   </CardContent>

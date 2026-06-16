@@ -65,7 +65,7 @@ class DeviceSettingsTool(BaseTool):
                 return await self._set_motion_detection(camera_id, enabled, motion_sensitivity, motion_areas)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'led' or 'motion_detection'",
+                "message": f"Invalid operation: {operation}. Must be 'led' or 'motion_detection'",
                 "timestamp": time.time(),
             }
 
@@ -73,6 +73,7 @@ class DeviceSettingsTool(BaseTool):
             logger.exception(f"Device settings {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "camera_id": camera_id,
@@ -84,6 +85,7 @@ class DeviceSettingsTool(BaseTool):
         if enabled is None:
             return {
                 "success": False,
+                "message": "Enabled parameter is required for LED operation",
                 "error": "Enabled parameter is required for LED operation",
                 "timestamp": time.time(),
             }
@@ -117,6 +119,7 @@ class DeviceSettingsTool(BaseTool):
         if enabled is None:
             return {
                 "success": False,
+                "message": "Enabled parameter is required for motion_detection operation",
                 "error": "Enabled parameter is required for motion_detection operation",
                 "timestamp": time.time(),
             }
@@ -125,6 +128,7 @@ class DeviceSettingsTool(BaseTool):
         if motion_sensitivity < 1 or motion_sensitivity > 5:
             return {
                 "success": False,
+                "message": "Motion sensitivity must be between 1 and 5",
                 "error": "Motion sensitivity must be between 1 and 5",
                 "timestamp": time.time(),
             }

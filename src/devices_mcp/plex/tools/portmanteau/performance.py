@@ -236,6 +236,7 @@ async def plex_performance(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for update_transcode_settings operation",
                     "error": "profile_name is required for update_transcode_settings operation",
                     "error_code": "MISSING_PROFILE_NAME",
                     "suggestions": ["Provide profile_name parameter"],
@@ -243,6 +244,7 @@ async def plex_performance(
             if not settings:
                 return {
                     "success": False,
+                    "message": "settings dictionary is required for update_transcode_settings operation",
                     "error": "settings dictionary is required for update_transcode_settings operation",
                     "error_code": "MISSING_SETTINGS",
                     "suggestions": ["Provide settings parameter with configuration dictionary"],
@@ -280,6 +282,7 @@ async def plex_performance(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for set_quality operation",
                     "error": "profile_name is required for set_quality operation",
                     "error_code": "MISSING_PROFILE_NAME",
                     "suggestions": ["Provide profile_name parameter"],
@@ -287,6 +290,7 @@ async def plex_performance(
             if not quality:
                 return {
                     "success": False,
+                    "message": "quality is required for set_quality operation",
                     "error": "quality is required for set_quality operation",
                     "error_code": "MISSING_QUALITY",
                     "suggestions": ["Provide quality parameter (e.g., '1080p', '720p', '480p')"],
@@ -315,6 +319,7 @@ async def plex_performance(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for set_throttling operation",
                     "error": "profile_name is required for set_throttling operation",
                     "error_code": "MISSING_PROFILE_NAME",
                     "suggestions": ["Provide profile_name parameter"],
@@ -322,6 +327,7 @@ async def plex_performance(
             if enabled is None:
                 return {
                     "success": False,
+                    "message": "enabled is required for set_throttling operation",
                     "error": "enabled is required for set_throttling operation",
                     "error_code": "MISSING_ENABLED",
                     "suggestions": ["Provide enabled parameter (True or False)"],
@@ -356,6 +362,7 @@ async def plex_performance(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for create_profile operation",
                     "error": "profile_name is required for create_profile operation",
                     "error_code": "MISSING_PROFILE_NAME",
                     "suggestions": ["Provide profile_name parameter"],
@@ -363,6 +370,7 @@ async def plex_performance(
             if not settings:
                 return {
                     "success": False,
+                    "message": "settings dictionary is required for create_profile operation",
                     "error": "settings dictionary is required for create_profile operation",
                     "error_code": "MISSING_SETTINGS",
                     "suggestions": ["Provide settings parameter with profile configuration"],
@@ -381,6 +389,7 @@ async def plex_performance(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for delete_profile operation",
                     "error": "profile_name is required for delete_profile operation",
                     "error_code": "MISSING_PROFILE_NAME",
                     "suggestions": ["Provide profile_name parameter"],
@@ -419,7 +428,7 @@ async def plex_performance(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: get_transcode_settings, update_transcode_settings, get_transcoding_status, "
@@ -447,6 +456,7 @@ async def plex_performance(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -460,7 +470,7 @@ async def plex_performance(
         )
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

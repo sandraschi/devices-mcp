@@ -122,6 +122,7 @@ class StatusTool(BaseTool):
             logger.exception("Error getting system status")
             return {
                 "success": False,
+                "message": f"Failed to get status: {e!s}",
                 "error": f"Failed to get status: {e!s}",
                 "timestamp": datetime.utcnow().isoformat(),
             }

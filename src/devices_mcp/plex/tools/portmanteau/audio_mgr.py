@@ -86,7 +86,7 @@ async def plex_audio_mgr(
             if not client_id:
                 return {
                     "success": False,
-                    "error": f"client_id is required for {operation} operation",
+                    "message": f"client_id is required for {operation} operation",
                     "error_code": "MISSING_CLIENT_ID",
                 }
 
@@ -99,6 +99,7 @@ async def plex_audio_mgr(
             if target_volume is None and operation == "set_volume":
                 return {
                     "success": False,
+                    "message": "volume parameter is required for set_volume",
                     "error": "volume parameter is required for set_volume",
                     "error_code": "MISSING_VOLUME",
                 }
@@ -116,6 +117,7 @@ async def plex_audio_mgr(
             if not client_id:
                 return {
                     "success": False,
+                    "message": "client_id is required for get_volume operation",
                     "error": "client_id is required for get_volume operation",
                     "error_code": "MISSING_CLIENT_ID",
                 }
@@ -125,6 +127,7 @@ async def plex_audio_mgr(
                 "success": False,
                 "operation": "get_volume",
                 "client_id": client_id,
+                "message": "Retrieving volume level is not supported by the Plex remote control API",
                 "error": "Retrieving volume level is not supported by the Plex remote control API",
                 "error_code": "NOT_SUPPORTED",
             }
@@ -134,6 +137,7 @@ async def plex_audio_mgr(
             if not media_key:
                 return {
                     "success": False,
+                    "message": "media_key is required for list_streams operation",
                     "error": "media_key is required for list_streams operation",
                     "error_code": "MISSING_MEDIA_KEY",
                 }
@@ -152,6 +156,7 @@ async def plex_audio_mgr(
             if not client_id or not stream_id:
                 return {
                     "success": False,
+                    "message": "client_id and stream_id are required for select_stream operation",
                     "error": "client_id and stream_id are required for select_stream operation",
                     "error_code": "MISSING_PARAMETERS",
                 }
@@ -169,6 +174,7 @@ async def plex_audio_mgr(
             if not client_id or not target_client_id:
                 return {
                     "success": False,
+                    "message": "client_id (source) and target_client_id are required for handover operation",
                     "error": "client_id (source) and target_client_id are required for handover operation",
                     "error_code": "MISSING_PARAMETERS",
                 }
@@ -183,10 +189,10 @@ async def plex_audio_mgr(
 
         return {
             "success": False,
-            "error": f"Operation {operation} not yet fully implemented or recognized",
+            "message": f"Operation {operation} not yet fully implemented or recognized",
             "error_code": "NOT_IMPLEMENTED",
         }
 
     except Exception as e:
         logger.exception("Error in plex_audio_mgr({operation}):")
-        return {"success": False, "error": str(e), "error_code": "EXECUTION_ERROR"}
+        return {"success": False, "message": str(e), "error": str(e), "error_code": "EXECUTION_ERROR"}

@@ -145,7 +145,7 @@ async def plex_collections(
                 if not library:
                     return {
                         "success": False,
-                        "error": f"Library with ID '{library_id}' not found",
+                        "message": f"Library with ID '{library_id}' not found",
                         "error_code": "LIBRARY_NOT_FOUND",
                     }
                 # Get collections from library (would need PlexAPI collection access)
@@ -168,6 +168,7 @@ async def plex_collections(
             if not collection_id:
                 return {
                     "success": False,
+                    "message": "collection_id is required for get operation",
                     "error": "collection_id is required for get operation",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Provide a collection ID"],
@@ -185,12 +186,14 @@ async def plex_collections(
             if not title:
                 return {
                     "success": False,
+                    "message": "title is required for create operation",
                     "error": "title is required for create operation",
                     "error_code": "MISSING_PARAMETER",
                 }
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for create operation",
                     "error": "library_id is required for create operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -208,6 +211,7 @@ async def plex_collections(
             if not collection_id:
                 return {
                     "success": False,
+                    "message": "collection_id is required for update operation",
                     "error": "collection_id is required for update operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -224,6 +228,7 @@ async def plex_collections(
             if not collection_id:
                 return {
                     "success": False,
+                    "message": "collection_id is required for delete operation",
                     "error": "collection_id is required for delete operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -239,12 +244,14 @@ async def plex_collections(
             if not collection_id:
                 return {
                     "success": False,
+                    "message": "collection_id is required for add_items operation",
                     "error": "collection_id is required for add_items operation",
                     "error_code": "MISSING_PARAMETER",
                 }
             if not items:
                 return {
                     "success": False,
+                    "message": "items is required for add_items operation",
                     "error": "items is required for add_items operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -261,12 +268,14 @@ async def plex_collections(
             if not collection_id:
                 return {
                     "success": False,
+                    "message": "collection_id is required for remove_items operation",
                     "error": "collection_id is required for remove_items operation",
                     "error_code": "MISSING_PARAMETER",
                 }
             if not items:
                 return {
                     "success": False,
+                    "message": "items is required for remove_items operation",
                     "error": "items is required for remove_items operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -281,7 +290,7 @@ async def plex_collections(
 
         return {
             "success": False,
-            "error": f"Unknown operation: {operation}",
+            "message": f"Unknown operation: {operation}",
             "error_code": "INVALID_OPERATION",
             "suggestions": ["Use one of: list, get, create, update, delete, add_items, remove_items"],
         }
@@ -290,6 +299,7 @@ async def plex_collections(
         logger.exception("Error in plex_collections operation '{operation}':")
         return {
             "success": False,
+            "message": str(e),
             "error": str(e),
             "error_code": "EXECUTION_ERROR",
             "suggestions": [

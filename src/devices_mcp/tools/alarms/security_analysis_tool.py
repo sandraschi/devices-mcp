@@ -65,7 +65,7 @@ class SecurityAnalysisTool(BaseTool):
                 return await self._correlate_events(correlation_window, event_types)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'test_device' or 'correlate_events'",
+                "message": f"Invalid operation: {operation}. Must be 'test_device' or 'correlate_events'",
                 "timestamp": time.time(),
             }
 
@@ -73,6 +73,7 @@ class SecurityAnalysisTool(BaseTool):
             logger.exception(f"Security analysis {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -83,6 +84,7 @@ class SecurityAnalysisTool(BaseTool):
         if not device_id:
             return {
                 "success": False,
+                "message": "Device ID is required for test operations",
                 "error": "Device ID is required for test operations",
                 "timestamp": time.time(),
             }
@@ -90,6 +92,7 @@ class SecurityAnalysisTool(BaseTool):
         if not test_type:
             return {
                 "success": False,
+                "message": "Test type is required for test operations",
                 "error": "Test type is required for test operations",
                 "timestamp": time.time(),
             }
@@ -98,7 +101,7 @@ class SecurityAnalysisTool(BaseTool):
         if test_type not in valid_test_types:
             return {
                 "success": False,
-                "error": f"Invalid test type: {test_type}. Must be one of: {valid_test_types}",
+                "message": f"Invalid test type: {test_type}. Must be one of: {valid_test_types}",
                 "timestamp": time.time(),
             }
 

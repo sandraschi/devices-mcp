@@ -230,6 +230,7 @@ async def plex_streaming(
             if not media_key:
                 return {
                     "success": False,
+                    "message": "media_key is required for play operation",
                     "error": "media_key is required for play operation",
                     "error_code": "MISSING_MEDIA_KEY",
                     "suggestions": [
@@ -245,6 +246,7 @@ async def plex_streaming(
                 if not media_type:
                     return {
                         "success": False,
+                        "message": "Could not determine media type. Please provide client_id explicitly.",
                         "error": "Could not determine media type. Please provide client_id explicitly.",
                         "error_code": "MEDIA_TYPE_UNKNOWN",
                         "suggestions": [
@@ -258,6 +260,7 @@ async def plex_streaming(
                 if not all_clients:
                     return {
                         "success": False,
+                        "message": "No clients available",
                         "error": "No clients available",
                         "error_code": "NO_CLIENTS",
                         "suggestions": [
@@ -271,6 +274,7 @@ async def plex_streaming(
                 if not selected_client:
                     return {
                         "success": False,
+                        "message": "Could not select appropriate client",
                         "error": "Could not select appropriate client",
                         "error_code": "CLIENT_SELECTION_FAILED",
                         "suggestions": [
@@ -301,7 +305,7 @@ async def plex_streaming(
         if not client_id:
             return {
                 "success": False,
-                "error": f"client_id is required for {operation} operation",
+                "message": f"client_id is required for {operation} operation",
                 "error_code": "MISSING_CLIENT_ID",
                 "suggestions": [
                     "Use plex_streaming(operation='list_clients') to find available client IDs",
@@ -340,6 +344,7 @@ async def plex_streaming(
             if seek_to is None:
                 return {
                     "success": False,
+                    "message": "seek_to is required for seek operation",
                     "error": "seek_to is required for seek operation",
                     "error_code": "MISSING_SEEK_TO",
                     "suggestions": ["Provide seek_to parameter (position in milliseconds)"],
@@ -389,6 +394,7 @@ async def plex_streaming(
             if not quality:
                 return {
                     "success": False,
+                    "message": "quality is required for set_quality operation",
                     "error": "quality is required for set_quality operation",
                     "error_code": "MISSING_QUALITY",
                     "suggestions": ["Provide quality parameter (e.g., '1080p', '720p', '480p')"],
@@ -398,6 +404,7 @@ async def plex_streaming(
             # This is a placeholder implementation
             return {
                 "success": False,
+                "message": "set_quality operation is not yet fully implemented",
                 "error": "set_quality operation is not yet fully implemented",
                 "error_code": "NOT_IMPLEMENTED",
                 "suggestions": [
@@ -411,12 +418,14 @@ async def plex_streaming(
             if not client_id:
                 return {
                     "success": False,
+                    "message": "client_id is required for set_volume operation",
                     "error": "client_id is required for set_volume operation",
                     "error_code": "MISSING_CLIENT_ID",
                 }
             if volume is None:
                 return {
                     "success": False,
+                    "message": "volume is required for set_volume operation",
                     "error": "volume is required for set_volume operation",
                     "error_code": "MISSING_VOLUME",
                 }
@@ -434,6 +443,7 @@ async def plex_streaming(
             if not action:
                 return {
                     "success": False,
+                    "message": "action is required for control operation",
                     "error": "action is required for control operation",
                     "error_code": "MISSING_ACTION",
                     "suggestions": [
@@ -455,7 +465,7 @@ async def plex_streaming(
             if action not in valid_actions:
                 return {
                     "success": False,
-                    "error": f"Invalid action: '{action}'",
+                    "message": f"Invalid action: '{action}'",
                     "error_code": "INVALID_ACTION",
                     "suggestions": [
                         f"Valid actions: {', '.join(valid_actions)}",
@@ -489,7 +499,7 @@ async def plex_streaming(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: list_sessions, list_clients, play, pause, stop, seek, skip_next, skip_previous, set_quality, control",
@@ -515,6 +525,7 @@ async def plex_streaming(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -528,7 +539,7 @@ async def plex_streaming(
         )
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

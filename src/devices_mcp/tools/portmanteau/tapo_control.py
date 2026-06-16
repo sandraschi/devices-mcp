@@ -108,6 +108,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                 elif not isinstance(brightness_percent, int):
                     return {
                         "success": False,
+                        "message": f"brightness_percent must be an integer, got {type(brightness_percent).__name__}",
                         "error": f"brightness_percent must be an integer, got {type(brightness_percent).__name__}",
                     }
 
@@ -195,6 +196,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                             # Hue lights don't support effects
                             return {
                                 "success": False,
+                                "message": "Effects are not supported for Philips Hue lights",
                                 "error": "Effects are not supported for Philips Hue lights",
                             }
                         else:
@@ -234,12 +236,16 @@ def register_device_control_tool(mcp: FastMCP) -> None:
 
                 return {
                     "success": False,
-                    "error": f"Light {light_id} not found or failed to control",
+                    "message": f"Light {light_id} not found or failed to control",
                 }
 
             if action_lower in ["turn_on_light", "turn on light", "on light"]:
                 if not light_id:
-                    return {"success": False, "error": "light_id is required to turn on a light"}
+                    return {
+                        "success": False,
+                        "message": "light_id is required to turn on a light",
+                        "error": "light_id is required to turn on a light",
+                    }
                 result = await _control_light(light_id, "turn_on", brightness_percent=brightness_percent)
                 if result["success"]:
                     return {
@@ -248,11 +254,19 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                         "type": result.get("type", "unknown"),
                         "data": {"light": result.get("light")},
                     }
-                return {"success": False, "error": result.get("error", "Failed to turn on light")}
+                return {
+                    "success": False,
+                    "message": result.get("error"),
+                    "error": result.get("error", "Failed to turn on light"),
+                }
 
             if action_lower in ["turn_off_light", "turn off light", "off light"]:
                 if not light_id:
-                    return {"success": False, "error": "light_id is required to turn off a light"}
+                    return {
+                        "success": False,
+                        "message": "light_id is required to turn off a light",
+                        "error": "light_id is required to turn off a light",
+                    }
                 result = await _control_light(light_id, "turn_off")
                 if result["success"]:
                     return {
@@ -261,13 +275,25 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                         "type": result.get("type", "unknown"),
                         "data": {"light": result.get("light")},
                     }
-                return {"success": False, "error": result.get("error", "Failed to turn off light")}
+                return {
+                    "success": False,
+                    "message": result.get("error"),
+                    "error": result.get("error", "Failed to turn off light"),
+                }
 
             if action_lower in ["set_brightness", "set brightness"]:
                 if not light_id:
-                    return {"success": False, "error": "light_id is required to set brightness"}
+                    return {
+                        "success": False,
+                        "message": "light_id is required to set brightness",
+                        "error": "light_id is required to set brightness",
+                    }
                 if brightness_percent is None:
-                    return {"success": False, "error": "brightness_percent is required"}
+                    return {
+                        "success": False,
+                        "message": "brightness_percent is required",
+                        "error": "brightness_percent is required",
+                    }
                 result = await _control_light(light_id, "set_brightness", brightness_percent=brightness_percent)
                 if result["success"]:
                     return {
@@ -276,17 +302,26 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                         "type": result.get("type", "unknown"),
                         "data": {"light": result.get("light")},
                     }
-                return {"success": False, "error": result.get("error", "Failed to set brightness")}
+                return {
+                    "success": False,
+                    "message": result.get("error"),
+                    "error": result.get("error", "Failed to set brightness"),
+                }
 
             if action_lower in ["set_color", "set color"]:
                 if not light_id:
-                    return {"success": False, "error": "light_id is required to set color"}
+                    return {
+                        "success": False,
+                        "message": "light_id is required to set color",
+                        "error": "light_id is required to set color",
+                    }
                 rgb_values = None
                 if isinstance(brightness_percent, list) and len(brightness_percent) >= 3:
                     rgb_values = brightness_percent[:3]
                 if not rgb_values:
                     return {
                         "success": False,
+                        "message": "rgb parameter required for set_color (pass as brightness_percent=[r,g,b])",
                         "error": "rgb parameter required for set_color (pass as brightness_percent=[r,g,b])",
                     }
 
@@ -298,13 +333,25 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                         "type": result.get("type", "unknown"),
                         "data": {"light": result.get("light")},
                     }
-                return {"success": False, "error": result.get("error", "Failed to set color")}
+                return {
+                    "success": False,
+                    "message": result.get("error"),
+                    "error": result.get("error", "Failed to set color"),
+                }
 
             if action_lower in ["set_effect", "set effect", "activate_effect"]:
                 if not light_id:
-                    return {"success": False, "error": "light_id is required to set effect"}
+                    return {
+                        "success": False,
+                        "message": "light_id is required to set effect",
+                        "error": "light_id is required to set effect",
+                    }
                 if not effect:
-                    return {"success": False, "error": "effect parameter is required"}
+                    return {
+                        "success": False,
+                        "message": "effect parameter is required",
+                        "error": "effect parameter is required",
+                    }
 
                 result = await _control_light(light_id, "set_effect", effect=effect)
                 if result["success"]:
@@ -314,7 +361,11 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                         "type": result.get("type", "unknown"),
                         "data": {"light": result.get("light"), "effect": effect},
                     }
-                return {"success": False, "error": result.get("error", "Failed to set effect")}
+                return {
+                    "success": False,
+                    "message": result.get("error"),
+                    "error": result.get("error", "Failed to set effect"),
+                }
 
             if action_lower in ["list_groups", "list groups"]:
                 if not hue_manager._initialized:
@@ -369,7 +420,11 @@ def register_device_control_tool(mcp: FastMCP) -> None:
 
             if action_lower in ["activate_scene", "activate scene"]:
                 if not scene_id:
-                    return {"success": False, "error": "scene_id is required to activate a scene"}
+                    return {
+                        "success": False,
+                        "message": "scene_id is required to activate a scene",
+                        "error": "scene_id is required to activate a scene",
+                    }
                 if not hue_manager._initialized:
                     await hue_manager.initialize()
                 success = await hue_manager.activate_scene(scene_id, group_id)
@@ -403,7 +458,11 @@ def register_device_control_tool(mcp: FastMCP) -> None:
 
             if action_lower in ["turn_on_plug", "turn on plug", "on plug"]:
                 if not device_id:
-                    return {"success": False, "error": "device_id is required to turn on a plug"}
+                    return {
+                        "success": False,
+                        "message": "device_id is required to turn on a plug",
+                        "error": "device_id is required to turn on a plug",
+                    }
                 success = await tapo_plug_manager.toggle_device(device_id, True)
                 if success:
                     device = await tapo_plug_manager.get_device_status(device_id)
@@ -415,11 +474,15 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                             "power_state": device.power_state if device else True,
                         },
                     }
-                return {"success": False, "error": "Failed to turn on plug"}
+                return {"success": False, "message": "Failed to turn on plug", "error": "Failed to turn on plug"}
 
             if action_lower in ["turn_off_plug", "turn off plug", "off plug"]:
                 if not device_id:
-                    return {"success": False, "error": "device_id is required to turn off a plug"}
+                    return {
+                        "success": False,
+                        "message": "device_id is required to turn off a plug",
+                        "error": "device_id is required to turn off a plug",
+                    }
                 success = await tapo_plug_manager.toggle_device(device_id, False)
                 if success:
                     device = await tapo_plug_manager.get_device_status(device_id)
@@ -431,7 +494,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                             "power_state": device.power_state if device else False,
                         },
                     }
-                return {"success": False, "error": "Failed to turn off plug"}
+                return {"success": False, "message": "Failed to turn off plug", "error": "Failed to turn off plug"}
 
             # Kitchen actions
             if action_lower in ["list_kitchen", "list kitchen"]:
@@ -467,7 +530,11 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                     None,
                 )
                 if not kettle:
-                    return {"success": False, "error": "Zojirushi kettle not found"}
+                    return {
+                        "success": False,
+                        "message": "Zojirushi kettle not found",
+                        "error": "Zojirushi kettle not found",
+                    }
                 success = await tapo_plug_manager.toggle_device(kettle.device_id, True)
                 return {
                     "success": success,
@@ -483,7 +550,11 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                     None,
                 )
                 if not kettle:
-                    return {"success": False, "error": "Zojirushi kettle not found"}
+                    return {
+                        "success": False,
+                        "message": "Zojirushi kettle not found",
+                        "error": "Zojirushi kettle not found",
+                    }
                 success = await tapo_plug_manager.toggle_device(kettle.device_id, False)
                 return {
                     "success": success,
@@ -537,6 +608,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
 
             return {
                 "success": False,
+                "message": error_msg,
                 "error": error_msg,
                 "available_actions": list(DEVICE_ACTIONS.keys()),
             }
@@ -556,6 +628,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
 
             return {
                 "success": False,
+                "message": error_msg,
                 "error": error_msg,
                 "action": action,
                 "exception_type": type(e).__name__,

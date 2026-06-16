@@ -96,7 +96,7 @@ def register_lighting_management_tool(mcp: FastMCP) -> None:
             if action not in LIGHTING_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(LIGHTING_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(LIGHTING_ACTIONS.keys())}",
                 }
 
             logger.info(f"Executing lighting management action: {action}")
@@ -130,7 +130,7 @@ def register_lighting_management_tool(mcp: FastMCP) -> None:
                 return await _get_light_effects()
             return {
                 "success": False,
-                "error": f"Action '{action}' not implemented yet",
+                "message": f"Action '{action}' not implemented yet",
             }
 
         except Exception as e:
@@ -259,6 +259,7 @@ async def _get_light_status(device_id: str | None) -> dict[str, Any]:
     if not device_id:
         return {
             "success": False,
+            "message": "device_id is required for status action",
             "error": "device_id is required for status action",
         }
 
@@ -268,7 +269,7 @@ async def _get_light_status(device_id: str | None) -> dict[str, Any]:
         if not light:
             return {
                 "success": False,
-                "error": f"Light '{device_id}' not found",
+                "message": f"Light '{device_id}' not found",
                 "available_lights": await _get_light_ids(),
             }
 
@@ -315,41 +316,41 @@ async def _get_light_status(device_id: str | None) -> dict[str, Any]:
 
 
 async def _control_light(
-    device_id: str | None,
-    power_state: str | None,
-    brightness_percent: int | None,
-    hue: int | None,
-    saturation: int | None,
-    rgb: list[int] | None,
-    effect: str | None,
-    animation_speed: int | None,
+    device_id: str | None = None,
+    power_state: str | None = None,
+    brightness_percent: int | None = None,
+    hue: int | None = None,
+    saturation: int | None = None,
+    rgb: list[int] | None = None,
+    effect: str | None = None,
+    animation_speed: int | None = None,
 ) -> dict[str, Any]:
     """Control a smart light with various parameters."""
     if not device_id:
         return {
             "success": False,
+            "message": "device_id is required for control action",
             "error": "device_id is required for control action",
         }
 
     # Validate that at least one control parameter is provided
     control_params = [power_state, brightness_percent, hue, saturation, rgb, effect]
     if not any(control_params):
-        return {
-            "success": False,
-            "error": "At least one control parameter must be provided (power_state, brightness_percent, hue, saturation, rgb, or effect)",
-        }
+        msg = (
+            "At least one control parameter must be provided"
+            " (power_state, brightness_percent, hue, saturation, rgb, or effect)"
+        )
+        return {"success": False, "message": msg, "error": msg}
 
     try:
-        # Build control parameters
-        control_kwargs = {}
+        action_desc = ""
+        is_toggle = power_state and power_state.lower() == "toggle"
 
-        if power_state:
-            if power_state.lower() == "toggle":
-                success = await tapo_lighting_manager.toggle_light(device_id)
-                action_desc = "toggled"
-            else:
-                control_kwargs["on"] = power_state.lower() == "on"
-                action_desc = f"turned {power_state}"
+        # Build control parameters (don't call any manager yet)
+        control_kwargs: dict[str, Any] = {}
+        if power_state and not is_toggle:
+            control_kwargs["on"] = power_state.lower() == "on"
+            action_desc = f"turned {power_state}"
 
         if brightness_percent is not None:
             control_kwargs["brightness_percent"] = brightness_percent
@@ -364,6 +365,7 @@ async def _control_light(
             if len(rgb) != 3:
                 return {
                     "success": False,
+                    "message": "RGB parameter must be a list of 3 integers [r, g, b]",
                     "error": "RGB parameter must be a list of 3 integers [r, g, b]",
                 }
             control_kwargs["rgb"] = rgb
@@ -373,11 +375,12 @@ async def _control_light(
             if animation_speed:
                 control_kwargs["animation_speed"] = animation_speed
 
-        # Determine light type and use appropriate manager
-        # First try to find the light in our cached data to determine type
+        # Determine light type — ensure managers are initialized first
         light_type = None
+        hue_manager = get_hue_manager()
         try:
-            # Check if it's a Tapo light
+            if not tapo_lighting_manager._initialized:
+                await tapo_lighting_manager.initialize()
             if tapo_lighting_manager._initialized:
                 tapo_light = await tapo_lighting_manager.get_light(device_id)
                 if tapo_light:
@@ -387,10 +390,12 @@ async def _control_light(
 
         if light_type != "tapo":
             try:
-                # Check if it's a Hue light
-                hue_manager = get_hue_manager()
+                if not hue_manager._initialized:
+                    await hue_manager.initialize()
                 if hue_manager._initialized:
-                    hue_light = await hue_manager.get_light(device_id)
+                    # Use get_all_lights which auto-rescans if cache is empty
+                    all_hue = await hue_manager.get_all_lights()
+                    hue_light = next((hl for hl in all_hue if hl.light_id == device_id), None)
                     if hue_light:
                         light_type = "hue"
             except Exception:
@@ -399,24 +404,21 @@ async def _control_light(
         if not light_type:
             return {
                 "success": False,
-                "error": f"Light '{device_id}' not found or not reachable. Check device ID and ensure the device is powered on.",
+                "message": f"Light '{device_id}' not found or not reachable."
+                " Check device ID and ensure the device is powered on.",
             }
 
-        # Apply control based on light type
+        # Execute control based on light type
         if light_type == "tapo":
-            # Handle Tapo-specific features like effects
-            if effect:
-                control_kwargs["effect"] = effect
-                if animation_speed:
-                    control_kwargs["animation_speed"] = animation_speed
-
-            if control_kwargs:
-                success = await tapo_lighting_manager.set_light_state(device_id, **control_kwargs)
-            elif power_state and power_state.lower() == "toggle":
+            if is_toggle:
                 success = await tapo_lighting_manager.toggle_light(device_id)
+                action_desc = "toggled"
+            elif control_kwargs:
+                success = await tapo_lighting_manager.set_light_state(device_id, **control_kwargs)
             else:
                 return {
                     "success": False,
+                    "message": "No valid control parameters provided",
                     "error": "No valid control parameters provided",
                 }
 
@@ -437,7 +439,7 @@ async def _control_light(
                     else:
                         return {
                             "success": False,
-                            "error": f"Cannot toggle Hue light '{device_id}' - unable to read current state",
+                            "message": f"Cannot toggle Hue light '{device_id}' - unable to read current state",
                         }
                 else:
                     hue_kwargs["on"] = power_state.lower() == "on"
@@ -465,12 +467,14 @@ async def _control_light(
         else:
             return {
                 "success": False,
-                "error": f"Unsupported light type: {light_type}",
+                "message": f"Unsupported light type: {light_type}",
             }
 
         if success:
-            # Get updated light status
-            light = await tapo_lighting_manager.get_light(device_id)
+            if light_type == "tapo":
+                light = await tapo_lighting_manager.get_light(device_id)
+            elif light_type == "hue":
+                light = await hue_manager.get_light(device_id)
 
             # Build description of changes
             changes = []
@@ -495,12 +499,12 @@ async def _control_light(
                     "success": True,
                     "changes_applied": changes,
                     "current_state": {
-                        "on": light.on if light else None,
-                        "brightness": light.brightness if light else None,
-                        "rgb": light.rgb if light else None,
-                        "hue": light.hue if light else None,
-                        "saturation": light.saturation if light else None,
-                        "effect": light.effect if light else None,
+                        "on": getattr(light, "on", None),
+                        "brightness": getattr(light, "brightness", None),
+                        "rgb": getattr(light, "rgb", None),
+                        "hue": getattr(light, "hue", None),
+                        "saturation": getattr(light, "saturation", None),
+                        "effect": getattr(light, "effect", None),
                     }
                     if light
                     else None,
@@ -570,5 +574,5 @@ async def _get_light_ids() -> list[str]:
     try:
         lights = await tapo_lighting_manager.get_all_lights()
         return [light.device_id for light in lights]
-    except:
+    except Exception:
         return []

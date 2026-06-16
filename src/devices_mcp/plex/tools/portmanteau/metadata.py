@@ -186,6 +186,7 @@ async def plex_metadata(
             if not item_id and not library_id:
                 return {
                     "success": False,
+                    "message": "Either item_id or library_id is required for refresh operation",
                     "error": "Either item_id or library_id is required for refresh operation",
                     "error_code": "MISSING_ID",
                     "suggestions": [
@@ -216,7 +217,7 @@ async def plex_metadata(
                     results.append({"library_id": lib_id, "success": True, "result": result})
                 except Exception as e:
                     logger.exception("Error refreshing library {lib_id}:")
-                    results.append({"library_id": lib_id, "success": False, "error": str(e)})
+                    results.append({"library_id": lib_id, "success": False, "message": str(e), "error": str(e)})
 
             return {
                 "success": True,
@@ -232,6 +233,7 @@ async def plex_metadata(
             if not item_id:
                 return {
                     "success": False,
+                    "message": "item_id is required for fix_match operation",
                     "error": "item_id is required for fix_match operation",
                     "error_code": "MISSING_ITEM_ID",
                     "suggestions": ["Provide item_id parameter"],
@@ -239,6 +241,7 @@ async def plex_metadata(
             if not match_id:
                 return {
                     "success": False,
+                    "message": "match_id is required for fix_match operation",
                     "error": "match_id is required for fix_match operation",
                     "error_code": "MISSING_MATCH_ID",
                     "suggestions": ["Provide match_id parameter with correct match identifier"],
@@ -246,6 +249,7 @@ async def plex_metadata(
             if not media_type:
                 return {
                     "success": False,
+                    "message": "media_type is required for fix_match operation",
                     "error": "media_type is required for fix_match operation",
                     "error_code": "MISSING_MEDIA_TYPE",
                     "suggestions": [
@@ -269,6 +273,7 @@ async def plex_metadata(
             if not item_id:
                 return {
                     "success": False,
+                    "message": "item_id is required for update operation",
                     "error": "item_id is required for update operation",
                     "error_code": "MISSING_ITEM_ID",
                     "suggestions": ["Provide item_id parameter"],
@@ -276,6 +281,7 @@ async def plex_metadata(
             if not metadata:
                 return {
                     "success": False,
+                    "message": "metadata dictionary is required for update operation",
                     "error": "metadata dictionary is required for update operation",
                     "error_code": "MISSING_METADATA",
                     "suggestions": ["Provide metadata parameter with fields to update"],
@@ -327,6 +333,7 @@ async def plex_metadata(
             if not item_id:
                 return {
                     "success": False,
+                    "message": "item_id is required for match operation",
                     "error": "item_id is required for match operation",
                     "error_code": "MISSING_ITEM_ID",
                     "suggestions": ["Provide item_id parameter"],
@@ -347,6 +354,7 @@ async def plex_metadata(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for organize operation",
                     "error": "library_id is required for organize operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id parameter"],
@@ -362,7 +370,7 @@ async def plex_metadata(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: refresh, refresh_all, fix_match, update, analyze, match, organize",
@@ -388,6 +396,7 @@ async def plex_metadata(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -401,7 +410,7 @@ async def plex_metadata(
         )
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

@@ -1,6 +1,5 @@
 """
 Messages Management Portmanteau Tool
-
 Consolidates messaging and communication operations into a single tool for
 system messages, user notifications, and communication management.
 """
@@ -12,8 +11,6 @@ from typing import Any
 from fastmcp import FastMCP
 
 logger = logging.getLogger(__name__)
-
-
 MESSAGES_ACTIONS = {
     "list_messages": "List messages and notifications",
     "send_message": "Send a message or notification",
@@ -42,12 +39,10 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """
         Comprehensive messages and notifications management portmanteau tool.
-
         PORTMANTEAU PATTERN RATIONALE:
         Messages from various sources (system, user, alerts, notifications)
         share common operational patterns. This tool consolidates them to
         reduce complexity while maintaining channel-specific functionality.
-
         Args:
             action (str, required): The operation to perform. Must be one of:
                 - "list_messages": List messages (optional: limit)
@@ -58,7 +53,6 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                 - "get_message_stats": Get messaging statistics
                 - "configure_channels": Configure delivery channels
                 - "test_messaging": Test messaging system
-
             message_id (str | None): Specific message identifier
             recipient (str | None): Message recipient ("user", "admin", "all")
             subject (str | None): Message subject/title
@@ -66,7 +60,6 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
             channel (str): Delivery channel ("dashboard", "email", "sms", "push")
             priority (str): Message priority ("low", "normal", "high", "urgent")
             limit (int): Maximum messages to return (default: 50)
-
         Returns:
             dict[str, Any]: Operation result with message data and status
         """
@@ -74,14 +67,11 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
             if action not in MESSAGES_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(MESSAGES_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(MESSAGES_ACTIONS.keys())}",
                 }
-
             logger.info(f"Executing messages management action: {action}")
-
             # Mock implementations for messages system
             # In a real implementation, these would connect to actual messaging services
-
             if action == "list_messages":
                 messages = [
                     {
@@ -130,7 +120,6 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                         "actions_available": ["view_attachment", "archive"],
                     },
                 ]
-
                 return {
                     "success": True,
                     "action": action,
@@ -139,14 +128,13 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     "total_available": len(messages),
                     "unread_count": len([m for m in messages if not m.get("read")]),
                 }
-
             if action == "send_message":
                 if not recipient or not subject or not body:
                     return {
                         "success": False,
+                        "message": "recipient, subject, and body are required for send_message",
                         "error": "recipient, subject, and body are required for send_message",
                     }
-
                 # Mock message sending
                 sent_message = {
                     "id": f"msg_sent_{asyncio.get_event_loop().time()}",
@@ -163,20 +151,18 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     "estimated_delivery_time": "immediate" if channel == "dashboard" else "2-5 minutes",
                     "tracking_id": f"track_{asyncio.get_event_loop().time()}",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "message": sent_message,
                 }
-
             if action == "get_message_details":
                 if not message_id:
                     return {
                         "success": False,
+                        "message": "message_id is required for get_message_details",
                         "error": "message_id is required for get_message_details",
                     }
-
                 # Mock detailed message info
                 message_details = {
                     "id": message_id,
@@ -210,17 +196,18 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     "escalation_level": 1,
                     "response_required": True,
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "message": message_details,
                 }
-
             if action == "mark_as_read":
                 if not message_id:
-                    return {"success": False, "error": "message_id is required for mark_as_read"}
-
+                    return {
+                        "success": False,
+                        "message": "message_id is required for mark_as_read",
+                        "error": "message_id is required for mark_as_read",
+                    }
                 # Mock mark as read
                 read_result = {
                     "message_id": message_id,
@@ -230,17 +217,18 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     "notification_updated": True,
                     "unread_count_updated": True,
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "result": read_result,
                 }
-
             if action == "delete_message":
                 if not message_id:
-                    return {"success": False, "error": "message_id is required for delete_message"}
-
+                    return {
+                        "success": False,
+                        "message": "message_id is required for delete_message",
+                        "error": "message_id is required for delete_message",
+                    }
                 # Mock message deletion
                 delete_result = {
                     "message_id": message_id,
@@ -252,13 +240,11 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     "recovery_possible": True,
                     "recovery_window_days": 30,
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "result": delete_result,
                 }
-
             if action == "get_message_stats":
                 # Mock messaging statistics
                 stats = {
@@ -278,13 +264,11 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     },
                     "timestamp": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "stats": stats,
                 }
-
             if action == "configure_channels":
                 # Mock channel configuration
                 channel_config = {
@@ -324,13 +308,11 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                     },
                     "updated_at": "2025-12-27T04:00:00Z",
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "configuration": channel_config,
                 }
-
             if action == "test_messaging":
                 # Mock messaging system test
                 test_results = {
@@ -358,15 +340,20 @@ def register_messages_management_tool(mcp: FastMCP) -> None:
                         "Test push notifications when mobile app is available",
                     ],
                 }
-
                 return {
                     "success": True,
                     "action": action,
                     "test_results": test_results,
                 }
-
-            return {"success": False, "error": f"Action '{action}' not implemented"}
-
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
         except Exception as e:
             logger.exception("Error in messages management action '{action}':")
-            return {"success": False, "error": f"Failed to execute action '{action}': {e!s}"}
+            return {
+                "success": False,
+                "message": f"Failed to execute action '{action}': {e!s}",
+                "error": f"Failed to execute action '{action}': {e!s}",
+            }

@@ -79,6 +79,7 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'start_surveillance' operation.",
                         "error": "camera_id is required for 'start_surveillance' operation.",
                     }
                 interval = kwargs.get("interval", 30)
@@ -98,6 +99,7 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'stop_surveillance' operation.",
                         "error": "camera_id is required for 'stop_surveillance' operation.",
                     }
                 return await self._stop_surveillance(camera_id)
@@ -105,6 +107,7 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'get_surveillance_events' operation.",
                         "error": "camera_id is required for 'get_surveillance_events' operation.",
                     }
                 limit = kwargs.get("limit", 10)
@@ -113,6 +116,7 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'enable_led' operation.",
                         "error": "camera_id is required for 'enable_led' operation.",
                     }
                 flash_interval = kwargs.get("flash_interval", 5)
@@ -122,6 +126,7 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'disable_led' operation.",
                         "error": "camera_id is required for 'disable_led' operation.",
                     }
                 return await self._disable_led_control(camera_id)
@@ -129,6 +134,7 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'enable_speakerphone' operation.",
                         "error": "camera_id is required for 'enable_speakerphone' operation.",
                     }
                 return await self._enable_speakerphone(camera_id)
@@ -136,6 +142,7 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'disable_speakerphone' operation.",
                         "error": "camera_id is required for 'disable_speakerphone' operation.",
                     }
                 return await self._disable_speakerphone(camera_id)
@@ -143,11 +150,13 @@ class USBCameraManagementTool(BaseTool):
                 if not camera_id:
                     return {
                         "success": False,
+                        "message": "camera_id is required for 'get_speakerphone_status' operation.",
                         "error": "camera_id is required for 'get_speakerphone_status' operation.",
                     }
                 return await self._get_speakerphone_status(camera_id)
             return {
                 "success": False,
+                "message": f"Unknown operation: {operation}",
                 "error": f"Unknown operation: {operation}",
                 "available_operations": [
                     "detect",
@@ -170,6 +179,7 @@ class USBCameraManagementTool(BaseTool):
             logger.exception(f"USB camera management {operation} failed")
             return {
                 "success": False,
+                "message": f"USB camera management failed: {e}",
                 "error": str(e),
                 "operation": operation,
             }
@@ -235,6 +245,7 @@ class USBCameraManagementTool(BaseTool):
         except ImportError:
             return {
                 "success": False,
+                "message": "OpenCV not installed. Install with: pip install opencv-python",
                 "error": "OpenCV not installed. Install with: pip install opencv-python",
                 "install_command": "pip install opencv-python",
             }
@@ -275,6 +286,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {
                 "success": False,
+                "message": f"Failed to list USB cameras: {e}",
                 "error": f"Failed to list USB cameras: {e}",
             }
 
@@ -283,6 +295,7 @@ class USBCameraManagementTool(BaseTool):
         if camera_id is None:
             return {
                 "success": False,
+                "message": "camera_id is required for stream operation",
                 "error": "camera_id is required for stream operation",
             }
 
@@ -301,6 +314,7 @@ class USBCameraManagementTool(BaseTool):
             if not target_camera:
                 return {
                     "success": False,
+                    "message": f"USB camera with device_id {camera_id} not found",
                     "error": f"USB camera with device_id {camera_id} not found",
                     "available_cameras": [
                         c["status"].get("device_id") for c in cameras_info if c["status"].get("device_id") is not None
@@ -328,12 +342,14 @@ class USBCameraManagementTool(BaseTool):
                 }
             return {
                 "success": False,
+                "message": f"Failed to get camera instance for {target_camera['name']}",
                 "error": f"Failed to get camera instance for {target_camera['name']}",
             }
 
         except Exception as e:
             return {
                 "success": False,
+                "message": f"Failed to setup stream: {e}",
                 "error": f"Failed to setup stream: {e}",
             }
 
@@ -362,6 +378,7 @@ class USBCameraManagementTool(BaseTool):
 
                 return {
                     "success": False,
+                    "message": f"USB camera with device_id {camera_id} not found",
                     "error": f"USB camera with device_id {camera_id} not found",
                 }
             # Return all USB cameras
@@ -384,6 +401,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {
                 "success": False,
+                "message": f"Failed to get camera status: {e}",
                 "error": f"Failed to get camera status: {e}",
             }
 
@@ -394,6 +412,7 @@ class USBCameraManagementTool(BaseTool):
         if camera_id is None:
             return {
                 "success": False,
+                "message": "camera_id is required for configure operation",
                 "error": "camera_id is required for configure operation",
             }
 
@@ -420,6 +439,7 @@ class USBCameraManagementTool(BaseTool):
         except Exception as e:
             return {
                 "success": False,
+                "message": f"Failed to configure camera: {e}",
                 "error": f"Failed to configure camera: {e}",
             }
 
@@ -498,10 +518,15 @@ class USBCameraManagementTool(BaseTool):
                 }
             return {
                 "success": False,
+                "message": f"Failed to start surveillance for camera '{camera_id}'",
                 "error": f"Failed to start surveillance for camera '{camera_id}'",
             }
         except Exception as e:
-            return {"success": False, "error": f"Error starting surveillance: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error starting surveillance: {e!s}",
+                "error": f"Error starting surveillance: {e!s}",
+            }
 
     async def _stop_surveillance(self, camera_id: str) -> dict[str, Any]:
         """Stop surveillance mode for a USB camera."""
@@ -518,10 +543,15 @@ class USBCameraManagementTool(BaseTool):
                 }
             return {
                 "success": False,
+                "message": f"Failed to stop surveillance for camera '{camera_id}'",
                 "error": f"Failed to stop surveillance for camera '{camera_id}'",
             }
         except Exception as e:
-            return {"success": False, "error": f"Error stopping surveillance: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error stopping surveillance: {e!s}",
+                "error": f"Error stopping surveillance: {e!s}",
+            }
 
     async def _get_surveillance_events(self, camera_id: str, limit: int = 10) -> dict[str, Any]:
         """Get surveillance events for a USB camera."""
@@ -537,7 +567,11 @@ class USBCameraManagementTool(BaseTool):
                 "count": len(events),
             }
         except Exception as e:
-            return {"success": False, "error": f"Error getting surveillance events: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error getting surveillance events: {e!s}",
+                "error": f"Error getting surveillance events: {e!s}",
+            }
 
     async def _enable_led_control(
         self, camera_id: str, flash_interval: int = 5, flash_duration: float = 0.5
@@ -556,10 +590,15 @@ class USBCameraManagementTool(BaseTool):
                 }
             return {
                 "success": False,
+                "message": f"Failed to enable LED control for camera '{camera_id}'",
                 "error": f"Failed to enable LED control for camera '{camera_id}'",
             }
         except Exception as e:
-            return {"success": False, "error": f"Error enabling LED control: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error enabling LED control: {e!s}",
+                "error": f"Error enabling LED control: {e!s}",
+            }
 
     async def _disable_led_control(self, camera_id: str) -> dict[str, Any]:
         """Disable LED control for a USB camera."""
@@ -576,10 +615,15 @@ class USBCameraManagementTool(BaseTool):
                 }
             return {
                 "success": False,
+                "message": f"Failed to disable LED control for camera '{camera_id}'",
                 "error": f"Failed to disable LED control for camera '{camera_id}'",
             }
         except Exception as e:
-            return {"success": False, "error": f"Error disabling LED control: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error disabling LED control: {e!s}",
+                "error": f"Error disabling LED control: {e!s}",
+            }
 
     async def _enable_speakerphone(self, camera_id: str) -> dict[str, Any]:
         """Enable speakerphone for a USB camera."""
@@ -596,10 +640,15 @@ class USBCameraManagementTool(BaseTool):
                 }
             return {
                 "success": False,
+                "message": f"Failed to enable speakerphone for camera '{camera_id}'",
                 "error": f"Failed to enable speakerphone for camera '{camera_id}'",
             }
         except Exception as e:
-            return {"success": False, "error": f"Error enabling speakerphone: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error enabling speakerphone: {e!s}",
+                "error": f"Error enabling speakerphone: {e!s}",
+            }
 
     async def _disable_speakerphone(self, camera_id: str) -> dict[str, Any]:
         """Disable speakerphone for a USB camera."""
@@ -616,10 +665,15 @@ class USBCameraManagementTool(BaseTool):
                 }
             return {
                 "success": False,
+                "message": f"Failed to disable speakerphone for camera '{camera_id}'",
                 "error": f"Failed to disable speakerphone for camera '{camera_id}'",
             }
         except Exception as e:
-            return {"success": False, "error": f"Error disabling speakerphone: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error disabling speakerphone: {e!s}",
+                "error": f"Error disabling speakerphone: {e!s}",
+            }
 
     async def _get_speakerphone_status(self, camera_id: str) -> dict[str, Any]:
         """Get speakerphone status for a USB camera."""
@@ -634,4 +688,8 @@ class USBCameraManagementTool(BaseTool):
                 "speakerphone_status": status,
             }
         except Exception as e:
-            return {"success": False, "error": f"Error getting speakerphone status: {e!s}"}
+            return {
+                "success": False,
+                "message": f"Error getting speakerphone status: {e!s}",
+                "error": f"Error getting speakerphone status: {e!s}",
+            }

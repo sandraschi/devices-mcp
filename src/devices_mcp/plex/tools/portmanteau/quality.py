@@ -149,6 +149,7 @@ async def plex_quality(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for get_profile operation",
                     "error": "profile_name is required for get_profile operation",
                     "error_code": "MISSING_PARAMETER",
                     "suggestions": ["Provide a profile name"],
@@ -166,12 +167,14 @@ async def plex_quality(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for create_profile operation",
                     "error": "profile_name is required for create_profile operation",
                     "error_code": "MISSING_PARAMETER",
                 }
             if not settings:
                 return {
                     "success": False,
+                    "message": "settings is required for create_profile operation",
                     "error": "settings is required for create_profile operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -189,12 +192,14 @@ async def plex_quality(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for update_profile operation",
                     "error": "profile_name is required for update_profile operation",
                     "error_code": "MISSING_PARAMETER",
                 }
             if not settings:
                 return {
                     "success": False,
+                    "message": "settings is required for update_profile operation",
                     "error": "settings is required for update_profile operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -211,6 +216,7 @@ async def plex_quality(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for delete_profile operation",
                     "error": "profile_name is required for delete_profile operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -227,6 +233,7 @@ async def plex_quality(
             if not profile_name:
                 return {
                     "success": False,
+                    "message": "profile_name is required for set_default operation",
                     "error": "profile_name is required for set_default operation",
                     "error_code": "MISSING_PARAMETER",
                 }
@@ -242,7 +249,7 @@ async def plex_quality(
 
         return {
             "success": False,
-            "error": f"Unknown operation: {operation}",
+            "message": f"Unknown operation: {operation}",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Use one of: list_profiles, get_profile, create_profile, update_profile, delete_profile, set_default"
@@ -253,6 +260,7 @@ async def plex_quality(
         logger.exception("Error in plex_quality operation '{operation}':")
         return {
             "success": False,
+            "message": str(e),
             "error": str(e),
             "error_code": "EXECUTION_ERROR",
             "suggestions": [

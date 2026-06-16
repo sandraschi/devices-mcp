@@ -198,6 +198,7 @@ async def plex_media(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for browse operation",
                     "error": "library_id is required for browse operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": [
@@ -247,6 +248,7 @@ async def plex_media(
             if not media_key:
                 return {
                     "success": False,
+                    "message": "media_key is required for get_details operation",
                     "error": "media_key is required for get_details operation",
                     "error_code": "MISSING_MEDIA_KEY",
                     "suggestions": [
@@ -274,6 +276,7 @@ async def plex_media(
             if not media_key:
                 return {
                     "success": False,
+                    "message": "media_key is required for update_metadata operation",
                     "error": "media_key is required for update_metadata operation",
                     "error_code": "MISSING_MEDIA_KEY",
                     "suggestions": ["Get media_key from browse or search results"],
@@ -282,6 +285,7 @@ async def plex_media(
             if not metadata:
                 return {
                     "success": False,
+                    "message": "metadata dictionary is required for update_metadata operation",
                     "error": "metadata dictionary is required for update_metadata operation",
                     "error_code": "MISSING_METADATA",
                     "suggestions": [
@@ -302,7 +306,7 @@ async def plex_media(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: browse, search, get_details, get_recent, update_metadata",
@@ -335,6 +339,7 @@ async def plex_media(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -345,7 +350,7 @@ async def plex_media(
         logger.exception("Unexpected error in plex_media operation '{operation}':")
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

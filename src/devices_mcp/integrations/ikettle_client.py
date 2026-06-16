@@ -276,8 +276,12 @@ class IKettleClient:
                     "coffee_temperature": coffee_temp,
                     "delay_minutes": delay_minutes,
                 }
-            return {"success": False, "error": "Failed to schedule morning coffee"}
+            return {
+                "success": False,
+                "message": "Failed to schedule morning coffee",
+                "error": "Failed to schedule morning coffee",
+            }
 
         except Exception as e:
             logger.exception("Error setting up morning routine:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}

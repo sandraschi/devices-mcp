@@ -1,5 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod backend;
+mod tray;
+
 use std::net::{SocketAddr, TcpStream};
 use std::path::PathBuf;
 use std::sync::{
@@ -12,13 +15,10 @@ use tauri_plugin_shell::ShellExt;
 
 const APP_URL: &str = "http://127.0.0.1:10717/app/";
 const BACKEND_ADDR: &str = "127.0.0.1:10717";
-
 const SIDECAR_CAMERA: &str = "binaries/devices-mcp-camera";
-const SIDECAR_BACKEND: &str = "binaries/devices-mcp-backend";
 
 struct SidecarState {
     camera: Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
-    backend: Mutex<Option<tauri_plugin_shell::process::CommandChild>>,
 }
 
 fn repo_root() -> PathBuf {
@@ -74,25 +74,6 @@ async fn spawn_dev_command(
     cmd.spawn().map_err(|e| format!("Dev spawn failed: {e}"))
 }
 
-async fn watch_backend_stdout(
-    mut rx: tauri::async_runtime::Receiver<tauri_plugin_shell::process::CommandEvent>,
-    ready: Arc<AtomicBool>,
-) {
-    use tauri_plugin_shell::process::CommandEvent;
-    while let Some(event) = rx.recv().await {
-        if let CommandEvent::Stdout(line) | CommandEvent::Stderr(line) = event {
-            let text = String::from_utf8_lossy(&line);
-            eprintln!("[backend] {}", text.trim());
-            if text.contains("Uvicorn running")
-                || text.contains("Application startup complete")
-                || text.contains("Started server process")
-            {
-                ready.store(true, Ordering::SeqCst);
-            }
-        }
-    }
-}
-
 async fn start_camera(app: &tauri::AppHandle, state: &tauri::State<'_, SidecarState>) -> Result<(), String> {
     #[cfg(debug_assertions)]
     {
@@ -114,69 +95,9 @@ async fn start_camera(app: &tauri::AppHandle, state: &tauri::State<'_, SidecarSt
 
     #[cfg(not(debug_assertions))]
     {
-        let (_rx, child) = spawn_sidecar(app, SIDECAR_CAMERA, &[])?;
-        *state.camera.lock().unwrap() = Some(child);
+        let _ = (app, state);
         Ok(())
     }
-}
-
-async fn start_backend(
-    app: &tauri::AppHandle,
-    state: &tauri::State<'_, SidecarState>,
-    ready: Arc<AtomicBool>,
-) -> Result<(), String> {
-    if is_backend_listening() {
-        eprintln!("Reusing existing backend on {BACKEND_ADDR} (NSSM/service or prior instance)");
-        ready.store(true, Ordering::SeqCst);
-        return Ok(());
-    }
-
-    let spawn_result = {
-        #[cfg(debug_assertions)]
-        {
-            let web_sota = repo_root().join("web-sota");
-            spawn_dev_command(
-                app,
-                web_sota,
-                vec![
-                    "run".into(),
-                    "python".into(),
-                    "-m".into(),
-                    "backend.server".into(),
-                    "--host".into(),
-                    "127.0.0.1".into(),
-                    "--port".into(),
-                    "10717".into(),
-                ],
-            )
-            .await
-        }
-
-        #[cfg(not(debug_assertions))]
-        {
-            spawn_sidecar(
-                app,
-                SIDECAR_BACKEND,
-                &["--host", "127.0.0.1", "--port", "10717"],
-            )
-        }
-    };
-
-    let (rx, child) = match spawn_result {
-        Ok(pair) => pair,
-        Err(e) => {
-            if is_backend_listening() {
-                eprintln!("Sidecar spawn failed but backend is up: {e}");
-                ready.store(true, Ordering::SeqCst);
-                return Ok(());
-            }
-            return Err(e);
-        }
-    };
-
-    *state.backend.lock().unwrap() = Some(child);
-    tauri::async_runtime::spawn(watch_backend_stdout(rx, ready));
-    Ok(())
 }
 
 fn open_dashboard(app: &tauri::AppHandle) {
@@ -189,26 +110,30 @@ fn open_dashboard(app: &tauri::AppHandle) {
 
 async fn boot_services(app: tauri::AppHandle) {
     let ready = Arc::new(AtomicBool::new(false));
-    let state = app.state::<SidecarState>();
+    let sidecar_state = app.state::<SidecarState>();
+    let backend_state = app.state::<backend::BackendProcess>();
 
     if is_backend_listening() {
         ready.store(true, Ordering::SeqCst);
     }
 
-    if let Err(e) = start_camera(&app, &state).await {
+    if let Err(e) = start_camera(&app, &sidecar_state).await {
         eprintln!("Camera helper error: {e}");
         let _ = app.emit("backend-status", format!("camera error: {e}"));
     }
 
     tokio::time::sleep(Duration::from_secs(1)).await;
 
-    if let Err(e) = start_backend(&app, &state, ready.clone()).await {
-        eprintln!("Backend error: {e}");
-        let _ = app.emit("backend-status", format!("error: {e}"));
-        if is_backend_listening() {
-            open_dashboard(&app);
+    // Backend via std::process::Command (embedded bundle.resources)
+    if !is_backend_listening() {
+        if let Err(e) = backend::spawn_backend(app.clone(), backend_state.inner()) {
+            eprintln!("Backend error: {e}");
+            let _ = app.emit("backend-status", format!("error: {e}"));
+            if is_backend_listening() {
+                open_dashboard(&app);
+            }
+            return;
         }
-        return;
     }
 
     if ready.load(Ordering::SeqCst) {
@@ -238,19 +163,32 @@ async fn boot_services(app: tauri::AppHandle) {
 }
 
 fn main() {
+    let poller_running = Arc::new(AtomicBool::new(true));
+    let poller_flag = poller_running.clone();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_notification::init())
         .manage(SidecarState {
             camera: Mutex::new(None),
-            backend: Mutex::new(None),
         })
-        .setup(|app| {
+        .manage(backend::BackendProcess(std::sync::Mutex::new(None)))
+        .setup(move |app| {
             let handle = app.handle().clone();
+
+            if let Err(e) = tray::setup_tray(&handle) {
+                eprintln!("Tray setup error: {e}");
+            }
+
+            let boot_handle = handle.clone();
             tauri::async_runtime::spawn(async move {
-                boot_services(handle).await;
+                boot_services(boot_handle).await;
             });
+
+            tray::start_doorbell_poller(handle.clone(), poller_flag.clone());
+
             #[cfg(debug_assertions)]
             if let Some(window) = app.get_webview_window("main") {
                 window.open_devtools();
@@ -259,14 +197,14 @@ fn main() {
         })
         .build(tauri::generate_context!())
         .expect("error building tauri application")
-        .run(|app, event| {
+        .run(move |app, event| {
             if let tauri::RunEvent::Exit = event {
-                let backend = app.state::<SidecarState>().backend.lock().unwrap().take();
+                poller_running.store(false, Ordering::SeqCst);
                 let camera = app.state::<SidecarState>().camera.lock().unwrap().take();
-                if let Some(child) = backend {
+                if let Some(child) = camera {
                     let _ = child.kill();
                 }
-                if let Some(child) = camera {
+                if let Some(mut child) = app.state::<backend::BackendProcess>().0.lock().unwrap().take() {
                     let _ = child.kill();
                 }
             }

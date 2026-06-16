@@ -64,7 +64,7 @@ class PrivacySettingsTool(BaseTool):
                 return await self._configure_data_protection(camera_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'privacy_mode' or 'data_protection'",
+                "message": f"Invalid operation: {operation}. Must be 'privacy_mode' or 'data_protection'",
                 "timestamp": time.time(),
             }
 
@@ -72,6 +72,7 @@ class PrivacySettingsTool(BaseTool):
             logger.exception(f"Privacy settings {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "camera_id": camera_id,
@@ -89,6 +90,7 @@ class PrivacySettingsTool(BaseTool):
         if enabled is None:
             return {
                 "success": False,
+                "message": "Enabled parameter is required for privacy_mode operation",
                 "error": "Enabled parameter is required for privacy_mode operation",
                 "timestamp": time.time(),
             }
@@ -97,7 +99,7 @@ class PrivacySettingsTool(BaseTool):
         if privacy_type not in valid_privacy_types:
             return {
                 "success": False,
-                "error": f"Invalid privacy type: {privacy_type}. Must be one of: {valid_privacy_types}",
+                "message": f"Invalid privacy type: {privacy_type}. Must be one of: {valid_privacy_types}",
                 "timestamp": time.time(),
             }
 

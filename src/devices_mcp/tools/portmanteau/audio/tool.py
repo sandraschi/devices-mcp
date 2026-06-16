@@ -86,10 +86,8 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
     ) -> dict[str, Any]:
         """
         Comprehensive audio management portmanteau tool - "Alexa 2".
-
         Consolidates ALL audio operations into a single interface: streaming, TTS, STT,
         alarms, voice commands, and recording.
-
         Args:
             action: The operation to perform.
                 STREAMING: "get_url", "capabilities", "player_url", "vlc_command"
@@ -107,7 +105,6 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
             file_path: Path to audio file for play_file action.
             duration: Recording/listening duration in seconds (default: 5.0).
             wake_word: Custom wake word for voice_command action.
-
         Returns:
             Operation-specific result dict.
         """
@@ -115,12 +112,10 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
             if action not in AUDIO_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(AUDIO_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(AUDIO_ACTIONS.keys())}",
                     "available_actions": AUDIO_ACTIONS,
                 }
-
             logger.info(f"Executing audio management action: {action}")
-
             if action == "capabilities":
                 stt_primary = (
                     "faster-whisper"
@@ -140,7 +135,6 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     if PYTTSX3_AVAILABLE
                     else None
                 )
-
                 return {
                     "success": True,
                     "action": action,
@@ -228,75 +222,86 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                         },
                     },
                 }
-
             if action == "speak":
                 if not text:
-                    return {"success": False, "action": action, "error": "text is required for speak action"}
+                    return {
+                        "success": False,
+                        "message": "text is required for speak action",
+                        "action": action,
+                        "error": "text is required for speak action",
+                    }
                 result = await _speak_text(text, voice=voice, rate=rate, use_edge=use_edge_tts)
                 return {"success": result["success"], "action": action, "data": result}
-
             if action == "announce":
                 if not text:
-                    return {"success": False, "action": action, "error": "text is required for announce action"}
+                    return {
+                        "success": False,
+                        "message": "text is required for announce action",
+                        "action": action,
+                        "error": "text is required for announce action",
+                    }
                 chime_sound = _generate_alarm_sound("chime", repeat=1)
                 await _play_audio_bytes(chime_sound)
                 await asyncio.sleep(0.3)
                 result = await _speak_text(text, voice=voice, rate=rate, use_edge=use_edge_tts)
                 return {"success": result["success"], "action": action, "data": result}
-
             if action == "listen":
                 if not STT_AVAILABLE or not SOUNDDEVICE_AVAILABLE:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "Listen requires whisper and sounddevice. Install: pip install openai-whisper sounddevice soundfile",
                         "error": "Listen requires whisper and sounddevice. Install: pip install openai-whisper sounddevice soundfile",
                     }
                 temp_path, _ = await _record_audio(duration)
                 result = await _transcribe_audio(temp_path)
                 os.unlink(temp_path)
                 return {"success": result["success"], "action": action, "data": result}
-
             if action == "voice_command":
                 result = await _listen_for_command(timeout=duration, wake_word=wake_word or "tapo")
                 return {"success": result["success"], "action": action, "data": result}
-
             if action == "wake_start":
                 result = await _start_wake_listener(wake_word=wake_word or "hey tapo", command_duration=duration)
                 return {"success": result["success"], "action": action, "data": result}
-
             if action == "wake_stop":
                 result = await _stop_wake_listener()
                 return {"success": result["success"], "action": action, "data": result}
-
             if action == "wake_status":
                 status = _get_wake_status()
                 return {"success": True, "action": action, "data": status}
-
             if action == "play_alarm":
                 alarm_sound = _generate_alarm_sound(alarm_type, repeat=repeat)
                 success = await _play_audio_bytes(alarm_sound)
                 return {"success": success, "action": action, "data": {"alarm_type": alarm_type, "repeat": repeat}}
-
             if action == "play_file":
                 if not file_path:
-                    return {"success": False, "action": action, "error": "file_path is required for play_file action"}
+                    return {
+                        "success": False,
+                        "message": "file_path is required for play_file action",
+                        "action": action,
+                        "error": "file_path is required for play_file action",
+                    }
                 if not Path(file_path).exists():
-                    return {"success": False, "action": action, "error": f"File not found: {file_path}"}
+                    return {
+                        "success": False,
+                        "message": f"File not found: {file_path}",
+                        "action": action,
+                        "error": f"File not found: {file_path}",
+                    }
                 with open(file_path, "rb") as f:
                     audio_bytes = f.read()
                 success = await _play_audio_bytes(audio_bytes)
                 return {"success": success, "action": action, "data": {"file": file_path}}
-
             if action == "stop_audio":
                 if SOUNDDEVICE_AVAILABLE:
                     sd.stop()
                 return {"success": True, "action": action, "data": {"message": "Audio stopped"}}
-
             if action == "record":
                 if not SOUNDDEVICE_AVAILABLE:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "Recording requires sounddevice. Install: pip install sounddevice soundfile",
                         "error": "Recording requires sounddevice. Install: pip install sounddevice soundfile",
                     }
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -308,7 +313,6 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     "action": action,
                     "data": {"file": str(output_path), "duration": duration, "size_bytes": len(audio_bytes)},
                 }
-
             if action == "list_devices":
                 devices_info = {"input": [], "output": []}
                 if SOUNDDEVICE_AVAILABLE:
@@ -323,38 +327,44 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                 else:
                     devices_info["error"] = "sounddevice not available"
                 return {"success": True, "action": action, "data": devices_info}
-
             if not camera_id:
-                return {"success": False, "action": action, "error": f"camera_id is required for '{action}' action"}
-
+                return {
+                    "success": False,
+                    "message": f"camera_id is required for '{action}' action",
+                    "action": action,
+                    "error": f"camera_id is required for '{action}' action",
+                }
             from urllib.parse import urlparse
 
             from devices_mcp.core.server import TapoCameraServer
 
             server = await TapoCameraServer.get_instance()
             camera = await server.camera_manager.get_camera(camera_id)
-
             if not camera:
-                return {"success": False, "action": action, "error": f"Camera '{camera_id}' not found"}
-
+                return {
+                    "success": False,
+                    "message": f"Camera '{camera_id}' not found",
+                    "action": action,
+                    "error": f"Camera '{camera_id}' not found",
+                }
             if not await camera.is_connected():
                 await camera.connect()
-
             stream_url = await camera.get_stream_url()
             if not stream_url:
-                return {"success": False, "action": action, "error": f"Could not get stream URL for '{camera_id}'"}
-
+                return {
+                    "success": False,
+                    "message": f"Could not get stream URL for '{camera_id}'",
+                    "action": action,
+                    "error": f"Could not get stream URL for '{camera_id}'",
+                }
             parsed = urlparse(stream_url)
             username = camera.config.params.get("username", "")
             password = camera.config.params.get("password", "")
-
             if username and password:
                 auth_url = f"rtsp://{username}:{password}@{parsed.hostname}:{parsed.port or 554}{parsed.path}"
             else:
                 auth_url = stream_url
-
             safe_url = f"rtsp://{parsed.hostname}:{parsed.port or 554}{parsed.path}"
-
             if action == "get_url":
                 return {
                     "success": True,
@@ -368,7 +378,6 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                         "note": "Open this URL in VLC for video + audio playback",
                     },
                 }
-
             if action == "player_url":
                 return {
                     "success": True,
@@ -380,7 +389,6 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                         "note": "Open player_url in browser for audio controls",
                     },
                 }
-
             if action == "vlc_command":
                 return {
                     "success": True,
@@ -392,9 +400,11 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                         "note": "Run these commands in terminal to play stream with audio",
                     },
                 }
-
-            return {"success": False, "error": f"Action '{action}' not implemented"}
-
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
         except Exception as e:
             logger.exception(f"Error in audio management action '{action}'")
-            return {"success": False, "action": action, "error": str(e)}
+            return {"success": False, "message": str(e), "action": action, "error": str(e)}

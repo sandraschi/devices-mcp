@@ -89,25 +89,25 @@ class HardwareInitializer:
         self.initialization_results = {
             "cameras": results[0]
             if not isinstance(results[0], Exception)
-            else {"success": False, "error": str(results[0])},
+            else {"success": False, "message": str(results[0]), "error": str(results[0])},
             "hue_bridge": results[1]
             if not isinstance(results[1], Exception)
-            else {"success": False, "error": str(results[1])},
+            else {"success": False, "message": str(results[1]), "error": str(results[1])},
             "tapo_lighting": results[2]
             if not isinstance(results[2], Exception)
-            else {"success": False, "error": str(results[2])},
+            else {"success": False, "message": str(results[2]), "error": str(results[2])},
             "tapo_plugs": results[3]
             if not isinstance(results[3], Exception)
-            else {"success": False, "error": str(results[3])},
+            else {"success": False, "message": str(results[3]), "error": str(results[3])},
             "netatmo": results[4]
             if not isinstance(results[4], Exception)
-            else {"success": False, "error": str(results[4])},
+            else {"success": False, "message": str(results[4]), "error": str(results[4])},
             "ring": results[5]
             if not isinstance(results[5], Exception)
-            else {"success": False, "error": str(results[5])},
+            else {"success": False, "message": str(results[5]), "error": str(results[5])},
             "home_assistant": results[6]
             if not isinstance(results[6], Exception)
-            else {"success": False, "error": str(results[6])},
+            else {"success": False, "message": str(results[6]), "error": str(results[6])},
         }
 
         # Summary
@@ -132,10 +132,10 @@ class HardwareInitializer:
             return await asyncio.wait_for(self._init_cameras_internal(), timeout=15.0)
         except TimeoutError:
             logger.exception("[CAMERA] Initialization timed out after 15s")
-            return {"success": False, "error": "Initialization timed out"}
+            return {"success": False, "message": "Camera initialization timed out", "error": "Initialization timed out"}
         except Exception as e:
             logger.exception("[CAMERA] Unexpected error during initialization")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Camera initialization failed: {e}", "error": str(e)}
 
     async def _init_cameras_internal(self) -> dict:
         """Internal camera initialization logic."""
@@ -226,7 +226,7 @@ class HardwareInitializer:
 
         except Exception as e:
             logger.exception("Failed to initialize cameras")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Camera initialization failed: {e}", "error": str(e)}
 
     async def _init_hue_bridge(self) -> dict:
         """Initialize and test Hue Bridge connection."""
@@ -258,6 +258,7 @@ class HardwareInitializer:
                 if not success:
                     return {
                         "success": False,
+                        "message": hue_manager._connection_error or "Hue initialization failed",
                         "error": hue_manager._connection_error or "Initialization failed",
                     }
 
@@ -279,7 +280,7 @@ class HardwareInitializer:
 
         except Exception as e:
             logger.exception("Failed to initialize Hue Bridge")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Hue Bridge initialization failed: {e}", "error": str(e)}
 
     async def _init_tapo_lighting(self) -> dict:
         """Initialize and test Tapo lighting devices."""
@@ -305,6 +306,7 @@ class HardwareInitializer:
                 if not success:
                     return {
                         "success": False,
+                        "message": tapo_lighting_manager._connection_error or "Tapo lighting initialization failed",
                         "error": tapo_lighting_manager._connection_error or "Initialization failed",
                     }
 
@@ -322,7 +324,7 @@ class HardwareInitializer:
 
         except Exception as e:
             logger.exception("Failed to initialize Tapo lighting")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Tapo lighting initialization failed: {e}", "error": str(e)}
 
     async def _init_tapo_plugs(self) -> dict:
         """Initialize and test Tapo P115 smart plugs."""
@@ -340,7 +342,11 @@ class HardwareInitializer:
             try:
                 import tapo
             except ImportError:
-                return {"success": False, "error": "tapo library not installed"}
+                return {
+                    "success": False,
+                    "message": "tapo library not installed",
+                    "error": "tapo library not installed",
+                }
 
             account = energy_cfg.get("account", {})
             username = (
@@ -369,7 +375,11 @@ class HardwareInitializer:
                 }
 
             if not username or not password:
-                return {"success": False, "error": "Tapo account credentials not configured"}
+                return {
+                    "success": False,
+                    "message": "Tapo account credentials not configured",
+                    "error": "Tapo account credentials not configured",
+                }
 
             # Initialize the manager
             if not tapo_plug_manager._initialized:
@@ -419,7 +429,7 @@ class HardwareInitializer:
 
         except Exception as e:
             logger.exception("Failed to initialize Tapo plugs")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Tapo plugs initialization failed: {e}", "error": str(e)}
 
     async def _init_netatmo(self) -> dict:
         """Initialize and test Netatmo weather station."""
@@ -439,7 +449,11 @@ class HardwareInitializer:
             import importlib.util
 
             if importlib.util.find_spec("pyatmo") is None:
-                return {"success": False, "error": "pyatmo library not installed"}
+                return {
+                    "success": False,
+                    "message": "pyatmo library not installed",
+                    "error": "pyatmo library not installed",
+                }
 
             service = None
             try:
@@ -450,7 +464,7 @@ class HardwareInitializer:
                     err = service.last_error or (
                         "Netatmo weather station unavailable — authentication or network issues"
                     )
-                    return {"success": False, "error": err}
+                    return {"success": False, "message": err, "error": err}
 
                 # Test connection by getting stations with timeout (reduced from 5s to 2s)
                 stations = await asyncio.wait_for(service.list_stations(), timeout=2.0)
@@ -468,18 +482,22 @@ class HardwareInitializer:
             except TimeoutError:
                 error_msg = "Connection timeout - network/DNS issue"
                 logger.warning(f"  [TIMEOUT] Netatmo initialization: {error_msg}")
-                return {"success": False, "error": error_msg}
+                return {"success": False, "message": error_msg, "error": error_msg}
             except Exception as e:
                 error_msg = str(e)
                 error_type = type(e).__name__
                 logger.exception("  [ERROR] Netatmo initialization failed:")
                 # Don't mask DNS errors - let them propagate so they can be fixed
-                return {"success": False, "error": f"{error_type}: {error_msg}"}
+                return {
+                    "success": False,
+                    "message": f"{error_type}: {error_msg}",
+                    "error": f"{error_type}: {error_msg}",
+                }
             # Do not close NetatmoService here: it is a process singleton shared with the web API.
 
         except Exception as e:
             logger.exception("Failed to initialize Netatmo")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Netatmo initialization failed: {e}", "error": str(e)}
 
     async def _init_ring(self) -> dict:
         """Initialize and test Ring doorbell."""
@@ -507,7 +525,11 @@ class HardwareInitializer:
                 cache_ttl = ring_cfg.get("cache_ttl", 60)
 
                 if not email or not password:
-                    return {"success": False, "error": "Ring email/password not configured"}
+                    return {
+                        "success": False,
+                        "message": "Ring email/password not configured",
+                        "error": "Ring email/password not configured",
+                    }
 
                 try:
                     ring_client = await init_ring_client(
@@ -520,12 +542,20 @@ class HardwareInitializer:
 
                     if not ring_client.is_initialized and not ring_client.is_2fa_pending:
                         err = ring_client.last_error or "Ring initialization failed"
-                        return {"success": False, "error": err}
+                        return {"success": False, "message": err, "error": err}
                 except Exception as e:
-                    return {"success": False, "error": f"Ring initialization error: {e}"}
+                    return {
+                        "success": False,
+                        "message": f"Ring initialization error: {e}",
+                        "error": f"Ring initialization error: {e}",
+                    }
 
             if not ring_client:
-                return {"success": False, "error": "Failed to initialize Ring client"}
+                return {
+                    "success": False,
+                    "message": "Failed to initialize Ring client",
+                    "error": "Failed to initialize Ring client",
+                }
 
             # Try to get devices with timeout (reduced from 8s to 3s)
             try:
@@ -562,14 +592,14 @@ class HardwareInitializer:
             except TimeoutError:
                 error_msg = "Connection timeout - network/DNS issue"
                 logger.warning(f"  [TIMEOUT] Ring: {error_msg}")
-                return {"success": False, "error": error_msg}
+                return {"success": False, "message": error_msg, "error": error_msg}
             except Exception as e:
                 logger.warning(f"  [FAIL] Ring: {e!s}")
-                return {"success": False, "error": str(e)}
+                return {"success": False, "message": f"Ring initialization failed: {e}", "error": str(e)}
 
         except Exception as e:
             logger.exception("Failed to initialize Ring")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Ring initialization failed: {e}", "error": str(e)}
 
     async def _init_home_assistant(self) -> dict:
         """Initialize and test Home Assistant connection (for Nest Protect)."""
@@ -590,7 +620,11 @@ class HardwareInitializer:
             token = ha_cfg.get("access_token")
 
             if not token:
-                return {"success": False, "error": "Home Assistant access token not configured"}
+                return {
+                    "success": False,
+                    "message": "Home Assistant access token not configured",
+                    "error": "Home Assistant access token not configured",
+                }
 
             # Initialize client (will auto-detect Docker and adjust URL)
             client = await init_homeassistant_client(
@@ -598,7 +632,11 @@ class HardwareInitializer:
             )
 
             if not client or not client.is_initialized:
-                return {"success": False, "error": "Failed to connect to Home Assistant"}
+                return {
+                    "success": False,
+                    "message": "Failed to connect to Home Assistant",
+                    "error": "Failed to connect to Home Assistant",
+                }
 
             # Test by getting Nest Protect devices
             try:
@@ -624,7 +662,7 @@ class HardwareInitializer:
 
         except Exception as e:
             logger.exception("Failed to initialize Home Assistant")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": f"Home Assistant initialization failed: {e}", "error": str(e)}
 
     async def _test_network_connectivity(self) -> None:
         """Test network connectivity to common device IPs for Docker debugging."""

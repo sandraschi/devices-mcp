@@ -74,7 +74,7 @@ class ImageCaptureTool(BaseTool):
                 return await self._analyze_image(camera_id, analysis_type)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'capture', 'still', or 'analyze'",
+                "message": f"Invalid operation: {operation}. Must be 'capture', 'still', or 'analyze'",
                 "timestamp": time.time(),
             }
 
@@ -82,6 +82,7 @@ class ImageCaptureTool(BaseTool):
             logger.exception("Image {operation} operation failed:")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "camera_id": camera_id,
@@ -94,6 +95,7 @@ class ImageCaptureTool(BaseTool):
         if quality < 1 or quality > 100:
             return {
                 "success": False,
+                "message": "Quality must be between 1 and 100",
                 "error": "Quality must be between 1 and 100",
                 "timestamp": time.time(),
             }

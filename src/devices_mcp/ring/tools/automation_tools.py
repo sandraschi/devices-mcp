@@ -76,6 +76,7 @@ def register_tools(app: FastMCP) -> None:
             if not validation_result["valid"]:
                 return {
                     "success": False,
+                    "message": f"Invalid automation configuration: {validation_result['errors']}",
                     "error": f"Invalid automation configuration: {validation_result['errors']}",
                 }
 
@@ -103,7 +104,7 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error creating security automation:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     @app.tool(
         name="trigger_emergency_protocol",
@@ -201,7 +202,7 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error triggering emergency protocol:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     @app.tool(
         name="schedule_security_modes",
@@ -243,6 +244,7 @@ def register_tools(app: FastMCP) -> None:
             if not validation_result["valid"]:
                 return {
                     "success": False,
+                    "message": f"Invalid schedule configuration: {validation_result['errors']}",
                     "error": f"Invalid schedule configuration: {validation_result['errors']}",
                 }
 
@@ -265,7 +267,7 @@ def register_tools(app: FastMCP) -> None:
 
         except Exception as e:
             logger.exception("Error configuring security schedule:")
-            return {"success": False, "error": str(e)}
+            return {"success": False, "message": str(e), "error": str(e)}
 
     async def validate_schedule_config(schedule_config: dict[str, Any], timezone: str) -> dict[str, Any]:
         """Validate schedule configuration for conflicts and feasibility."""

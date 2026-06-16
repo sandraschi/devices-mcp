@@ -191,6 +191,7 @@ async def plex_server(
             if not maintenance_operation:
                 return {
                     "success": False,
+                    "message": "maintenance_operation is required for maintenance operation",
                     "error": "maintenance_operation is required for maintenance operation",
                     "error_code": "MISSING_MAINTENANCE_OPERATION",
                     "suggestions": [
@@ -216,6 +217,7 @@ async def plex_server(
             logger.warning("Server restart operation may not be fully supported by Plex API")
             return {
                 "success": False,
+                "message": "Server restart is not yet fully implemented",
                 "error": "Server restart is not yet fully implemented",
                 "error_code": "NOT_IMPLEMENTED",
                 "suggestions": [
@@ -230,6 +232,7 @@ async def plex_server(
             logger.warning("Server update operation may not be fully supported by Plex API")
             return {
                 "success": False,
+                "message": "Server update is not yet fully implemented",
                 "error": "Server update is not yet fully implemented",
                 "error_code": "NOT_IMPLEMENTED",
                 "suggestions": [
@@ -240,7 +243,7 @@ async def plex_server(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: status, info, health, maintenance, restart, update",
@@ -261,6 +264,7 @@ async def plex_server(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -274,7 +278,7 @@ async def plex_server(
         )
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

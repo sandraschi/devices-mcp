@@ -328,7 +328,7 @@ async def _speak_with_piper(text: str, voice: str | None = None) -> dict[str, An
     global _piper_voice
 
     if not PIPER_AVAILABLE:
-        return {"success": False, "error": "Piper not available"}
+        return {"success": False, "message": "Piper not available", "error": "Piper not available"}
 
     try:
         # Lazy load voice model
@@ -359,13 +359,13 @@ async def _speak_with_piper(text: str, voice: str | None = None) -> dict[str, An
         }
     except Exception as e:
         logger.warning(f"Piper TTS failed: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def _speak_with_edge(text: str, voice: str | None = None) -> dict[str, Any]:
     """TTS using Edge-TTS (Microsoft, needs internet)."""
     if not EDGE_TTS_AVAILABLE:
-        return {"success": False, "error": "Edge-TTS not available"}
+        return {"success": False, "message": "Edge-TTS not available", "error": "Edge-TTS not available"}
 
     try:
         voice = voice or "en-US-AriaNeural"
@@ -389,13 +389,13 @@ async def _speak_with_edge(text: str, voice: str | None = None) -> dict[str, Any
         return {"success": True, "engine": "edge-tts", "voice": voice, "text": text}
     except Exception as e:
         logger.warning(f"Edge TTS failed: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def _speak_with_pyttsx3(text: str, voice: str | None = None, rate: int = 150) -> dict[str, Any]:
     """TTS using pyttsx3 (offline, system voices)."""
     if not PYTTSX3_AVAILABLE:
-        return {"success": False, "error": "pyttsx3 not available"}
+        return {"success": False, "message": "pyttsx3 not available", "error": "pyttsx3 not available"}
 
     try:
         engine = pyttsx3.init()
@@ -413,7 +413,7 @@ async def _speak_with_pyttsx3(text: str, voice: str | None = None, rate: int = 1
         return {"success": True, "engine": "pyttsx3", "text": text, "rate": rate}
     except Exception as e:
         logger.warning(f"pyttsx3 TTS failed: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def _speak_text(text: str, voice: str | None = None, rate: int = 150, use_edge: bool = False) -> dict[str, Any]:
@@ -459,6 +459,7 @@ async def _speak_text(text: str, voice: str | None = None, rate: int = 150, use_
     # All engines failed
     return {
         "success": False,
+        "message": f"All TTS engines failed: {'; '.join(errors)}",
         "error": f"All TTS engines failed: {'; '.join(errors)}",
         "install_hint": "pip install piper-tts edge-tts pyttsx3",
     }
@@ -469,7 +470,7 @@ async def _transcribe_with_faster_whisper(audio_path: str, model: str = "base") 
     global _faster_whisper_model
 
     if not FASTER_WHISPER_AVAILABLE:
-        return {"success": False, "error": "Faster-Whisper not available"}
+        return {"success": False, "message": "Faster-Whisper not available", "error": "Faster-Whisper not available"}
 
     try:
         # Lazy load model
@@ -490,7 +491,7 @@ async def _transcribe_with_faster_whisper(audio_path: str, model: str = "base") 
         }
     except Exception as e:
         logger.warning(f"Faster-Whisper failed: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def _transcribe_with_vosk(audio_path: str) -> dict[str, Any]:
@@ -498,7 +499,7 @@ async def _transcribe_with_vosk(audio_path: str) -> dict[str, Any]:
     global _vosk_model
 
     if not VOSK_AVAILABLE:
-        return {"success": False, "error": "Vosk not available"}
+        return {"success": False, "message": "Vosk not available", "error": "Vosk not available"}
 
     try:
         import json
@@ -528,13 +529,13 @@ async def _transcribe_with_vosk(audio_path: str) -> dict[str, Any]:
         }
     except Exception as e:
         logger.warning(f"Vosk failed: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def _transcribe_with_whisper(audio_path: str, model: str = "base") -> dict[str, Any]:
     """STT using vanilla Whisper (fallback)."""
     if not WHISPER_AVAILABLE:
-        return {"success": False, "error": "Whisper not available"}
+        return {"success": False, "message": "Whisper not available", "error": "Whisper not available"}
 
     try:
         whisper_model = whisper.load_model(model)
@@ -548,7 +549,7 @@ async def _transcribe_with_whisper(audio_path: str, model: str = "base") -> dict
         }
     except Exception as e:
         logger.warning(f"Whisper failed: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def _transcribe_audio(audio_path: str, model: str = "base") -> dict[str, Any]:
@@ -585,6 +586,7 @@ async def _transcribe_audio(audio_path: str, model: str = "base") -> dict[str, A
     # All engines failed
     return {
         "success": False,
+        "message": f"All STT engines failed: {'; '.join(errors)}",
         "error": f"All STT engines failed: {'; '.join(errors)}",
         "install_hint": "pip install faster-whisper vosk openai-whisper",
     }
@@ -614,6 +616,7 @@ async def _listen_for_command(timeout: float = 5.0, wake_word: str | None = None
     if not STT_AVAILABLE or not SOUNDDEVICE_AVAILABLE:
         return {
             "success": False,
+            "message": "Voice commands require whisper and sounddevice. Install: pip install openai-whisper sounddevice soundfile",
             "error": "Voice commands require whisper and sounddevice. Install: pip install openai-whisper sounddevice soundfile",
         }
 
@@ -663,7 +666,7 @@ async def _listen_for_command(timeout: float = 5.0, wake_word: str | None = None
             "language": result.get("language"),
         }
     except Exception as e:
-        return {"success": False, "error": f"Voice command failed: {e}"}
+        return {"success": False, "message": f"Voice command failed: {e}", "error": f"Voice command failed: {e}"}
 
 
 # ============================================================================
@@ -870,6 +873,7 @@ async def _start_wake_listener(wake_word: str = "hey tapo", command_duration: fl
     if _wake_listener_running:
         return {
             "success": False,
+            "message": "Wake word listener is already running",
             "error": "Wake word listener is already running",
             "status": "running",
         }
@@ -877,6 +881,7 @@ async def _start_wake_listener(wake_word: str = "hey tapo", command_duration: fl
     if not SOUNDDEVICE_AVAILABLE:
         return {
             "success": False,
+            "message": "Wake word listener requires sounddevice. Install: pip install sounddevice",
             "error": "Wake word listener requires sounddevice. Install: pip install sounddevice",
         }
 
@@ -893,6 +898,7 @@ async def _start_wake_listener(wake_word: str = "hey tapo", command_duration: fl
     elif engine == "none":
         return {
             "success": False,
+            "message": "No wake word engine available. Install: pip install openwakeword vosk",
             "error": "No wake word engine available. Install: pip install openwakeword vosk",
         }
 
@@ -1074,6 +1080,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
             if action not in AUDIO_ACTIONS:
                 return {
                     "success": False,
+                    "message": f"Invalid action '{action}'. Available: {list(AUDIO_ACTIONS.keys())}",
                     "error": f"Invalid action '{action}'. Available: {list(AUDIO_ACTIONS.keys())}",
                     "available_actions": AUDIO_ACTIONS,
                 }
@@ -1196,6 +1203,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "text is required for speak action",
                         "error": "text is required for speak action",
                     }
                 result = await _speak_text(text, voice=voice, rate=rate, use_edge=use_edge_tts)
@@ -1206,6 +1214,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "text is required for announce action",
                         "error": "text is required for announce action",
                     }
                 # Play attention chime first
@@ -1222,6 +1231,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "Listen requires whisper and sounddevice. Install: pip install openai-whisper sounddevice soundfile",
                         "error": "Listen requires whisper and sounddevice. Install: pip install openai-whisper sounddevice soundfile",
                     }
                 temp_path, _ = await _record_audio(duration)
@@ -1264,12 +1274,14 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "file_path is required for play_file action",
                         "error": "file_path is required for play_file action",
                     }
                 if not Path(file_path).exists():
                     return {
                         "success": False,
                         "action": action,
+                        "message": f"File not found: {file_path}",
                         "error": f"File not found: {file_path}",
                     }
                 with open(file_path, "rb") as f:
@@ -1290,6 +1302,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     return {
                         "success": False,
                         "action": action,
+                        "message": "Recording requires sounddevice. Install: pip install sounddevice soundfile",
                         "error": "Recording requires sounddevice. Install: pip install sounddevice soundfile",
                     }
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1333,6 +1346,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                 return {
                     "success": False,
                     "action": action,
+                    "message": f"camera_id is required for '{action}' action",
                     "error": f"camera_id is required for '{action}' action",
                 }
 
@@ -1348,6 +1362,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                 return {
                     "success": False,
                     "action": action,
+                    "message": f"Camera '{camera_id}' not found",
                     "error": f"Camera '{camera_id}' not found",
                 }
 
@@ -1361,6 +1376,7 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                 return {
                     "success": False,
                     "action": action,
+                    "message": f"Could not get stream URL for '{camera_id}'",
                     "error": f"Could not get stream URL for '{camera_id}'",
                 }
 
@@ -1415,8 +1431,12 @@ def register_audio_management_tool(mcp: FastMCP) -> None:
                     },
                 }
 
-            return {"success": False, "error": f"Action '{action}' not implemented"}
+            return {
+                "success": False,
+                "message": f"Action '{action}' not implemented",
+                "error": f"Action '{action}' not implemented",
+            }
 
         except Exception as e:
             logger.exception(f"Error in audio management action '{action}'")
-            return {"success": False, "action": action, "error": str(e)}
+            return {"success": False, "message": str(e), "action": action, "error": str(e)}

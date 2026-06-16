@@ -160,6 +160,7 @@ async def plex_organization(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for organize operation",
                     "error": "library_id is required for organize operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id parameter"],
@@ -179,6 +180,7 @@ async def plex_organization(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for analyze operation",
                     "error": "library_id is required for analyze operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id parameter"],
@@ -230,6 +232,7 @@ async def plex_organization(
             if not library_id:
                 return {
                     "success": False,
+                    "message": "library_id is required for fix_issues operation",
                     "error": "library_id is required for fix_issues operation",
                     "error_code": "MISSING_LIBRARY_ID",
                     "suggestions": ["Provide library_id parameter"],
@@ -266,7 +269,7 @@ async def plex_organization(
 
         return {
             "success": False,
-            "error": f"Invalid operation: '{operation}'",
+            "message": f"Invalid operation: '{operation}'",
             "error_code": "INVALID_OPERATION",
             "suggestions": [
                 "Valid operations: organize, analyze, clean_bundles, optimize_database, fix_issues",
@@ -292,6 +295,7 @@ async def plex_organization(
 
         return {
             "success": False,
+            "message": error_msg,
             "error": error_msg,
             "error_code": "RUNTIME_ERROR",
             "operation": operation,
@@ -305,7 +309,7 @@ async def plex_organization(
         )
         return {
             "success": False,
-            "error": f"Unexpected error during {operation}: {e!s}",
+            "message": f"Unexpected error during {operation}: {e!s}",
             "error_code": "UNEXPECTED_ERROR",
             "operation": operation,
             "suggestions": [

@@ -45,7 +45,7 @@ async def get_cameras():
 
         # Ring integration
         try:
-            from backend.api.ring import get_ring_client
+            from devices_mcp.integrations.ring_client import get_ring_client
 
             ring_client = get_ring_client()
             if ring_client and ring_client.is_initialized:
@@ -97,7 +97,16 @@ async def get_cameras_status():
         server = await DevicesMCPServer.get_instance()
         cameras = await server.camera_manager.list_cameras()
         total = len(cameras)
-        online = sum(1 for cam in cameras if cam.get("status") == "online")
+
+        def _is_online(cam: dict) -> bool:
+            s = cam.get("status")
+            if isinstance(s, str):
+                return s.lower() == "online"
+            if isinstance(s, dict):
+                return s.get("connected") is True
+            return False
+
+        online = sum(1 for cam in cameras if _is_online(cam))
         return {
             "total": total,
             "online": online,

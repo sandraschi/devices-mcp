@@ -71,7 +71,7 @@ class VideoRecordingTool(BaseTool):
                 return await self._get_stream_url(camera_id, resolution)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'start', 'stop', or 'stream_url'",
+                "message": f"Invalid operation: {operation}. Must be 'start', 'stop', or 'stream_url'",
                 "timestamp": time.time(),
             }
 
@@ -79,6 +79,7 @@ class VideoRecordingTool(BaseTool):
             logger.exception("Video {operation} operation failed:")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "camera_id": camera_id,
@@ -93,6 +94,7 @@ class VideoRecordingTool(BaseTool):
         if bitrate < 1000 or bitrate > 50000:
             return {
                 "success": False,
+                "message": "Bitrate must be between 1000 and 50000 kbps",
                 "error": "Bitrate must be between 1000 and 50000 kbps",
                 "timestamp": time.time(),
             }

@@ -307,6 +307,7 @@ class WebServer:
                 camera_names,
                 cameras,
                 config_editor,
+                cua_diagnostics,
                 custom_presets,
                 dashboard_api,
                 devices,
@@ -389,6 +390,7 @@ class WebServer:
             self.app.include_router(ptz_routes.router, tags=["PTZ Routes"])
             self.app.include_router(scanner.router, tags=["Scanner"])
             self.app.include_router(shelly.router, tags=["Shelly"])
+            self.app.include_router(cua_diagnostics.router, tags=["CUA"])
 
             logger.info("All modular routes registered successfully")
         except ImportError as e:

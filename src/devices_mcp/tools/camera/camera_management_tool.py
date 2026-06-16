@@ -70,7 +70,7 @@ class CameraManagementTool(BaseTool):
                 return await self._remove_camera(camera_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'list', 'add', or 'remove'",
+                "message": f"Invalid operation: {operation}. Must be 'list', 'add', or 'remove'",
                 "timestamp": time.time(),
             }
 
@@ -78,6 +78,7 @@ class CameraManagementTool(BaseTool):
             logger.exception(f"Camera management {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -140,6 +141,7 @@ class CameraManagementTool(BaseTool):
         if not all([camera_name, camera_ip, camera_username, camera_password]):
             return {
                 "success": False,
+                "message": "All camera parameters (name, ip, username, password) are required for add operation",
                 "error": "All camera parameters (name, ip, username, password) are required for add operation",
                 "timestamp": time.time(),
             }
@@ -173,6 +175,7 @@ class CameraManagementTool(BaseTool):
         if not camera_id:
             return {
                 "success": False,
+                "message": "Camera ID is required for remove operation",
                 "error": "Camera ID is required for remove operation",
                 "timestamp": time.time(),
             }

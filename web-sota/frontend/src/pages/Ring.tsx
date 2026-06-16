@@ -3,6 +3,35 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Bell, CheckCircle, Loader2, RefreshCw, Shield } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+
+
+function DoorbellSnapshot({ deviceId }: { deviceId: string }) {
+  const [ts, setTs] = useState(Date.now());
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className='space-y-2'>
+      <div className='overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800'>
+        {failed ? (
+          <div className='flex aspect-video items-center justify-center text-sm text-slate-400 dark:text-slate-500'>
+            Snapshot unavailable
+          </div>
+        ) : (
+          <img
+            src={`/api/ring/snapshot/${deviceId}?t=${ts}`}
+            alt='Doorbell snapshot'
+            className='aspect-video w-full object-contain'
+            onError={() => setFailed(true)}
+          />
+        )}
+      </div>
+      <Button size='sm' variant='outline' onClick={() => { setTs(Date.now()); setFailed(false); }}>
+        <RefreshCw className='mr-1 h-3 w-3' />
+        Refresh snapshot
+      </Button>
+    </div>
+  );
+}
+
 interface RingStatus {
   connected: boolean;
   initialized: boolean;
@@ -74,6 +103,7 @@ export function Ring() {
   const [modeLoading, setModeLoading] = useState<string | null>(null);
   const [twoFaCode, setTwoFaCode] = useState('');
   const [twoFaLoading, setTwoFaLoading] = useState(false);
+  const [ringEvents, setRingEvents] = useState<Array<{ event_type?: string; device_name?: string; timestamp?: string }>>([]);
 
   const loadSummary = useCallback(async () => {
     try {
@@ -106,6 +136,23 @@ export function Ring() {
     const timer = window.setInterval(load, 30000);
     return () => window.clearInterval(timer);
   }, [load]);
+
+  useEffect(() => {
+    if (!status?.connected) return;
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const r = await fetch('/api/ring/events?limit=10');
+        if (r.ok && !cancelled) {
+          const data = await r.json();
+          setRingEvents(data.events ?? []);
+        }
+      } catch {}
+    };
+    poll();
+    const timer = setInterval(poll, 15000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [status?.connected]);
 
   const doInit = async () => {
     setInitLoading(true);
@@ -345,15 +392,34 @@ export function Ring() {
               <CardHeader className='pb-2'>
                 <CardTitle className='text-base'>Doorbells</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className='space-y-2 text-sm'>
-                  {doorbells.map((d) => (
-                    <li key={d.id} className='flex justify-between gap-2'>
-                      <span>{d.name ?? d.id}</span>
+              <CardContent className='space-y-4'>
+                {doorbells.map((d) => (
+                  <div key={d.id} className='space-y-2'>
+                    <div className='flex items-center justify-between text-sm'>
+                      <span className='font-medium'>{d.name ?? d.id}</span>
                       <span className='text-slate-500'>
                         {d.is_online === false ? 'offline' : 'online'}
                         {d.battery_level != null ? ` · ${d.battery_level}%` : ''}
                       </span>
+                    </div>
+                    {d.id && <DoorbellSnapshot deviceId={d.id} />}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {ringEvents.length > 0 && (
+            <Card>
+              <CardHeader className='pb-2'>
+                <CardTitle className='text-base'>Recent events</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className='space-y-1 text-sm text-slate-600 dark:text-slate-400'>
+                  {ringEvents.slice(0, 10).map((ev, i) => (
+                    <li key={`${ev.timestamp}-${i}`} className={ev.event_type === 'ding' ? 'font-medium text-amber-700 dark:text-amber-400' : ''}>
+                      {ev.event_type === 'ding' ? '🔔' : '👁️'} {ev.device_name ?? 'Doorbell'} · {ev.event_type ?? 'event'}
+                      {ev.timestamp ? ` · ${new Date(ev.timestamp).toLocaleTimeString()}` : ''}
                     </li>
                   ))}
                 </ul>
@@ -390,23 +456,7 @@ export function Ring() {
             </Card>
           )}
 
-          {(summary.recent_events?.length ?? 0) > 0 && (
-            <Card>
-              <CardHeader className='pb-2'>
-                <CardTitle className='text-base'>Recent events</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className='space-y-1 text-sm text-slate-600 dark:text-slate-400'>
-                  {summary.recent_events!.slice(0, 8).map((ev, i) => (
-                    <li key={`${ev.timestamp}-${i}`}>
-                      {ev.device_name ?? 'Device'} · {ev.event_type ?? 'event'}
-                      {ev.timestamp ? ` · ${ev.timestamp}` : ''}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+
         </>
       )}
 

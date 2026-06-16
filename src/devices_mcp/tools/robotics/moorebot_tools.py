@@ -74,6 +74,7 @@ async def moorebot_get_status() -> dict:
         logger.exception("Failed to get Moorebot status:")
         return {
             "success": False,
+            "message": str(e),
             "error": str(e),
             "suggestion": "Check robot is powered on and connected to network",
         }
@@ -128,6 +129,7 @@ async def moorebot_move(linear: float = 0.0, angular: float = 0.0, duration: flo
         if not (-0.3 <= linear <= 0.3):
             return {
                 "success": False,
+                "message": "Linear velocity out of range",
                 "error": "Linear velocity out of range",
                 "valid_range": "-0.3 to 0.3 m/s",
             }
@@ -135,6 +137,7 @@ async def moorebot_move(linear: float = 0.0, angular: float = 0.0, duration: flo
         if not (-2.0 <= angular <= 2.0):
             return {
                 "success": False,
+                "message": "Angular velocity out of range",
                 "error": "Angular velocity out of range",
                 "valid_range": "-2.0 to 2.0 rad/s",
             }
@@ -142,7 +145,7 @@ async def moorebot_move(linear: float = 0.0, angular: float = 0.0, duration: flo
         return await client.move(linear, angular, duration)
     except Exception as e:
         logger.exception("Moorebot move failed:")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def moorebot_patrol(route: str = "default") -> dict:
@@ -193,7 +196,7 @@ async def moorebot_patrol(route: str = "default") -> dict:
         return await client.start_patrol(route)
     except Exception as e:
         logger.exception("Moorebot patrol failed:")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def moorebot_stop_patrol() -> dict:
@@ -208,7 +211,7 @@ async def moorebot_stop_patrol() -> dict:
         return await client.stop_patrol()
     except Exception as e:
         logger.exception("Failed to stop patrol:")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def moorebot_return_to_dock() -> dict:
@@ -249,7 +252,7 @@ async def moorebot_return_to_dock() -> dict:
         return await client.return_to_dock()
     except Exception as e:
         logger.exception("Return to dock failed:")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def moorebot_get_sensors() -> dict:
@@ -320,7 +323,7 @@ async def moorebot_get_sensors() -> dict:
         }
     except Exception as e:
         logger.exception("Failed to get sensor data:")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}
 
 
 async def moorebot_get_camera_stream() -> dict:
@@ -377,4 +380,4 @@ async def moorebot_get_camera_stream() -> dict:
         }
     except Exception as e:
         logger.exception("Failed to get camera stream:")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "message": str(e), "error": str(e)}

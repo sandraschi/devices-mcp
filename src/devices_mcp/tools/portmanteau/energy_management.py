@@ -84,7 +84,7 @@ def register_energy_management_tool(mcp: FastMCP) -> None:
             if action not in ENERGY_ACTIONS:
                 return {
                     "success": False,
-                    "error": f"Invalid action '{action}'. Available: {list(ENERGY_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(ENERGY_ACTIONS.keys())}",
                 }
 
             logger.info(f"Executing energy management action: {action}")

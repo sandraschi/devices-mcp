@@ -133,6 +133,7 @@ class DigicamCamera(Webcam):
             logger.exception(f"Digicam {self.config.name}: Connection test failed")
             return {
                 "success": False,
+                "message": "Operation failed",
                 "error": str(e),
                 "troubleshooting": self._get_troubleshooting_steps(),
             }

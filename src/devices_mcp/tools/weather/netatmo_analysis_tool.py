@@ -68,7 +68,7 @@ class NetatmoAnalysisTool(BaseTool):
                 return await self._get_health_report(station_id)
             return {
                 "success": False,
-                "error": f"Invalid operation: {operation}. Must be 'historical', 'alerts', or 'health'",
+                "message": f"Invalid operation: {operation}. Must be 'historical', 'alerts', or 'health'",
                 "timestamp": time.time(),
             }
 
@@ -76,6 +76,7 @@ class NetatmoAnalysisTool(BaseTool):
             logger.exception(f"Netatmo analysis {operation} operation failed")
             return {
                 "success": False,
+                "message": str(e),
                 "error": str(e),
                 "operation": operation,
                 "timestamp": time.time(),
@@ -94,7 +95,7 @@ class NetatmoAnalysisTool(BaseTool):
         if time_range not in time_ranges:
             return {
                 "success": False,
-                "error": f"Invalid time range: {time_range}. Must be one of: {list(time_ranges.keys())}",
+                "message": f"Invalid time range: {time_range}. Must be one of: {list(time_ranges.keys())}",
                 "timestamp": time.time(),
             }
 
@@ -179,6 +180,7 @@ class NetatmoAnalysisTool(BaseTool):
         if threshold is None:
             return {
                 "success": False,
+                "message": "Threshold is required for alert configuration",
                 "error": "Threshold is required for alert configuration",
                 "timestamp": time.time(),
             }
