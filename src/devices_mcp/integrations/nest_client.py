@@ -80,11 +80,14 @@ class NestClient:
         refresh_token: str | None = None,
         token_file: str = "nest_token.cache",
         cache_ttl: int = 60,
+        client_id: str | None = None,
+        client_secret: str | None = None,
     ):
         self.refresh_token = refresh_token
-        # Adjust token file path for Docker (use mounted volume)
         self.token_file = self._adjust_token_path(token_file)
         self.cache_ttl = cache_ttl
+        self._custom_client_id = client_id
+        self._custom_client_secret = client_secret
 
         self._session: aiohttp.ClientSession | None = None
         self._access_token: str | None = None
@@ -164,14 +167,18 @@ class NestClient:
         if not self._session or not self.refresh_token:
             return
 
+        data = {
+            "refresh_token": self.refresh_token,
+            "client_id": self._custom_client_id or self.CLIENT_ID,
+            "grant_type": "refresh_token",
+        }
+        if self._custom_client_secret:
+            data["client_secret"] = self._custom_client_secret
+
         try:
             async with self._session.post(
                 self.GOOGLE_TOKEN_URL,
-                data={
-                    "refresh_token": self.refresh_token,
-                    "client_id": self.CLIENT_ID,
-                    "grant_type": "refresh_token",
-                },
+                data=data,
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -331,26 +338,33 @@ class NestClient:
         if self.refresh_token:
             self.token_file.write_text(json.dumps({"refresh_token": self.refresh_token}))
 
-    @classmethod
-    def get_oauth_url(cls, redirect_uri: str = "urn:ietf:wg:oauth:2.0:oob") -> str:
+    def get_oauth_url(self, redirect_uri: str | None = None) -> str:
         """
         Get OAuth URL for user to authenticate.
 
-        User visits this URL, logs in with Google, and gets a code to exchange.
+        Uses custom client_id if provided, otherwise the bundled one.
         """
         import urllib.parse
 
+        client_id = self._custom_client_id or self.CLIENT_ID
+        if not redirect_uri:
+            redirect_uri = (
+                "http://127.0.0.1:10717/api/nest/oauth/callback"
+                if self._custom_client_id
+                else "urn:ietf:wg:oauth:2.0:oob"
+            )
+
         params = {
-            "client_id": cls.CLIENT_ID,
+            "client_id": client_id,
             "redirect_uri": redirect_uri,
             "response_type": "code",
             "scope": "https://www.googleapis.com/auth/nest-account",
             "access_type": "offline",
             "prompt": "consent",
         }
-        return f"{cls.GOOGLE_AUTH_URL}?{urllib.parse.urlencode(params)}"
+        return f"{self.GOOGLE_AUTH_URL}?{urllib.parse.urlencode(params)}"
 
-    async def exchange_code(self, code: str) -> bool:
+    async def exchange_code(self, code: str, redirect_uri: str | None = None) -> bool:
         """
         Exchange authorization code for refresh token.
 
@@ -359,15 +373,26 @@ class NestClient:
         if not self._session:
             self._session = aiohttp.ClientSession()
 
+        if not redirect_uri:
+            redirect_uri = (
+                "http://127.0.0.1:10717/api/nest/oauth/callback"
+                if self._custom_client_id
+                else "urn:ietf:wg:oauth:2.0:oob"
+            )
+
+        data = {
+            "code": code,
+            "client_id": self._custom_client_id or self.CLIENT_ID,
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri,
+        }
+        if self._custom_client_secret:
+            data["client_secret"] = self._custom_client_secret
+
         try:
             async with self._session.post(
                 self.GOOGLE_TOKEN_URL,
-                data={
-                    "code": code,
-                    "client_id": self.CLIENT_ID,
-                    "grant_type": "authorization_code",
-                    "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
-                },
+                data=data,
             ) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -392,6 +417,8 @@ async def init_nest_client(
     refresh_token: str | None = None,
     token_file: str = "nest_token.cache",
     cache_ttl: int = 60,
+    client_id: str | None = None,
+    client_secret: str | None = None,
 ) -> NestClient | None:
     """Initialize the global Nest client."""
     global _nest_client
@@ -403,6 +430,8 @@ async def init_nest_client(
         refresh_token=refresh_token,
         token_file=token_file,
         cache_ttl=cache_ttl,
+        client_id=client_id,
+        client_secret=client_secret,
     )
 
     if await _nest_client.initialize():

@@ -21,19 +21,22 @@ async def get_nest_status():
     client = get_nest_client()
     if not client or not client.is_initialized:
         cfg = _get_config()
-        oauth_url = NestClient.get_oauth_url()
+        oauth_url = ""
+        has_custom_creds = bool(cfg.get("client_id"))
+        try:
+            tmp = NestClient(
+                client_id=cfg.get("client_id"),
+                client_secret=cfg.get("client_secret"),
+            )
+            oauth_url = tmp.get_oauth_url()
+        except Exception:
+            pass
         return {
             "initialized": False,
             "error": "Nest not connected",
             "has_token": bool(cfg.get("refresh_token") or _cached_token_exists()),
             "oauth_url": oauth_url,
-            "setup_instructions": [
-                "1. Open the OAuth URL in a browser",
-                "2. Sign in with your Google account (same as Nest)",
-                "3. Copy the authorization code",
-                "4. Paste the code below and click 'Exchange Code'",
-                "5. Refresh token will be saved to nest_token.cache",
-            ],
+            "has_custom_creds": has_custom_creds,
         }
 
     return await client.get_summary()
@@ -46,14 +49,40 @@ class CodeExchangeRequest(BaseModel):
 @router.post("/oauth/exchange")
 async def exchange_oauth_code(req: CodeExchangeRequest):
     """Exchange OAuth authorization code for refresh token."""
+    cfg = _get_config()
     client = get_nest_client()
     if not client:
-        client = NestClient()
+        client = NestClient(
+            client_id=cfg.get("client_id"),
+            client_secret=cfg.get("client_secret"),
+        )
     success = await client.exchange_code(req.code)
     if not success:
         raise HTTPException(status_code=400, detail="Code exchange failed. Make sure you copied the full code.")
     await client.initialize()
     return {"success": True, "message": "Nest authenticated. Devices will appear shortly."}
+
+
+class TokenRequest(BaseModel):
+    refresh_token: str
+
+
+@router.post("/token")
+async def save_nest_token(req: TokenRequest):
+    """Save a Nest refresh token (paste from browser / another setup)."""
+    from pathlib import Path
+
+    cfg = _get_config()
+    token_file = cfg.get("token_file", "nest_token.cache")
+    Path(token_file).write_text(__import__("json").dumps({"refresh_token": req.refresh_token}))
+    client = await init_nest_client(
+        refresh_token=req.refresh_token,
+        token_file=token_file,
+        cache_ttl=cfg.get("cache_ttl", 60),
+    )
+    if client and client.is_initialized:
+        return {"success": True, "message": f"Token saved. Found {len(client._devices)} Nest Protect device(s)."}
+    return {"success": False, "message": "Token saved but initialization failed. Check the token is valid."}
 
 
 def _cached_token_exists() -> bool:
@@ -81,5 +110,7 @@ async def _auto_init() -> NestClient | None:
         refresh_token=token,
         token_file=cfg.get("token_file", "nest_token.cache"),
         cache_ttl=cfg.get("cache_ttl", 60),
+        client_id=cfg.get("client_id"),
+        client_secret=cfg.get("client_secret"),
     )
     return client

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle, Flame, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle, Flame, KeyRound, Loader2, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 interface NestDevice {
@@ -25,7 +25,7 @@ interface NestStatus {
   devices?: NestDevice[];
   has_token?: boolean;
   oauth_url?: string;
-  setup_instructions?: string[];
+  has_custom_creds?: boolean;
 }
 
 function parseErrorBody(data: unknown): string {
@@ -44,6 +44,8 @@ export function Nest() {
   const [error, setError] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [exchanging, setExchanging] = useState(false);
+  const [manualToken, setManualToken] = useState('');
+  const [savingToken, setSavingToken] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -90,6 +92,27 @@ export function Nest() {
       setError(String(e));
     } finally {
       setExchanging(false);
+    }
+  };
+
+  const doSaveToken = async () => {
+    if (!manualToken.trim()) return;
+    setSavingToken(true);
+    setError(null);
+    try {
+      const r = await fetch('/api/nest/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: manualToken.trim() }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail ?? 'Failed to save token');
+      setManualToken('');
+      await load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setSavingToken(false);
     }
   };
 
@@ -153,35 +176,45 @@ export function Nest() {
             </>
           ) : (
             <>
-              <p>Sign in with your Google account (same as Nest) to access your Protect devices.</p>
-              {status?.oauth_url && (
+              {status?.has_custom_creds && status?.oauth_url ? (
                 <div className='space-y-2 pt-1'>
-                  <a
-                    href={status.oauth_url}
-                    target='_blank'
-                    rel='noreferrer'
-                    className='inline-block'
-                  >
-                    <Button size='sm'>Open Google sign-in</Button>
+                  <p>Click below to sign in with Google:</p>
+                  <a href={status.oauth_url} target='_blank' rel='noreferrer'>
+                    <Button size='sm'>Sign in with Google</Button>
                   </a>
-                  <p className='text-xs text-slate-500'>
-                    Authorize the app, then paste the authorization code below.
-                  </p>
-                  <div className='flex flex-wrap items-center gap-2'>
+                  <div className='flex flex-wrap items-center gap-2 pt-1'>
                     <input
                       type='text'
-                      placeholder='Authorization code'
+                      placeholder='Paste authorization code...'
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
                       className='min-w-[20rem] rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900'
                     />
-                    <Button
-                      size='sm'
-                      onClick={doExchange}
-                      disabled={!code.trim() || exchanging}
-                    >
+                    <Button size='sm' onClick={doExchange} disabled={!code.trim() || exchanging}>
                       {exchanging ? 'Exchanging...' : 'Exchange Code'}
                     </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className='space-y-3 pt-1'>
+                  <div className='rounded-md border border-slate-200 p-3 dark:border-slate-700'>
+                    <p className='mb-1 font-medium text-xs'>Paste Nest token directly</p>
+                    <p className='text-xs text-slate-500 mb-2'>
+                      From an existing Nest/Home Assistant setup, or from your Nest account.
+                    </p>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <input
+                        type='text'
+                        placeholder='Paste refresh token...'
+                        value={manualToken}
+                        onChange={(e) => setManualToken(e.target.value)}
+                        className='min-w-[16rem] flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900'
+                      />
+                      <Button size='sm' onClick={doSaveToken} disabled={!manualToken.trim() || savingToken}>
+                        <KeyRound className='mr-1 h-3 w-3' />
+                        {savingToken ? 'Saving...' : 'Save & Connect'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}

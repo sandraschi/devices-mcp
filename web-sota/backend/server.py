@@ -114,6 +114,8 @@ class WebServer:
                         refresh_token=nest_cfg.get("refresh_token"),
                         token_file=nest_cfg.get("token_file", "nest_token.cache"),
                         cache_ttl=nest_cfg.get("cache_ttl", 60),
+                        client_id=nest_cfg.get("client_id"),
+                        client_secret=nest_cfg.get("client_secret"),
                     )
                     if client and client.is_initialized:
                         logger.info("Nest startup: %s device(s)", len(client._devices))
