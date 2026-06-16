@@ -4,11 +4,12 @@ import { AlertCircle, CheckCircle, Flame, Loader2, RefreshCw } from 'lucide-reac
 import { useCallback, useEffect, useState } from 'react';
 
 interface NestDevice {
-  friendly_name?: string;
-  entity_id?: string;
+  device_id?: string;
+  name?: string;
+  location?: string;
   smoke_status?: string;
   co_status?: string;
-  battery_level?: number;
+  battery_health?: string;
   is_online?: boolean;
 }
 
@@ -22,7 +23,18 @@ interface NestStatus {
   all_ok?: boolean;
   battery_warnings?: string[];
   devices?: NestDevice[];
+  has_token?: boolean;
+  oauth_url?: string;
   setup_instructions?: string[];
+}
+
+function parseErrorBody(data: unknown): string {
+  if (data && typeof data === 'object') {
+    const d = data as { detail?: unknown; message?: string };
+    if (typeof d.detail === 'string') return d.detail;
+    if (d.message) return d.message;
+  }
+  return 'Request failed';
 }
 
 export function Nest() {
@@ -30,6 +42,8 @@ export function Nest() {
   const [loading, setLoading] = useState(true);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [exchanging, setExchanging] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -54,6 +68,29 @@ export function Nest() {
     setRefreshLoading(true);
     await load();
     setRefreshLoading(false);
+  };
+
+  const doExchange = async () => {
+    if (!code.trim()) return;
+    setExchanging(true);
+    setError(null);
+    try {
+      const r = await fetch('/api/nest/oauth/exchange', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code.trim() }),
+      });
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        throw new Error(parseErrorBody(data));
+      }
+      setCode('');
+      await load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setExchanging(false);
+    }
   };
 
   if (loading) {
@@ -92,7 +129,7 @@ export function Nest() {
         <CardHeader className='flex flex-row items-center justify-between pb-2'>
           <CardTitle className='text-base flex items-center gap-2'>
             <Flame className='h-5 w-5' />
-            Home Assistant / Nest
+            Nest Protect
           </CardTitle>
           {connected && status?.all_ok ? (
             <CheckCircle className='h-5 w-5 text-green-600' />
@@ -104,8 +141,9 @@ export function Nest() {
           {connected ? (
             <>
               <p>
-                {status?.total_devices ?? 0} device(s) · smoke {status?.smoke_status ?? '—'} · CO{' '}
-                {status?.co_status ?? '—'}
+                {status?.total_devices ?? 0} device(s) &middot; smoke{' '}
+                {status?.smoke_status ?? '&mdash;'} &middot; CO{' '}
+                {status?.co_status ?? '&mdash;'}
               </p>
               {(status?.battery_warnings?.length ?? 0) > 0 && (
                 <p className='text-amber-600'>
@@ -115,13 +153,37 @@ export function Nest() {
             </>
           ) : (
             <>
-              <p>Nest Protect requires Home Assistant with the Nest integration.</p>
-              {status?.setup_instructions && (
-                <ol className='mt-2 list-decimal space-y-1 pl-5 text-slate-600 dark:text-slate-400'>
-                  {status.setup_instructions.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
+              <p>Sign in with your Google account (same as Nest) to access your Protect devices.</p>
+              {status?.oauth_url && (
+                <div className='space-y-2 pt-1'>
+                  <a
+                    href={status.oauth_url}
+                    target='_blank'
+                    rel='noreferrer'
+                    className='inline-block'
+                  >
+                    <Button size='sm'>Open Google sign-in</Button>
+                  </a>
+                  <p className='text-xs text-slate-500'>
+                    Authorize the app, then paste the authorization code below.
+                  </p>
+                  <div className='flex flex-wrap items-center gap-2'>
+                    <input
+                      type='text'
+                      placeholder='Authorization code'
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      className='min-w-[20rem] rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900'
+                    />
+                    <Button
+                      size='sm'
+                      onClick={doExchange}
+                      disabled={!code.trim() || exchanging}
+                    >
+                      {exchanging ? 'Exchanging...' : 'Exchange Code'}
+                    </Button>
+                  </div>
+                </div>
               )}
             </>
           )}
@@ -136,11 +198,14 @@ export function Nest() {
           <CardContent>
             <ul className='space-y-2 text-sm'>
               {devices.map((d) => (
-                <li key={d.entity_id ?? d.friendly_name} className='flex justify-between gap-2'>
-                  <span>{d.friendly_name ?? d.entity_id}</span>
+                <li key={d.device_id ?? d.name} className='flex justify-between gap-2'>
+                  <span>
+                    {d.name ?? d.device_id}
+                    {d.location ? ` (${d.location})` : ''}
+                  </span>
                   <span className='text-slate-500'>
-                    smoke {d.smoke_status ?? '—'} · CO {d.co_status ?? '—'}
-                    {d.battery_level != null ? ` · ${d.battery_level}%` : ''}
+                    smoke {d.smoke_status ?? '—'} &middot; CO {d.co_status ?? '—'}
+                    {d.battery_health === 'replace' ? ' · BATTERY' : ''}
                     {d.is_online === false ? ' · offline' : ''}
                   </span>
                 </li>

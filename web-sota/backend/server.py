@@ -105,6 +105,25 @@ class WebServer:
 
             try:
                 from devices_mcp.config import get_config
+                from devices_mcp.integrations.nest_client import init_nest_client
+
+                raw = get_config() or {}
+                nest_cfg = raw.get("nest") or {}
+                if nest_cfg.get("enabled", True):
+                    client = await init_nest_client(
+                        refresh_token=nest_cfg.get("refresh_token"),
+                        token_file=nest_cfg.get("token_file", "nest_token.cache"),
+                        cache_ttl=nest_cfg.get("cache_ttl", 60),
+                    )
+                    if client and client.is_initialized:
+                        logger.info("Nest startup: %s device(s)", len(client._devices))
+                    else:
+                        logger.info("Nest startup: needs OAuth — visit /api/nest/status for setup")
+            except Exception:
+                logger.debug("Startup Nest init skipped", exc_info=True)
+
+            try:
+                from devices_mcp.config import get_config
                 from devices_mcp.integrations.shelly_client import init_shelly_client
 
                 raw = get_config() or {}

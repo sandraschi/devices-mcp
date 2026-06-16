@@ -1,66 +1,85 @@
-"""
-Nest Protect API endpoints.
-
-Provides REST API for Nest Protect smoke/CO detectors via Home Assistant.
-"""
-
 import logging
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
-from devices_mcp.integrations.homeassistant_client import get_homeassistant_client
+from devices_mcp.config import get_config
+from devices_mcp.integrations.nest_client import NestClient, get_nest_client, init_nest_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/nest", tags=["nest"])
 
 
+def _get_config() -> dict:
+    cfg = get_config() or {}
+    return cfg.get("nest", cfg.get("security", {}).get("integrations", {}).get("nest", {}))
+
+
 @router.get("/status")
 async def get_nest_status():
-    """Get Nest Protect system status and all devices via Home Assistant."""
-    client = get_homeassistant_client()
-
+    """Get Nest Protect system status and all devices."""
+    client = get_nest_client()
     if not client or not client.is_initialized:
+        cfg = _get_config()
+        oauth_url = NestClient.get_oauth_url()
         return {
             "initialized": False,
-            "error": "Home Assistant not connected",
+            "error": "Nest not connected",
+            "has_token": bool(cfg.get("refresh_token") or _cached_token_exists()),
+            "oauth_url": oauth_url,
             "setup_instructions": [
-                "1. Start Docker Desktop (from system tray)",
-                '2. Open PowerShell and run: docker run -d --name=homeassistant --restart=unless-stopped -p 8123:8123 -v "$env:USERPROFILE\\ha-config:/config" ghcr.io/home-assistant/home-assistant:stable',
-                "3. Open http://localhost:8123 and create account",
-                "4. Add Nest integration (Settings > Devices > Add Integration)",
-                "5. Sign in with Google account",
-                "6. Create Long-Lived Access Token (Profile > Security)",
-                "7. Add token to config.yaml under security.integrations.homeassistant.access_token",
-                "8. Restart devices-mcp server",
+                "1. Open the OAuth URL in a browser",
+                "2. Sign in with your Google account (same as Nest)",
+                "3. Copy the authorization code",
+                "4. Paste the code below and click 'Exchange Code'",
+                "5. Refresh token will be saved to nest_token.cache",
             ],
         }
 
-    return await client.get_nest_summary()
+    return await client.get_summary()
 
 
-@router.get("/devices")
-async def get_nest_devices():
-    """Get all Nest Protect devices via Home Assistant."""
-    client = get_homeassistant_client()
-    if not client or not client.is_initialized:
-        raise HTTPException(status_code=400, detail="Home Assistant not connected")
-
-    devices = await client.get_nest_protect_devices()
-    return {"devices": [d.to_dict() for d in devices]}
+class CodeExchangeRequest(BaseModel):
+    code: str
 
 
-@router.get("/ha/status")
-async def get_ha_status():
-    """Check Home Assistant connection status."""
-    client = get_homeassistant_client()
-
+@router.post("/oauth/exchange")
+async def exchange_oauth_code(req: CodeExchangeRequest):
+    """Exchange OAuth authorization code for refresh token."""
+    client = get_nest_client()
     if not client:
-        return {"connected": False, "error": "Client not initialized"}
+        client = NestClient()
+    success = await client.exchange_code(req.code)
+    if not success:
+        raise HTTPException(status_code=400, detail="Code exchange failed. Make sure you copied the full code.")
+    await client.initialize()
+    return {"success": True, "message": "Nest authenticated. Devices will appear shortly."}
 
-    if not client.is_initialized:
-        return {"connected": False, "error": "Not connected to Home Assistant"}
 
-    return {
-        "connected": True,
-        "url": client.base_url,
-    }
+def _cached_token_exists() -> bool:
+    import json
+    from pathlib import Path
+
+    cfg = _get_config()
+    token_file = cfg.get("token_file", "nest_token.cache")
+    p = Path(token_file)
+    if p.exists():
+        try:
+            d = json.loads(p.read_text())
+            return bool(d.get("refresh_token"))
+        except Exception:
+            pass
+    return False
+
+
+async def _auto_init() -> NestClient | None:
+    cfg = _get_config()
+    if not cfg.get("enabled", True):
+        return None
+    token = cfg.get("refresh_token")
+    client = await init_nest_client(
+        refresh_token=token,
+        token_file=cfg.get("token_file", "nest_token.cache"),
+        cache_ttl=cfg.get("cache_ttl", 60),
+    )
+    return client
