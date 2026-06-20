@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """CUA smoke test for NSIS-installed fleet apps (pywinauto-mcp canary).
 
+CUA_SMOKE_VERSION = 2
+If this file differs from templates/tauri-native/scripts/cua-smoke.py in
+mcp-central-docs, copy the template over — version number will have changed.
+
 Usage:
     python scripts/cua-smoke.py
     python scripts/cua-smoke.py --installer path/to/setup.exe
@@ -52,6 +56,27 @@ def load_config(path: str | None = None) -> dict:
         return v
 
     return {k: _expand(v) for k, v in cfg.items()}
+
+
+CUA_SMOKE_VERSION = 2  # bump when template changes; see docstring
+
+
+def _check_version():
+    """Warn if this file doesn't match the template version."""
+    from pathlib import Path
+
+    tpl = Path(os.getenv("MCP_CENTRAL_DOCS", "")) / "templates/tauri-native/scripts/cua-smoke.py"
+    if tpl.exists():
+        tpl_text = tpl.read_text(encoding="utf-8")
+        import re
+
+        m = re.search(r"CUA_SMOKE_VERSION\s*=\s*(\d+)", tpl_text)
+        if m and int(m.group(1)) > CUA_SMOKE_VERSION:
+            print(
+                f"  [cua] WARNING: cua-smoke.py v{CUA_SMOKE_VERSION} is outdated "
+                f"(template v{m.group(1)}). Copy template over.",
+                flush=True,
+            )
 
 
 def cfg(key: str, default=""):
@@ -132,7 +157,7 @@ def _cua_call(tool: str, params: dict) -> dict | None:
                 data=body,
                 headers={"Content-Type": "application/json"},
             )
-            resp = urllib.request.urlopen(r, timeout=30)  # noqa: S310
+            resp = urllib.request.urlopen(r, timeout=30)
             return json.loads(resp.read())
         except Exception as e:
             log(f"CUA HTTP call '{tool}' failed: {e}")
@@ -348,11 +373,17 @@ def launch_app():
     exe = os.path.join(INSTALL_DIR, OPERATOR_EXE)
     if not os.path.exists(exe):
         fatal(f"Operator not found at {exe}")
-    subprocess.Popen([exe], cwd=INSTALL_DIR)
+    env = os.environ.copy()
+    env_vars = cfg("env_vars", {})
+    if isinstance(env_vars, dict):
+        for k, v in env_vars.items():
+            env[k] = str(v)
+            log(f"  Set env {k}={v}")
+    subprocess.Popen([exe], cwd=INSTALL_DIR, env=env)
     log(f"Launched {exe}")
     for attempt in range(MAX_RETRY):
         try:
-            resp = urllib.request.urlopen(f"{BACKEND_URL}{HEALTH_PATH}", timeout=5)  # noqa: S310
+            resp = urllib.request.urlopen(f"{BACKEND_URL}{HEALTH_PATH}", timeout=5)
             if resp.status == 200:
                 log(f"Backend healthy (attempt {attempt + 1})")
                 return
@@ -399,7 +430,7 @@ def take_screenshot(output_dir: str):
 
 def check_feature_route():
     try:
-        resp = urllib.request.urlopen(f"{BACKEND_URL}{FEATURE_PATH}", timeout=5)  # noqa: S310
+        resp = urllib.request.urlopen(f"{BACKEND_URL}{FEATURE_PATH}", timeout=5)
         body = json.loads(resp.read())
         log(f"Feature route {FEATURE_PATH}: HTTP {resp.status}")
         if resp.status == 200:
@@ -413,7 +444,7 @@ def check_feature_route():
 
 def check_diagnostics():
     try:
-        resp = urllib.request.urlopen(f"{BACKEND_URL}{DIAGNOSTICS_PATH}", timeout=5)  # noqa: S310
+        resp = urllib.request.urlopen(f"{BACKEND_URL}{DIAGNOSTICS_PATH}", timeout=5)
         data = json.loads(resp.read())
         if data.get("success"):
             d = data["data"]
@@ -482,7 +513,7 @@ def nav_click_through(output_dir: str):
 
     for label, expected_header in nav_routes:
         try:
-            idx = next((i for i, (label_i, _) in enumerate(nav_routes) if label_i == label), 0)
+            idx = next((i for i, (nav_label, _) in enumerate(nav_routes) if nav_label == label), 0)
             sidebar_click_x = int(cfg("sidebar_click_x", 30))
             sidebar_first_y = int(cfg("sidebar_first_y", 90))
             sidebar_step_y = int(cfg("sidebar_step_y", 55))
@@ -588,6 +619,9 @@ def uninstall():
 
 
 def main():
+    # Self-check: warn if template version differs
+    _check_version()
+
     parser = argparse.ArgumentParser(description="CUA-NSIS smoke test")
     parser.add_argument("--installer", help="Path to NSIS installer .exe")
     parser.add_argument("--config", help="Path to cua-nsis-config.json")

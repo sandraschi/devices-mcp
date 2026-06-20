@@ -1,0 +1,284 @@
+# schip-mcp-devices (MCPB Bundle)
+
+Devices MCP Platform - Universal IoT and surveillance dashboard (SOTA v2.4.0)
+
+## Usage
+
+Add to \claude_desktop_config.json\:
+\\\json
+{
+  "mcpServers": {
+    "schip-mcp-devices": {
+      "command": "uv",
+      "args": ["run", "--directory", "\D:\Dev\repos", "python", "-m", "schip_mcp_devices"],
+      "env": { "PYTHONPATH": "\D:\Dev\repos/src" }
+    }
+  }
+}
+\\\
+
+## Tools
+
+- **health_check**: Health check endpoint
+- **get_cameras_status**: Legacy endpoint for dashboard compatibility
+- **get_recent_events**: Get recent events for dashboard compatibility
+- **capture_snapshot**: Capture a snapshot from the camera
+- **get_metrics**: get_metrics
+- **list_cameras**: list_cameras
+- **main_stdio**: main(stdio)
+- **main_http**: main(http)
+- **main_sse**: main(sse)
+- **assess_home_safety**: assess_home_safety
+- **coordinate_emergency_response**: coordinate_emergency_response
+- **run_server**: Run the Plex MCP server (Legacy - redirects to server.py).      Args:         config_path: Option...
+- **test_connection**: test_connection
+- **get_plex_status**: get_plex_status
+- **get_libraries**: get_libraries
+- **search_media**: search_media
+- **get_recently_added**: get_recently_added
+- **get_media_info**: get_media_info
+- **scan_library**: scan_library
+- **get_vienna_recommendations**: get_vienna_recommendations
+- **get_european_content**: get_european_content
+- **get_anime_season_info**: get_anime_season_info
+- **agentic_plex_workflow**: agentic_plex_workflow
+- **intelligent_media_processing**: intelligent_media_processing
+- **conversational_plex_assistant**: conversational_plex_assistant
+- **refresh_library**: refresh_library
+- **optimize_library**: optimize_library
+- **get_library**: get_library
+- **list_libraries**: list_libraries
+- **add_library**: add_library
+- **update_library**: update_library
+- **delete_library**: delete_library
+- **add_library_location**: add_library_location
+- **remove_library_location**: remove_library_location
+- **get_library_items**: get_library_items
+- **empty_trash**: empty_trash
+- **clean_bundles**: clean_bundles
+- **organize_library**: organize_library
+- **analyze_library**: analyze_library
+- **fix_media_match**: fix_media_match
+- **refresh_metadata**: refresh_metadata
+- **optimize_database**: optimize_database
+- **create_playlist**: create_playlist
+- **get_playlist**: get_playlist
+- **list_playlists**: list_playlists
+- **update_playlist**: update_playlist
+- **delete_playlist**: delete_playlist
+- **add_to_playlist**: add_to_playlist
+- **remove_from_playlist**: remove_from_playlist
+- **get_playlist_analytics**: get_playlist_analytics
+- **get_transcode_settings**: get_transcode_settings
+- **update_transcode_settings**: update_transcode_settings
+- **get_transcoding_status**: get_transcoding_status
+- **get_bandwidth_usage**: get_bandwidth_usage
+- **set_stream_quality**: set_stream_quality
+- **get_throttling_status**: get_throttling_status
+- **set_throttling**: set_throttling
+- **list_quality_profiles**: list_quality_profiles
+- **create_quality_profile**: create_quality_profile
+- **delete_quality_profile**: delete_quality_profile
+- **get_server_status**: get_server_status
+- **get_server_info**: get_server_info
+- **list_sessions**: list_sessions
+- **list_clients**: list_clients
+- **control_playback**: control_playback
+- **create_user**: create_user
+- **update_user**: update_user
+- **delete_user**: delete_user
+- **list_users**: list_users
+- **get_user**: get_user
+- **update_user_permissions**: update_user_permissions
+- **plex_audio_mgr**: plex_audio_mgr
+- **plex_collections**: plex_collections
+- **_get_plex_service_list**: _get_plex_service(list)
+- **_get_plex_service_get**: _get_plex_service(get)
+- **_get_plex_service_create**: _get_plex_service(create)
+- **_get_plex_service_update**: _get_plex_service(update)
+- **_get_plex_service_delete**: _get_plex_service(delete)
+- **_get_plex_service_add_items**: _get_plex_service(add_items)
+- **_get_plex_service_remove_items**: _get_plex_service(remove_items)
+- **plex_help**: plex_help
+- **plex_help_help**: plex_help(help)
+- **plex_help_list_tools**: plex_help(list_tools)
+- **plex_help_tool_info**: plex_help(tool_info)
+- **plex_help_examples**: plex_help(examples)
+- **plex_integration**: plex_integration
+- **_get_plex_service_winter**: _get_plex_service(winter)
+- **_get_plex_service_spring**: _get_plex_service(spring)
+- **_get_plex_service_summer**: _get_plex_service(summer)
+- **_get_plex_service_fall**: _get_plex_service(fall)
+- **plex_library**: plex_library
+- **_get_plex_service_movie**: _get_plex_service(movie)
+- **_get_plex_service_show**: _get_plex_service(show)
+- **_get_plex_service_music**: _get_plex_service(music)
+- **_get_plex_service_photo**: _get_plex_service(photo)
+- **plex_media**: plex_media
+- **_get_plex_service_browse**: _get_plex_service(browse)
+- **_get_plex_service_search**: _get_plex_service(search)
+- **_get_plex_service_get_details**: _get_plex_service(get_details)
+- **_get_plex_service_get_recent**: _get_plex_service(get_recent)
+- **_get_plex_service_update_metadata**: _get_plex_service(update_metadata)
+- **plex_metadata**: plex_metadata
+- **_get_plex_service_season**: _get_plex_service(season)
+- **_get_plex_service_episode**: _get_plex_service(episode)
+- **_get_plex_service_artist**: _get_plex_service(artist)
+- **_get_plex_service_album**: _get_plex_service(album)
+- **_get_plex_service_track**: _get_plex_service(track)
+- **plex_organization**: plex_organization
+- **plex_performance**: plex_performance
+- **plex_playlist**: plex_playlist
+- **plex_quality**: plex_quality
+- **plex_reporting**: plex_reporting
+- **_get_plex_service_json**: _get_plex_service(json)
+- **_get_plex_service_csv**: _get_plex_service(csv)
+- **_get_plex_service_html**: _get_plex_service(html)
+- **plex_search**: plex_search
+- **_get_plex_service_advanced_search**: _get_plex_service(advanced_search)
+- **_get_plex_service_suggest**: _get_plex_service(suggest)
+- **_get_plex_service_recent_searches**: _get_plex_service(recent_searches)
+- **_get_plex_service_save_search**: _get_plex_service(save_search)
+- **plex_server**: plex_server
+- **plex_streaming**: plex_streaming
+- **plex_user**: plex_user
+- **_get_plex_service_update_permissions**: _get_plex_service(update_permissions)
+- **my_tool**: my_tool
+- **list_connected_servers**: list_connected_servers
+- **connect_server**: connect_server
+- **call_namespaced_tool**: call_namespaced_tool
+- **configure_auth**: Configure authentication credentials for Ring API.
+- **get_devices**: Get all Ring devices.
+- **get_device**: Get details for a specific device.
+- **get_device_events**: Get events for a specific device.
+- **get_live_stream_url**: Get live stream URL for a camera device.
+- **set_arm_status**: Arm or disarm a security device.
+- **trigger_doorbell_chime**: Trigger doorbell chime.
+- **get_system_status**: Get overall system status.
+- **get_device_details**: get_device_details
+- **trigger_chime**: trigger_chime
+- **create_security_automation**: create_security_automation
+- **trigger_emergency_protocol**: trigger_emergency_protocol
+- **schedule_security_modes**: schedule_security_modes
+- **register_tools_motion**: register_tools(motion)
+- **register_tools_doorbell**: register_tools(doorbell)
+- **register_tools_schedule**: register_tools(schedule)
+- **register_tools_alarm**: register_tools(alarm)
+- **get_camera_status**: get_camera_status
+- **stream_all_cameras**: stream_all_cameras
+- **get_doorbell_status**: get_doorbell_status
+- **get_doorbell_live_stream**: get_doorbell_live_stream
+- **answer_doorbell_call**: answer_doorbell_call
+- **get_visitor_history**: get_visitor_history
+- **configure_motion_detection**: configure_motion_detection
+- **register_tools_low**: register_tools(low)
+- **register_tools_medium**: register_tools(medium)
+- **register_tools_high**: register_tools(high)
+- **get_fire_alarm_status**: get_fire_alarm_status
+- **test_fire_safety_system**: test_fire_safety_system
+- **list_available_tools**: list_available_tools
+- **get_tool_help**: get_tool_help
+- **search_tools**: search_tools
+- **monitor_system_health**: monitor_system_health
+- **get_real_time_activity**: get_real_time_activity
+- **get_security_system_status**: get_security_system_status
+- **arm_security_system**: arm_security_system
+- **disarm_security_system**: disarm_security_system
+- **get_security_history**: get_security_history
+- **register_tools_home**: register_tools(home)
+- **register_tools_away**: register_tools(away)
+- **register_tools_disarmed**: register_tools(disarmed)
+- **check_authentication_status**: check_authentication_status
+- **check_device_connectivity**: check_device_connectivity
+- **get_service_health**: get_service_health
+- **plex_library_browse**: plex_library_browse
+- **plex_media_search**: plex_media_search
+- **Living Room TV (P115)**: Real-time power consumption, voltage, current
+- **Kitchen Coffee Maker (P115)**: Real-time power consumption, voltage, current
+- **Bedroom Lamp (P115)**: Real-time power consumption, voltage, current
+- **Garage EV Charger (P115)**: Real-time power consumption, voltage, current
+- **Office Computer (P115)**: Real-time power consumption, voltage, current
+- **ai_analysis**: ai_analysis
+- **alerts_management**: alerts_management
+- **analytics_management**: analytics_management
+- **appliance_monitor_management**: appliance_monitor_management
+- **audio_management**: audio_management
+- **automation_management**: automation_management
+- **camera_management**: camera_management
+- **configuration_management**: configuration_management
+- **register_configuration_management_tool_device_settings**: register_configuration_management_tool(device_settings)
+- **register_configuration_management_tool_privacy_settings**: register_configuration_management_tool(privacy_settings)
+- **register_configuration_management_tool_led_control**: register_configuration_management_tool(led_control)
+- **register_configuration_management_tool_motion_detection**: register_configuration_management_tool(motion_detection)
+- **register_configuration_management_tool_privacy_mode**: register_configuration_management_tool(privacy_mode)
+- **dymo_management**: dymo_management
+- **register_dymo_management_tool_6mm**: register_dymo_management_tool(6mm)
+- **register_dymo_management_tool_9mm**: register_dymo_management_tool(9mm)
+- **register_dymo_management_tool_12mm**: register_dymo_management_tool(12mm)
+- **register_dymo_management_tool_19mm**: register_dymo_management_tool(19mm)
+- **register_dymo_management_tool_24mm**: register_dymo_management_tool(24mm)
+- **energy_management**: energy_management
+- **register_energy_management_tool_status**: register_energy_management_tool(status)
+- **register_energy_management_tool_control**: register_energy_management_tool(control)
+- **register_energy_management_tool_consumption**: register_energy_management_tool(consumption)
+- **register_energy_management_tool_cost**: register_energy_management_tool(cost)
+- **grafana_management**: grafana_management
+- **home_assistant_management**: home_assistant_management
+- **register_home_assistant_management_tool_status**: register_home_assistant_management_tool(status)
+- **register_home_assistant_management_tool_entities**: register_home_assistant_management_tool(entities)
+- **register_home_assistant_management_tool_nest_protect**: register_home_assistant_management_tool(nest_protect)
+- **register_home_assistant_management_tool_call_service**: register_home_assistant_management_tool(call_service)
+- **register_home_assistant_management_tool_get_state**: register_home_assistant_management_tool(get_state)
+- **ikettle_management**: ikettle_management
+- **register_ikettle_management_tool_status**: register_ikettle_management_tool(status)
+- **register_ikettle_management_tool_boil**: register_ikettle_management_tool(boil)
+- **register_ikettle_management_tool_keep_warm**: register_ikettle_management_tool(keep_warm)
+- **register_ikettle_management_tool_stop**: register_ikettle_management_tool(stop)
+- **register_ikettle_management_tool_set_mode**: register_ikettle_management_tool(set_mode)
+- **kitchen_management**: kitchen_management
+- **register_kitchen_management_tool_list_appliances**: register_kitchen_management_tool(list_appliances)
+- **register_kitchen_management_tool_control_appliance**: register_kitchen_management_tool(control_appliance)
+- **register_kitchen_management_tool_get_appliance_status**: register_kitchen_management_tool(get_appliance_status)
+- **register_kitchen_management_tool_get_energy_usage**: register_kitchen_management_tool(get_energy_usage)
+- **lighting_management**: lighting_management
+- **media_management**: media_management
+- **medical_management**: medical_management
+- **messages_management**: messages_management
+- **motion_management**: motion_management
+- **register_motion_management_tool_status**: register_motion_management_tool(status)
+- **register_motion_management_tool_events**: register_motion_management_tool(events)
+- **register_motion_management_tool_subscribe**: register_motion_management_tool(subscribe)
+- **register_motion_management_tool_unsubscribe**: register_motion_management_tool(unsubscribe)
+- **register_motion_management_tool_test**: register_motion_management_tool(test)
+- **register_motion_management_tool_capabilities**: register_motion_management_tool(capabilities)
+- **ptz_management**: ptz_management
+- **_ptz_prank_nod_nod**: _ptz_prank_nod(nod)
+- **_ptz_prank_nod_shake**: _ptz_prank_nod(shake)
+- **_ptz_prank_nod_dizzy**: _ptz_prank_nod(dizzy)
+- **_ptz_prank_nod_chaos**: _ptz_prank_nod(chaos)
+- **ring_management**: ring_management
+- **robotics_management**: robotics_management
+- **security_management**: security_management
+- **shelly_management**: shelly_management
+- **system_management**: system_management
+- **register_system_management_tool_info**: register_system_management_tool(info)
+- **register_system_management_tool_status**: register_system_management_tool(status)
+- **register_system_management_tool_health**: register_system_management_tool(health)
+- **register_system_management_tool_initialize**: register_system_management_tool(initialize)
+- **register_system_management_tool_reboot**: register_system_management_tool(reboot)
+- **register_system_management_tool_logs**: register_system_management_tool(logs)
+- **device_control**: device_control
+- **tapo**: tapo
+- **thermal_management**: thermal_management
+- **weather_management**: weather_management
+- **register_weather_management_tool_current**: register_weather_management_tool(current)
+- **register_weather_management_tool_historical**: register_weather_management_tool(historical)
+- **register_weather_management_tool_stations**: register_weather_management_tool(stations)
+- **register_weather_management_tool_alerts**: register_weather_management_tool(alerts)
+- **register_weather_management_tool_health**: register_weather_management_tool(health)
+- **register_weather_management_tool_analyze**: register_weather_management_tool(analyze)
+
+## Requirements
+
+- Python 3.12+
+- uv

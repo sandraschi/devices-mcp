@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import _strptime  # noqa: F401 -- PyInstaller must bundle this eagerly
 import argparse
 import os
 import sys

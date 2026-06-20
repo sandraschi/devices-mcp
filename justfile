@@ -1,4 +1,5 @@
-﻿set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+import 'scripts/just/fleet.just'
 
 MCP_CENTRAL_DIR := "..\\mcp-central-docs"
 WEBROOT := "web-sota"
@@ -55,9 +56,7 @@ audit-deps:
 
 # Build Tauri NSIS desktop installer
 build-native:
-    Set-Location '{{justfile_directory()}}\native'
-    $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"
-    .\build.ps1
+    Set-Location '{{justfile_directory()}}\native'; $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"; & .\build.ps1
 
 # Run CUA smoke test against installed NSIS app
 cua-nsis-test:
@@ -68,4 +67,3 @@ cua-nsis-test:
 # Run e2e Playwright tests
 e2e:
     pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File "D:\Dev\repos\mcp-central-docs\scripts\playwright-audit.ps1" -RepoPath "{{justfile_directory()}}"
-

@@ -33,7 +33,7 @@ keywords = ["home-security", "surveillance", "mcp", "fastmcp", "tapo", "ring", "
 
 dependencies = [
     # Core dependencies
-    "fastmcp>=3.4.2",
+    "fastmcp>=3.2.0", # Upgrade to FastMCP 3.2 parity
     "pytapo>=3.3.54,<4.0.0", # Tapo camera control (Updated to 3.3.x)
     "python-kasa>=0.6.0,<0.7.0", # TP-Link Kasa (required by pytapo, compatibility shim in src/devices_mcp/compat/)
     "pydantic>=2.0.0,<3.0.0", # Data validation and settings management
@@ -309,7 +309,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"scripts/**" = ["S603", "S607", "S605", "S602", "S310", "E402"]
+"scripts/**" = ["S603", "S607", "S605", "S602", "E402"]
 "tests/**" = ["S101", "S311"]
 
 [tool.ruff.format]

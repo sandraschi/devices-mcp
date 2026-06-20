@@ -5,7 +5,7 @@
     "runtime": "python",
     "entry_point": "src/devices_mcp/server_v2.py",
     "dependencies": [
-        "fastmcp>=3.2.0",
+        "fastmcp>=3.4.2",
         "pytapo>=3.3.0"
     ],
     "build": {

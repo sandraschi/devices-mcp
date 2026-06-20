@@ -182,6 +182,7 @@ secrets.yml
 # Build artifacts
 build/
 dist/
+*.mcpb
 *.egg-info/
 
 # Test artifacts

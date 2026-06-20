@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "devices-mcp",
-  "version": "1.21.5",
+  "version": "1.22.1",
   "description": "Home security and IoT orchestration MCP server. Supports Tapo cameras, Ring, Nest Protect, Philips Hue, Netatmo weather, Shelly, USB webcams. 40+ tools.",
   "long_description": "Comprehensive home security and IoT orchestration platform. Dual-architecture: individual device MCP servers + unified web-sota SPA dashboard (Vite + React, ports 10716/10717). Supports TP-Link Tapo cameras, Ring doorbells, Nest Protect, Philips Hue lighting, Netatmo weather stations, Shelly devices, and USB webcams. Includes PTZ control, motion detection, energy monitoring, lighting scenes, HomeAware motion detection via Zigbee mesh, log management, and health supervision with circuit breakers.",
   "author": {
@@ -41,13 +41,17 @@
     {
       "name": "camera-setup-guide",
       "description": "Interactive guide for setting up a new camera",
-      "arguments": ["camera_type"],
+      "arguments": [
+        "camera_type"
+      ],
       "text": "Let me help you set up your ${arguments.camera_type} camera. For ${arguments.camera_type} cameras, you'll need:\n\n- Tapo: IP address, TP-Link account email and password\n- Ring: Ring account credentials\n- Furbo: Furbo account credentials  \n- Webcam: Just the device ID (usually 0)\n\nUse the add_camera tool with camera_type='${arguments.camera_type}' and provide the required parameters. After setup, view your camera at http://localhost:7777"
     },
     {
       "name": "ptz-control-guide",
       "description": "Guide for using PTZ (Pan-Tilt-Zoom) controls",
-      "arguments": ["action"],
+      "arguments": [
+        "action"
+      ],
       "text": "PTZ Control Help for action: ${arguments.action}\n\nAvailable PTZ tools:\n- move_ptz: Move camera (up/down/left/right/zoom_in/zoom_out)\n- save_ptz_preset: Save current position with a name\n- recall_ptz_preset: Return to a saved position\n- get_ptz_position: See current coordinates\n- go_to_home_ptz: Return to default position\n- stop_ptz: Stop movement\n\nExample: move_ptz(direction='left') to pan left. Save good angles as presets for quick recall!"
     },
     {
