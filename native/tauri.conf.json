@@ -33,7 +33,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-
     "resources": [
       "resources/devices-mcp-backend.exe",
       "resources/devices-mcp-camera.exe"
@@ -45,12 +44,7 @@
       "webviewInstallMode": {
         "type": "skip"
       },
-      "nsis": {
-        "installerHooks": "./windows/hooks.nsh",
-        "installMode": "currentUser",
-        "createDesktopShortcut": true,
-        "createStartMenuShortcut": true
-      }
+      "nsis": {}
     }
   },
   "plugins": {
