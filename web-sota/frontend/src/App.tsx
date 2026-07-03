@@ -16,6 +16,7 @@ import { Placeholder } from '@/pages/Placeholder';
 import { Plex } from '@/pages/Plex';
 import { Ring } from '@/pages/Ring';
 import { Robots } from '@/pages/Robots';
+import { SensorHealth } from '@/pages/SensorHealth';
 import { Settings } from '@/pages/Settings';
 import { Weather } from '@/pages/Weather';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -34,6 +35,7 @@ function App() {
           <Route path='lighting' element={<Lighting />} />
           <Route path='robots' element={<Robots />} />
           <Route path='ring' element={<Ring />} />
+          <Route path='sensor-health' element={<SensorHealth />} />
           <Route path='nest' element={<Nest />} />
           <Route path='health' element={<Health />} />
           <Route path='human-health' element={<HumanHealth />} />

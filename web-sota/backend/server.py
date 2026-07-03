@@ -3,6 +3,7 @@ Clean web server implementation for Devices MCP.
 Refactored from the bloated 3896-line server.py into modular components.
 """
 
+import asyncio
 import logging
 import os
 import sys
@@ -38,176 +39,116 @@ class WebServer:
 
         @asynccontextmanager
         async def _lifespan(app: FastAPI):
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.config.log_paths import configure_root_file_logging
+            from devices_mcp.config.log_paths import configure_root_file_logging
 
-                configure_root_file_logging(get_config())
+            # Only file logging before yield (fast, no network)
+            try:
+                await asyncio.get_event_loop().run_in_executor(None, lambda: configure_root_file_logging(get_config()))
             except Exception:
                 logger.debug("Startup file logging skipped", exc_info=True)
 
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.llm.manager import get_llm_manager
-
-                mgr = get_llm_manager()
-                mgr.ensure_catalog_registered(get_config())
-                await mgr.glom_local_providers_if_up()
-            except Exception:
-                logger.debug("Startup LLM glom skipped", exc_info=True)
-
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.tools.lighting.hue_tools import get_hue_manager, load_hue_bridge_cache
-
-                raw = get_config() or {}
-                hue_cfg = (raw.get("lighting") or {}).get("philips_hue") or {}
-                if hue_cfg.get("enabled") is not False:
-                    cache = load_hue_bridge_cache()
-                    if hue_cfg.get("bridge_ip") or cache.get("bridge_ip"):
-                        mgr = get_hue_manager()
-                        if await mgr.initialize():
-                            try:
-                                await mgr.rescan()
-                                logger.info("Hue startup: %s lights on %s", len(mgr.lights), mgr._bridge_name)
-                            except Exception:
-                                logger.warning("Hue startup rescan failed", exc_info=True)
-                        else:
-                            logger.warning("Hue startup init skipped: %s", mgr._connection_error)
-            except Exception:
-                logger.debug("Startup Hue init skipped", exc_info=True)
-
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.integrations.ring_client import init_ring_client, ring_has_cached_token
-
-                raw = get_config() or {}
-                ring_cfg = raw.get("ring") or {}
-                if ring_cfg.get("enabled"):
-                    email = ring_cfg.get("email")
-                    token_file = ring_cfg.get("token_file", "ring_token.cache")
-                    password = ring_cfg.get("password")
-                    if email and (password or ring_has_cached_token(token_file)):
-                        client = await init_ring_client(
-                            email=email,
-                            password=password or None,
-                            token_file=token_file,
-                            cache_ttl=ring_cfg.get("cache_ttl", 60),
-                        )
-                        if client.is_initialized:
-                            logger.info("Ring startup: connected (doorbells via /api/ring/summary)")
-                        elif client.is_2fa_pending:
-                            logger.warning("Ring startup: 2FA pending — submit code in Ring page")
-                        else:
-                            logger.warning("Ring startup init failed: %s", client.last_error)
-            except Exception:
-                logger.debug("Startup Ring init skipped", exc_info=True)
-
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.integrations.nest_client import init_nest_client
-
-                raw = get_config() or {}
-                nest_cfg = raw.get("nest") or {}
-                if nest_cfg.get("enabled", True):
-                    client = await init_nest_client(
-                        refresh_token=nest_cfg.get("refresh_token"),
-                        token_file=nest_cfg.get("token_file", "nest_token.cache"),
-                        cache_ttl=nest_cfg.get("cache_ttl", 60),
-                        client_id=nest_cfg.get("client_id"),
-                        client_secret=nest_cfg.get("client_secret"),
-                    )
-                    if client and client.is_initialized:
-                        logger.info("Nest startup: %s device(s)", len(client._devices))
-                    else:
-                        logger.info("Nest startup: needs OAuth — visit /api/nest/status for setup")
-            except Exception:
-                logger.debug("Startup Nest init skipped", exc_info=True)
-
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.integrations.shelly_client import init_shelly_client
-
-                raw = get_config() or {}
-                shelly_cfg = raw.get("shelly") or {}
-                if shelly_cfg.get("enabled") and shelly_cfg.get("devices"):
-                    client = await init_shelly_client(
-                        devices=shelly_cfg.get("devices"),
-                        cache_ttl=shelly_cfg.get("cache_ttl", 30),
-                    )
-                    if client.is_initialized:
-                        logger.info("Shelly startup: %s device(s)", len(client._devices))
-                    else:
-                        logger.warning("Shelly startup init failed")
-            except Exception:
-                logger.debug("Startup Shelly init skipped", exc_info=True)
-
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.integrations.homeassistant_client import init_homeassistant_client
-
-                raw = get_config() or {}
-                ha_cfg = (raw.get("security") or {}).get("integrations", {}).get("homeassistant") or {}
-                if ha_cfg.get("enabled") and ha_cfg.get("access_token"):
-                    client = await init_homeassistant_client(
-                        base_url=ha_cfg.get("url", "http://localhost:8123"),
-                        access_token=ha_cfg.get("access_token"),
-                        cache_ttl=ha_cfg.get("cache_ttl", 30),
-                    )
-                    if client and client.is_initialized:
-                        logger.info("Home Assistant startup: connected (Nest via /api/nest/status)")
-                    else:
-                        logger.warning("Home Assistant startup init failed")
-            except Exception:
-                logger.debug("Startup Home Assistant init skipped", exc_info=True)
-
-            try:
-                from devices_mcp.config import get_config
-                from devices_mcp.integrations.netatmo_client import PYATMO_AVAILABLE, NetatmoService
-
-                raw = get_config() or {}
-                netatmo_cfg = ((raw.get("weather") or {}).get("integrations") or {}).get("netatmo") or {}
-                token_file = netatmo_cfg.get("token_file") or "netatmo_token.cache"
-                has_token = bool((netatmo_cfg.get("refresh_token") or "").strip())
-                if not has_token:
-                    cache_path = NetatmoService._adjust_token_path(token_file)
-                    try:
-                        has_token = cache_path.exists() and bool(cache_path.read_text(encoding="utf-8").strip())
-                    except OSError:
-                        has_token = False
-                if (
-                    netatmo_cfg.get("enabled")
-                    and PYATMO_AVAILABLE
-                    and netatmo_cfg.get("client_id")
-                    and netatmo_cfg.get("client_secret")
-                    and has_token
-                ):
-                    svc = await NetatmoService.get_instance(token_file)
-                    if svc.is_api_ready():
-                        logger.info("Netatmo startup: connected (weather via /api/weather/modules)")
-                    else:
-                        logger.warning("Netatmo startup init failed: %s", svc.last_error)
-            except Exception:
-                logger.debug("Startup Netatmo init skipped", exc_info=True)
-
-            try:
-                from devices_mcp.core.connection_supervisor import get_supervisor
-
-                supervisor = get_supervisor()
-                await supervisor.start()
-                logger.info("Connection supervisor started (energy + device health polling)")
-            except Exception:
-                logger.debug("Connection supervisor startup skipped", exc_info=True)
-
-            # Start fleet monitoring background task
-            import asyncio
-
+            # Fleet monitor background task
             monitor_task = asyncio.create_task(self._fleet_monitor())
+            logger.info("Application startup complete")
+
+            # Yield immediately — integrations connect in background
+            yield
+
+            # Background integration init (fire-and-forget, each with own timeout)
+            async def _init_bg():
+                try:
+                    from devices_mcp.llm.manager import get_llm_manager
+                    mgr = get_llm_manager()
+                    mgr.ensure_catalog_registered(get_config())
+                    await asyncio.wait_for(mgr.glom_local_providers_if_up(), timeout=5)
+                except Exception:
+                    logger.debug("BG: LLM glom skipped")
+
+                try:
+                    from devices_mcp.tools.lighting.hue_tools import get_hue_manager, load_hue_bridge_cache
+                    raw = get_config() or {}
+                    hue_cfg = (raw.get("lighting") or {}).get("philips_hue") or {}
+                    if hue_cfg.get("enabled") is not False:
+                        cache = load_hue_bridge_cache()
+                        if hue_cfg.get("bridge_ip") or cache.get("bridge_ip"):
+                            mgr = get_hue_manager()
+                            if await asyncio.wait_for(mgr.initialize(), timeout=30):
+                                await asyncio.wait_for(mgr.rescan(), timeout=30)
+                                logger.info("BG: Hue %s lights", len(mgr.lights))
+                except Exception:
+                    logger.debug("BG: Hue skipped")
+
+                try:
+                    from devices_mcp.integrations.ring_client import init_ring_client, ring_has_cached_token
+                    raw = get_config() or {}
+                    ring_cfg = raw.get("ring") or {}
+                    if ring_cfg.get("enabled"):
+                        email = ring_cfg.get("email")
+                        pw = ring_cfg.get("password")
+                        tf = ring_cfg.get("token_file", "ring_token.cache")
+                        if email and (pw or ring_has_cached_token(tf)):
+                            await asyncio.wait_for(init_ring_client(email=email, password=pw or None, token_file=tf, cache_ttl=ring_cfg.get("cache_ttl", 60)), timeout=10)
+                except Exception:
+                    logger.debug("BG: Ring skipped")
+
+                try:
+                    from devices_mcp.integrations.nest_client import init_nest_client
+                    raw = get_config() or {}
+                    nc = raw.get("nest") or {}
+                    if nc.get("enabled", True):
+                        await asyncio.wait_for(init_nest_client(refresh_token=nc.get("refresh_token"), token_file=nc.get("token_file", "nest_token.cache"), cache_ttl=nc.get("cache_ttl", 60), client_id=nc.get("client_id"), client_secret=nc.get("client_secret")), timeout=10)
+                except Exception:
+                    logger.debug("BG: Nest skipped")
+
+                try:
+                    from devices_mcp.integrations.shelly_client import init_shelly_client
+                    raw = get_config() or {}
+                    sc = raw.get("shelly") or {}
+                    if sc.get("enabled") and sc.get("devices"):
+                        await asyncio.wait_for(init_shelly_client(devices=sc.get("devices"), cache_ttl=sc.get("cache_ttl", 30)), timeout=10)
+                except Exception:
+                    logger.debug("BG: Shelly skipped")
+
+                try:
+                    from devices_mcp.integrations.homeassistant_client import init_homeassistant_client
+                    raw = get_config() or {}
+                    hac = (raw.get("security") or {}).get("integrations", {}).get("homeassistant") or {}
+                    if hac.get("enabled") and hac.get("access_token"):
+                        await asyncio.wait_for(init_homeassistant_client(base_url=hac.get("url", "http://localhost:8123"), access_token=hac.get("access_token"), cache_ttl=hac.get("cache_ttl", 30)), timeout=10)
+                except Exception:
+                    logger.debug("BG: HA skipped")
+
+                try:
+                    from devices_mcp.integrations.netatmo_client import PYATMO_AVAILABLE, NetatmoService
+                    raw = get_config() or {}
+                    nm = ((raw.get("weather") or {}).get("integrations") or {}).get("netatmo") or {}
+                    tf = nm.get("token_file") or "netatmo_token.cache"
+                    ht = bool((nm.get("refresh_token") or "").strip())
+                    if not ht:
+                        cp = NetatmoService._adjust_token_path(tf)
+                        ht = cp.exists() and bool(cp.read_text(encoding="utf-8").strip())
+                    if nm.get("enabled") and PYATMO_AVAILABLE and nm.get("client_id") and nm.get("client_secret") and ht:
+                        await asyncio.wait_for(NetatmoService.get_instance(tf), timeout=10)
+                except Exception:
+                    logger.debug("BG: Netatmo skipped")
+
+                try:
+                    from devices_mcp.core.connection_supervisor import get_supervisor
+                    await asyncio.wait_for(get_supervisor().start(), timeout=10)
+                except Exception:
+                    logger.debug("BG: supervisor skipped")
+
+            bg = asyncio.create_task(_init_bg())
+            logger.info("Startup integrations backgrounded")
 
             yield
 
-            # Cleanup
+            bg.cancel()
             monitor_task.cancel()
+            try:
+                await bg
+            except asyncio.CancelledError:
+                pass
             try:
                 await monitor_task
             except asyncio.CancelledError:
@@ -224,7 +165,8 @@ class WebServer:
             lifespan=_lifespan,
         )
 
-        # CORS: Vite dev, direct browser, Tauri splash (asset.localhost), packaged desktop
+        # CORS: Vite dev, direct browser, Tauri WebView, packaged desktop
+        _tauri = os.environ.get("DEVICES_TAURI", "").lower() in ("1", "true", "yes")
         cors_origins = [
             "http://localhost:10717",
             "http://localhost:10716",
@@ -236,12 +178,14 @@ class WebServer:
             "http://asset.localhost",
             "https://tauri.localhost",
             "http://tauri.localhost",
+            "tauri://localhost",
         ]
         if getattr(sys, "frozen", False) or os.getenv("DEVICES_MCP_PACKAGED") == "1":
             cors_origins = ["*"]
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=cors_origins,
+            allow_origin_regex=r"https?://tauri\.localhost(:\d+)?" if _tauri else None,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
@@ -412,6 +356,14 @@ class WebServer:
             self.app.include_router(scanner.router, tags=["Scanner"])
             self.app.include_router(shelly.router, tags=["Shelly"])
             self.app.include_router(cua_diagnostics.router, tags=["CUA"])
+
+            # Mount orphaned v1 endpoints (system restart, config, logs)
+            try:
+                from .v1.endpoints import system as v1_system
+
+                self.app.include_router(v1_system.router, prefix="/api/v1", tags=["v1 System"])
+            except Exception:
+                logger.debug("v1 endpoints not available", exc_info=True)
 
             logger.info("All modular routes registered successfully")
         except ImportError as e:

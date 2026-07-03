@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/metrics", summary="Prometheus metrics endpoint")
+@router.get("/api/energy/metrics", summary="Prometheus metrics endpoint")
 async def get_prometheus_metrics() -> Response:
     """
     Expose Prometheus-formatted metrics for Grafana.

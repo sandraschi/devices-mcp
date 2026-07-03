@@ -33,6 +33,7 @@ from .ptz_management import register_ptz_management_tool
 from .ring_management import register_ring_management_tool
 from .robotics_management import register_robotics_management_tool
 from .security_management import register_security_management_tool
+from .sensor_health import register_sensor_health_tool
 from .shelly_management import register_shelly_management_tool
 from .system_management import register_system_management_tool
 from .tapo_control import register_tapo_control_tool
@@ -67,6 +68,7 @@ def register_all_portmanteau_tools(mcp: FastMCP) -> None:
     register_security_management_tool(mcp)
     register_system_management_tool(mcp)
     register_weather_management_tool(mcp)
+    register_sensor_health_tool(mcp)
     register_configuration_management_tool(mcp)
 
     # New tools (v1.5.0)

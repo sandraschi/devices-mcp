@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-import _strptime  # noqa: F401 -- PyInstaller must bundle this eagerly
+import _datetime  # noqa: F401
+import _strptime  # noqa: F401
 import argparse
 import os
 import sys
@@ -13,12 +14,8 @@ def _configure_paths() -> None:
     if getattr(sys, "frozen", False):
         root = Path(sys._MEIPASS)
         sys.path.insert(0, str(root))
-        # Prefer install/portable dir for config.yaml; fall back to MEIPASS for bundled assets.
-        exe_dir = Path(sys.executable).resolve().parent
-        if (exe_dir / "config.yaml").exists():
-            os.chdir(exe_dir)
-        else:
-            os.chdir(root)
+        # Do NOT chdir when frozen -- MEIPASS is a temp dir that may be locked.
+        # Config is read from %LOCALAPPDATA%/ai.fleet.devices-mcp/ not cwd.
         os.environ.setdefault("TAPO_MCP_SKIP_HARDWARE_INIT", "true")
         os.environ.setdefault("TAPO_MCP_LAZY_INIT", "true")
         os.environ.setdefault("DEVICES_MCP_PACKAGED", "1")
@@ -33,6 +30,11 @@ def _configure_paths() -> None:
 
 def main() -> None:
     _configure_paths()
+
+    # Overwrite sys.argv before argparse -- PyInstaller leaves frozen args
+    port = os.environ.get("PORT", "10717")
+    host = os.environ.get("HOST", "127.0.0.1")
+    sys.argv = ["run_webapp_backend.py", "--host", host, "--port", str(port)]
 
     from backend.server import WebServer
 

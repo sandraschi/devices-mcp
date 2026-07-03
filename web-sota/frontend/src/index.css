@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    @apply antialiased;
-  }
-  body {
-    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
-  }
+	html {
+		@apply antialiased;
+	}
+	body {
+		@apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+	}
 }

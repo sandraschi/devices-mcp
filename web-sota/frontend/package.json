@@ -19,7 +19,8 @@
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.5.4",
     "lucide-react": "^0.460.0",
-    "recharts": "^2.13.3"
+    "recharts": "^2.13.3",
+    "@tauri-apps/api": "^2.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",

@@ -1,8 +1,10 @@
 use std::fs::{self, OpenOptions};
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
+use std::net::{SocketAddr, TcpStream};
+use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 use tauri::path::BaseDirectory;
@@ -89,20 +91,34 @@ pub fn spawn_backend(app: AppHandle, state: &BackendProcess) -> Result<String, S
         .env("TAPO_MCP_SKIP_HARDWARE_INIT", "true")
         .env("TAPO_MCP_LAZY_INIT", "true")
         .env("DEVICES_MCP_PACKAGED", "1")
-        .stdout(Stdio::piped()).stderr(Stdio::piped());
+        .stdout(Stdio::null()).stderr(Stdio::null());
     #[cfg(windows)] {
         use std::os::windows::process::CommandExt;
         command.creation_flags(0x0800_0000);
     }
-    let mut child = command.spawn().map_err(|e| format!("spawn failed: {e}"))?;
-    let stdout = child.stdout.take();
-    let stderr = child.stderr.take();
+    let child = command.spawn().map_err(|e| format!("spawn failed: {e}"))?;
+    let pid = child.id();
     state.0.lock().unwrap().replace(child);
-    if let Some(out) = stdout {
-        let h = app.clone(); thread::spawn(move || { let r = BufReader::new(out); for line in r.lines().map_while(Result::ok) { log_line(&h, &line); if line.contains("Uvicorn running") || line.contains("Application startup complete") || line.contains("Started server process") { let _ = h.emit("backend-status", "ready"); } } });
-    }
-    if let Some(err) = stderr {
-        let h = app.clone(); thread::spawn(move || { let r = BufReader::new(err); for line in r.lines().map_while(Result::ok) { log_line(&h, &line); } });
-    }
+    log_line(&app, &format!("spawned PID {}", pid));
+
+    let addr = SocketAddr::from_str(&format!("127.0.0.1:{BACKEND_PORT}")).unwrap();
+    let app_health = app.clone();
+    thread::spawn(move || {
+        for attempt in 0..30 {
+            thread::sleep(Duration::from_secs(2));
+            match TcpStream::connect_timeout(&addr, Duration::from_secs(2)) {
+                Ok(_) => {
+                    log_line(&app_health, &format!("Backend health check PASSED on port {BACKEND_PORT} (attempt {})", attempt + 1));
+                    let _ = app_health.emit("backend-status", "ready");
+                    return;
+                }
+                Err(e) => {
+                    log_line(&app_health, &format!("Backend health check: {e} (attempt {})", attempt + 1));
+                }
+            }
+        }
+        log_line(&app_health, &format!("Backend health check FAILED — not listening on port {BACKEND_PORT} after 30 attempts"));
+        let _ = app_health.emit("backend-status", "error: backend not reachable");
+    });
     Ok(format!("Backend starting on port {BACKEND_PORT}"))
 }

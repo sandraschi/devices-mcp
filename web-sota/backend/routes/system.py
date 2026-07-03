@@ -3,7 +3,7 @@ import inspect
 import logging
 import os
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import psutil
@@ -343,9 +343,7 @@ async def get_health():
             "success": True,
             "timestamp": time.time(),
             "uptime_seconds": uptime_seconds,
-            "uptime_human": str(asyncio.mixins.TimeDelta(seconds=int(uptime_seconds)))
-            if hasattr(asyncio, "mixins")
-            else f"{int(uptime_seconds)}s",  # pseudo
+            "uptime_human": str(timedelta(seconds=int(uptime_seconds))),
             "system": {
                 "cpu_percent": cpu_percent,
                 "memory": {

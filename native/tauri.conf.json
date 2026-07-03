@@ -35,6 +35,7 @@
     ],
     "resources": [
       "resources/devices-mcp-backend.exe",
+      "resources/.env.example",
       "resources/devices-mcp-camera.exe"
     ],
     "targets": [
@@ -44,7 +45,10 @@
       "webviewInstallMode": {
         "type": "skip"
       },
-      "nsis": {}
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "./windows/hooks.nsh"
+      }
     }
   },
   "plugins": {
@@ -59,3 +63,4 @@
     }
   }
 }
+

@@ -10,11 +10,13 @@ import {
   LayoutDashboard,
   Lightbulb,
   MessageCircle,
+  Moon,
   Play,
   Puzzle,
   Rocket,
   Settings,
   Shield,
+  Sun,
   Video,
   Zap,
 } from 'lucide-react';
@@ -30,6 +32,7 @@ const nav = [
   { to: '/lighting', label: 'Lighting', icon: Lightbulb },
   { to: '/robots', label: 'Robots', icon: Bot },
   { to: '/ring', label: 'Ring Doorbell', icon: Bell },
+  { to: '/sensor-health', label: 'Sensor Health', icon: Activity },
   { to: '/nest', label: 'Nest Protect', icon: Flame },
   { to: '/health', label: 'Status', icon: Activity },
   { to: '/human-health', label: 'Human Health', icon: Heart },
@@ -66,6 +69,23 @@ export function AppSidebar() {
             </Link>
           ))}
         </nav>
+        <div className='flex items-center justify-center border-t border-slate-200 p-3 dark:border-slate-800'>
+          <button
+            type='button'
+            onClick={() => {
+              const html = document.documentElement;
+              html.classList.toggle('dark');
+              localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+            }}
+            className='flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-50'
+            aria-label='Toggle dark mode'
+          >
+            <Sun className='h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0' />
+            <Moon className='absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100' />
+            <span className='hidden dark:inline'>Dark</span>
+            <span className='dark:hidden'>Light</span>
+          </button>
+        </div>
       </div>
     </aside>
   );
