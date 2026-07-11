@@ -97,7 +97,12 @@ def _add_zone(app: PrefabApp, name: str, sensors: dict[str, Any]) -> None:
         ("Humidity", lambda d: d.get("humidity"), _check_humidity, lambda d: False),
         ("CO\u2082", lambda d: d.get("co2"), _check_co2, lambda d: False),
         ("Power", lambda d: d.get("power"), _check_power, lambda d: d.get("power") is None),
-        ("Battery", lambda d: d.get("battery_percent") or d.get("battery"), _check_battery, lambda d: d.get("battery") is None and d.get("battery_percent") is None),
+        (
+            "Battery",
+            lambda d: d.get("battery_percent") or d.get("battery"),
+            _check_battery,
+            lambda d: d.get("battery") is None and d.get("battery_percent") is None,
+        ),
     ]:
         if skip_condition(sensors):
             continue
