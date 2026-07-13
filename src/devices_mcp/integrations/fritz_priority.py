@@ -152,15 +152,19 @@ def _message_incidents(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         sev = (m.get("severity") or "").lower()
         if sev != "alarm":
             continue
+        title = (m.get("title") or "").lower()
+        desc = (m.get("description") or "").lower()
+        # Offline/camera disconnection is a warning, not critical
+        is_offline = "offline" in title or "offline" in desc or "disconnect" in title
         out.append(
             {
                 "id": f"msg-{m.get('id', m.get('timestamp', 'x'))}",
-                "kind": "device_alarm",
+                "kind": "device_offline" if is_offline else "device_alarm",
                 "source": m.get("source") or "devices-mcp",
                 "title": m.get("title") or "Device alarm",
                 "description": (m.get("description") or "")[:300],
-                "urgency": 8.5,
-                "critical": True,
+                "urgency": 5.0 if is_offline else 8.5,
+                "critical": not is_offline,
                 "location": m.get("source") or "",
                 "raw": m,
             }

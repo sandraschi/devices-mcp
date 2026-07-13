@@ -110,7 +110,7 @@ def http_app():
 
     This provides the HTTP interface that can be mounted in webapps.
     """
-    return mcp.http_app()
+    return mcp.http_app(path="/")
 
 
 # CRITICAL: After server initialization, restore stdout for stdio mode

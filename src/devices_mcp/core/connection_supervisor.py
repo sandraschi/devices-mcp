@@ -29,6 +29,7 @@ class DeviceHealth:
     details: dict[str, Any]
     circuit_breaker_tripped: bool = False  # Circuit breaker to prevent spam
     circuit_breaker_until: datetime | None = None  # When to retry
+    alarm_raised: bool = False  # True after ALARM sent for this offline event
 
 
 class ConnectionSupervisor:
@@ -793,6 +794,7 @@ class ConnectionSupervisor:
                 health.last_success = now
                 health.error_count = 0
                 health.last_error = None
+                health.alarm_raised = False
             else:
                 # Device went offline
                 if previous_state:
@@ -811,8 +813,8 @@ class ConnectionSupervisor:
                 health.error_count += 1
                 health.last_error = error
 
-                # Escalate to ALARM after 3 consecutive failures
-                if health.error_count == 3:
+                # Escalate to ALARM after 3 consecutive failures (once only)
+                if health.error_count == 3 and not health.alarm_raised:
                     self.messaging.alarm(
                         category=self.MessageCategory.DEVICE_CONNECTION,
                         source=device_id,
@@ -824,6 +826,8 @@ class ConnectionSupervisor:
                         duration_seconds=3 * self.poll_interval,
                     )
                     logger.error(f"Device {name} CRITICAL - offline for {3 * self.poll_interval}s")
+
+                    health.alarm_raised = True
 
             health.details = details
         else:
