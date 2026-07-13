@@ -1,5 +1,11 @@
 Param([switch]$Headless)
 
+$svc = Get-Service -Name devices-mcp -ErrorAction SilentlyContinue
+if ($svc -and $svc.Status -eq 'Running') {
+    Write-Host "devices-mcp service is already running on port 10717 -- skipping startup" -ForegroundColor Cyan
+    exit
+}
+
 # --- SOTA Headless Standard ---
 if ($Headless -and ($Host.UI.RawUI.WindowTitle -notmatch 'Hidden')) {
     Start-Process pwsh -ArgumentList '-NoProfile', '-File', $PSCommandPath, '-Headless' -WindowStyle Hidden
