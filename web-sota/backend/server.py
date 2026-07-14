@@ -58,6 +58,7 @@ class WebServer:
             async def _init_bg():
                 try:
                     from devices_mcp.llm.manager import get_llm_manager
+
                     mgr = get_llm_manager()
                     mgr.ensure_catalog_registered(get_config())
                     await asyncio.wait_for(mgr.glom_local_providers_if_up(), timeout=5)
@@ -66,6 +67,7 @@ class WebServer:
 
                 try:
                     from devices_mcp.tools.lighting.hue_tools import get_hue_manager, load_hue_bridge_cache
+
                     raw = get_config() or {}
                     hue_cfg = (raw.get("lighting") or {}).get("philips_hue") or {}
                     if hue_cfg.get("enabled") is not False:
@@ -80,6 +82,7 @@ class WebServer:
 
                 try:
                     from devices_mcp.integrations.ring_client import init_ring_client, ring_has_cached_token
+
                     raw = get_config() or {}
                     ring_cfg = raw.get("ring") or {}
                     if ring_cfg.get("enabled"):
@@ -87,39 +90,69 @@ class WebServer:
                         pw = ring_cfg.get("password")
                         tf = ring_cfg.get("token_file", "ring_token.cache")
                         if email and (pw or ring_has_cached_token(tf)):
-                            await asyncio.wait_for(init_ring_client(email=email, password=pw or None, token_file=tf, cache_ttl=ring_cfg.get("cache_ttl", 60)), timeout=10)
+                            await asyncio.wait_for(
+                                init_ring_client(
+                                    email=email,
+                                    password=pw or None,
+                                    token_file=tf,
+                                    cache_ttl=ring_cfg.get("cache_ttl", 60),
+                                ),
+                                timeout=10,
+                            )
                 except Exception:
                     logger.debug("BG: Ring skipped")
 
                 try:
                     from devices_mcp.integrations.nest_client import init_nest_client
+
                     raw = get_config() or {}
                     nc = raw.get("nest") or {}
                     if nc.get("enabled", True):
-                        await asyncio.wait_for(init_nest_client(refresh_token=nc.get("refresh_token"), token_file=nc.get("token_file", "nest_token.cache"), cache_ttl=nc.get("cache_ttl", 60), client_id=nc.get("client_id"), client_secret=nc.get("client_secret")), timeout=10)
+                        await asyncio.wait_for(
+                            init_nest_client(
+                                refresh_token=nc.get("refresh_token"),
+                                token_file=nc.get("token_file", "nest_token.cache"),
+                                cache_ttl=nc.get("cache_ttl", 60),
+                                client_id=nc.get("client_id"),
+                                client_secret=nc.get("client_secret"),
+                            ),
+                            timeout=10,
+                        )
                 except Exception:
                     logger.debug("BG: Nest skipped")
 
                 try:
                     from devices_mcp.integrations.shelly_client import init_shelly_client
+
                     raw = get_config() or {}
                     sc = raw.get("shelly") or {}
                     if sc.get("enabled") and sc.get("devices"):
-                        await asyncio.wait_for(init_shelly_client(devices=sc.get("devices"), cache_ttl=sc.get("cache_ttl", 30)), timeout=10)
+                        await asyncio.wait_for(
+                            init_shelly_client(devices=sc.get("devices"), cache_ttl=sc.get("cache_ttl", 30)), timeout=10
+                        )
                 except Exception:
                     logger.debug("BG: Shelly skipped")
 
                 try:
                     from devices_mcp.integrations.homeassistant_client import init_homeassistant_client
+
                     raw = get_config() or {}
                     hac = (raw.get("security") or {}).get("integrations", {}).get("homeassistant") or {}
                     if hac.get("enabled") and hac.get("access_token"):
-                        await asyncio.wait_for(init_homeassistant_client(base_url=hac.get("url", "http://localhost:8123"), access_token=hac.get("access_token"), cache_ttl=hac.get("cache_ttl", 30)), timeout=10)
+                        await asyncio.wait_for(
+                            init_homeassistant_client(
+                                base_url=hac.get("url", "http://localhost:8123"),
+                                access_token=hac.get("access_token"),
+                                cache_ttl=hac.get("cache_ttl", 30),
+                            ),
+                            timeout=10,
+                        )
                 except Exception:
                     logger.debug("BG: HA skipped")
 
                 try:
                     from devices_mcp.integrations.netatmo_client import PYATMO_AVAILABLE, NetatmoService
+
                     raw = get_config() or {}
                     nm = ((raw.get("weather") or {}).get("integrations") or {}).get("netatmo") or {}
                     tf = nm.get("token_file") or "netatmo_token.cache"
@@ -127,13 +160,20 @@ class WebServer:
                     if not ht:
                         cp = NetatmoService._adjust_token_path(tf)
                         ht = cp.exists() and bool(cp.read_text(encoding="utf-8").strip())
-                    if nm.get("enabled") and PYATMO_AVAILABLE and nm.get("client_id") and nm.get("client_secret") and ht:
+                    if (
+                        nm.get("enabled")
+                        and PYATMO_AVAILABLE
+                        and nm.get("client_id")
+                        and nm.get("client_secret")
+                        and ht
+                    ):
                         await asyncio.wait_for(NetatmoService.get_instance(tf), timeout=10)
                 except Exception:
                     logger.debug("BG: Netatmo skipped")
 
                 try:
                     from devices_mcp.core.connection_supervisor import get_supervisor
+
                     await asyncio.wait_for(get_supervisor().start(), timeout=10)
                 except Exception:
                     logger.debug("BG: supervisor skipped")
@@ -165,27 +205,20 @@ class WebServer:
             lifespan=_lifespan,
         )
 
-        # CORS: Vite dev, direct browser, Tauri WebView, packaged desktop
-        _tauri = os.environ.get("DEVICES_TAURI", "").lower() in ("1", "true", "yes")
-        cors_origins = [
-            "http://localhost:10717",
-            "http://localhost:10716",
-            "http://127.0.0.1:10716",
-            "http://127.0.0.1:10717",
-            "http://goliath:10716",
-            "http://goliath:10717",
-            "https://asset.localhost",
-            "http://asset.localhost",
-            "https://tauri.localhost",
-            "http://tauri.localhost",
-            "tauri://localhost",
-        ]
-        if getattr(sys, "frozen", False) or os.getenv("DEVICES_MCP_PACKAGED") == "1":
-            cors_origins = ["*"]
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=cors_origins,
-            allow_origin_regex=r"https?://tauri\.localhost(:\d+)?" if _tauri else None,
+            allow_origins=[
+                "http://localhost:10717",
+                "http://127.0.0.1:10717",
+                "http://localhost:10716",
+                "http://127.0.0.1:10716",
+                "http://goliath:10717",
+                "http://goliath:10716",
+                "http://tauri.localhost",
+                "https://tauri.localhost",
+                "tauri://localhost",
+            ],
+            allow_origin_regex=r"https?://(?:[a-zA-Z0-9-]+\.ts\.net|.*?\.tail-[a-f0-9]+\.ts\.net|tauri\.localhost|localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|100\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?$|^tauri://localhost$",
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],

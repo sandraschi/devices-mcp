@@ -38,6 +38,15 @@ def register_all_tools(
     mcp._devices_tools_registered = True  # Mark as registered
     logger.info("Portmanteau tools registered successfully")
 
+    # Register log query tools
+    try:
+        from devices_mcp.tools.log_tools import register_log_tools
+
+        register_log_tools(mcp)
+        logger.info("Log query tools registered")
+    except Exception as e:
+        logger.warning(f"Failed to register log query tools: {e}")
+
     # Register Plex MCP tools
     try:
         # Use the local function defined in this file
