@@ -13,22 +13,22 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║        🔄 SOTA Script Synchronization (Spoke) 🔄        ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+Write-Host "`nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Cyan
+Write-Host "â•‘        ðŸ”„ SOTA Script Synchronization (Spoke) ðŸ”„        â•‘" -ForegroundColor Cyan
+Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•`n" -ForegroundColor Cyan
 
 # 1. Locate the Hub (mcp-central-docs)
 $currentRepoRoot = Join-Path $PSScriptRoot ".."
 $siblingHubPath = Join-Path $currentRepoRoot "..\mcp-central-docs"
 
 if (-not (Test-Path $siblingHubPath)) {
-    Write-Host "❌ Error: Could not find mcp-central-docs sibling directory at:" -ForegroundColor Red
+    Write-Host "âŒ Error: Could not find mcp-central-docs sibling directory at:" -ForegroundColor Red
     Write-Host "   $siblingHubPath" -ForegroundColor Gray
     Write-Host "`n   Please ensure mcp-central-docs is cloned in the same parent folder." -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "📍 Found Hub: $siblingHubPath" -ForegroundColor Gray
+Write-Host "ðŸ“ Found Hub: $siblingHubPath" -ForegroundColor Gray
 
 # 2. Define standard SOTA scripts mapping [Source in Hub -> Target in Spoke]
 $sotaMapping = @(

@@ -31,33 +31,33 @@ param(
 $composeFile = "deploy/myhomecontrol/docker-compose.yml"
 
 if (-not (Test-Path $composeFile)) {
-    Write-Host "❌ Docker Compose file not found: $composeFile" -ForegroundColor Red
+    Write-Host "âŒ Docker Compose file not found: $composeFile" -ForegroundColor Red
     exit 1
 }
 
-Write-Host "`n╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║          🐳 Docker Build (Smart Caching) 🐳            ║" -ForegroundColor Cyan
-Write-Host "╚═══════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+Write-Host "`nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Cyan
+Write-Host "â•‘          ðŸ³ Docker Build (Smart Caching) ðŸ³            â•‘" -ForegroundColor Cyan
+Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•`n" -ForegroundColor Cyan
 
 if ($NoCache) {
-    Write-Host "⚠️  Building WITHOUT cache (slower but fresh)" -ForegroundColor Yellow
+    Write-Host "âš ï¸  Building WITHOUT cache (slower but fresh)" -ForegroundColor Yellow
     Write-Host "   Use this when:" -ForegroundColor Gray
     Write-Host "   - Dependencies changed" -ForegroundColor Gray
     Write-Host "   - Debugging build issues" -ForegroundColor Gray
     Write-Host "   - Need completely fresh build`n" -ForegroundColor Gray
     $buildArgs = @("--no-cache")
 } else {
-    Write-Host "✅ Building WITH cache (faster incremental builds)" -ForegroundColor Green
+    Write-Host "âœ… Building WITH cache (faster incremental builds)" -ForegroundColor Green
     Write-Host "   Docker will reuse cached layers when possible" -ForegroundColor Gray
-    Write-Host "   ⚡ Avoids re-downloading packages and system deps`n" -ForegroundColor Gray
+    Write-Host "   âš¡ Avoids re-downloading packages and system deps`n" -ForegroundColor Gray
     $buildArgs = @()
 }
 
 if ($Service) {
-    Write-Host "📦 Building service: $Service" -ForegroundColor Cyan
+    Write-Host "ðŸ“¦ Building service: $Service" -ForegroundColor Cyan
     $buildArgs += $Service
 } else {
-    Write-Host "📦 Building all services" -ForegroundColor Cyan
+    Write-Host "ðŸ“¦ Building all services" -ForegroundColor Cyan
 }
 
 Write-Host ""
@@ -75,20 +75,20 @@ try {
     }
 
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "`n❌ Build failed!" -ForegroundColor Red
+        Write-Host "`nâŒ Build failed!" -ForegroundColor Red
         exit $LASTEXITCODE
     }
 
     $buildDuration = (Get-Date) - $buildStart
 
     Write-Host ""
-    Write-Host "╔═══════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║              ✅ Build Complete! ✅                       ║" -ForegroundColor Green
-    Write-Host "╚═══════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Green
+    Write-Host "â•‘              âœ… Build Complete! âœ…                       â•‘" -ForegroundColor Green
+    Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" -ForegroundColor Green
     Write-Host ""
-    Write-Host "⏱️  Build time: $([math]::Round($buildDuration.TotalSeconds, 1))s" -ForegroundColor Cyan
+    Write-Host "â±ï¸  Build time: $([math]::Round($buildDuration.TotalSeconds, 1))s" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "💡 Next steps:" -ForegroundColor White
+    Write-Host "ðŸ’¡ Next steps:" -ForegroundColor White
     Write-Host "   docker compose -f deploy/myhomecontrol/docker-compose.yml up -d" -ForegroundColor Gray
     Write-Host ""
 
