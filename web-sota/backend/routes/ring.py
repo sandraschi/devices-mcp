@@ -565,31 +565,37 @@ async def get_doorbell_snapshot(device_id: str):
         if not doorbell:
             raise HTTPException(status_code=404, detail=f"Doorbell {device_id} not found")
 
-        # Try async_get_snapshot directly
+        # Try async_get_snapshot directly (returns image bytes)
+        snapshot = None
         try:
             snapshot = await doorbell.async_get_snapshot()
-        except (IndexError, KeyError) as e:
-            # Snapshot not available - try getting last recording thumbnail
-            logger.warning(f"Snapshot unavailable ({e}), trying last recording...")
+        except Exception as e:
+            logger.warning("async_get_snapshot failed: %s", e)
+
+        if not snapshot:
+            # Fallback: try snapshot_url property (returns URL string)
             try:
-                # Get last recording ID
+                url = getattr(doorbell, "snapshot_url", None)
+                if url:
+                    import httpx
+
+                    async with httpx.AsyncClient(timeout=15.0) as client:
+                        resp = await client.get(str(url))
+                        if resp.status_code == 200:
+                            snapshot = resp.content
+            except Exception as e:
+                logger.warning("snapshot_url fallback failed: %s", e)
+
+        if not snapshot:
+            # Last resort: try getting last recording URL
+            try:
                 last_id = await doorbell.async_get_last_recording_id()
                 if last_id:
                     url = await doorbell.async_recording_url(last_id)
-                    return {
-                        "message": "Snapshot unavailable",
-                        "last_recording_url": url,
-                        "recording_id": last_id,
-                    }
+                    return {"message": "Snapshot unavailable", "last_recording_url": url, "recording_id": last_id}
             except Exception as e:
                 logger.debug("Could not get fallback recording URL: %s", e)
-            raise HTTPException(
-                status_code=503,
-                detail="Snapshot unavailable. Ring Protect subscription may be required for live snapshots.",
-            ) from None
-
-        if not snapshot:
-            raise HTTPException(status_code=500, detail="Failed to get snapshot")
+            raise HTTPException(status_code=503, detail="Snapshot unavailable")
 
         return Response(content=snapshot, media_type="image/jpeg")
     except HTTPException:
@@ -661,8 +667,6 @@ async def create_webrtc_stream(request: WebRTCOfferRequest):
 
     Send browser's SDP offer, get Ring's SDP answer back.
     """
-    import asyncio
-
     client = get_ring_client()
     if not client or not client.is_initialized:
         raise HTTPException(status_code=503, detail="Ring not initialized")
@@ -678,11 +682,7 @@ async def create_webrtc_stream(request: WebRTCOfferRequest):
         if not doorbell:
             raise HTTPException(status_code=404, detail=f"Doorbell {request.device_id} not found")
 
-        # Generate WebRTC stream - this returns SDP answer
-        def get_answer():
-            return doorbell.generate_webrtc_stream(request.sdp_offer, keep_alive_timeout=60)
-
-        sdp_answer = await asyncio.to_thread(get_answer)
+        sdp_answer = await doorbell.generate_webrtc_stream(request.sdp_offer, keep_alive_timeout=60)
 
         return {
             "sdp_answer": sdp_answer,
@@ -699,8 +699,6 @@ async def create_webrtc_stream(request: WebRTCOfferRequest):
 @router.post("/webrtc/candidate")
 async def send_ice_candidate(request: WebRTCCandidateRequest):
     """Send ICE candidate to Ring for WebRTC connection."""
-    import asyncio
-
     client = get_ring_client()
     if not client or not client.is_initialized:
         raise HTTPException(status_code=503, detail="Ring not initialized")
@@ -716,11 +714,7 @@ async def send_ice_candidate(request: WebRTCCandidateRequest):
         if not doorbell:
             raise HTTPException(status_code=404, detail=f"Doorbell {request.device_id} not found")
 
-        # Send ICE candidate
-        def send_candidate():
-            doorbell.on_webrtc_candidate(request.candidate)
-
-        await asyncio.to_thread(send_candidate)
+        await doorbell.on_webrtc_candidate(request.candidate)
 
         return {"status": "candidate_sent"}
     except HTTPException:
@@ -733,8 +727,6 @@ async def send_ice_candidate(request: WebRTCCandidateRequest):
 @router.post("/webrtc/keepalive/{device_id}")
 async def keepalive_webrtc_stream(device_id: str):
     """Keep WebRTC stream alive."""
-    import asyncio
-
     client = get_ring_client()
     if not client or not client.is_initialized:
         raise HTTPException(status_code=503, detail="Ring not initialized")
@@ -749,7 +741,7 @@ async def keepalive_webrtc_stream(device_id: str):
         if not doorbell:
             raise HTTPException(status_code=404, detail=f"Doorbell {device_id} not found")
 
-        await asyncio.to_thread(doorbell.keep_alive_webrtc_stream)
+        await doorbell.keep_alive_webrtc_stream()
         return {"status": "keepalive_sent"}
     except Exception as e:
         logger.exception("Failed to send keepalive")
@@ -759,8 +751,6 @@ async def keepalive_webrtc_stream(device_id: str):
 @router.post("/webrtc/close/{device_id}")
 async def close_webrtc_stream(device_id: str):
     """Close WebRTC stream."""
-    import asyncio
-
     client = get_ring_client()
     if not client or not client.is_initialized:
         raise HTTPException(status_code=503, detail="Ring not initialized")
@@ -775,7 +765,7 @@ async def close_webrtc_stream(device_id: str):
         if not doorbell:
             raise HTTPException(status_code=404, detail=f"Doorbell {device_id} not found")
 
-        await asyncio.to_thread(doorbell.close_webrtc_stream)
+        await doorbell.close_webrtc_stream()
         return {"status": "stream_closed"}
     except Exception as e:
         logger.exception("Failed to close stream")

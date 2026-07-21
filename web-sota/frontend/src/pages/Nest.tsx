@@ -22,6 +22,7 @@ interface NestDevice {
 
 interface NestStatus {
 	initialized?: boolean;
+	source?: string; // "ha" | "direct"
 	error?: string;
 	total_devices?: number;
 	online_count?: number;
@@ -33,6 +34,7 @@ interface NestStatus {
 	has_token?: boolean;
 	oauth_url?: string;
 	has_custom_creds?: boolean;
+	message?: string;
 }
 
 function parseErrorBody(data: unknown): string {
@@ -56,6 +58,18 @@ export function Nest() {
 
 	const load = useCallback(async () => {
 		try {
+			// Try Home Assistant path first
+			const haR = await fetch("/api/nest/ha-status");
+			if (haR.ok) {
+				const haData = await haR.json();
+				if (haData.initialized) {
+					setStatus(haData);
+					setError(null);
+					setLoading(false);
+					return;
+				}
+			}
+			// Fall back to direct Nest OAuth path
 			const r = await fetch("/api/nest/status");
 			const data = await r.json();
 			setStatus(data);
@@ -167,6 +181,11 @@ export function Nest() {
 					<CardTitle className="text-base flex items-center gap-2">
 						<Flame className="h-5 w-5" />
 						Nest Protect
+						{status?.source === "ha" && (
+							<span className="ml-1 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-normal text-sky-600 dark:bg-sky-900/30 dark:text-sky-400">
+								via Home Assistant
+							</span>
+						)}
 					</CardTitle>
 					{connected && status?.all_ok ? (
 						<CheckCircle className="h-5 w-5 text-green-600" />
@@ -189,14 +208,26 @@ export function Nest() {
 							)}
 						</>
 					) : (
-						<>
+						<div className="space-y-3 pt-1">
+							<div className="rounded-md border border-sky-200 bg-sky-50 p-3 dark:border-sky-900 dark:bg-sky-950/30">
+								<p className="mb-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+									Via Home Assistant (recommended)
+								</p>
+								<p className="text-xs text-slate-600 dark:text-slate-400">
+									If Home Assistant has the Nest integration configured, Nest Protect
+									data appears automatically. Set the HA URL and token in Settings or{" "}
+									<code className="text-xs">.env</code>.
+								</p>
+							</div>
 							{status?.has_custom_creds && status?.oauth_url ? (
-								<div className="space-y-2 pt-1">
-									<p>Click below to sign in with Google:</p>
+								<div className="space-y-2">
+									<p className="text-xs text-slate-500">
+										Or use the direct Google Nest API:
+									</p>
 									<a href={status.oauth_url} target="_blank" rel="noreferrer">
 										<Button size="sm">Sign in with Google</Button>
 									</a>
-									<div className="flex flex-wrap items-center gap-2 pt-1">
+									<div className="flex flex-wrap items-center gap-2">
 										<input
 											type="text"
 											placeholder="Paste authorization code..."
@@ -214,14 +245,13 @@ export function Nest() {
 									</div>
 								</div>
 							) : (
-								<div className="space-y-3 pt-1">
+								<div className="space-y-3">
 									<div className="rounded-md border border-slate-200 p-3 dark:border-slate-700">
-										<p className="mb-1 font-medium text-xs">
+										<p className="mb-1 text-xs font-medium">
 											Paste Nest token directly
 										</p>
 										<p className="text-xs text-slate-500 mb-2">
-											From an existing Nest/Home Assistant setup, or from your
-											Nest account.
+											From an existing Nest/Home Assistant setup.
 										</p>
 										<div className="flex flex-wrap items-center gap-2">
 											<input
@@ -243,7 +273,7 @@ export function Nest() {
 									</div>
 								</div>
 							)}
-						</>
+						</div>
 					)}
 				</CardContent>
 			</Card>

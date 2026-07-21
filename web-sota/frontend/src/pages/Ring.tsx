@@ -1,45 +1,134 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRingWebRTC } from "@/lib/useRingWebRTC";
 import {
 	AlertCircle,
 	Bell,
 	CheckCircle,
 	Loader2,
+	Mic,
+	MicOff,
+	PhoneOff,
 	RefreshCw,
 	Shield,
+	Video,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 function DoorbellSnapshot({ deviceId }: { deviceId: string }) {
 	const [ts, setTs] = useState(Date.now());
 	const [failed, setFailed] = useState(false);
+	const [showLive, setShowLive] = useState(false);
+	const {
+		videoRef,
+		streamState,
+		error: webrtcError,
+		startStream,
+		stopStream,
+		toggleTalk,
+		talkEnabled,
+	} = useRingWebRTC();
+
+	useEffect(() => {
+		if (!showLive) stopStream();
+	}, [showLive, stopStream]);
+
+	const handleStartLive = async () => {
+		setShowLive(true);
+		await startStream(deviceId);
+	};
+
+	const handleStopLive = () => {
+		stopStream();
+		setShowLive(false);
+	};
+
 	return (
 		<div className="space-y-2">
-			<div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
-				{failed ? (
-					<div className="flex aspect-video items-center justify-center text-sm text-slate-400 dark:text-slate-500">
-						Snapshot unavailable
+			{showLive ? (
+				<div className="space-y-2">
+					<div className="relative overflow-hidden rounded-lg border border-slate-200 bg-black dark:border-slate-700">
+						<video
+							ref={videoRef}
+							autoPlay
+							playsInline
+							className="aspect-video w-full object-contain"
+						/>
+						{streamState === "connecting" && (
+							<div className="absolute inset-0 flex items-center justify-center bg-black/50">
+								<Loader2 className="h-8 w-8 animate-spin text-white" />
+							</div>
+						)}
 					</div>
-				) : (
-					<img
-						src={`/api/ring/snapshot/${deviceId}?t=${ts}`}
-						alt="Doorbell snapshot"
-						className="aspect-video w-full object-contain"
-						onError={() => setFailed(true)}
-					/>
-				)}
-			</div>
-			<Button
-				size="sm"
-				variant="outline"
-				onClick={() => {
-					setTs(Date.now());
-					setFailed(false);
-				}}
-			>
-				<RefreshCw className="mr-1 h-3 w-3" />
-				Refresh snapshot
-			</Button>
+					{webrtcError && (
+						<p className="text-xs text-red-600 dark:text-red-400">
+							{webrtcError}
+						</p>
+					)}
+					<div className="flex flex-wrap gap-2">
+						<Button
+							size="sm"
+							variant={talkEnabled ? "default" : "outline"}
+							onClick={toggleTalk}
+							disabled={streamState !== "streaming"}
+						>
+							{talkEnabled ? (
+								<MicOff className="mr-1 h-3 w-3" />
+							) : (
+								<Mic className="mr-1 h-3 w-3" />
+							)}
+							{talkEnabled ? "Mute" : "Talk"}
+						</Button>
+						<Button
+							size="sm"
+							variant="outline"
+							className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
+							onClick={handleStopLive}
+						>
+							<PhoneOff className="mr-1 h-3 w-3" />
+							Close
+						</Button>
+					</div>
+				</div>
+			) : (
+				<>
+					<div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+						{failed ? (
+							<div className="flex aspect-video items-center justify-center text-sm text-slate-400 dark:text-slate-500">
+								Snapshot unavailable
+							</div>
+						) : (
+							<img
+								src={`/api/ring/snapshot/${deviceId}?t=${ts}`}
+								alt="Doorbell snapshot"
+								className="aspect-video w-full object-contain"
+								onError={() => setFailed(true)}
+							/>
+						)}
+					</div>
+					<div className="flex flex-wrap gap-2">
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={() => {
+								setTs(Date.now());
+								setFailed(false);
+							}}
+						>
+							<RefreshCw className="mr-1 h-3 w-3" />
+							Refresh
+						</Button>
+						<Button
+							size="sm"
+							variant="default"
+							onClick={handleStartLive}
+						>
+							<Video className="mr-1 h-3 w-3" />
+							Live view
+						</Button>
+					</div>
+				</>
+			)}
 		</div>
 	);
 }

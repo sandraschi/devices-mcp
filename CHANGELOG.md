@@ -26,6 +26,19 @@
 ### Fixed
 - `POST /api/lighting/scene` now accepts `group_name` parameter for targeted scene activation
 - Scene buttons now show success/error feedback (green checkmark or red X, 3s auto-clear)
+- WebRTC Ring stream: all `ring_doorbell` 0.9.13 methods (`generate_webrtc_stream`, `on_webrtc_candidate`, `keep_alive_webrtc_stream`, `close_webrtc_stream`) are async coroutines — removed incorrect `asyncio.to_thread()` wrapping that caused HTTP 500
+- Ring snapshot endpoint: multi-level fallback (`async_get_snapshot` → `snapshot_url` download → last recording URL)
+- USB camera auto-discovery: now skips device IDs already configured in `config.yaml` to prevent duplicate entries
+- `nest_protect_tools.py`, `plex/*.py`: legacy `.dict()` → `.model_dump()` (FastMCP 3.4 pydantic v2 compliance)
+
+### Added
+- Ring doorbell WebRTC intercom: `useRingWebRTC` React hook with `RTCPeerConnection` → SDP offer/candidate/keepalive → two-way talk via mic capture
+- Ring page: Live View button per doorbell, video stream + Talk/Mute/Close controls
+- Nest Protect via Home Assistant: `GET /api/nest/ha-status` queries HA REST API for Nest Protect entities — no OAuth setup needed
+- Nest page: auto-detects HA path first, shows "via Home Assistant" badge, falls back to direct OAuth
+
+### Changed
+- All 27 portmanteau tools: `@mcp.tool()` → `@mcp.tool(annotations=...)` with `_READ_ONLY`/`_MUTATING`/`_DESTRUCTIVE` (FastMCP 3.4)
 
 ### Fixed
 - Camera page crash: removed invalid `ConfigDict(use_enum_values=True)` from `CameraStatus(StrEnum)` that raised `ValueError` at import time

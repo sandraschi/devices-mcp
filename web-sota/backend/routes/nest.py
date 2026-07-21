@@ -4,10 +4,54 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from devices_mcp.config import get_config
+from devices_mcp.integrations.homeassistant_client import HomeAssistantClient
 from devices_mcp.integrations.nest_client import NestClient, get_nest_client, init_nest_client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/nest", tags=["nest"])
+
+
+@router.get("/ha-status")
+async def get_nest_via_ha():
+    """Get Nest Protect devices via Home Assistant REST API.
+
+    Requires Home Assistant running with Nest integration configured.
+    Configure HA_URL and HA_ACCESS_TOKEN in .env or config.yaml.
+    """
+    cfg = get_config() or {}
+    ha_cfg = cfg.get("security", {}).get("integrations", {}).get("homeassistant", {})
+    if not ha_cfg.get("enabled"):
+        return {"initialized": False, "source": "ha", "error": "Home Assistant integration not enabled"}
+    url = ha_cfg.get("url", "http://localhost:8123")
+    token = ha_cfg.get("access_token", "")
+    if not token:
+        return {"initialized": False, "source": "ha", "error": "HA_ACCESS_TOKEN not configured"}
+    client = HomeAssistantClient(base_url=url, access_token=token)
+    if not await client.initialize():
+        return {"initialized": False, "source": "ha", "error": f"Cannot connect to Home Assistant at {url}"}
+    try:
+        devices = await client.get_nest_protect_devices()
+        await client.close()
+        device_list = [d.to_dict() for d in devices]
+        smoke_alarm = any(d.smoke_status == "emergency" for d in devices)
+        co_alarm = any(d.co_status == "emergency" for d in devices)
+        low_battery = [d.friendly_name for d in devices if d.battery_level is not None and d.battery_level < 20]
+        return {
+            "initialized": True,
+            "source": "ha",
+            "total_devices": len(devices),
+            "online_count": len(devices),
+            "smoke_status": "alarm" if smoke_alarm else "clear",
+            "co_status": "alarm" if co_alarm else "clear",
+            "all_ok": not smoke_alarm and not co_alarm,
+            "battery_warnings": low_battery,
+            "devices": device_list,
+            "message": f"via Home Assistant ({len(devices)} Nest Protect devices)",
+        }
+    except Exception as e:
+        await client.close()
+        logger.exception("HA Nest query failed")
+        return {"initialized": False, "source": "ha", "error": str(e)}
 
 
 def _get_config() -> dict:

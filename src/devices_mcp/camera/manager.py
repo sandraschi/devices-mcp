@@ -82,7 +82,20 @@ class CameraManager:
                     logger.debug(f"Error checking camera device {device_id}: {e}")
                     continue
 
-            # Add discovered cameras
+            # Collect device IDs already configured (from config.yaml configs)
+            configured_device_ids: set[int] = set()
+            for _, cinst in self.cameras.items():
+                try:
+                    params = getattr(cinst, "config", None)
+                    if params is None:
+                        continue
+                    params = params.params if hasattr(params, "params") else {}
+                    did = int(params.get("device_id", -1))
+                    if did >= 0:
+                        configured_device_ids.add(did)
+                except (ValueError, TypeError, AttributeError):
+                    pass
+
             common_names = [
                 "Built-in Camera",
                 "USB Webcam",
@@ -93,9 +106,15 @@ class CameraManager:
 
             for i, camera_info in enumerate(discovered_cameras):
                 device_id = camera_info["device_id"]
+
+                # Skip device IDs already configured in config.yaml
+                if device_id in configured_device_ids:
+                    logger.debug(f"USB camera device {device_id} already configured, skipping auto-discovery")
+                    continue
+
                 camera_name = f"usb_camera_{device_id}"
 
-                # Skip if already configured
+                # Skip if already configured by name
                 if camera_name in self.cameras:
                     logger.debug(f"USB camera {camera_name} already configured, skipping")
                     continue

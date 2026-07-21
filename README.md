@@ -47,7 +47,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 - **Cameras:** Tapo/ONVIF, USB webcam/microscope (OpenCV), streaming hooks (quality varies by device/driver).
 - **Energy:** Tapo P115 plugs; LAN discovery optional when cloud creds are set.
 - **Lighting:** Philips Hue (incl. HomeAware on supported bridges, CLIP v2, group/scene management), Tapo lighting.
-- **Security / sensors:** Ring (doorbell + alarm + two-way talk), Nest Protect via OAuth2, Shelly, Netatmo, Open-Meteo (Vienna default).
+- **Security / sensors:** Ring (doorbell + alarm + WebRTC live view + two-way intercom), Nest Protect (via Home Assistant or direct OAuth2), Shelly, Netatmo, Open-Meteo (Vienna default).
 - **Chat:** SOTA chat with localStorage persistence, 5 personalities, skill preprompt, NDJSON streaming, export/clear — LLM provider/model selector in Settings.
 - **Dashboard:** Status table with device health, per-domain pages (cameras, energy, lighting, weather, robots …).
 - **MCP:** 27 portmanteau tools (camera, energy, lighting, ring, nest, weather, security, …) on FastMCP 3.4 with tool annotations.
