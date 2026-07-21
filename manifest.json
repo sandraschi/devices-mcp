@@ -1,9 +1,9 @@
 {
   "manifest_version": "0.2",
   "name": "devices-mcp",
-  "version": "1.22.1",
-  "description": "Home security and IoT orchestration MCP server. Supports Tapo cameras, Ring, Nest Protect, Philips Hue, Netatmo weather, Shelly, USB webcams. 40+ tools.",
-  "long_description": "Comprehensive home security and IoT orchestration platform. Dual-architecture: individual device MCP servers + unified web-sota SPA dashboard (Vite + React, ports 10716/10717). Supports TP-Link Tapo cameras, Ring doorbells, Nest Protect, Philips Hue lighting, Netatmo weather stations, Shelly devices, and USB webcams. Includes PTZ control, motion detection, energy monitoring, lighting scenes, HomeAware motion detection via Zigbee mesh, log management, and health supervision with circuit breakers.",
+  "version": "1.23.0",
+  "description": "Home security and IoT orchestration MCP server. Supports Tapo cameras, Ring (WebRTC intercom), Nest Protect (via HA), Philips Hue, Netatmo, Shelly, USB webcams. 27 portmanteau tools with FastMCP 3.4 annotations.",
+  "long_description": "Comprehensive home security and IoT orchestration platform. Dual-architecture: 27 FastMCP 3.4 portmanteau tools with annotations (READ_ONLY/MUTATING/DESTRUCTIVE) + unified web-sota SPA dashboard (Vite + React, ports 10716/10717). Supports TP-Link Tapo cameras (ONVIF), Ring doorbells (WebRTC live view + two-way intercom), Nest Protect (via Home Assistant or direct OAuth2), Philips Hue lighting (incl. HomeAware CLIP v2), Netatmo weather stations, Shelly sensors, USB webcams (auto-discovery with dedup). Includes PTZ control, motion detection, energy monitoring (Tapo P115), lighting scenes, log management, health supervision, SOTA chat with 5 personalities, and Ring alarm arming/disarming.",
   "author": {
     "name": "Sandra Schi",
     "email": "sandraschipal@hotmail.com"
@@ -63,14 +63,14 @@
   ],
   "server": {
     "type": "python",
-    "entry_point": "src/devices_mcp/server.py",
+    "entry_point": "src/devices_mcp/server_v2.py",
     "mcp_config": {
       "command": "uv",
       "args": [
         "run",
         "python",
         "-m",
-        "devices_mcp.server"
+        "devices_mcp.server_v2"
       ],
       "env": {
         "PYTHONPATH": "${PWD}/src",
@@ -103,178 +103,16 @@
     }
   },
   "tools": [
-    {
-      "name": "add_camera",
-      "description": "Add a new camera to the system (supports Tapo, Ring, Furbo, USB webcam)"
-    },
-    {
-      "name": "list_cameras",
-      "description": "List all configured cameras with their status"
-    },
-    {
-      "name": "remove_camera",
-      "description": "Remove a camera from the system"
-    },
-    {
-      "name": "connect_camera",
-      "description": "Connect to a Tapo camera and establish communication"
-    },
-    {
-      "name": "disconnect_camera",
-      "description": "Disconnect from the active camera"
-    },
-    {
-      "name": "get_camera_status",
-      "description": "Get the current status of a camera"
-    },
-    {
-      "name": "get_camera_info",
-      "description": "Get detailed information about a camera"
-    },
-    {
-      "name": "set_active_camera",
-      "description": "Set which camera is currently active for commands"
-    },
-    {
-      "name": "move_ptz",
-      "description": "Control PTZ (Pan-Tilt-Zoom) movement for supported cameras"
-    },
-    {
-      "name": "get_ptz_position",
-      "description": "Get current PTZ position and capabilities"
-    },
-    {
-      "name": "save_ptz_preset",
-      "description": "Save a PTZ preset position"
-    },
-    {
-      "name": "recall_ptz_preset",
-      "description": "Recall a saved PTZ preset position"
-    },
-    {
-      "name": "get_ptz_presets",
-      "description": "List all saved PTZ presets"
-    },
-    {
-      "name": "go_to_home_ptz",
-      "description": "Move PTZ to home position"
-    },
-    {
-      "name": "stop_ptz",
-      "description": "Stop PTZ movement"
-    },
-    {
-      "name": "capture_image",
-      "description": "Capture a still image from the camera"
-    },
-    {
-      "name": "start_recording",
-      "description": "Start video recording"
-    },
-    {
-      "name": "stop_recording",
-      "description": "Stop video recording"
-    },
-    {
-      "name": "get_recordings",
-      "description": "List available recordings"
-    },
-    {
-      "name": "get_motion_events",
-      "description": "Get motion detection events"
-    },
-    {
-      "name": "set_motion_detection",
-      "description": "Enable or disable motion detection"
-    },
-    {
-      "name": "set_led_enabled",
-      "description": "Enable or disable camera LED indicator"
-    },
-    {
-      "name": "set_privacy_mode",
-      "description": "Enable or disable privacy mode"
-    },
-    {
-      "name": "get_system_info",
-      "description": "Get system information and diagnostics"
-    },
-    {
-      "name": "reboot_camera",
-      "description": "Reboot the camera"
-    },
-    {
-      "name": "get_logs",
-      "description": "Get system logs and diagnostics"
-    },
-    {
-      "name": "help",
-      "description": "Get help information about available tools and features"
-    },
-    {
-      "name": "get_help",
-      "description": "Get detailed help for a specific tool or category"
-    },
-    {
-      "name": "analyze_scene",
-      "description": "AI-powered scene analysis using DINOv3 vision model"
-    },
-    {
-      "name": "detect_objects",
-      "description": "Detect and identify objects in camera view"
-    },
-    {
-      "name": "grafana_metrics_query",
-      "description": "Query Grafana metrics for camera monitoring"
-    },
-    {
-      "name": "grafana_metrics_search",
-      "description": "Search available Grafana metrics"
-    },
-    {
-      "name": "energy_management",
-      "description": "Smart plug energy monitoring and control (Tapo P115 power consumption)"
-    },
-    {
-      "name": "lighting_management",
-      "description": "Philips Hue + Tapo lighting orchestration (status, control, effects)"
-    },
-    {
-      "name": "camera_management",
-      "description": "Multi-camera management portmanteau (Tapo, Ring, USB)"
-    },
-    {
-      "name": "weather_management",
-      "description": "Netatmo weather station data and environmental monitoring"
-    },
-    {
-      "name": "security_management",
-      "description": "Unified alarm monitoring and event correlation"
-    },
-    {
-      "name": "ring_management",
-      "description": "Ring doorbell orchestration"
-    },
-    {
-      "name": "ptz_management",
-      "description": "PTZ control with Prank Modes"
-    },
-    {
-      "name": "get_hue_lights",
-      "description": "List all Philips Hue lights with status"
-    },
-    {
-      "name": "control_hue_light",
-      "description": "Control a Philips Hue light (on/off/brightness/color temp)"
-    },
-    {
-      "name": "get_homeaware_status",
-      "description": "Get HomeAware motion detection area statuses"
-    },
-    {
-      "name": "monitor_homeaware_motion",
-      "description": "Poll HomeAware for new motion events"
-    }
+    {"name": "camera_management", "description": "Multi-camera management portmanteau (Tapo ONVIF, Ring, USB) — list/add/remove/connect/status/info/groups"},
+    {"name": "ptz_management", "description": "PTZ camera movement and presets (move/save/recall/stop)"},
+    {"name": "energy_management", "description": "Tapo P115 smart plug energy monitoring and control (status/control/consumption/cost)"},
+    {"name": "lighting_management", "description": "Philips Hue + Tapo lighting orchestration (list/status/control/effects)"},
+    {"name": "ring_management", "description": "Ring doorbell + alarm orchestration — events, live view (WebRTC), two-way talk, snapshot, arm/disarm/siren"},
+    {"name": "security_management", "description": "Unified alarm management — Nest Protect status/alerts/battery, event correlation, OAuth setup"},
+    {"name": "weather_management", "description": "Netatmo weather station data (current/historical/stations/alerts/health/analyze)"},
+    {"name": "system_management", "description": "System info, diagnostics, restart, capabilities, health check"},
+    {"name": "sensor_health", "description": "Sensor health dashboard with Prefab card (status, connectivity, battery levels)"},
+    {"name": "device_control", "description": "Unified device control (scenes, presets, lighting)"}
   ],
   "compatibility": {
     "platforms": [

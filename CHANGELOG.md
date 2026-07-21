@@ -39,6 +39,11 @@
 
 ### Changed
 - All 27 portmanteau tools: `@mcp.tool()` → `@mcp.tool(annotations=...)` with `_READ_ONLY`/`_MUTATING`/`_DESTRUCTIVE` (FastMCP 3.4)
+- `.mcpbignore` tightened: excluded `build_venv/`, `target/`, `integrations/*.exe`, reduced MCPB from 117 MB → 2.5 MB
+
+### Packaging
+- MCPB bundle rebuilt: `dist/devices-mcp-1.23.0.mcpb` (2.5 MB, 752 files)
+- `manifest.json` updated to v1.23.0, entry point `server_v2.py`, tool list reflects 27 portmanteau tools
 
 ### Fixed
 - Camera page crash: removed invalid `ConfigDict(use_enum_values=True)` from `CameraStatus(StrEnum)` that raised `ValueError` at import time
