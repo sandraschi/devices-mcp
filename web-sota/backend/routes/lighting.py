@@ -330,8 +330,8 @@ async def get_lighting_scenes() -> dict[str, Any]:
 
 
 @router.post("/api/lighting/scene")
-async def activate_lighting_scene(scene_name: str) -> dict[str, Any]:
-    """Activate a lighting scene on the Hue bridge."""
+async def activate_lighting_scene(scene_name: str, group_name: str | None = None) -> dict[str, Any]:
+    """Activate a lighting scene on the Hue bridge, optionally on a specific group."""
     try:
         from devices_mcp.tools.lighting.hue_tools import get_hue_manager
 
@@ -347,8 +347,16 @@ async def activate_lighting_scene(scene_name: str) -> dict[str, Any]:
         if target is None:
             raise HTTPException(status_code=404, detail=f"Scene '{scene_name}' not found")
 
-        mgr._bridge.run_scene(group_name=target.group, scene_name=target.name)
-        return {"success": True, "scene_name": scene_name}
+        group_id: str | None = target.group or None
+        if group_name:
+            groups = await mgr.get_all_groups()
+            matched = next((g for g in groups if g.name == group_name), None)
+            if not matched:
+                raise HTTPException(status_code=404, detail=f"Group '{group_name}' not found")
+            group_id = str(matched.group_id)
+
+        await mgr.activate_scene(scene_id=target.scene_id, group_id=group_id)
+        return {"success": True, "scene_name": scene_name, "group_name": group_name or target.group}
 
     except Exception as e:
         logger.exception(f"Error activating lighting scene {scene_name}: {e}")

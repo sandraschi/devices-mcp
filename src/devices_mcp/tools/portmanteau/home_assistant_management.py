@@ -9,6 +9,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 HA_ACTIONS = {
     "status": "Get Home Assistant connection status",
@@ -22,7 +26,7 @@ HA_ACTIONS = {
 def register_home_assistant_management_tool(mcp: FastMCP) -> None:
     """Register the Home Assistant management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def home_assistant_management(
         action: Literal["status", "entities", "nest_protect", "call_service", "get_state"],
         entity_id: str | None = None,

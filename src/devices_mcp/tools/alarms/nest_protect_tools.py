@@ -206,7 +206,7 @@ class GetNestProtectStatusTool(BaseTool):
 
             return {
                 "status": "success",
-                "devices": [device.dict() for device in devices],
+                "devices": [device.model_dump() for device in devices],
                 "total_devices": len(devices),
                 "online_devices": len([d for d in devices if d.status == "online"]),
                 "warning_devices": len([d for d in devices if d.status == "warning"]),
@@ -263,7 +263,7 @@ class GetNestProtectAlertsTool(BaseTool):
 
             return {
                 "status": "success",
-                "alerts": [alert.dict() for alert in alerts],
+                "alerts": [alert.model_dump() for alert in alerts],
                 "summary": {
                     "total_alerts": len(alerts),
                     "critical_alerts": len(critical_alerts),
@@ -273,8 +273,8 @@ class GetNestProtectAlertsTool(BaseTool):
                     "unresolved_alerts": len([a for a in alerts if not a.resolved]),
                     "time_range_hours": hours,
                 },
-                "critical_alerts": [alert.dict() for alert in critical_alerts],
-                "recent_alerts": [alert.dict() for alert in alerts[-5:]],  # Last 5 alerts
+                "critical_alerts": [alert.model_dump() for alert in critical_alerts],
+                "recent_alerts": [alert.model_dump() for alert in alerts[-5:]],  # Last 5 alerts
             }
 
         except Exception as e:
@@ -441,7 +441,7 @@ class CorrelateNestCameraEventsTool(BaseTool):
                 # In a real implementation, this would query camera events
                 # around the alert timestamp
                 correlation = {
-                    "alert": alert.dict(),
+                    "alert": alert.model_dump(),
                     "camera_events": [
                         {
                             "camera_name": "Living Room Camera",

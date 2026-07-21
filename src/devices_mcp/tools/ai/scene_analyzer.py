@@ -114,7 +114,7 @@ class SceneAnalyzerTool(BaseTool):
 
             return {
                 "status": "success",
-                "analysis": result.dict(),
+                "analysis": result.model_dump(),
                 "summary": self._generate_analysis_summary(result),
             }
 

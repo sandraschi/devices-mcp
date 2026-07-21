@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.energy.tapo_plug_tools import tapo_plug_manager
 
 logger = logging.getLogger(__name__)
@@ -22,7 +26,7 @@ KITCHEN_ACTIONS = {
 def register_kitchen_management_tool(mcp: FastMCP) -> None:
     """Register the kitchen management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READ_ONLY)
     async def kitchen_management(
         action: Literal["list_appliances", "control_appliance", "get_appliance_status", "get_energy_usage"],
         device_id: str | None = None,

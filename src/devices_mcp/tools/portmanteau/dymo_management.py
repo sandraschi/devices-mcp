@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.integrations.dymo_client import DymoClient
 
 logger = logging.getLogger(__name__)
@@ -23,7 +27,7 @@ DYMO_ACTIONS = {
 def register_dymo_management_tool(mcp: FastMCP) -> None:
     """Register the Dymo management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def dymo_management(
         action: Literal[
             "status",

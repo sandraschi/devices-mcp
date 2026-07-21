@@ -334,6 +334,7 @@ class WebServer:
                 sensors,
                 settings_prefs,
                 shelly,
+                skills,
                 system,
                 thermal,
                 views,
@@ -388,6 +389,7 @@ class WebServer:
             self.app.include_router(ptz_routes.router, tags=["PTZ Routes"])
             self.app.include_router(scanner.router, tags=["Scanner"])
             self.app.include_router(shelly.router, tags=["Shelly"])
+            self.app.include_router(skills.router, tags=["Skills"])
             self.app.include_router(cua_diagnostics.router, tags=["CUA"])
 
             # Mount orphaned v1 endpoints (system restart, config, logs)

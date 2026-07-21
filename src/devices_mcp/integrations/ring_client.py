@@ -1072,6 +1072,27 @@ class RingClient:
         else:
             return events
 
+    async def get_snapshot(self, device_id: str) -> str | None:
+        """Get snapshot URL for a Ring doorbell or camera.
+
+        Works with paid Ring Protect subscription. Returns the latest snapshot
+        image URL from ring_doorbell's ``snapshot_url`` property. The URL is
+        temporary and expires after a few minutes.
+        """
+        if not self._ring:
+            return None
+        try:
+            for dev in self._ring.devices():
+                d = dev
+                if str(getattr(d, "id", "")) == device_id or str(getattr(d, "device_id", "")) == device_id:
+                    url = getattr(d, "snapshot_url", None)
+                    if url:
+                        return str(url)
+            return None
+        except Exception as e:
+            logger.warning("Failed to get snapshot for %s: %s", device_id, e)
+            return None
+
     async def get_summary(self) -> dict:
         """Get a summary of Ring status for dashboard."""
         doorbells = await self.get_doorbells()

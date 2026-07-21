@@ -6,6 +6,8 @@ This module provides configuration models and utilities for the Devices MCP serv
 
 import json
 import logging
+import os
+import re
 import shutil
 from pathlib import Path
 from typing import Any, TypeVar
@@ -13,6 +15,41 @@ from typing import Any, TypeVar
 import yaml
 
 logger = logging.getLogger(__name__)
+
+# Load .env if present (python-dotenv optional — config works without it)
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
+
+def _interpolate_env(value: Any) -> Any:
+    """Replace ${VAR_NAME} in a config value with os.environ[VAR_NAME].
+
+    Works recursively on strings, lists, and dicts. Unset vars that have no
+    default raise no error — the literal `${VAR}` is left in place so the
+    caller sees a readable hint about what is missing.
+    """
+    if isinstance(value, str):
+        _pattern = re.compile(r"\$\{([^}]+)\}")
+
+        def _sub(m: re.Match) -> str:
+            var = m.group(1)
+            # ${VAR:-default} syntax
+            if ":-" in var:
+                var, default = var.split(":-", 1)
+                return os.environ.get(var.strip(), default.strip())
+            return os.environ.get(var, m.group(0))  # leave literal if missing
+
+        return _pattern.sub(_sub, value)
+    if isinstance(value, dict):
+        return {k: _interpolate_env(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_interpolate_env(v) for v in value]
+    return value
+
 
 from .models import (
     CameraConfig,
@@ -173,6 +210,9 @@ class ConfigManager:
             # Ensure config is a dictionary
             if not isinstance(config, dict):
                 config = {}
+
+            # Substitute ${ENV_VAR} references from .env / environment
+            config = _interpolate_env(config)
 
             self._config_cache = config
             return config

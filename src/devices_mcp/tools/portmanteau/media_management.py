@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.media.image_capture_tool import ImageCaptureTool
 from devices_mcp.tools.media.video_recording_tool import VideoRecordingTool
 
@@ -26,7 +30,7 @@ MEDIA_ACTIONS = {
 def register_media_management_tool(mcp: FastMCP) -> None:
     """Register the media management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def media_management(
         action: Literal[
             "capture",

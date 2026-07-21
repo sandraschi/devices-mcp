@@ -33,7 +33,7 @@ keywords = ["home-security", "surveillance", "mcp", "fastmcp", "tapo", "ring", "
 
 dependencies = [
     # Core dependencies
-    "fastmcp>=3.4.2",
+    "fastmcp>=3.4.4,<4",
     "pytapo>=3.3.54,<4.0.0", # Tapo camera control (Updated to 3.3.x)
     "python-kasa>=0.6.0,<0.7.0", # TP-Link Kasa (required by pytapo, compatibility shim in src/devices_mcp/compat/)
     "pydantic>=2.0.0,<3.0.0", # Data validation and settings management
@@ -305,7 +305,6 @@ ignore = [
     "RUF003",
     "RUF006",
     "B027",
-    "UP038",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -324,6 +323,11 @@ vcs = "git"
 style = "pep440"
 bump = true
 fallback-version = "1.18.0"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.2",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/devices_mcp"]

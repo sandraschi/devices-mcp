@@ -10,6 +10,10 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.energy.tapo_plug_tools import tapo_plug_manager
 from devices_mcp.tools.lighting.hue_tools import hue_manager
 from devices_mcp.tools.lighting.tapo_lighting_tools import tapo_lighting_manager
@@ -55,7 +59,7 @@ DEVICE_ACTIONS = {
 def register_device_control_tool(mcp: FastMCP) -> None:
     """Register the unified device control tools."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def device_control(
         action: str,
         device_id: str | None = None,
@@ -634,7 +638,7 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                 "exception_type": type(e).__name__,
             }
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def tapo(
         action: str,
         device_id: str | None = None,

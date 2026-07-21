@@ -131,7 +131,7 @@ class SmartAutomationTool(BaseTool):
             "status": "success",
             "message": f"Automation rule '{name}' created successfully",
             "rule_id": rule_id,
-            "rule": rule.dict(),
+            "rule": rule.model_dump(),
         }
 
     async def _list_automation_rules(self) -> dict[str, Any]:
@@ -209,7 +209,7 @@ class SmartAutomationTool(BaseTool):
             "status": "success",
             "message": f"Automation schedule '{name}' created successfully",
             "schedule_id": schedule_id,
-            "schedule": schedule.dict(),
+            "schedule": schedule.model_dump(),
         }
 
     async def _list_automation_schedules(self) -> dict[str, Any]:

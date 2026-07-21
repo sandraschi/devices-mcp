@@ -229,7 +229,7 @@ async def plex_reporting(
             return {
                 "success": True,
                 "operation": "performance_report",
-                "server_status": status.dict() if hasattr(status, "dict") else status,
+                "server_status": status.model_dump() if hasattr(status, "dict") else status,
                 "recommendations": [],
             }
 

@@ -51,6 +51,7 @@ interface LlmSettings {
 	ollama_url?: string;
 	lm_studio_url?: string;
 	preferred_provider?: string;
+	preferred_model?: string;
 	providers?: LlmProviderRow[];
 	error?: string;
 }
@@ -78,6 +79,9 @@ export function Settings() {
 	const [ollamaUrl, setOllamaUrl] = useState("http://127.0.0.1:11434");
 	const [lmStudioUrl, setLmStudioUrl] = useState("http://127.0.0.1:1234");
 	const [preferredProvider, setPreferredProvider] = useState("ollama");
+	const [preferredModel, setPreferredModel] = useState("");
+	const [availableModels, setAvailableModels] = useState<string[]>([]);
+	const [modelsLoading, setModelsLoading] = useState(false);
 	const [llmSaving, setLlmSaving] = useState(false);
 	const [llmMsg, setLlmMsg] = useState<string | null>(null);
 
@@ -103,6 +107,7 @@ export function Settings() {
 				setOllamaUrl(data.ollama_url ?? LOCAL_LLM_CATALOG[0].defaultUrl);
 				setLmStudioUrl(data.lm_studio_url ?? LOCAL_LLM_CATALOG[1].defaultUrl);
 				setPreferredProvider(data.preferred_provider ?? "ollama");
+				setPreferredModel(data.preferred_model ?? "");
 			}
 		} catch {
 			/* optional */
@@ -130,6 +135,32 @@ export function Settings() {
 			document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
 		}
 	}, []);
+
+	// Fetch available models when preferred provider changes
+	useEffect(() => {
+		if (!preferredProvider) return;
+		let cancelled = false;
+		setModelsLoading(true);
+		fetch(`/api/llm/models?provider=${encodeURIComponent(preferredProvider)}`)
+			.then((r) => (r.ok ? r.json() : []))
+			.then((data) => {
+				if (cancelled) return;
+				const models: string[] = (data.models ?? data.data ?? []).map(
+					(m: { name?: string; id?: string; model?: string }) =>
+						m.name ?? m.id ?? m.model ?? String(m),
+				);
+				setAvailableModels(models);
+			})
+			.catch(() => {
+				if (!cancelled) setAvailableModels([]);
+			})
+			.finally(() => {
+				if (!cancelled) setModelsLoading(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [preferredProvider]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -198,6 +229,7 @@ export function Settings() {
 					ollama_url: ollamaUrl.trim(),
 					lm_studio_url: lmStudioUrl.trim(),
 					preferred_provider: preferredProvider,
+					preferred_model: preferredModel,
 					reconnect: true,
 				}),
 			});
@@ -391,6 +423,32 @@ export function Settings() {
 								</option>
 							))}
 						</select>
+					</label>
+					<label className="block">
+						<span className="mb-1 block font-medium">
+							Model ({preferredProvider})
+						</span>
+						<select
+							value={preferredModel}
+							onChange={(e) => setPreferredModel(e.target.value)}
+							className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+							disabled={modelsLoading}
+						>
+							{!preferredModel && (
+								<option value="">-- auto (first available) --</option>
+							)}
+							{availableModels.map((m) => (
+								<option key={m} value={m}>
+									{m}
+								</option>
+							))}
+						</select>
+						{modelsLoading && (
+							<span className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+								<Loader2 className="h-3 w-3 animate-spin" />
+								Loading models...
+							</span>
+						)}
 					</label>
 					{llmSettings?.providers && llmSettings.providers.length > 0 && (
 						<ul className="space-y-1 rounded-md border border-slate-200 p-3 text-xs dark:border-slate-700">

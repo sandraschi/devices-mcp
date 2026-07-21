@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.weather.netatmo_analysis_tool import NetatmoAnalysisTool
 from devices_mcp.tools.weather.netatmo_weather_tool import NetatmoWeatherTool
 
@@ -25,7 +29,7 @@ WEATHER_ACTIONS = {
 def register_weather_management_tool(mcp: FastMCP) -> None:
     """Register the weather management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READ_ONLY)
     async def weather_management(
         action: Literal["current", "historical", "stations", "alerts", "health", "analyze"],
         station_id: str | None = None,

@@ -10,6 +10,10 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 ALERTS_ACTIONS = {
     "list_alerts": "List all active alerts and notifications",
@@ -26,7 +30,7 @@ ALERTS_ACTIONS = {
 def register_alerts_management_tool(mcp: FastMCP) -> None:
     """Register the alerts management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READ_ONLY)
     async def alerts_management(
         action: str,
         alert_id: str | None = None,

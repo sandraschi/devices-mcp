@@ -1,6 +1,6 @@
 # devices-mcp — full documentation corpus
 
-Generated: 2026-06-01 21:50 UTC · Version: 2.4.0 · Source: https://github.com/sandraschi/devices-mcp
+Generated: 2026-07-21 15:05 UTC · Version: 2.4.0 · Source: https://github.com/sandraschi/devices-mcp
 
 This file is auto-generated. Prefer linked markdown on `main` for edits.
 
@@ -51,10 +51,12 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 
 - **Cameras:** Tapo/ONVIF, USB webcam/microscope (OpenCV), streaming hooks (quality varies by device/driver).
 - **Energy:** Tapo P115 plugs; LAN discovery optional when cloud creds are set.
-- **Lighting:** Philips Hue (incl. HomeAware on supported bridges), Tapo lighting.
-- **Security / sensors:** Ring, Nest Protect via Home Assistant, Shelly, Netatmo, Open-Meteo (Vienna default).
-- **Dashboard:** Status table with device health, per-domain pages (cameras, energy, weather, robots, …).
-- **MCP:** Portmanteau tools (camera, energy, lighting, ring, nest, weather, …) on FastMCP 3.2.
+- **Lighting:** Philips Hue (incl. HomeAware on supported bridges, CLIP v2, group/scene management), Tapo lighting.
+- **Security / sensors:** Ring (doorbell + alarm + two-way talk), Nest Protect via OAuth2, Shelly, Netatmo, Open-Meteo (Vienna default).
+- **Chat:** SOTA chat with localStorage persistence, 5 personalities, skill preprompt, NDJSON streaming, export/clear — LLM provider/model selector in Settings.
+- **Dashboard:** Status table with device health, per-domain pages (cameras, energy, lighting, weather, robots …).
+- **MCP:** 27 portmanteau tools (camera, energy, lighting, ring, nest, weather, security, …) on FastMCP 3.4 with tool annotations.
+- **Fleet priority:** `GET /api/fleet/priority` — home-safety incidents for Fritz urgent dispatch (kitchen temp, CO, smoke, Ring).
 
 **Not included:** guaranteed uptime SLA, cloud hosting, plug-and-play without `config.yaml`, or a single 12 MB exe (full desktop bundle is ~247 MB with embedded Python sidecars).
 
@@ -62,7 +64,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 
 ## Quick install
 
-**Windows desktop (leg 3):** [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases) → `Devices-MCP-1.21.5-x64-setup.exe` (or portable zip). Copy `config.example.yaml` → `%USERPROFILE%\.config\devices-mcp\config.yaml`.
+**Windows desktop (leg 3):** [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases) → `Devices MCP_*_x64-setup.exe` (single NSIS installer — that's all you need).
 
 **MCP bundle (leg 1):** Releases → `devices-mcp.mcpb` → Claude Desktop.
 
@@ -75,6 +77,26 @@ uv sync
 .\web-sota\start.ps1
 # http://127.0.0.1:10717/app/
 ```
+
+## Build & Test (NSIS installer)
+
+The desktop installer bundles TWO sidecars (backend + camera helper) into a single `Devices MCP_*_x64-setup.exe` (~247 MB).
+
+```powershell
+just build-native      # Full pipeline: frontend → PyInstaller → Rust → NSIS
+just cua-nsis-test     # Install → CUA test → screenshot → uninstall
+```
+
+The **CUA smoke test** (`scripts/cua-smoke.py`) verifies:
+1. Silent install succeeds
+2. Backend health responds 200 on port 10717
+3. Window renders at correct size
+4. Diagnostics endpoint reports all systems
+5. Clean uninstall
+
+> See [CUA-NSIS Smoke Testing](https://github.com/sandraschi/mcp-central-docs/blob/main/standards/rules/cua_nsis_smoke_testing.md) — fleet standard.
+
+Prerequisites: Rust toolchain, MSVC Build Tools, Tauri CLI 2.x.
 
 ---
 
@@ -90,6 +112,7 @@ uv sync
 | [docs/TOOLS.md](docs/TOOLS.md) | MCP tool families (summary) |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | `just`, build scripts, contributing |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | White screen, logs path, firewall |
+| [docs/FLEET_INTEGRATION.md](docs/FLEET_INTEGRATION.md) | Fritz `/api/fleet/priority` consumer contract |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 
 LLM index: [llms.txt](llms.txt) · full: [llms-full.txt](llms-full.txt)
@@ -260,6 +283,7 @@ See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 | [TOOLS.md](TOOLS.md) | MCP portmanteau tool overview |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Clone, `just`, PyInstaller, Tauri build |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Splash timeout, logs, firewall |
+| [FLEET_INTEGRATION.md](FLEET_INTEGRATION.md) | Fritz priority API (`/api/fleet/priority`) |
 
 **Also at repo root:** [INSTALL.md](../INSTALL.md) · [CHANGELOG.md](../CHANGELOG.md) · [native/README.md](../native/README.md)
 

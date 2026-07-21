@@ -158,7 +158,7 @@ async def plex_server(
             return {
                 "success": True,
                 "operation": "status",
-                "data": status.dict() if hasattr(status, "dict") else status,
+                "data": status.model_dump() if hasattr(status, "dict") else status,
             }
 
         # Operation: info
@@ -169,7 +169,7 @@ async def plex_server(
                 "success": True,
                 "operation": "info",
                 "data": {
-                    "status": status.dict() if hasattr(status, "dict") else status,
+                    "status": status.model_dump() if hasattr(status, "dict") else status,
                     "libraries": libraries,
                 },
             }
@@ -208,7 +208,7 @@ async def plex_server(
                 "success": True,
                 "operation": "maintenance",
                 "maintenance_operation": maintenance_operation,
-                "data": result.dict() if hasattr(result, "dict") else result,
+                "data": result.model_dump() if hasattr(result, "dict") else result,
             }
 
         # Operation: restart

@@ -551,7 +551,7 @@ class ConfigureDeviceTool(BaseTool):
             return {
                 "status": "success",
                 "message": f"Device {display_name} configured successfully",
-                "device": device.dict(),
+                "device": device.model_dump(),
                 "configuration": discovery_manager.onboarding_state.configured_devices[device_id],
                 "onboarding_progress": discovery_manager.get_onboarding_progress(),
             }
@@ -597,7 +597,7 @@ class GetOnboardingProgressTool(BaseTool):
                 "status": "success",
                 "progress": progress,
                 "device_summary": device_summary,
-                "discovered_devices": [device.dict() for device in discovery_manager.discovered_devices],
+                "discovered_devices": [device.model_dump() for device in discovery_manager.discovered_devices],
                 "configured_devices": discovery_manager.onboarding_state.configured_devices,
                 "completion_percentage": self._calculate_completion_percentage(),
                 "next_recommended_steps": self._get_next_steps(),
@@ -672,7 +672,7 @@ class CompleteOnboardingTool(BaseTool):
             if unconfigured_devices:
                 return {
                     "error": f"Cannot complete onboarding: {len(unconfigured_devices)} devices still need configuration",
-                    "unconfigured_devices": [device.dict() for device in unconfigured_devices],
+                    "unconfigured_devices": [device.model_dump() for device in unconfigured_devices],
                 }
 
             # Mark onboarding as complete
@@ -694,7 +694,7 @@ class CompleteOnboardingTool(BaseTool):
                 "onboarding_complete": True,
                 "total_devices_configured": len(discovery_manager.discovered_devices),
                 "device_summary": device_summary,
-                "configured_devices": [device.dict() for device in discovery_manager.discovered_devices],
+                "configured_devices": [device.model_dump() for device in discovery_manager.discovered_devices],
                 "next_steps": [
                     "Start using your configured devices",
                     "Set up automation rules if desired",

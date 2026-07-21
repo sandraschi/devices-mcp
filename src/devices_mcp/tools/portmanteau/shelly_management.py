@@ -16,6 +16,10 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 SHELLY_ACTIONS = {
     "list_devices": "List all Shelly devices",
@@ -32,7 +36,7 @@ SHELLY_ACTIONS = {
 def register_shelly_management_tool(mcp: FastMCP) -> None:
     """Register the Shelly devices management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READ_ONLY)
     async def shelly_management(
         action: str,
         device_id: str | None = None,

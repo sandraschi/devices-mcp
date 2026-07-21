@@ -10,6 +10,10 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 MESSAGES_ACTIONS = {
     "list_messages": "List messages and notifications",
@@ -26,7 +30,7 @@ MESSAGES_ACTIONS = {
 def register_messages_management_tool(mcp: FastMCP) -> None:
     """Register the messages management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READ_ONLY)
     async def messages_management(
         action: str,
         message_id: str | None = None,

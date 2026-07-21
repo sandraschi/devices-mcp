@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 MOTION_ACTIONS = {
     "status": "Get motion detection subscription status",
@@ -22,7 +26,7 @@ MOTION_ACTIONS = {
 def register_motion_management_tool(mcp: FastMCP) -> None:
     """Register the motion management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READ_ONLY)
     async def motion_management(
         action: Literal["status", "events", "subscribe", "unsubscribe", "test", "capabilities"],
         camera_id: str | None = None,

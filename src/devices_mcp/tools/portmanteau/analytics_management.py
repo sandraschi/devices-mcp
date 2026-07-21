@@ -10,6 +10,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 
 ANALYTICS_ACTIONS = {
@@ -25,7 +29,7 @@ ANALYTICS_ACTIONS = {
 def register_analytics_management_tool(mcp: FastMCP) -> None:
     """Register the analytics management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_READ_ONLY)
     async def analytics_management(
         action: Literal[
             "performance_analysis",

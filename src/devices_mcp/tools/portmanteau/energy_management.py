@@ -9,6 +9,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.energy.energy_management_tool import EnergyManagementTool
 from devices_mcp.utils.response_builders import (
     build_hardware_error_response,
@@ -28,7 +32,7 @@ ENERGY_ACTIONS = {
 def register_energy_management_tool(mcp: FastMCP) -> None:
     """Register the energy management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def energy_management(
         action: Literal["status", "control", "consumption", "cost"],
         device_id: str | None = None,

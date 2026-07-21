@@ -9,6 +9,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.integrations.nest_client import (
     NestClient,
     get_nest_client,
@@ -161,7 +165,7 @@ SECURITY_ACTIONS = {
 def register_security_management_tool(mcp: FastMCP) -> None:
     """Register the security management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_DESTRUCTIVE)
     async def security_management(
         action: Literal[
             "nest_status",

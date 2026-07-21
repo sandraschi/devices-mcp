@@ -11,6 +11,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.ptz.ptz_control_tool import PTZControlTool
 from devices_mcp.tools.ptz.ptz_preset_tool import PTZPresetTool
 
@@ -104,7 +108,7 @@ PTZ_ACTIONS = {
 def register_ptz_management_tool(mcp: FastMCP) -> None:
     """Register the PTZ management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def ptz_management(
         action: Literal[
             "move",

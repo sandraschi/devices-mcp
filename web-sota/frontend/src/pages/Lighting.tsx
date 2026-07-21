@@ -7,6 +7,7 @@ import {
 	Lightbulb,
 	Loader2,
 	Radio,
+	XCircle,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -29,6 +30,19 @@ interface LightingStatus {
 	devices: LightDevice[];
 	total_lights: number;
 	active_lights: number;
+	success?: boolean;
+}
+
+interface HueGroup {
+	group_id: string;
+	name: string;
+	type: string;
+	lights: string[];
+	light_count: number;
+}
+
+interface GroupsResponse {
+	groups?: HueGroup[];
 	success?: boolean;
 }
 
@@ -121,6 +135,8 @@ function hexToRgb(hex: string): [number, number, number] {
 export function Lighting() {
 	const [status, setStatus] = useState<LightingStatus | null>(null);
 	const [scenes, setScenes] = useState<ScenesResponse | null>(null);
+	const [groups, setGroups] = useState<GroupsResponse | null>(null);
+	const [selectedGroup, setSelectedGroup] = useState<string>("");
 	const [hueStatus, setHueStatus] = useState<HueStatus | null>(null);
 	const [discovered, setDiscovered] = useState<HueBridgeInfo[]>([]);
 	const [bridgeIpInput, setBridgeIpInput] = useState("");
@@ -132,12 +148,17 @@ export function Lighting() {
 	const [motionAware, setMotionAware] = useState<MotionAwareDetail | null>(
 		null,
 	);
+	const [sceneFeedback, setSceneFeedback] = useState<{
+		ok: boolean;
+		msg: string;
+	} | null>(null);
 
 	const load = useCallback(async () => {
 		try {
-			const [statusRes, scenesRes, hueRes, maRes] = await Promise.allSettled([
+			const [statusRes, scenesRes, groupsRes, hueRes, maRes] = await Promise.allSettled([
 				fetch("/api/lighting/status"),
 				fetch("/api/lighting/scenes"),
+				fetch("/api/lighting/groups"),
 				fetch("/api/lighting/hue/status"),
 				fetch("/api/lighting/hue/motionaware/status"),
 			]);
@@ -148,6 +169,10 @@ export function Lighting() {
 			}
 			if (scenesRes.status === "fulfilled" && scenesRes.value.ok) {
 				setScenes(await scenesRes.value.json());
+			}
+			if (groupsRes.status === "fulfilled" && groupsRes.value.ok) {
+				const g = await groupsRes.value.json();
+				setGroups(g);
 			}
 			if (hueRes.status === "fulfilled" && hueRes.value.ok) {
 				const h = await hueRes.value.json();
@@ -176,6 +201,13 @@ export function Lighting() {
 	useEffect(() => {
 		void load();
 	}, [load]);
+
+	// Set default group when groups first load
+	useEffect(() => {
+		if (groups?.groups?.length && !selectedGroup) {
+			setSelectedGroup(groups.groups[0].name);
+		}
+	}, [groups, selectedGroup]);
 
 	const discoverBridges = async () => {
 		setDiscoverLoading(true);
@@ -736,24 +768,54 @@ export function Lighting() {
 				<Card>
 					<CardContent className="p-4">
 						<p className="mb-2 text-sm font-medium">Scenes</p>
+						{groups?.groups && groups.groups.length > 0 && (
+							<div className="mb-3 flex items-center gap-2">
+								<span className="text-xs text-slate-500">Group:</span>
+								<select
+									value={selectedGroup}
+									onChange={(e) => setSelectedGroup(e.target.value)}
+									className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 dark:border-slate-600 dark:bg-zinc-800 dark:text-zinc-100"
+								>
+									{groups.groups.map((g) => (
+										<option key={g.group_id} value={g.name}>
+											{g.name}
+										</option>
+									))}
+								</select>
+							</div>
+						)}
 						<div className="flex flex-wrap gap-2">
 							{scenes.scenes.map((s) => (
 								<button
 									type="button"
 									key={s}
+									data-testid="scene-btn"
 									onClick={async () => {
+										setSceneFeedback(null);
 										try {
+											const params = new URLSearchParams({ scene_name: s });
+											if (selectedGroup) params.set("group_name", selectedGroup);
 											const res = await fetch(
-												`/api/lighting/scene?scene_name=${encodeURIComponent(s)}`,
+												`/api/lighting/scene?${params}`,
 												{ method: "POST" },
 											);
-											if (!res.ok) {
+											if (res.ok) {
+												setSceneFeedback({ ok: true, msg: `Scene "${s}" activated on ${selectedGroup || "auto"}` });
+											} else {
 												const err = await res.json().catch(() => ({}));
-												console.error("Scene activation failed:", err);
+												const detail =
+													typeof err.detail === "string"
+														? err.detail
+														: "Activation failed";
+												setSceneFeedback({ ok: false, msg: `"${s}": ${detail}` });
 											}
 										} catch (e) {
-											console.error("Scene activation error:", e);
+											setSceneFeedback({
+												ok: false,
+												msg: `"${s}": Network error`,
+											});
 										}
+										setTimeout(() => setSceneFeedback(null), 3000);
 									}}
 									className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-amber-900/20 dark:hover:border-amber-500 dark:hover:text-amber-400"
 								>
@@ -763,6 +825,22 @@ export function Lighting() {
 						</div>
 					</CardContent>
 				</Card>
+			)}
+			{sceneFeedback && (
+				<div
+					className={`mt-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm ${
+						sceneFeedback.ok
+							? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+							: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+					}`}
+				>
+					{sceneFeedback.ok ? (
+						<CheckCircle className="h-4 w-4" />
+					) : (
+						<XCircle className="h-4 w-4" />
+					)}
+					{sceneFeedback.msg}
+				</div>
 			)}
 		</div>
 	);

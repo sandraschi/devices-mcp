@@ -224,7 +224,7 @@ async def plex_integration(
                 "success": True,
                 "operation": "vienna_recommendations",
                 "content_type": content_type,
-                "data": [item.dict() if hasattr(item, "dict") else item for item in result],
+                "data": [item.model_dump() if hasattr(item, "dict") else item for item in result],
                 "count": len(result),
             }
 
@@ -239,7 +239,7 @@ async def plex_integration(
                 "operation": "european_content",
                 "country": country,
                 "content_type": content_type,
-                "data": [item.dict() if hasattr(item, "dict") else item for item in result],
+                "data": [item.model_dump() if hasattr(item, "dict") else item for item in result],
                 "count": len(result),
             }
 
@@ -271,7 +271,7 @@ async def plex_integration(
                 "operation": "anime_season_info",
                 "year": year,
                 "season": season,
-                "data": result.dict() if hasattr(result, "dict") else result,
+                "data": result.model_dump() if hasattr(result, "dict") else result,
             }
 
         # Operation: configure

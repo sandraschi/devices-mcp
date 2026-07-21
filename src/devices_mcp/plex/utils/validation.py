@@ -46,7 +46,7 @@ def validate_required(value: Any, field: str = "field") -> None:
     Raises:
         ValidationError: If the value is None or empty.
     """
-    if value is None or (isinstance(value, (str, list, dict)) and not value):
+    if value is None or (isinstance(value, str | list | dict) and not value):
         raise ValidationError(f"{field} is required", field=field, code="required")
 
 
@@ -318,7 +318,7 @@ def validate_file_path(
     Raises:
         ValidationError: If the path is invalid or doesn't meet the criteria.
     """
-    if not isinstance(path, (str, Path)):
+    if not isinstance(path, str | Path):
         raise ValidationError(f"{field} must be a string or Path object", field=field, code="invalid_type")
 
     path_obj = Path(path).expanduser().resolve()
@@ -363,7 +363,7 @@ def validate_pydantic_model(
         else:
             instance = model_class(**data)
 
-        return instance.dict()
+        return instance.model_dump()
     except ValidationError as e:
         # Convert Pydantic's ValidationError to our custom ValidationError
         errors = []
@@ -517,7 +517,7 @@ def validate_media_item(data: dict[str, Any], field: str = "media_item") -> None
     # Optional validation for common fields
     if "ratingKey" in data:
         rating_key = data["ratingKey"]
-        if not isinstance(rating_key, (str, int)):
+        if not isinstance(rating_key, str | int):
             raise ValidationError(
                 f"{field} ratingKey must be a string or integer",
                 field=f"{field}.ratingKey",

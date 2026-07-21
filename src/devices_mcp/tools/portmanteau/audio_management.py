@@ -21,6 +21,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -964,7 +968,7 @@ def _get_wake_status() -> dict[str, Any]:
 def register_audio_management_tool(mcp: FastMCP) -> None:
     """Register the audio management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def audio_management(
         action: Literal[
             "get_url",

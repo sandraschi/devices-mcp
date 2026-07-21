@@ -1,5 +1,31 @@
 
-## [1.22.1] — 2026-06-16
+## [1.23.0] — 2026-07-21
+
+### Security
+- Credentials moved from `config.yaml` to `.env` — env var interpolation (`${VAR}` / `${VAR:-default}`) added to config loader via `python-dotenv`
+- All hardcoded secrets (Ring, Tapo, Netatmo, Hue, Home Assistant) replaced with env var references
+- `.env.example` updated with all credential keys as template
+
+### Added
+- `GET /api/skills`, `GET /api/skills/{name}` — serve SKILL.md for chat preprompt
+- Chat page (SOTA rewrite): localStorage persistence, 5 personas, 8 example prompts, NDJSON streaming, export .txt, clear conversation, all `data-testid` attributes
+- Settings page: model selector dropdown populated from provider API, saves `preferred_model` to config
+- Ring portmanteau: `answer_call`, `two_way_talk` actions for paid Protect accounts
+- `get_snapshot()` method on Ring client for paid Protect live snapshots
+- Lighting page: group selector dropdown, scene activation targets selected group
+- FastMCP 3.4 tool annotations (`READ_ONLY`/`MUTATING`/`DESTRUCTIVE`) on all 27 portmanteau tools
+
+### Changed
+- Pydantic v2 migration: `.dict()` → `.model_dump()` across 11 tool files (20+ call sites)
+- Scene activation uses `HueManager.activate_scene()` instead of raw `phue.run_scene()`
+- Tapo L900 lightstrip IP corrected from 192.168.0.172 → 192.168.0.171
+- Dreame vacuum IP in .env corrected from 192.168.0.179 → 192.168.0.144
+- Removed deprecation warning UP038 from ruff config
+- Removed stale `pyproject.toml.20260717.bak`
+
+### Fixed
+- `POST /api/lighting/scene` now accepts `group_name` parameter for targeted scene activation
+- Scene buttons now show success/error feedback (green checkmark or red X, 3s auto-clear)
 
 ### Fixed
 - Camera page crash: removed invalid `ConfigDict(use_enum_values=True)` from `CameraStatus(StrEnum)` that raised `ValueError` at import time

@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.config import get_config
 from devices_mcp.integrations.ikettle_client import IKettleClient
 
@@ -24,7 +28,7 @@ IKETTLE_ACTIONS = {
 def register_ikettle_management_tool(mcp: FastMCP) -> None:
     """Register the iKettle management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def ikettle_management(
         action: Literal["status", "boil", "keep_warm", "stop", "set_mode"],
         temperature: int = 100,

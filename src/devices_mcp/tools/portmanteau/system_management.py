@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.system.health_tool import HealthCheckTool
 from devices_mcp.tools.system.system_control_tool import SystemControlTool
 from devices_mcp.tools.system.system_info_tool import SystemInfoTool
@@ -26,7 +30,7 @@ SYSTEM_ACTIONS = {
 def register_system_management_tool(mcp: FastMCP) -> None:
     """Register the system management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_DESTRUCTIVE)
     async def system_management(
         action: Literal["info", "status", "health", "initialize", "reboot", "logs"],
         camera_name: str | None = None,

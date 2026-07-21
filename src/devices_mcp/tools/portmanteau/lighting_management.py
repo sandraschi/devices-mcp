@@ -10,6 +10,10 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.lighting.hue_tools import get_hue_manager
 from devices_mcp.tools.lighting.tapo_lighting_tools import tapo_lighting_manager
 from devices_mcp.utils.response_builders import (
@@ -30,7 +34,7 @@ LIGHTING_ACTIONS = {
 def register_lighting_management_tool(mcp: FastMCP) -> None:
     """Register the lighting management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def lighting_management(
         action: str,  # "status", "control", "list", "effects"
         device_id: str | None = None,

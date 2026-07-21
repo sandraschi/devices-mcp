@@ -9,6 +9,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 AUTOMATION_ACTIONS = {
     "create_rule": "Create new automation rule with conditions and actions",
@@ -27,7 +31,7 @@ AUTOMATION_ACTIONS = {
 def register_automation_management_tool(mcp: FastMCP) -> None:
     """Register the automation management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def automation_management(
         action: Literal[
             "create_rule",

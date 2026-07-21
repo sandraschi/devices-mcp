@@ -8,6 +8,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from devices_mcp.tools.configuration.device_settings_tool import DeviceSettingsTool
 from devices_mcp.tools.configuration.privacy_settings_tool import PrivacySettingsTool
 
@@ -24,7 +28,7 @@ CONFIG_ACTIONS = {
 def register_configuration_management_tool(mcp: FastMCP) -> None:
     """Register the configuration management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def configuration_management(
         action: Literal["device_settings", "privacy_settings", "led_control", "motion_detection", "privacy_mode"],
         camera_name: str | None = None,

@@ -264,7 +264,7 @@ async def plex_performance(
             return {
                 "success": True,
                 "operation": "get_transcoding_status",
-                "data": result.dict() if hasattr(result, "dict") else result,
+                "data": result.model_dump() if hasattr(result, "dict") else result,
             }
 
         # Operation: get_bandwidth
@@ -274,7 +274,7 @@ async def plex_performance(
                 "success": True,
                 "operation": "get_bandwidth",
                 "time_range": time_range,
-                "data": result.dict() if hasattr(result, "dict") else result,
+                "data": result.model_dump() if hasattr(result, "dict") else result,
             }
 
         # Operation: set_quality
@@ -353,7 +353,7 @@ async def plex_performance(
             return {
                 "success": True,
                 "operation": "list_profiles",
-                "data": [p.dict() if hasattr(p, "dict") else p for p in result],
+                "data": [p.model_dump() if hasattr(p, "dict") else p for p in result],
                 "count": len(result),
             }
 
@@ -409,7 +409,7 @@ async def plex_performance(
             return {
                 "success": True,
                 "operation": "get_server_status",
-                "data": result.dict() if hasattr(result, "dict") else result,
+                "data": result.model_dump() if hasattr(result, "dict") else result,
             }
 
         # Operation: get_server_info
@@ -421,7 +421,7 @@ async def plex_performance(
                 "success": True,
                 "operation": "get_server_info",
                 "data": {
-                    "status": status.dict() if hasattr(status, "dict") else status,
+                    "status": status.model_dump() if hasattr(status, "dict") else status,
                     "libraries": libraries,
                 },
             }

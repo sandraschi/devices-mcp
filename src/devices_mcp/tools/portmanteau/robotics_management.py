@@ -10,6 +10,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 from ...tools.robotics.moorebot_tools import (
     get_moorebot_client,
     initialize_moorebot_client,
@@ -43,7 +47,7 @@ ROBOTICS_ACTIONS = {
 def register_robotics_management_tool(mcp: FastMCP) -> None:
     """Register the robotics management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def robotics_management(
         action: Literal[
             "get_status",

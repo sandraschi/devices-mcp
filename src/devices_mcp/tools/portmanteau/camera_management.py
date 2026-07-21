@@ -10,6 +10,10 @@ from typing import Any, Literal
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 # Import existing camera tool functions
 from devices_mcp.tools.camera.camera_tools import (
     AddCameraTool,
@@ -47,7 +51,7 @@ CAMERA_ACTIONS = {
 def register_camera_management_tool(mcp: FastMCP) -> None:
     """Register the camera management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def camera_management(
         action: Literal[
             "list",

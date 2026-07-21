@@ -10,6 +10,10 @@ from typing import Any
 
 from fastmcp import FastMCP
 
+_READ_ONLY: dict[str, bool] = {"readonly": True}
+_MUTATING: dict[str, bool] = {}
+_DESTRUCTIVE: dict[str, bool] = {"destructive": True}
+
 logger = logging.getLogger(__name__)
 THERMAL_ACTIONS = {
     "list_sensors": "List all thermal camera sensors",
@@ -26,7 +30,7 @@ THERMAL_ACTIONS = {
 def register_thermal_management_tool(mcp: FastMCP) -> None:
     """Register the thermal cameras management portmanteau tool."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=_MUTATING)
     async def thermal_management(
         action: str,
         sensor_id: str | None = None,

@@ -31,6 +31,7 @@ class LlmSettingsBody(BaseModel):
     ollama_url: str | None = Field(None, description="Ollama base URL")
     lm_studio_url: str | None = Field(None, description="LM Studio base URL (OpenAI-compatible)")
     preferred_provider: str | None = Field(None, description="ollama or lm_studio")
+    preferred_model: str | None = Field(None, description="Default model name for the preferred provider")
     reconnect: bool = Field(
         True,
         description="Re-register providers after save",
@@ -102,6 +103,7 @@ async def get_llm_settings() -> dict[str, Any]:
             "ollama_url": llm.get("ollama_url", "http://127.0.0.1:11434"),
             "lm_studio_url": llm.get("lm_studio_url", "http://127.0.0.1:1234"),
             "preferred_provider": llm.get("preferred_provider", "ollama"),
+            "preferred_model": llm.get("preferred_model", ""),
             "providers": providers,
             "catalog": [
                 {"type": pt.value, "label": label, "default_base_url": url} for pt, label, url in PROVIDER_CATALOG
@@ -124,6 +126,8 @@ async def update_llm_settings(body: LlmSettingsBody) -> dict[str, Any]:
             llm["lm_studio_url"] = body.lm_studio_url.strip()
         if body.preferred_provider is not None:
             llm["preferred_provider"] = body.preferred_provider.strip()
+        if body.preferred_model is not None:
+            llm["preferred_model"] = body.preferred_model.strip()
 
         save_config_dict(path, data)
 

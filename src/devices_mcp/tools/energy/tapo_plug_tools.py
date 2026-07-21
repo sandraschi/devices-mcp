@@ -551,7 +551,7 @@ class GetSmartPlugStatusTool(BaseTool):
 
             return {
                 "status": "success",
-                "devices": [device.dict() for device in devices],
+                "devices": [device.model_dump() for device in devices],
                 "summary": {
                     "total_devices": len(devices),
                     "active_devices": active_devices,
@@ -693,7 +693,7 @@ class GetEnergyConsumptionTool(BaseTool):
                     "peak_power_watts": peak_power,
                     "data_points": len(usage_data),
                 },
-                "usage_data": [data.dict() for data in usage_data[-24:]],  # Last 24 data points
+                "usage_data": [data.model_dump() for data in usage_data[-24:]],  # Last 24 data points
                 "cost_breakdown": {
                     "hourly_average_cost": total_cost / hours if hours > 0 else 0,
                     "daily_projection": total_cost * (24 / hours) if hours > 0 else 0,
@@ -846,7 +846,7 @@ class SetEnergyAutomationTool(BaseTool):
             return {
                 "status": "success",
                 "message": f"Automation rule '{rule_name}' created for {device.name}",
-                "rule": rule.dict(),
+                "rule": rule.model_dump(),
                 "device_name": device.name,
                 "timestamp": datetime.now().isoformat(),
             }

@@ -1,9 +1,9 @@
 <p align="center">
   <img src="https://img.shields.io/badge/status-beta-orange?style=flat-square" alt="Beta">
   <img src="https://img.shields.io/badge/python-3.12+-blue?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/FastMCP-3.2+-purple" alt="FastMCP">
+  <img src="https://img.shields.io/badge/FastMCP-3.4.4-purple" alt="FastMCP">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-  <img src="https://img.shields.io/badge/release-v1.21.5-blue" alt="Version">
+  <img src="https://img.shields.io/badge/release-v1.23.0-blue" alt="Version">
 </p>
 
 # devices-mcp
@@ -46,10 +46,11 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 
 - **Cameras:** Tapo/ONVIF, USB webcam/microscope (OpenCV), streaming hooks (quality varies by device/driver).
 - **Energy:** Tapo P115 plugs; LAN discovery optional when cloud creds are set.
-- **Lighting:** Philips Hue (incl. HomeAware on supported bridges), Tapo lighting.
-- **Security / sensors:** Ring, Nest Protect via Home Assistant, Shelly, Netatmo, Open-Meteo (Vienna default).
-- **Dashboard:** Status table with device health, per-domain pages (cameras, energy, weather, robots, …).
-- **MCP:** Portmanteau tools (camera, energy, lighting, ring, nest, weather, …) on FastMCP 3.2.
+- **Lighting:** Philips Hue (incl. HomeAware on supported bridges, CLIP v2, group/scene management), Tapo lighting.
+- **Security / sensors:** Ring (doorbell + alarm + two-way talk), Nest Protect via OAuth2, Shelly, Netatmo, Open-Meteo (Vienna default).
+- **Chat:** SOTA chat with localStorage persistence, 5 personalities, skill preprompt, NDJSON streaming, export/clear — LLM provider/model selector in Settings.
+- **Dashboard:** Status table with device health, per-domain pages (cameras, energy, lighting, weather, robots …).
+- **MCP:** 27 portmanteau tools (camera, energy, lighting, ring, nest, weather, security, …) on FastMCP 3.4 with tool annotations.
 - **Fleet priority:** `GET /api/fleet/priority` — home-safety incidents for Fritz urgent dispatch (kitchen temp, CO, smoke, Ring).
 
 **Not included:** guaranteed uptime SLA, cloud hosting, plug-and-play without `config.yaml`, or a single 12 MB exe (full desktop bundle is ~247 MB with embedded Python sidecars).

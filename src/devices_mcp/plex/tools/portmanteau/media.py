@@ -212,7 +212,7 @@ async def plex_media(
             return {
                 "success": True,
                 "operation": "browse",
-                "data": [item.dict() for item in items] if hasattr(items[0], "dict") else items,
+                "data": [item.model_dump() for item in items] if hasattr(items[0], "dict") else items,
                 "count": len(items),
             }
 
@@ -238,7 +238,7 @@ async def plex_media(
             return {
                 "success": True,
                 "operation": "search",
-                "data": [item.dict() if hasattr(item, "dict") else item for item in items],
+                "data": [item.model_dump() if hasattr(item, "dict") else item for item in items],
                 "count": len(items),
                 "search_criteria": search_params,
             }
@@ -267,7 +267,7 @@ async def plex_media(
             return {
                 "success": True,
                 "operation": "get_recent",
-                "data": [item.dict() if hasattr(item, "dict") else item for item in items],
+                "data": [item.model_dump() if hasattr(item, "dict") else item for item in items],
                 "count": len(items),
             }
 
