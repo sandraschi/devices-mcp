@@ -56,9 +56,11 @@ tests/
 def mock_mcp_client():
     """Mock MCP client for testing."""
 
+
 @pytest.fixture
 def test_energy_device():
     """Factory for test energy device data."""
+
 
 @pytest.fixture
 def performance_timer():
@@ -181,15 +183,14 @@ exclude_lines = [
 import pytest
 from tests.utils.test_helpers import test_data, assertions
 
+
 class TestEnergyAPI:
     def test_list_devices_success(self, client):
         """Test successful device listing."""
         with patch("devices_mcp.mcp_client.call_mcp_tool") as mock_call:
             # Setup mock response
             mock_call.return_value = test_data.create_mcp_tool_response(
-                success=True,
-                action="status",
-                data={"devices": [test_data.create_energy_device()]}
+                success=True, action="status", data={"devices": [test_data.create_energy_device()]}
             )
 
             # Execute test
@@ -205,6 +206,7 @@ class TestEnergyAPI:
 ```python
 import pytest
 from tests.utils.mock_mcp_server import MockMCPServer, run_mcp_test_scenario
+
 
 class TestMCPIntegration:
     async def test_energy_workflow(self):
@@ -230,6 +232,7 @@ class TestMCPIntegration:
 import pytest
 from tests.utils.test_helpers import performance
 
+
 class TestPerformance:
     def test_api_response_time(self, client, performance_timer):
         """Test API response time is acceptable."""
@@ -252,35 +255,20 @@ from tests.utils.test_helpers import test_data
 
 # Create consistent test data
 device = test_data.create_energy_device(
-    device_id="test_plug",
-    name="Test Smart Plug",
-    power_state=True,
-    current_power=45.2
+    device_id="test_plug", name="Test Smart Plug", power_state=True, current_power=45.2
 )
 
-event = test_data.create_motion_event(
-    camera_id="front_door",
-    confidence=0.95,
-    regions=[[100, 100, 200, 200]]
-)
+event = test_data.create_motion_event(camera_id="front_door", confidence=0.95, regions=[[100, 100, 200, 200]])
 ```
 
 ### Mock Data Management
 
 ```python
 # Use predefined mock responses
-mock_response = test_data.create_mcp_tool_response(
-    success=True,
-    action="status",
-    data={"devices": [device]}
-)
+mock_response = test_data.create_mcp_tool_response(success=True, action="status", data={"devices": [device]})
 
 # Or create custom responses
-custom_response = {
-    "success": True,
-    "action": "custom_action",
-    "data": {"custom_field": "value"}
-}
+custom_response = {"success": True, "action": "custom_action", "data": {"custom_field": "value"}}
 ```
 
 ## 🔍 Test Debugging

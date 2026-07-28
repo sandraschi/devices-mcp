@@ -1,4 +1,4 @@
-set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
+set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 import 'scripts/just/fleet.just'
 
 MCP_CENTRAL_DIR := "..\\mcp-central-docs"
@@ -58,12 +58,8 @@ audit-deps:
 build-native:
     Set-Location '{{justfile_directory()}}\native'; $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"; & .\build.ps1
 
-# Run CUA smoke test against installed NSIS app
-cua-nsis-test:
-    C:\Windows\py.exe scripts/cua-smoke.py
-
 # ── Testing ───────────────────────────────────────────────────────────────────
 
 # Run e2e Playwright tests
 e2e:
-    pwsh -NoLogo -NoProfile -ExecutionPolicy Bypass -File "D:\Dev\repos\mcp-central-docs\scripts\playwright-audit.ps1" -RepoPath "{{justfile_directory()}}"
+    powershell.exe -NoProfile -NoProfile -ExecutionPolicy Bypass -File "D:\Dev\repos\mcp-central-docs\scripts\playwright-audit.ps1" -RepoPath "{{justfile_directory()}}"
