@@ -2,22 +2,22 @@
 # Excludes heavy ML dependencies and dev tools
 
 # Core MCP and camera dependencies
-fastmcp>=2.13.0,<3.0.0
+fastmcp>=2.13.0,<4.0.0
 pytapo>=3.3.48,<4.0.0
 tapo>=0.8.0  # For P115 smart plug ingestion
 pydantic>=2.0.0,<3.0.0
 python-dotenv>=1.0.0,<2.0.0
 aiohttp>=3.9.0,<4.0.0
-websockets>=12.0,<16.0.0
-Pillow>=10.0.0,<11.0.0
-numpy>=1.24.0,<2.0.0
+websockets>=12.0,<17.0.0
+Pillow>=10.0.0,<13.0.0
+numpy>=1.24.0,<3.0.0
 
 # Camera-specific dependencies
-opencv-python>=4.8.0,<5.0.0
+opencv-python>=4.8.0,<6.0.0
 onvif-zeep>=0.2.12,<1.0.0  # ONVIF protocol support
 ring-doorbell>=0.7.0,<1.0.0
 oauthlib>=3.2.0,<4.0.0
-requests-oauthlib>=1.3.0,<2.0.0
+requests-oauthlib>=1.3.0,<3.0.0
 phue>=1.1,<2.0.0  # Philips Hue support
 
 # Web dashboard dependencies
@@ -25,11 +25,11 @@ fastapi>=0.100.0,<1.0.0
 uvicorn[standard]>=0.20.0,<1.0.0
 jinja2>=3.1.0,<4.0.0
 python-multipart>=0.0.5,<1.0.0
-aiofiles>=23.0.0,<24.0.0
+aiofiles>=23.0.0,<26.0.0
 python-jose[cryptography]>=3.3.0,<4.0.0
 passlib[bcrypt]>=1.7.4,<2.0.0
 httpx>=0.24.0,<1.0.0
-starlette>=0.27.0,<1.0.0
+starlette>=1.3.1,<2.0.0
 pyatmo>=9.0.0,<10.0.0
 psutil>=5.9.0  # System monitoring
 psycopg2-binary>=2.9.0,<3.0.0  # PostgreSQL adapter
