@@ -17,7 +17,7 @@ Write-Host "Installing watchfiles dependencies..." -ForegroundColor Cyan
 pip install -r requirements-watchfiles.txt
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "âœ“ Watchfiles dependencies installed successfully" -ForegroundColor Green
+    Write-Host "âœ" Watchfiles dependencies installed successfully" -ForegroundColor Green
     Write-Host ""
     Write-Host "To run Devices MCP WebApp with crashproofing:" -ForegroundColor Cyan
     Write-Host "  python watchfiles_runner.py" -ForegroundColor White

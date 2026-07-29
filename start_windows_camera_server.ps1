@@ -18,6 +18,6 @@ $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $repoRoot
 $env:PYTHONPATH = "$repoRoot;$repoRoot\src"
 
-# Start the Windows camera server (listens on 10715 — must match WINDOWS_CAMERA_SERVER_URL / backend proxy)
+# Start the Windows camera server (listens on 10715 - must match WINDOWS_CAMERA_SERVER_URL / backend proxy)
 Write-Host "Starting camera server on http://127.0.0.1:10715 ..." -ForegroundColor Yellow
 uv run python scripts/windows_camera_server.py
