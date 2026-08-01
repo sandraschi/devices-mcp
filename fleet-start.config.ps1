@@ -5,7 +5,7 @@
     BackendPort  = 10717
     FrontendPort = 10716
     HealthPath   = '/'
-    WebRoot      = 'D:\Dev\repos\devices-mcp\web-sota'
+    WebRoot      = 'D:\Dev\repos\devices-mcp\web-sota\frontend'
     NssmService  = 'devices-mcp'
     Backend = @{
         Kind = 'nssm'

@@ -256,7 +256,7 @@ export function Lighting() {
 		const ip = bridgeIpInput.trim();
 		if (!ip) {
 			setError(
-				"Enter the bridge IP first (discover above or from the Hue app).",
+				"Enter the bridge IP first (discover above or from Hue app).",
 			);
 			return;
 		}
@@ -360,7 +360,7 @@ export function Lighting() {
 			{showHueCard && (
 				<Card
 					className={
-						hueStatus?.connected ? "border-green-200 dark:border-green-900" : ""
+						hueStatus?.connected ? "border-green-900" : ""
 					}
 				>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -368,7 +368,7 @@ export function Lighting() {
 							Philips Hue Bridge
 						</CardTitle>
 						{hueStatus?.connected ? (
-							<CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+							<CheckCircle className="h-5 w-5 text-green-400" />
 						) : (
 							<Radio className="h-5 w-5 text-slate-400" />
 						)}
@@ -386,19 +386,19 @@ export function Lighting() {
 							</p>
 						)}
 						{hueStatus?.username_error && (
-							<p className="text-xs text-amber-700 dark:text-amber-300/90">
+							<p className="text-xs text-amber-300/90">
 								{hueStatus.username_error}
 							</p>
 						)}
 						{hueStatus?.phue_available === false && (
-							<p className="text-amber-700 dark:text-amber-300">
+							<p className="text-amber-300">
 								Install the Python package:{" "}
 								<code className="text-xs">pip install phue</code>, then restart
 								the server.
 							</p>
 						)}
 						{hueStatus?.last_error && !hueStatus?.connected && (
-							<p className="text-xs text-amber-700 dark:text-amber-300/90">
+							<p className="text-xs text-amber-300/90">
 								{hueStatus.last_error}
 							</p>
 						)}
@@ -419,7 +419,7 @@ export function Lighting() {
 											placeholder="e.g. 192.168.0.236"
 											value={bridgeIpInput}
 											onChange={(e) => setBridgeIpInput(e.target.value)}
-											className="min-w-[10rem] rounded-md border border-slate-300 bg-white px-2 py-1.5 font-mono text-sm dark:border-slate-600 dark:bg-slate-900"
+											className="min-w-[10rem] rounded-md border border-slate-600 bg-slate-900 px-2 py-1.5 font-mono text-sm"
 										/>
 									</div>
 									<Button
@@ -462,11 +462,11 @@ export function Lighting() {
 										))}
 									</div>
 								)}
-								<p className="text-xs text-slate-500 dark:text-slate-400">
+								<p className="text-xs text-slate-400">
 									If discovery is empty, open the Hue app → Settings → Hue
 									bridges and copy the IP (same Wi‑Fi as this PC). To let{" "}
 									<em>this server</em> control lights, you will later press the{" "}
-									<strong className="font-semibold text-slate-700 dark:text-slate-200">
+									<strong className="font-semibold text-slate-200">
 										physical link button
 									</strong>{" "}
 									on the Hue Bridge — not something you toggle only in the phone
@@ -478,23 +478,23 @@ export function Lighting() {
 								{hueStatus?.needs_pairing && (
 									<div
 										role="alert"
-										className="rounded-lg border-2 border-amber-400 bg-amber-50 p-4 shadow-sm dark:border-amber-600 dark:bg-amber-950/50"
+										className="rounded-lg border-2 border-amber-600 bg-amber-950/50 p-4 shadow-sm"
 									>
 										<div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
 											<div className="flex shrink-0 justify-center sm:block">
-												<div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-amber-500 bg-amber-100 dark:border-amber-500 dark:bg-amber-900/60">
+												<div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-amber-500 bg-amber-900/60">
 													<Hand
-														className="h-8 w-8 text-amber-800 dark:text-amber-200"
+														className="h-8 w-8 text-amber-200"
 														aria-hidden
 													/>
 												</div>
 											</div>
 											<div className="min-w-0 flex-1 space-y-3">
 												<div>
-													<p className="text-base font-semibold tracking-tight text-amber-950 dark:text-amber-50">
+													<p className="text-base font-semibold tracking-tight text-amber-50">
 														Press the button on the Hue Bridge before you pair
 													</p>
-													<p className="mt-1.5 text-sm leading-relaxed text-amber-950/90 dark:text-amber-100/90">
+													<p className="mt-1.5 text-sm leading-relaxed text-amber-100/90">
 														The Hue app on your phone does{" "}
 														<strong className="font-semibold">not</strong> grant
 														access to this webapp. You must use the{" "}
@@ -505,7 +505,7 @@ export function Lighting() {
 														the front of the white box).
 													</p>
 												</div>
-												<ol className="list-decimal space-y-2 pl-5 text-sm text-amber-950 dark:text-amber-50">
+												<ol className="list-decimal space-y-2 pl-5 text-sm text-amber-50">
 													<li>
 														Walk to your Hue Bridge (usually near your router)
 														and find the{" "}
@@ -538,7 +538,7 @@ export function Lighting() {
 												>
 													{hueBusy ? "Pairing…" : "Pair now"}
 												</Button>
-												<p className="text-xs leading-relaxed text-amber-900/85 dark:text-amber-200/85">
+												<p className="text-xs leading-relaxed text-amber-200/85">
 													If you see “link button” or pairing fails: press the
 													round bridge button again, then click Pair now right
 													away.
@@ -569,7 +569,7 @@ export function Lighting() {
 				<Card>
 					<CardHeader className="pb-2">
 						<CardTitle className="text-base font-medium">MotionAware</CardTitle>
-						<p className="text-xs font-normal text-slate-500 dark:text-slate-400">
+						<p className="text-xs font-normal text-slate-400">
 							Signify Hue API v2 — Zigbee mesh motion areas you set up in the
 							Hue app (
 							<code className="text-[11px]">convenience_area_motion</code> /{" "}
@@ -578,12 +578,12 @@ export function Lighting() {
 					</CardHeader>
 					<CardContent className="space-y-3 text-sm">
 						{!motionAware && (
-							<p className="text-slate-500 dark:text-slate-400">
+							<p className="text-slate-400">
 								Loading motion area status…
 							</p>
 						)}
 						{motionAware && !motionAware.enabled && (
-							<p className="text-slate-600 dark:text-slate-400">
+							<p className="text-slate-400">
 								{motionAware.reason ??
 									hueStatus?.clip_v2_error ??
 									"Hue CLIP v2 not available (needs Bridge Pro with HTTPS reachable from this server)."}
@@ -592,7 +592,7 @@ export function Lighting() {
 						{motionAware?.enabled && (
 							<>
 								{motionAware.fetch_hint ? (
-									<p className="text-xs text-amber-800 dark:text-amber-200">
+									<p className="text-xs text-amber-200">
 										{motionAware.fetch_hint}
 									</p>
 								) : null}
@@ -602,20 +602,20 @@ export function Lighting() {
 								</p>
 								{(motionAware.convenience_area_motions?.length ?? 0) > 0 && (
 									<div>
-										<p className="mb-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+										<p className="mb-1 text-xs font-medium text-slate-300">
 											Convenience / lighting
 										</p>
 										<ul className="space-y-1 text-xs">
 											{motionAware.convenience_area_motions?.map((a) => (
 												<li
 													key={`c-${a.id}`}
-													className="flex justify-between gap-2 rounded border border-slate-200 px-2 py-1 dark:border-slate-600"
+													className="flex justify-between gap-2 rounded border border-slate-600 px-2 py-1"
 												>
 													<span className="truncate">{a.name ?? a.id}</span>
 													<span
 														className={
 															a.motion
-																? "font-medium text-amber-700 dark:text-amber-300"
+																? "font-medium text-amber-300"
 																: "text-slate-400"
 														}
 													>
@@ -628,20 +628,20 @@ export function Lighting() {
 								)}
 								{(motionAware.security_area_motions?.length ?? 0) > 0 && (
 									<div>
-										<p className="mb-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+										<p className="mb-1 text-xs font-medium text-slate-300">
 											Security areas
 										</p>
 										<ul className="space-y-1 text-xs">
 											{motionAware.security_area_motions?.map((a) => (
 												<li
 													key={`s-${a.id}`}
-													className="flex justify-between gap-2 rounded border border-slate-200 px-2 py-1 dark:border-slate-600"
+													className="flex justify-between gap-2 rounded border border-slate-600 px-2 py-1"
 												>
 													<span className="truncate">{a.name ?? a.id}</span>
 													<span
 														className={
 															a.motion
-																? "font-medium text-amber-700 dark:text-amber-300"
+																? "font-medium text-amber-300"
 																: "text-slate-400"
 														}
 													>
@@ -668,7 +668,7 @@ export function Lighting() {
 			{hueStatus?.enabled === false && hueStatus.config_issue && (
 				<Card>
 					<CardContent className="pt-6">
-						<p className="text-sm text-slate-600 dark:text-slate-400">
+						<p className="text-sm text-slate-400">
 							{hueStatus.message}
 						</p>
 					</CardContent>
@@ -676,12 +676,12 @@ export function Lighting() {
 			)}
 
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
-			<p className="text-sm text-slate-500 dark:text-slate-400">
+			<p className="text-sm text-slate-400">
 				{status?.total_lights ?? 0} lights · {status?.active_lights ?? 0} on
 			</p>
 			<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -713,7 +713,7 @@ export function Lighting() {
 											type="button"
 											onClick={() => control(id, "toggle")}
 											disabled={isDisabled}
-											className="shrink-0 rounded-full p-1.5 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
+											className="shrink-0 rounded-full p-1.5 transition-colors hover:bg-slate-800 disabled:opacity-50"
 											title={isOn ? "Turn off" : "Turn on"}
 										>
 											<Lightbulb
@@ -739,7 +739,7 @@ export function Lighting() {
 												onChange={(e) =>
 													setBrightness(id, Number(e.target.value))
 												}
-												className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 dark:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-500"
+												className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-indigo-500"
 											/>
 											<span className="w-7 text-right text-xs text-slate-500">
 												{brightness}%
@@ -753,7 +753,7 @@ export function Lighting() {
 													value={colorHex}
 													disabled={!isOn || isDisabled}
 													onChange={(e) => setColor(id, e.target.value)}
-													className="h-8 w-14 cursor-pointer rounded border border-slate-200 bg-transparent p-0 dark:border-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+													className="h-8 w-14 cursor-pointer rounded border border-slate-700 bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-50"
 												/>
 											</div>
 										)}
@@ -774,7 +774,7 @@ export function Lighting() {
 								<select
 									value={selectedGroup}
 									onChange={(e) => setSelectedGroup(e.target.value)}
-									className="rounded border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 dark:border-slate-600 dark:bg-zinc-800 dark:text-zinc-100"
+									className="rounded border border-slate-600 bg-zinc-800 px-2 py-1 text-xs text-zinc-100"
 								>
 									{groups.groups.map((g) => (
 										<option key={g.group_id} value={g.name}>
@@ -817,7 +817,7 @@ export function Lighting() {
 										}
 										setTimeout(() => setSceneFeedback(null), 3000);
 									}}
-									className="rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-amber-900/20 dark:hover:border-amber-500 dark:hover:text-amber-400"
+									className="rounded-md border border-slate-600 px-3 py-1.5 text-sm text-slate-300 transition hover:bg-amber-900/20 hover:border-amber-500 hover:text-amber-400"
 								>
 									{s}
 								</button>
@@ -830,8 +830,8 @@ export function Lighting() {
 				<div
 					className={`mt-3 flex items-center gap-2 rounded-md px-3 py-2 text-sm ${
 						sceneFeedback.ok
-							? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-							: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+							? "bg-green-900/20 text-green-400"
+							: "bg-red-900/20 text-red-400"
 					}`}
 				>
 					{sceneFeedback.ok ? (

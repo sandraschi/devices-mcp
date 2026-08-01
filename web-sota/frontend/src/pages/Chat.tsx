@@ -27,7 +27,7 @@ const PERSONAS: { id: string; label: string; prompt: string }[] = [
 		id: "reviewer",
 		label: "Expert Reviewer",
 		prompt:
-			"You are an expert smart home reviewer. Provide concise, critical analysis of device status and configurations. Be direct and technical.",
+			"You are an expert smart home reviewer. Provide concise, critical analysis of device status and configurations. Be direct technical.",
 	},
 	{
 		id: "summarizer",
@@ -39,7 +39,7 @@ const PERSONAS: { id: string; label: string; prompt: string }[] = [
 		id: "operator",
 		label: "Device Operator",
 		prompt:
-			"You are a smart home operator. When the user asks to control a device, confirm before acting. State device name, action, and expected result clearly.",
+			"You are a smart home operator. When the user asks to control device, confirm before acting. State device name, action, and expected result clearly.",
 	},
 	{
 		id: "custom",
@@ -374,7 +374,7 @@ export function Chat() {
 		<div className="space-y-6" data-testid="chat-page">
 			<h1 className="text-2xl font-bold tracking-tight">Chat</h1>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
@@ -384,7 +384,7 @@ export function Chat() {
 					<CardTitle className="text-base font-medium flex items-center gap-2">
 						<MessageCircle className="h-5 w-5" /> Local LLM
 						{skillContent && (
-							<span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-normal text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+							<span className="ml-1 rounded bg-slate-800 px-1.5 py-0.5 text-[10px] font-normal text-slate-400">
 								skill:devices-mcp
 							</span>
 						)}
@@ -397,7 +397,7 @@ export function Chat() {
 							data-testid="personality-select"
 							value={personaId}
 							onChange={(e) => setPersonaId(e.target.value)}
-							className="rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-zinc-800 dark:text-zinc-100"
+							className="rounded border border-slate-600 bg-zinc-800 px-2 py-1 text-sm text-zinc-100"
 						>
 							{PERSONAS.map((p) => (
 								<option key={p.id} value={p.id}>
@@ -411,7 +411,7 @@ export function Chat() {
 								value={customPrompt}
 								onChange={(e) => setCustomPrompt(e.target.value)}
 								placeholder="Your custom system prompt..."
-								className="w-40 rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-zinc-800 dark:text-zinc-100"
+								className="w-40 rounded border border-slate-600 bg-zinc-800 px-2 py-1 text-sm text-zinc-100"
 							/>
 						)}
 						<select
@@ -420,7 +420,7 @@ export function Chat() {
 								setProvider(e.target.value);
 								setModel("");
 							}}
-							className="rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-zinc-800 dark:text-zinc-100"
+							className="rounded border border-slate-600 bg-zinc-800 px-2 py-1 text-sm text-zinc-100"
 						>
 							{(providers.length
 								? providers
@@ -437,7 +437,7 @@ export function Chat() {
 								onChange={(e) => {
 									setModel(e.target.value);
 								}}
-								className="rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-600 dark:bg-zinc-800 dark:text-zinc-100"
+								className="rounded border border-slate-600 bg-zinc-800 px-2 py-1 text-sm text-zinc-100"
 							>
 								{models.map((m) => (
 									<option key={m.name} value={m.name}>
@@ -490,7 +490,7 @@ export function Chat() {
 						>
 							{!messages.length && !streamingContent && (
 								<div data-testid="example-prompts">
-									<p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+									<p className="mb-3 text-sm text-slate-400">
 										{skillContent
 											? "I know your home devices. Try one of these:"
 											: "Load a model above, then ask about your home:"}
@@ -501,7 +501,7 @@ export function Chat() {
 												key={ep.text}
 												type="button"
 												onClick={() => setInput(ep.text)}
-												className="rounded-md border border-slate-200 px-3 py-1.5 text-xs text-slate-600 transition hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-amber-900/20 dark:hover:border-amber-500 dark:hover:text-amber-400"
+												className="rounded-md border border-slate-600 px-3 py-1.5 text-xs text-slate-400 transition hover:bg-amber-900/20 hover:border-amber-500 hover:text-amber-400"
 											>
 												{ep.text}
 											</button>
@@ -514,15 +514,15 @@ export function Chat() {
 									key={`${msg.role}-${i}`}
 									className={`max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${
 										msg.role === "user"
-											? "ml-auto bg-indigo-600 text-white dark:bg-indigo-700"
-											: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
+											? "ml-auto bg-indigo-700 text-white"
+											: "bg-slate-800 text-slate-200"
 									}`}
 								>
 									{msg.content}
 								</div>
 							))}
 							{streamingContent && (
-								<div className="max-w-[85%] rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200 whitespace-pre-wrap">
+								<div className="max-w-[85%] rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-200 whitespace-pre-wrap">
 									{streamingContent}
 								</div>
 							)}
@@ -536,7 +536,7 @@ export function Chat() {
 						</div>
 						<form
 							onSubmit={send}
-							className="flex gap-2 border-t border-slate-200 p-3 dark:border-slate-800"
+							className="flex gap-2 border-t border-slate-800 p-3"
 						>
 							<input
 								data-testid="chat-input"
@@ -544,7 +544,7 @@ export function Chat() {
 								value={input}
 								onChange={(e) => setInput(e.target.value)}
 								placeholder="Type a message…"
-								className="flex-1 rounded border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-zinc-800 dark:text-zinc-100"
+								className="flex-1 rounded border border-slate-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
 								disabled={loading}
 							/>
 							<Button

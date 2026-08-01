@@ -83,15 +83,15 @@ function formatUptime(sec?: number): string {
 function statusBadgeClass(status: string): string {
 	switch (status) {
 		case "online":
-			return "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300";
+			return "bg-emerald-950/50 text-emerald-300";
 		case "offline":
-			return "bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200";
+			return "bg-amber-950/50 text-amber-200";
 		case "disabled":
-			return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+			return "bg-slate-800 text-slate-400";
 		case "error":
-			return "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300";
+			return "bg-red-950/50 text-red-300";
 		default:
-			return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+			return "bg-slate-800 text-slate-300";
 	}
 }
 
@@ -190,9 +190,9 @@ export function Health() {
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<h1 className="text-2xl font-bold tracking-tight">Status & health</h1>
-					<p className="text-sm text-slate-500 dark:text-slate-400">
+					<p className="text-sm text-slate-400">
 						Preset:{" "}
-						<span className="font-medium text-slate-700 dark:text-slate-200">
+						<span className="font-medium text-slate-200">
 							{inventory?.home_preset ?? "—"}
 						</span>
 						{inventory?.discovery?.tapo_p115 && (
@@ -229,7 +229,7 @@ export function Health() {
 			</div>
 
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
@@ -253,7 +253,7 @@ export function Health() {
 						</p>
 					</CardHeader>
 					<CardContent className="p-0">
-						<div className="flex flex-wrap gap-2 border-b border-slate-200 px-4 py-2 dark:border-slate-800">
+						<div className="flex flex-wrap gap-2 border-b border-slate-800 px-4 py-2">
 							{[
 								"all",
 								"online",
@@ -270,8 +270,8 @@ export function Health() {
 									onClick={() => setFilter(f)}
 									className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
 										filter === f
-											? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-											: "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+											? "bg-slate-100 text-slate-900"
+											: "bg-slate-800 text-slate-300 hover:bg-slate-200"
 									}`}
 								>
 									{f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -281,7 +281,7 @@ export function Health() {
 						<div className="overflow-x-auto">
 							<table className="w-full min-w-[720px] text-left text-sm">
 								<thead>
-									<tr className="border-b border-slate-200 bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-900/50">
+									<tr className="border-b border-slate-800 bg-slate-900/50 text-xs uppercase tracking-wide text-slate-500">
 										<th className="px-4 py-3 font-semibold">Name</th>
 										<th className="px-4 py-3 font-semibold">Type</th>
 										<th className="px-4 py-3 font-semibold">Address</th>
@@ -305,22 +305,22 @@ export function Health() {
 										filtered.map((d, i) => (
 											<tr
 												key={d.id}
-												className={`border-b border-slate-100 dark:border-slate-800/80 ${
+												className={`border-b border-slate-100 border-slate-800/80 ${
 													i % 2 === 0
-														? "bg-white dark:bg-transparent"
-														: "bg-slate-50/40 dark:bg-slate-900/20"
+														? "bg-transparent"
+														: "bg-slate-900/20"
 												}`}
 											>
-												<td className="px-4 py-2.5 font-medium text-slate-900 dark:text-slate-100">
+												<td className="px-4 py-2.5 font-medium text-slate-100">
 													{d.name}
 												</td>
-												<td className="px-4 py-2.5 text-slate-600 dark:text-slate-400">
+												<td className="px-4 py-2.5 text-slate-400">
 													{typeLabel(d.type)}
 												</td>
-												<td className="px-4 py-2.5 font-mono text-xs text-slate-600 dark:text-slate-400">
+												<td className="px-4 py-2.5 font-mono text-xs text-slate-400">
 													{d.address}
 												</td>
-												<td className="px-4 py-2.5 text-slate-600 dark:text-slate-400">
+												<td className="px-4 py-2.5 text-slate-400">
 													{d.integration}
 												</td>
 												<td className="px-4 py-2.5 text-xs text-slate-500">
@@ -350,14 +350,14 @@ export function Health() {
 				</Card>
 			)}
 
-			<h2 className="text-lg font-semibold text-slate-700 dark:text-slate-300">
+			<h2 className="text-lg font-semibold text-slate-300">
 				Host metrics
 			</h2>
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				{sys?.cpu_percent != null && (
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
-							<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+							<CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
 								<Cpu className="h-4 w-4" /> CPU
 							</CardTitle>
 						</CardHeader>
@@ -371,7 +371,7 @@ export function Health() {
 				{mem && (
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
-							<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+							<CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
 								<MemoryStick className="h-4 w-4" /> Memory
 							</CardTitle>
 						</CardHeader>
@@ -388,7 +388,7 @@ export function Health() {
 				{disk && (
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
-							<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+							<CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
 								<HardDrive className="h-4 w-4" /> Disk
 							</CardTitle>
 						</CardHeader>
@@ -405,7 +405,7 @@ export function Health() {
 				{(data?.uptime_seconds != null || data?.uptime_human) && (
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
-							<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+							<CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
 								<Activity className="h-4 w-4" /> Uptime
 							</CardTitle>
 						</CardHeader>
@@ -419,7 +419,7 @@ export function Health() {
 				{cameras && (
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
-							<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+							<CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
 								<Video className="h-4 w-4" /> Cameras
 							</CardTitle>
 						</CardHeader>
@@ -437,7 +437,7 @@ export function Health() {
 				{dbs && Object.keys(dbs).length > 0 && (
 					<Card>
 						<CardHeader className="flex flex-row items-center justify-between pb-2">
-							<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
+							<CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2">
 								<Database className="h-4 w-4" /> Databases
 							</CardTitle>
 						</CardHeader>

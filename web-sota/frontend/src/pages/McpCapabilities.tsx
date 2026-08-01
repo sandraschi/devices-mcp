@@ -37,7 +37,7 @@ export function McpCapabilities() {
 		<div className="space-y-6">
 			<h1 className="text-2xl font-bold tracking-tight">MCP Capabilities</h1>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
@@ -123,7 +123,7 @@ export function McpCapabilities() {
 					<CardTitle className="text-base">Raw payload</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<pre className="max-h-[420px] overflow-auto rounded border border-slate-200 bg-slate-50 p-3 text-xs dark:border-slate-700 dark:bg-slate-900">
+					<pre className="max-h-[420px] overflow-auto rounded border border-slate-700 bg-slate-900 p-3 text-xs">
 						{JSON.stringify(data, null, 2)}
 					</pre>
 				</CardContent>

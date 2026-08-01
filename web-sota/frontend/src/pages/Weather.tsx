@@ -295,7 +295,7 @@ export function Weather() {
 				<Card
 					className={
 						netatmoStatus.connected
-							? "border-green-200 dark:border-green-900"
+							? "border-green-900"
 							: ""
 					}
 				>
@@ -304,7 +304,7 @@ export function Weather() {
 							Netatmo weather station
 						</CardTitle>
 						{netatmoStatus.connected ? (
-							<CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+							<CheckCircle className="h-5 w-5 text-green-400" />
 						) : (
 							<CloudSun className="h-5 w-5 text-slate-400" />
 						)}
@@ -312,7 +312,7 @@ export function Weather() {
 					<CardContent className="space-y-2">
 						<p className="text-sm">{netatmoStatus.message}</p>
 						{netatmoStatus.needs_config && (
-							<p className="text-xs text-slate-500 dark:text-slate-400">
+							<p className="text-xs text-slate-400">
 								Create an app at{" "}
 								<a
 									href="https://dev.netatmo.com/"
@@ -331,7 +331,7 @@ export function Weather() {
 							</p>
 						)}
 						{netatmoStatus.last_error && !netatmoStatus.connected && (
-							<p className="text-xs text-amber-700 dark:text-amber-300/90">
+							<p className="text-xs text-amber-300/90">
 								{netatmoStatus.last_error}
 							</p>
 						)}
@@ -369,7 +369,7 @@ export function Weather() {
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<p className="text-sm text-slate-600 dark:text-slate-400">
+						<p className="text-sm text-slate-400">
 							{netatmoStatus.message}
 						</p>
 					</CardContent>
@@ -377,18 +377,18 @@ export function Weather() {
 			)}
 
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
 
 			{indoorCO2 != null && indoorCO2 >= 1000 && (
-				<div className="rounded-lg border border-orange-300 bg-orange-50 p-4 text-sm text-orange-950 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-100">
+				<div className="rounded-lg border border-orange-800 bg-orange-950/30 p-4 text-sm text-orange-100">
 					<p className="font-medium">
 						Indoor CO₂ {Math.round(indoorCO2)} ppm — check ventilation
 					</p>
-					<p className="mt-1 text-orange-900/90 dark:text-orange-200/90">
+					<p className="mt-1 text-orange-200/90">
 						Sustained high CO₂ is a health issue. Open windows or increase
 						airflow.{" "}
 						<Link
@@ -422,23 +422,23 @@ export function Weather() {
 									</span>
 								</div>
 								{mod.humidity != null && (
-									<p className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
+									<p className="flex items-center gap-1 text-slate-400">
 										<Droplets className="h-3.5 w-3.5" />
 										{mod.humidity}% humidity
 									</p>
 								)}
 								{mod.co2 != null && (
-									<p className="text-slate-600 dark:text-slate-400">
+									<p className="text-slate-400">
 										CO₂ {Math.round(mod.co2)} ppm
 									</p>
 								)}
 								{mod.pressure != null && (
-									<p className="text-slate-600 dark:text-slate-400">
+									<p className="text-slate-400">
 										{mod.pressure.toFixed(1)} hPa
 									</p>
 								)}
 								{mod.noise != null && (
-									<p className="text-slate-600 dark:text-slate-400">
+									<p className="text-slate-400">
 										{mod.noise} dB
 									</p>
 								)}
@@ -470,8 +470,8 @@ export function Weather() {
 							<ResponsiveContainer width="100%" height="100%">
 								<LineChart margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
 									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-slate-200 dark:stroke-slate-700"
+										strokeDasharray="3"
+										className="stroke-slate-200 stroke-slate-700"
 									/>
 									<XAxis
 										dataKey="date"
@@ -524,8 +524,8 @@ export function Weather() {
 							<ResponsiveContainer width="100%" height="100%">
 								<LineChart margin={{ top: 8, right: 8, left: 0, bottom: 24 }}>
 									<CartesianGrid
-										strokeDasharray="3 3"
-										className="stroke-slate-200 dark:stroke-slate-700"
+										strokeDasharray="3"
+										className="stroke-slate-200 stroke-slate-700"
 									/>
 									<XAxis
 										dataKey="date"
@@ -581,7 +581,7 @@ export function Weather() {
 							<div className="overflow-x-auto">
 								<table className="w-full text-sm">
 									<thead>
-										<tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-500 dark:border-slate-700">
+										<tr className="border-b border-slate-700 text-left text-xs uppercase text-slate-500">
 											<th className="py-1 pr-3">Day</th>
 											<th className="py-1 pr-3">
 												<Thermometer className="inline h-3 w-3" /> Max
@@ -601,7 +601,7 @@ export function Weather() {
 										{forecast.forecast.map((d, i) => (
 											<tr
 												key={d.date}
-												className={`border-b border-slate-100 dark:border-slate-800 ${i === 0 ? "font-medium" : ""}`}
+												className={`border-b border-slate-100 border-slate-800 ${i === 0 ? "font-medium" : ""}`}
 											>
 												<td className="py-1 pr-3">
 													{i === 0
@@ -615,10 +615,10 @@ export function Weather() {
 																},
 															)}
 												</td>
-												<td className="py-1 pr-3 text-emerald-600 dark:text-emerald-400">
+												<td className="py-1 pr-3 text-emerald-400">
 													{d.temp_max?.toFixed(1) ?? "—"}°
 												</td>
-												<td className="py-1 pr-3 text-sky-600 dark:text-sky-400">
+												<td className="py-1 pr-3 text-sky-400">
 													{d.temp_min?.toFixed(1) ?? "—"}°
 												</td>
 												<td className="py-1 pr-3">
@@ -651,8 +651,8 @@ export function Weather() {
 											margin={{ top: 8, right: 8, left: 0, bottom: 24 }}
 										>
 											<CartesianGrid
-												strokeDasharray="3 3"
-												className="stroke-slate-200 dark:stroke-slate-700"
+												strokeDasharray="3"
+												className="stroke-slate-200 stroke-slate-700"
 											/>
 											<XAxis
 												dataKey="time"

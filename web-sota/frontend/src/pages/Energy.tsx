@@ -180,16 +180,16 @@ export function Energy() {
 				</Button>
 			</div>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
-			<p className="text-sm text-slate-500 dark:text-slate-400">
+			<p className="text-sm text-slate-400">
 				Tapo P115 smart plugs · power and usage. Use <strong>On</strong>/
 				<strong>Off</strong> to switch load; <strong>Rediscover</strong> re-runs
 				LAN discovery if plugs show 0 W. History uses{" "}
-				<code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
+				<code className="rounded bg-slate-800 px-1">
 					data/timeseries.db
 				</code>
 				.
@@ -199,7 +199,7 @@ export function Energy() {
 				<Card>
 					<CardHeader className="pb-2">
 						<CardTitle className="text-base">Power over time (24h)</CardTitle>
-						<p className="text-xs font-normal text-slate-500 dark:text-slate-400">
+						<p className="text-xs font-normal text-slate-400">
 							Charts use samples stored on the server. New points appear after
 							discovery or the health poll.
 						</p>
@@ -216,7 +216,7 @@ export function Energy() {
 								const name = d.name ?? d.device_id;
 								return (
 									<div key={d.device_id} className="space-y-1">
-										<p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+										<p className="text-sm font-medium text-slate-300">
 											{name}
 										</p>
 										{chartData.length === 0 ? (
@@ -232,8 +232,8 @@ export function Energy() {
 														margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
 													>
 														<CartesianGrid
-															strokeDasharray="3 3"
-															className="stroke-slate-200 dark:stroke-slate-700"
+															strokeDasharray="3"
+															className="stroke-slate-200 stroke-slate-700"
 														/>
 														<XAxis
 															dataKey="time"
@@ -280,7 +280,7 @@ export function Energy() {
 				{devices.length === 0 ? (
 					<p className="text-slate-500">
 						No Tapo P115 devices found. Configure{" "}
-						<code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
+						<code className="rounded bg-slate-800 px-1">
 							energy.tapo_p115
 						</code>{" "}
 						in config.yaml and tap <strong>Rediscover plugs</strong>.
@@ -299,14 +299,14 @@ export function Energy() {
 								</CardHeader>
 								<CardContent className="space-y-3 text-sm">
 									<div className="flex flex-wrap items-center gap-2">
-										<span className="text-slate-600 dark:text-slate-400">
+										<span className="text-slate-400">
 											Power:{" "}
 											<span className="font-medium">
 												{d.power_state ? "On" : "Off"}
 											</span>
 										</span>
 										{ro && (
-											<span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+											<span className="rounded bg-slate-800 px-2 py-0.5 text-xs text-slate-400">
 												Read-only
 											</span>
 										)}
@@ -341,7 +341,7 @@ export function Energy() {
 									{d.host && (
 										<p className="text-xs text-slate-500">
 											Host:{" "}
-											<code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
+											<code className="rounded bg-slate-800 px-1">
 												{d.host}
 											</code>
 										</p>

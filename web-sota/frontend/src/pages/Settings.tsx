@@ -293,7 +293,7 @@ export function Settings() {
 		<div className="space-y-6">
 			<h1 className="text-2xl font-bold tracking-tight">Settings</h1>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
@@ -334,7 +334,7 @@ export function Settings() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-3 text-sm">
-					<p className="text-slate-600 dark:text-slate-400">
+					<p className="text-slate-400">
 						New installs write logs here by default. You only need to change
 						this if you want a different folder.
 					</p>
@@ -345,14 +345,14 @@ export function Settings() {
 						</p>
 					)}
 					<label className="block">
-						<span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">
+						<span className="mb-1 block font-medium text-slate-300">
 							Log file path
 						</span>
 						<input
 							type="text"
 							value={logPathEdit}
 							onChange={(e) => setLogPathEdit(e.target.value)}
-							className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900"
+							className="w-full rounded-md border border-slate-600 bg-slate-900 px-3 py-2 font-mono text-xs"
 							spellCheck={false}
 						/>
 					</label>
@@ -386,7 +386,7 @@ export function Settings() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="space-y-4 text-sm">
-					<p className="text-slate-600 dark:text-slate-400">
+					<p className="text-slate-400">
 						Ollama and LM Studio are always available in Chat. Start the app on
 						your PC, then save URLs below and pick a default provider.
 					</p>
@@ -396,7 +396,7 @@ export function Settings() {
 							type="url"
 							value={ollamaUrl}
 							onChange={(e) => setOllamaUrl(e.target.value)}
-							className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900"
+							className="w-full rounded-md border border-slate-600 bg-slate-900 px-3 py-2 font-mono text-xs"
 						/>
 					</label>
 					<label className="block">
@@ -405,7 +405,7 @@ export function Settings() {
 							type="url"
 							value={lmStudioUrl}
 							onChange={(e) => setLmStudioUrl(e.target.value)}
-							className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-xs dark:border-slate-600 dark:bg-slate-900"
+							className="w-full rounded-md border border-slate-600 bg-slate-900 px-3 py-2 font-mono text-xs"
 						/>
 					</label>
 					<label className="block">
@@ -415,7 +415,7 @@ export function Settings() {
 						<select
 							value={preferredProvider}
 							onChange={(e) => setPreferredProvider(e.target.value)}
-							className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+							className="rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
 						>
 							{LOCAL_LLM_CATALOG.map((c) => (
 								<option key={c.type} value={c.type}>
@@ -431,7 +431,7 @@ export function Settings() {
 						<select
 							value={preferredModel}
 							onChange={(e) => setPreferredModel(e.target.value)}
-							className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+							className="w-full rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
 							disabled={modelsLoading}
 						>
 							{!preferredModel && (
@@ -451,7 +451,7 @@ export function Settings() {
 						)}
 					</label>
 					{llmSettings?.providers && llmSettings.providers.length > 0 && (
-						<ul className="space-y-1 rounded-md border border-slate-200 p-3 text-xs dark:border-slate-700">
+						<ul className="space-y-1 rounded-md border border-slate-700 p-3 text-xs">
 							{llmSettings.providers.map((p) => (
 								<li key={p.type} className="flex justify-between gap-2">
 									<span className="font-medium">{p.label ?? p.type}</span>
@@ -535,13 +535,13 @@ export function Settings() {
 				<CardContent>
 					{editing ? (
 						<textarea
-							className="h-[60vh] w-full resize-none rounded-md border border-slate-300 bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+							className="h-[60vh] w-full resize-none rounded-md border border-slate-600 bg-slate-900 p-4 font-mono text-xs leading-relaxed text-slate-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
 							value={editYaml}
 							onChange={(e) => setEditYaml(e.target.value)}
 							spellCheck={false}
 						/>
 					) : (
-						<pre className="max-h-[60vh] overflow-auto rounded-md border border-slate-200 bg-slate-50 p-4 font-mono text-xs leading-relaxed text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+						<pre className="max-h-[60vh] overflow-auto rounded-md border border-slate-700 bg-slate-900 p-4 font-mono text-xs leading-relaxed text-slate-300">
 							{config?.yaml || "No config loaded."}
 						</pre>
 					)}
@@ -552,7 +552,7 @@ export function Settings() {
 				<CardHeader className="pb-2">
 					<CardTitle className="text-base">Runtime capabilities</CardTitle>
 				</CardHeader>
-				<CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+				<CardContent className="space-y-2 text-sm text-slate-400">
 					<p>
 						Tool surface mode:{" "}
 						<span className="font-medium">

@@ -180,20 +180,20 @@ export function Onboarding() {
 		<div className="space-y-6">
 			<h1 className="text-2xl font-bold tracking-tight">Device Onboarding</h1>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
 			{progress?.onboarding_complete && (
-				<Card className="border-green-200 dark:border-green-900">
+				<Card className="border-green-900">
 					<CardContent className="flex items-center gap-3 pt-6">
-						<CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+						<CheckCircle className="h-8 w-8 text-green-400" />
 						<div>
-							<p className="font-medium text-green-800 dark:text-green-200">
+							<p className="font-medium text-green-200">
 								Onboarding complete
 							</p>
-							<p className="text-sm text-slate-600 dark:text-slate-400">
+							<p className="text-sm text-slate-400">
 								{progress.devices_configured} devices configured. Use the
 								dashboard to manage them.
 							</p>
@@ -231,13 +231,13 @@ export function Onboarding() {
 					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="mb-4 h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700">
+					<div className="mb-4 h-2 w-full rounded-full bg-slate-700">
 						<div
 							className="h-full rounded-full bg-indigo-500 transition-all"
 							style={{ width: `${progress?.completion_percentage ?? 0}%` }}
 						/>
 					</div>
-					<p className="text-sm text-slate-600 dark:text-slate-400">
+					<p className="text-sm text-slate-400">
 						{progress?.devices_configured ?? 0} /{" "}
 						{progress?.total_devices_discovered ?? 0} devices configured
 						{progress?.next_recommended_steps?.length
@@ -259,10 +259,10 @@ export function Onboarding() {
 							return (
 								<div
 									key={d.device_id}
-									className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 dark:border-slate-700"
+									className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-700 p-3"
 								>
 									<div className="flex items-center gap-3">
-										<span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+										<span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-400">
 											{typeIcons[d.device_type] ?? defaultIcon}
 										</span>
 										<div>
@@ -295,7 +295,7 @@ export function Onboarding() {
 																	: null,
 															)
 														}
-														className="rounded border border-slate-300 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800"
+														className="rounded border border-slate-600 px-2 py-1 text-sm bg-slate-800"
 													/>
 													<input
 														type="text"
@@ -306,7 +306,7 @@ export function Onboarding() {
 																f ? { ...f, location: e.target.value } : null,
 															)
 														}
-														className="w-28 rounded border border-slate-300 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-800"
+														className="w-28 rounded border border-slate-600 px-2 py-1 text-sm bg-slate-800"
 													/>
 													<Button
 														type="submit"

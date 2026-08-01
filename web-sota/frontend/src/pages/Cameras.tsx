@@ -57,8 +57,8 @@ function TapoPtzPanel({ cameraName }: { cameraName: string }) {
 	};
 
 	return (
-		<div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-600 dark:bg-slate-900/40">
-			<p className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+		<div className="rounded-lg border border-slate-600 bg-slate-900/40 p-3">
+			<p className="mb-2 text-xs font-medium text-slate-400">
 				PTZ
 			</p>
 			<div className="flex max-w-[220px] flex-col items-center gap-1">
@@ -138,7 +138,7 @@ function TapoPtzPanel({ cameraName }: { cameraName: string }) {
 				</div>
 			</div>
 			{note && (
-				<p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+				<p className="mt-2 text-xs text-slate-400">
 					{note}
 				</p>
 			)}
@@ -187,7 +187,7 @@ export function Cameras() {
 		<div className="space-y-6">
 			<h1 className="text-2xl font-bold tracking-tight">Cameras</h1>
 			{error && (
-				<div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					{error}
 				</div>
 			)}
@@ -216,7 +216,7 @@ export function Cameras() {
 											{cam.type ?? "camera"} · {statusLabel(cam)}
 										</p>
 										{mjpegUrl && (
-											<div className="overflow-hidden rounded-lg border border-slate-200 bg-black dark:border-slate-700">
+											<div className="overflow-hidden rounded-lg border border-slate-700 bg-black">
 												<img
 													src={mjpegUrl}
 													alt={`Live preview: ${name}`}
@@ -226,7 +226,7 @@ export function Cameras() {
 											</div>
 										)}
 										{isRingCamera(cam.type) && cameraId && (
-											<div className="overflow-hidden rounded-lg border border-slate-200 bg-black dark:border-slate-700">
+											<div className="overflow-hidden rounded-lg border border-slate-700 bg-black">
 												<img
 													src={ringSnapshotUrl(cameraId)}
 													alt={`Snapshot: ${name}`}

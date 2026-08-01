@@ -161,7 +161,7 @@ export function Dashboard() {
 		<div className="space-y-6">
 			<h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
@@ -171,8 +171,8 @@ export function Dashboard() {
 					className={`rounded-lg border p-4 text-sm ${
 						alerts.highest_severity === "extreme" ||
 						alerts.highest_severity === "severe"
-							? "border-red-300 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200"
-							: "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+							? "border-red-800 bg-red-950/30 text-red-200"
+							: "border-amber-800 bg-amber-950/30 text-amber-200"
 					}`}
 				>
 					<div className="flex items-center gap-2 font-medium">
@@ -196,7 +196,7 @@ export function Dashboard() {
 			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+						<CardTitle className="text-sm font-medium text-slate-400">
 							Cameras
 						</CardTitle>
 						<Video className="h-4 w-4 text-slate-400" />
@@ -205,7 +205,7 @@ export function Dashboard() {
 						<p className="text-2xl font-bold">
 							{cameras ? `${cameras.online}/${cameras.total}` : "—"}
 						</p>
-						<p className="text-xs text-slate-500 dark:text-slate-400">online</p>
+						<p className="text-xs text-slate-400">online</p>
 						<Link to="/cameras">
 							<Button variant="ghost" size="sm" className="mt-2 px-0">
 								View cameras
@@ -216,7 +216,7 @@ export function Dashboard() {
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+						<CardTitle className="text-sm font-medium text-slate-400">
 							Energy (Tapo P115)
 						</CardTitle>
 						<Zap className="h-4 w-4 text-slate-400" />
@@ -225,7 +225,7 @@ export function Dashboard() {
 						<p className="text-2xl font-bold">
 							{sensors?.count != null ? sensors.count : "—"}
 						</p>
-						<p className="text-xs text-slate-500 dark:text-slate-400">plugs</p>
+						<p className="text-xs text-slate-400">plugs</p>
 						<Link to="/energy">
 							<Button variant="ghost" size="sm" className="mt-2 px-0">
 								View energy
@@ -236,7 +236,7 @@ export function Dashboard() {
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+						<CardTitle className="text-sm font-medium text-slate-400">
 							Ring
 						</CardTitle>
 						<Bell className="h-4 w-4 text-slate-400" />
@@ -251,7 +251,7 @@ export function Dashboard() {
 										? "Off"
 										: "Not connected"}
 						</p>
-						<p className="text-xs text-slate-500 dark:text-slate-400">
+						<p className="text-xs text-slate-400">
 							{ring?.message ?? "—"}
 						</p>
 						<Link to="/ring">
@@ -264,7 +264,7 @@ export function Dashboard() {
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+						<CardTitle className="text-sm font-medium text-slate-400">
 							Nest Protect
 						</CardTitle>
 						<Flame className="h-4 w-4 text-slate-400" />
@@ -273,7 +273,7 @@ export function Dashboard() {
 						<p className="text-2xl font-bold">
 							{nest?.initialized ? (nest.all_ok ? "OK" : "Alert") : "Off"}
 						</p>
-						<p className="text-xs text-slate-500 dark:text-slate-400">
+						<p className="text-xs text-slate-400">
 							{nest?.initialized
 								? `${nest.total_devices ?? 0} device(s)`
 								: (nest?.error ?? "Via Home Assistant")}
@@ -288,7 +288,7 @@ export function Dashboard() {
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between pb-2">
-						<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+						<CardTitle className="text-sm font-medium text-slate-400">
 							MCP Capabilities
 						</CardTitle>
 						<Puzzle className="h-4 w-4 text-slate-400" />
@@ -297,7 +297,7 @@ export function Dashboard() {
 						<p className="text-2xl font-bold">
 							{capabilities?.tool_surface?.total ?? "—"}
 						</p>
-						<p className="text-xs text-slate-500 dark:text-slate-400">
+						<p className="text-xs text-slate-400">
 							tools · sampling {capabilities?.features?.sampling ? "on" : "off"}
 						</p>
 						<Link to="/mcp-capabilities">

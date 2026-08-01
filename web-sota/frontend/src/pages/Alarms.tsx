@@ -158,20 +158,20 @@ export function Alarms() {
 		<div className="space-y-6">
 			<h1 className="text-2xl font-bold tracking-tight">Alarms</h1>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
 
 			{indoorAlerts.length > 0 && (
-				<Card className="border-orange-300 dark:border-orange-800">
+				<Card className="border-orange-800">
 					<CardHeader className="pb-2">
 						<CardTitle className="flex items-center gap-2 text-base font-medium">
-							<AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+							<AlertTriangle className="h-5 w-5 text-orange-400" />
 							Indoor air (Netatmo CO₂)
 						</CardTitle>
-						<p className="text-xs font-normal text-slate-500 dark:text-slate-400">
+						<p className="text-xs font-normal text-slate-400">
 							High CO₂ means poor ventilation — not only headaches, but real
 							risk if it stays high for hours or days, especially with several
 							people in a small flat.
@@ -181,17 +181,17 @@ export function Alarms() {
 						{indoorAlerts.map((a) => (
 							<div
 								key={a.id}
-								className="rounded-lg border border-slate-200 p-3 dark:border-slate-700"
+								className="rounded-lg border border-slate-700 p-3"
 								style={
 									a.severity_color
 										? { borderLeftWidth: 4, borderLeftColor: a.severity_color }
 										: undefined
 								}
 							>
-								<p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+								<p className="text-sm font-semibold text-slate-100">
 									{a.title}
 								</p>
-								<p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+								<p className="mt-1 text-sm text-slate-400">
 									{a.description}
 								</p>
 								{a.region && (
@@ -201,7 +201,7 @@ export function Alarms() {
 						))}
 						<p className="text-xs text-slate-500">
 							Same entries appear in{" "}
-							<code className="rounded bg-slate-100 px-1 dark:bg-slate-800">
+							<code className="rounded bg-slate-800 px-1">
 								/alerts/summary
 							</code>{" "}
 							with weather alerts. Ventilate and recheck the Weather page for
@@ -212,10 +212,10 @@ export function Alarms() {
 			)}
 
 			{weatherAlerts.length > 0 && (
-				<Card className="border-sky-300 dark:border-sky-800">
+				<Card className="border-sky-800">
 					<CardHeader className="pb-2">
 						<CardTitle className="flex items-center gap-2 text-base font-medium">
-							<CloudRain className="h-5 w-5 text-sky-600 dark:text-sky-400" />
+							<CloudRain className="h-5 w-5 text-sky-400" />
 							Vienna weather warnings (Meteoalarm)
 						</CardTitle>
 					</CardHeader>
@@ -223,17 +223,17 @@ export function Alarms() {
 						{weatherAlerts.map((a) => (
 							<div
 								key={a.id}
-								className="rounded-lg border border-slate-200 p-3 dark:border-slate-700"
+								className="rounded-lg border border-slate-700 p-3"
 								style={
 									a.severity_color
 										? { borderLeftWidth: 4, borderLeftColor: a.severity_color }
 										: undefined
 								}
 							>
-								<p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+								<p className="text-sm font-semibold text-slate-100">
 									{a.title}
 								</p>
-								<p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+								<p className="mt-1 text-sm text-slate-400">
 									{a.description}
 								</p>
 								{a.region && (
@@ -250,7 +250,7 @@ export function Alarms() {
 					<Flame className="h-5 w-5" />
 					<CardTitle className="text-base">Nest Protect</CardTitle>
 				</CardHeader>
-				<CardContent className="text-sm text-slate-600 dark:text-slate-400">
+				<CardContent className="text-sm text-slate-400">
 					{nestStatus?.initialized ? (
 						<p>
 							{nestStatus.total_devices ?? 0} device(s) · smoke{" "}
@@ -270,7 +270,7 @@ export function Alarms() {
 			{!ringStatus?.enabled && (
 				<Card>
 					<CardContent className="pt-6">
-						<p className="text-sm text-slate-600 dark:text-slate-400">
+						<p className="text-sm text-slate-400">
 							Ring integration is disabled. Enable it in config to use alarm
 							controls.
 						</p>
@@ -280,7 +280,7 @@ export function Alarms() {
 			{ringStatus?.enabled && !ringStatus?.connected && (
 				<Card>
 					<CardContent className="pt-6">
-						<p className="text-sm text-slate-600 dark:text-slate-400">
+						<p className="text-sm text-slate-400">
 							{ringStatus.message}
 						</p>
 						<p className="mt-2 text-xs text-slate-500">
@@ -297,7 +297,7 @@ export function Alarms() {
 						</CardTitle>
 						{alarmData && (
 							<span className="flex items-center gap-1 text-sm text-slate-500">
-								<CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+								<CheckCircle className="h-4 w-4 text-green-400" />
 								Connected
 							</span>
 						)}
@@ -311,7 +311,7 @@ export function Alarms() {
 						{alarmData && (
 							<>
 								<div>
-									<p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+									<p className="text-sm font-medium text-slate-400">
 										Mode
 									</p>
 									<div className="mt-2 flex flex-wrap gap-2">
@@ -334,10 +334,10 @@ export function Alarms() {
 								</div>
 								{alarmData.sensors && alarmData.sensors.length > 0 && (
 									<div>
-										<p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+										<p className="text-sm font-medium text-slate-400">
 											Sensors
 										</p>
-										<ul className="mt-1 list-inside list-disc text-sm text-slate-600 dark:text-slate-400">
+										<ul className="mt-1 list-inside list-disc text-sm text-slate-400">
 											{alarmData.sensors.slice(0, 10).map((s, i) => (
 												<li key={s.name ?? s.sensor_type ?? i}>
 													{s.name ?? s.sensor_type ?? "Sensor"}{" "}
@@ -360,8 +360,8 @@ export function Alarms() {
 			<Card>
 				<CardContent className="flex items-start gap-3 pt-6">
 					<Bell className="h-5 w-5 shrink-0 text-slate-500" />
-					<div className="text-sm text-slate-600 dark:text-slate-400">
-						<p className="font-medium text-slate-800 dark:text-slate-200">
+					<div className="text-sm text-slate-400">
+						<p className="font-medium text-slate-200">
 							Alarms overview
 						</p>
 						<p>

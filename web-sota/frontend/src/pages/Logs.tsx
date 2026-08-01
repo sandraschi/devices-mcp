@@ -79,9 +79,9 @@ export function Logs() {
 	const levelColor = (level: string) => {
 		const l = level.toUpperCase();
 		if (l === "ERROR" || l === "CRITICAL")
-			return "text-red-600 dark:text-red-400";
-		if (l === "WARNING") return "text-amber-600 dark:text-amber-400";
-		if (l === "INFO") return "text-slate-600 dark:text-slate-400";
+			return "text-red-400";
+		if (l === "WARNING") return "text-amber-400";
+		if (l === "INFO") return "text-slate-400";
 		if (l === "DEBUG") return "text-slate-500";
 		return "text-slate-500";
 	};
@@ -96,7 +96,7 @@ export function Logs() {
 					</label>
 					<select
 						id="logs-lines"
-						className="rounded border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+						className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-sm"
 						value={lines}
 						onChange={(e) => setLines(Number(e.target.value))}
 					>
@@ -111,7 +111,7 @@ export function Logs() {
 					</label>
 					<select
 						id="logs-level"
-						className="rounded border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+						className="rounded border border-slate-700 bg-slate-800 px-2 py-1 text-sm"
 						value={levelFilter}
 						onChange={(e) => setLevelFilter(e.target.value)}
 					>
@@ -126,7 +126,7 @@ export function Logs() {
 						placeholder="Search…"
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
-						className="min-w-[8rem] rounded border border-slate-200 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800"
+						className="min-w-[8rem] rounded border border-slate-700 bg-slate-800 px-2 py-1 text-sm"
 					/>
 					<Button variant="outline" size="sm" onClick={load} disabled={loading}>
 						<RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -134,7 +134,7 @@ export function Logs() {
 					</Button>
 				</div>
 			</div>
-			<p className="text-sm text-slate-500 dark:text-slate-400">
+			<p className="text-sm text-slate-400">
 				Tails the default log under your user profile (
 				<code className="text-xs">
 					.local\share\devices-mcp\devices-mcp.log
@@ -142,13 +142,13 @@ export function Logs() {
 				). Change the path in Settings → Logging if needed.
 			</p>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
 			{data?.error && (
-				<div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
+				<div className="flex items-center gap-2 rounded-lg border border-red-900 bg-red-950/30 p-4 text-red-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{data.error}
 				</div>
@@ -156,13 +156,13 @@ export function Logs() {
 			{stats != null && (
 				<Card>
 					<CardHeader className="pb-2">
-						<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+						<CardTitle className="text-sm font-medium text-slate-400">
 							Log file
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="space-y-1 text-sm">
 						{stats.log_path && (
-							<p className="break-all font-mono text-xs text-slate-600 dark:text-slate-300">
+							<p className="break-all font-mono text-xs text-slate-300">
 								{stats.log_path}
 							</p>
 						)}
@@ -170,7 +170,7 @@ export function Logs() {
 							Files (incl. rotations): {stats.total_files} · Total size:{" "}
 							{stats.total_size_mb.toFixed(2)} MB
 							{stats.path_exists === false && (
-								<span className="text-amber-600 dark:text-amber-400">
+								<span className="text-amber-400">
 									{" "}
 									· path missing
 								</span>
@@ -187,7 +187,7 @@ export function Logs() {
 				</CardHeader>
 				<CardContent>
 					{data?.log_path && (
-						<p className="mb-2 break-all font-mono text-xs text-slate-500 dark:text-slate-400">
+						<p className="mb-2 break-all font-mono text-xs text-slate-400">
 							Source: {data.log_path}
 							{data.path_exists === false && " (not found)"}
 						</p>
@@ -195,7 +195,7 @@ export function Logs() {
 					{loading ? (
 						<Loader2 className="h-6 w-6 animate-spin text-slate-400" />
 					) : data?.message ? (
-						<div className="space-y-2 text-slate-600 dark:text-slate-400">
+						<div className="space-y-2 text-slate-400">
 							<p>{data.message}</p>
 							{data.hint && <p className="text-sm">{data.hint}</p>}
 						</div>
@@ -209,7 +209,7 @@ export function Logs() {
 								(data?.logs ?? []).map((entry) => (
 									<div
 										key={entry.timestamp + entry.logger + entry.level}
-										className="border-b border-slate-100 py-1 dark:border-slate-800"
+										className="border-b border-slate-800 py-1"
 									>
 										{entry.timestamp && (
 											<span className="text-slate-400">{entry.timestamp} </span>

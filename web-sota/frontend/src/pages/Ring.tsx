@@ -47,7 +47,7 @@ function DoorbellSnapshot({ deviceId }: { deviceId: string }) {
 		<div className="space-y-2">
 			{showLive ? (
 				<div className="space-y-2">
-					<div className="relative overflow-hidden rounded-lg border border-slate-200 bg-black dark:border-slate-700">
+					<div className="relative overflow-hidden rounded-lg border border-slate-700 bg-black">
 						<video
 							ref={videoRef}
 							autoPlay
@@ -61,7 +61,7 @@ function DoorbellSnapshot({ deviceId }: { deviceId: string }) {
 						)}
 					</div>
 					{webrtcError && (
-						<p className="text-xs text-red-600 dark:text-red-400">
+						<p className="text-xs text-red-400">
 							{webrtcError}
 						</p>
 					)}
@@ -82,7 +82,7 @@ function DoorbellSnapshot({ deviceId }: { deviceId: string }) {
 						<Button
 							size="sm"
 							variant="outline"
-							className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30"
+							className="border-red-800 text-red-400 hover:bg-red-950/30"
 							onClick={handleStopLive}
 						>
 							<PhoneOff className="mr-1 h-3 w-3" />
@@ -92,9 +92,9 @@ function DoorbellSnapshot({ deviceId }: { deviceId: string }) {
 				</div>
 			) : (
 				<>
-					<div className="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+					<div className="overflow-hidden rounded-lg border border-slate-700 bg-slate-800">
 						{failed ? (
-							<div className="flex aspect-video items-center justify-center text-sm text-slate-400 dark:text-slate-500">
+							<div className="flex aspect-video items-center justify-center text-sm text-slate-500">
 								Snapshot unavailable
 							</div>
 						) : (
@@ -397,7 +397,7 @@ export function Ring() {
 			</div>
 
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
@@ -405,7 +405,7 @@ export function Ring() {
 
 			<Card
 				className={
-					status?.connected ? "border-green-200 dark:border-green-900" : ""
+					status?.connected ? "border-green-900" : ""
 				}
 			>
 				<CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -413,7 +413,7 @@ export function Ring() {
 						Connection status
 					</CardTitle>
 					{status?.connected ? (
-						<CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+						<CheckCircle className="h-5 w-5 text-green-400" />
 					) : (
 						<Bell className="h-5 w-5 text-slate-400" />
 					)}
@@ -421,13 +421,13 @@ export function Ring() {
 				<CardContent className="space-y-3">
 					<p className="text-sm">{status?.message ?? "—"}</p>
 					{status?.last_error && !status.connected && (
-						<p className="text-xs text-amber-700 dark:text-amber-300">
+						<p className="text-xs text-amber-300">
 							{status.last_error}
 						</p>
 					)}
 					{status?.two_fa_pending && (
 						<div className="space-y-2">
-							<p className="text-sm text-amber-600 dark:text-amber-400">
+							<p className="text-sm text-amber-400">
 								Enter the verification code Ring sent to your email or phone.
 							</p>
 							<div className="flex flex-wrap items-center gap-2">
@@ -438,7 +438,7 @@ export function Ring() {
 									placeholder="6-digit code"
 									value={twoFaCode}
 									onChange={(e) => setTwoFaCode(e.target.value)}
-									className="min-w-[10rem] rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+									className="min-w-[10rem] rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
 								/>
 								<Button
 									type="button"
@@ -502,7 +502,7 @@ export function Ring() {
 								<CardTitle className="text-base">Alarm</CardTitle>
 							</CardHeader>
 							<CardContent className="space-y-3">
-								<p className="text-sm text-slate-600 dark:text-slate-400">
+								<p className="text-sm text-slate-400">
 									{summary.alarm.base_station.name ?? "Base station"}
 									{summary.alarm.base_station.is_online === false
 										? " · offline"
@@ -555,13 +555,13 @@ export function Ring() {
 								<CardTitle className="text-base">Recent events</CardTitle>
 							</CardHeader>
 							<CardContent>
-								<ul className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
+								<ul className="space-y-1 text-sm text-slate-400">
 									{ringEvents.slice(0, 10).map((ev, i) => (
 										<li
 											key={`${ev.timestamp}-${i}`}
 											className={
 												ev.event_type === "ding"
-													? "font-medium text-amber-700 dark:text-amber-400"
+													? "font-medium text-amber-400"
 													: ""
 											}
 										>
@@ -614,7 +614,7 @@ export function Ring() {
 			)}
 
 			{!status?.connected && (
-				<p className="text-sm text-slate-500 dark:text-slate-400">
+				<p className="text-sm text-slate-400">
 					Enable Ring in config.yaml, then Initialize. Token is cached in
 					ring_token.cache after first successful login.
 				</p>

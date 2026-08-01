@@ -92,26 +92,26 @@ const STATUS_CFG: Record<
 > = {
   ok: {
     label: 'OK',
-    border: 'border-emerald-200 dark:border-emerald-900',
-    bg: 'bg-emerald-50 dark:bg-emerald-950/20',
+    border: 'border-emerald-900',
+    bg: 'bg-emerald-950/20',
     icon: CheckCircle2,
   },
   warning: {
     label: 'Warning',
-    border: 'border-amber-200 dark:border-amber-900',
-    bg: 'bg-amber-50 dark:bg-amber-950/20',
+    border: 'border-amber-900',
+    bg: 'bg-amber-950/20',
     icon: AlertTriangle,
   },
   danger: {
     label: 'Danger',
-    border: 'border-red-200 dark:border-red-900',
-    bg: 'bg-red-50 dark:bg-red-950/20',
+    border: 'border-red-900',
+    bg: 'bg-red-950/20',
     icon: XCircle,
   },
   unknown: {
     label: 'Unknown',
-    border: 'border-slate-200 dark:border-slate-800',
-    bg: 'bg-slate-50 dark:bg-slate-950',
+    border: 'border-slate-800',
+    bg: 'bg-slate-950',
     icon: Activity,
   },
 };
@@ -131,7 +131,7 @@ function SensorRow({
   const valueStr = value != null ? `${value}${unit}` : '—';
   return (
     <div className='flex items-center justify-between py-1'>
-      <span className='text-sm text-slate-600 dark:text-slate-400'>{label}</span>
+      <span className='text-sm text-slate-400'>{label}</span>
       <span
         className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.bg} ${cfg.border} border`}
       >
@@ -229,7 +229,7 @@ export function SensorHealth() {
             <Card className={`flex-1 ${STATUS_CFG.ok.border}`}>
               <CardContent className='flex items-center gap-3 p-4'>
                 <div className={`rounded-full p-2 ${STATUS_CFG.ok.bg}`}>
-                  <CheckCircle2 className='h-5 w-5 text-emerald-600 dark:text-emerald-400' />
+                  <CheckCircle2 className='h-5 w-5 text-emerald-400' />
                 </div>
                 <div>
                   <p className='text-2xl font-bold'>{zoneCounts.ok}</p>
@@ -242,7 +242,7 @@ export function SensorHealth() {
             <Card className={`flex-1 ${STATUS_CFG.warning.border}`}>
               <CardContent className='flex items-center gap-3 p-4'>
                 <div className={`rounded-full p-2 ${STATUS_CFG.warning.bg}`}>
-                  <AlertTriangle className='h-5 w-5 text-amber-600 dark:text-amber-400' />
+                  <AlertTriangle className='h-5 w-5 text-amber-400' />
                 </div>
                 <div>
                   <p className='text-2xl font-bold'>{zoneCounts.warning}</p>
@@ -255,7 +255,7 @@ export function SensorHealth() {
             <Card className={`flex-1 ${STATUS_CFG.danger.border}`}>
               <CardContent className='flex items-center gap-3 p-4'>
                 <div className={`rounded-full p-2 ${STATUS_CFG.danger.bg}`}>
-                  <XCircle className='h-5 w-5 text-red-600 dark:text-red-400' />
+                  <XCircle className='h-5 w-5 text-red-400' />
                 </div>
                 <div>
                   <p className='text-2xl font-bold'>{zoneCounts.danger}</p>
@@ -268,7 +268,7 @@ export function SensorHealth() {
       )}
 
       {error && (
-        <div className='flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200'>
+        <div className='flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200'>
           <AlertTriangle className='h-5 w-5 shrink-0' />
           {error}
         </div>

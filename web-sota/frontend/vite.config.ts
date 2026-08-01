@@ -6,11 +6,13 @@ export default defineConfig({
   plugins: [react()],
   base: '/app/',
   server: {
+    host: '127.0.0.1',
     allowedHosts: ['goliath'],
     port: 10716,
     strictPort: true,
     proxy: {
       '/api': { target: 'http://127.0.0.1:10717', changeOrigin: true },
+      '/alerts': { target: 'http://127.0.0.1:10717', changeOrigin: true },
     },
   },
   resolve: {

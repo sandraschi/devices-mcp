@@ -168,21 +168,21 @@ export function Nest() {
 			</div>
 
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
 
 			<Card
-				className={connected ? "border-green-200 dark:border-green-900" : ""}
+				className={connected ? "border-green-900" : ""}
 			>
 				<CardHeader className="flex flex-row items-center justify-between pb-2">
 					<CardTitle className="text-base flex items-center gap-2">
 						<Flame className="h-5 w-5" />
 						Nest Protect
 						{status?.source === "ha" && (
-							<span className="ml-1 rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-normal text-sky-600 dark:bg-sky-900/30 dark:text-sky-400">
+							<span className="ml-1 rounded bg-sky-900/30 px-1.5 py-0.5 text-[10px] font-normal text-sky-400">
 								via Home Assistant
 							</span>
 						)}
@@ -209,11 +209,11 @@ export function Nest() {
 						</>
 					) : (
 						<div className="space-y-3 pt-1">
-							<div className="rounded-md border border-sky-200 bg-sky-50 p-3 dark:border-sky-900 dark:bg-sky-950/30">
-								<p className="mb-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+							<div className="rounded-md border border-sky-900 bg-sky-950/30 p-3">
+								<p className="mb-1 text-xs font-medium text-sky-300">
 									Via Home Assistant (recommended)
 								</p>
-								<p className="text-xs text-slate-600 dark:text-slate-400">
+								<p className="text-xs text-slate-400">
 									If Home Assistant has the Nest integration configured, Nest Protect
 									data appears automatically. Set the HA URL and token in Settings or{" "}
 									<code className="text-xs">.env</code>.
@@ -233,7 +233,7 @@ export function Nest() {
 											placeholder="Paste authorization code..."
 											value={code}
 											onChange={(e) => setCode(e.target.value)}
-											className="min-w-[20rem] rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+											className="min-w-[20rem] rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
 										/>
 										<Button
 											size="sm"
@@ -246,7 +246,7 @@ export function Nest() {
 								</div>
 							) : (
 								<div className="space-y-3">
-									<div className="rounded-md border border-slate-200 p-3 dark:border-slate-700">
+									<div className="rounded-md border border-slate-700 p-3">
 										<p className="mb-1 text-xs font-medium">
 											Paste Nest token directly
 										</p>
@@ -259,7 +259,7 @@ export function Nest() {
 												placeholder="Paste refresh token..."
 												value={manualToken}
 												onChange={(e) => setManualToken(e.target.value)}
-												className="min-w-[16rem] flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+												className="min-w-[16rem] flex-1 rounded-md border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
 											/>
 											<Button
 												size="sm"

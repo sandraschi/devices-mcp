@@ -184,14 +184,14 @@ export function Robots() {
 		<div className="space-y-6">
 			<h1 className="text-2xl font-bold tracking-tight">Robots</h1>
 			{error && (
-				<div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+				<div className="flex items-center gap-2 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-amber-200">
 					<AlertCircle className="h-5 w-5 shrink-0" />
 					{error}
 				</div>
 			)}
 			<Card>
 				<CardHeader className="pb-2">
-					<CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
+					<CardTitle className="text-sm font-medium text-slate-400">
 						Summary
 					</CardTitle>
 				</CardHeader>
@@ -218,10 +218,10 @@ export function Robots() {
 							<span className="ml-1">Reconnect</span>
 						</Button>
 					</CardHeader>
-					<CardContent className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
+					<CardContent className="space-y-1 text-sm text-slate-400">
 						<p>
 							Gateway:{" "}
-							<span className="font-mono text-slate-800 dark:text-slate-200">
+							<span className="font-mono text-slate-200">
 								{yahboomRobot.yahboom_mcp_url ?? "http://127.0.0.1:10892"}
 							</span>
 						</p>
@@ -230,7 +230,7 @@ export function Robots() {
 							<p>Robot IP: {yahboomRobot.connection.robot_ip}</p>
 						)}
 						{yahboomRobot.connection?.hint && (
-							<p className="text-amber-700 dark:text-amber-300">
+							<p className="text-amber-300">
 								{yahboomRobot.connection.hint}
 							</p>
 						)}
