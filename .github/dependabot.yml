@@ -3,11 +3,14 @@ updates:
   # Python dependencies - weekly batch updates
   - package-ecosystem: "pip"
     directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 1  # Single PR per week to reduce spam
+    # DISABLED 2026-08-01: GitHub "Dependabot Updates" dynamic workflow fails every
+    # scheduled run because Actions are account-disabled (GITHUB_ACTIONS_NO_PRIVATE_CI).
+    # Re-enable by uncommenting schedule if Actions get enabled.
+    # schedule:
+    #   interval: "weekly"
+    #   day: "monday"
+    #   time: "09:00"
+    open-pull-requests-limit: 0  # No auto PRs while CI is off
     labels:
       - "dependencies"
       - "python"
@@ -23,11 +26,11 @@ updates:
   # GitHub Actions - monthly updates
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "monthly"
-      day: "monday"
-      time: "09:00"
-    open-pull-requests-limit: 1  # Single PR per month
+    # schedule:
+    #   interval: "monthly"
+    #   day: "monday"
+    #   time: "09:00"
+    open-pull-requests-limit: 0  # No auto PRs while CI is off
     labels:
       - "dependencies"
       - "github-actions"

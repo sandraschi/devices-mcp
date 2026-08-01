@@ -217,6 +217,8 @@ deploy/*/config/*.db*
 # Backup files
 *.bak
 *.backup
+*.bak-*
+*.bak.*
 
 # Windows executables
 *.exe
@@ -240,7 +242,7 @@ deploy/*/config/*.db*
 
 # Temporary scripts and debug files
 debug_*.py
-test_*.py
+
 check_*.py
 *_debug.py
 *_test.py
@@ -257,3 +259,6 @@ docker-compose.override.yml
 .gitignore.backup
 
 _dashboard/
+
+# Audit reports (regenerable snapshots)
+reports/

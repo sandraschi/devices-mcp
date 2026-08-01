@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/python-3.12+-blue?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/FastMCP-3.4.4-purple" alt="FastMCP">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-  <img src="https://img.shields.io/badge/release-v1.23.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/release-v2.4.0-blue" alt="Version">
 </p>
 
 # devices-mcp
@@ -61,7 +61,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 
 **Windows desktop (leg 3):** [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases) → `Devices MCP_*_x64-setup.exe` (single NSIS installer — that's all you need).
 
-**MCP bundle (leg 1):** Releases → `devices-mcp-*.mcpb` → Claude Desktop. Latest: `dist/devices-mcp-1.23.0.mcpb` (2.5 MB).
+**MCP bundle (leg 1):** Releases → `devices-mcp-*.mcpb` → Claude Desktop. Latest: `dist/devices-mcp-2.4.0.mcpb` (2.5 MB).
 
 **Developers (leg 1+2):** see [INSTALL.md](INSTALL.md).
 
