@@ -26,3 +26,18 @@ The CUA smoke test may fail if the backend process from a previous run leaves po
 | Size gate (>= 5 MB) | PENDING (next build) |
 | NSIS build | PENDING (next build) |
 | CUA-NSIS smoke test | NOT IMPLEMENTED |
+
+## Build 2026-08-01 (v2.4.0 release)
+
+**Status:** PASS - clean build, shipped
+
+### Build
+- `just build-native`: frontend (vite, 7.6s) -> PyInstaller sidecars -> Rust (2m02s) -> NSIS
+- Artifacts: `Devices MCP_2.4.0_x64-setup.exe` (182.6 MB), `devices-mcp-2.4.0.mcpb` (3.2 MB, 1047 files)
+- Rust warnings only: dead code (`SIDECAR_CAMERA`, `repo_root`, `spawn_sidecar`) - harmless
+
+### Notable
+- tauri.conf.json version aligned 1.22.1 -> 2.4.0 (was stale)
+- Frontend dist built with new invert-hack theme (no dark: variants remain)
+- Ruleset `main-protection` scoped from ~ALL to main (was blocking branch deletion API)
+- Release: https://github.com/sandraschi/devices-mcp/releases/tag/v2.4.0
