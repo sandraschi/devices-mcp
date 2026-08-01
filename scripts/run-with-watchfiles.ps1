@@ -35,7 +35,7 @@ if ($Test) {
     Write-Host "ðŸ§ª Running in test mode..." -ForegroundColor Yellow
     python test_watchfiles_runner.py
 } else {
-    Write-Host "ðŸ”„ Starting crashproof runner..." -ForegroundColor Yellow
+    Write-Host "ðŸ"„ Starting crashproof runner..." -ForegroundColor Yellow
     Write-Host "Press Ctrl+C to stop gracefully" -ForegroundColor Cyan
     Write-Host ""
 
@@ -48,4 +48,4 @@ if ($Test) {
 }
 
 Write-Host ""
-Write-Host "ðŸ‘‹ Devices MCP WebApp watchfiles runner stopped" -ForegroundColor Green
+Write-Host "ðŸ'‹ Devices MCP WebApp watchfiles runner stopped" -ForegroundColor Green

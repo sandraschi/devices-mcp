@@ -35,8 +35,8 @@ if (-not (Test-Path $composeFile)) {
     exit 1
 }
 
-Write-Host "`nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Cyan
-Write-Host "â•‘          ðŸ³ Docker Build (Smart Caching) ðŸ³            â•‘" -ForegroundColor Cyan
+Write-Host "`nâ•"â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Cyan
+Write-Host "â•'          ðŸ³ Docker Build (Smart Caching) ðŸ³            â•'" -ForegroundColor Cyan
 Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•`n" -ForegroundColor Cyan
 
 if ($NoCache) {
@@ -47,17 +47,17 @@ if ($NoCache) {
     Write-Host "   - Need completely fresh build`n" -ForegroundColor Gray
     $buildArgs = @("--no-cache")
 } else {
-    Write-Host "âœ… Building WITH cache (faster incremental builds)" -ForegroundColor Green
+    Write-Host "âœ... Building WITH cache (faster incremental builds)" -ForegroundColor Green
     Write-Host "   Docker will reuse cached layers when possible" -ForegroundColor Gray
     Write-Host "   âš¡ Avoids re-downloading packages and system deps`n" -ForegroundColor Gray
     $buildArgs = @()
 }
 
 if ($Service) {
-    Write-Host "ðŸ“¦ Building service: $Service" -ForegroundColor Cyan
+    Write-Host "ðŸ"¦ Building service: $Service" -ForegroundColor Cyan
     $buildArgs += $Service
 } else {
-    Write-Host "ðŸ“¦ Building all services" -ForegroundColor Cyan
+    Write-Host "ðŸ"¦ Building all services" -ForegroundColor Cyan
 }
 
 Write-Host ""
@@ -82,13 +82,13 @@ try {
     $buildDuration = (Get-Date) - $buildStart
 
     Write-Host ""
-    Write-Host "â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Green
-    Write-Host "â•‘              âœ… Build Complete! âœ…                       â•‘" -ForegroundColor Green
+    Write-Host "â•"â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Green
+    Write-Host "â•'              âœ... Build Complete! âœ...                       â•'" -ForegroundColor Green
     Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•" -ForegroundColor Green
     Write-Host ""
     Write-Host "â±ï¸  Build time: $([math]::Round($buildDuration.TotalSeconds, 1))s" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "ðŸ’¡ Next steps:" -ForegroundColor White
+    Write-Host "ðŸ'¡ Next steps:" -ForegroundColor White
     Write-Host "   docker compose -f deploy/myhomecontrol/docker-compose.yml up -d" -ForegroundColor Gray
     Write-Host ""
 

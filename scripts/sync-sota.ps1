@@ -13,8 +13,8 @@
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "`nâ•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Cyan
-Write-Host "â•‘        ðŸ”„ SOTA Script Synchronization (Spoke) ðŸ”„        â•‘" -ForegroundColor Cyan
+Write-Host "`nâ•"â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•-" -ForegroundColor Cyan
+Write-Host "â•'        ðŸ"„ SOTA Script Synchronization (Spoke) ðŸ"„        â•'" -ForegroundColor Cyan
 Write-Host "â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•`n" -ForegroundColor Cyan
 
 # 1. Locate the Hub (mcp-central-docs)
@@ -28,7 +28,7 @@ if (-not (Test-Path $siblingHubPath)) {
     exit 1
 }
 
-Write-Host "ðŸ“ Found Hub: $siblingHubPath" -ForegroundColor Gray
+Write-Host "ðŸ" Found Hub: $siblingHubPath" -ForegroundColor Gray
 
 # 2. Define standard SOTA scripts mapping [Source in Hub -> Target in Spoke]
 $sotaMapping = @(

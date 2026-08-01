@@ -91,7 +91,7 @@ if ($Enable) {
 }
 
 $repos = Get-RepoList
-Write-Host "Owner: $Owner — repos: $($repos.Count)" -ForegroundColor Cyan
+Write-Host "Owner: $Owner - repos: $($repos.Count)" -ForegroundColor Cyan
 
 $rows = @()
 foreach ($name in $repos) {
