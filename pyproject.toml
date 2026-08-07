@@ -384,6 +384,7 @@ fallback-version = "1.18.0"
 
 [dependency-groups]
 dev = [
+    "pyinstaller>=6.21.0",
     "ruff>=0.16.0,<0.17",
 ]
 

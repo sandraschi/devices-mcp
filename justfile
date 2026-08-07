@@ -4,13 +4,13 @@ import 'scripts/just/fleet.just'
 MCP_CENTRAL_DIR := "..\\mcp-central-docs"
 WEBROOT := "web-sota"
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
+# --- Dashboard ---
 
 # Open the interactive recipe dashboard in the browser
 default:
     @just --list
 
-# ── Dev ───────────────────────────────────────────────────────────────────────
+# --- Dev ---
 
 # Start web-sota dev server (frontend + backend)
 dev:
@@ -27,7 +27,7 @@ build:
     Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"
     npm run build
 
-# ── Quality ───────────────────────────────────────────────────────────────────
+# --- Quality ---
 
 # Execute Ruff linting
 lint:
@@ -40,7 +40,7 @@ fix:
     uv run ruff check . --fix --unsafe-fixes
     uv run ruff format .
 
-# ── Hardening ─────────────────────────────────────────────────────────────────
+# --- Hardening ---
 
 # Execute Bandit security audit
 check-sec:
@@ -52,13 +52,13 @@ audit-deps:
     Set-Location "{{justfile_directory()}}"
     uv run safety check
 
-# ── Native Desktop ────────────────────────────────────────────────────────────
+# --- Native Desktop ---
 
 # Build Tauri NSIS desktop installer
 build-native:
     Set-Location '{{justfile_directory()}}\native'; $env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"; & .\build.ps1
 
-# ── Testing ───────────────────────────────────────────────────────────────────
+# --- Testing ---
 
 # Run e2e Playwright tests
 e2e:

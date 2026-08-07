@@ -52,6 +52,32 @@ class WebServer:
             logger.info("Application startup complete")
 
             # Yield immediately — integrations connect in background
+            # Mount the MCP HTTP surface at /mcp so fleet probes
+            # (initialize/list_tools via fleet_bridge) succeed against :10717.
+            # Background task: DevicesMCPServer init is heavy - never block startup.
+            async def _mount_mcp():
+                try:
+                    from devices_mcp.core.server import DevicesMCPServer
+
+                    mcp_server = await asyncio.wait_for(
+                        DevicesMCPServer.get_instance(skip_hardware_init=True), timeout=300
+                    )
+                    if getattr(mcp_server, "mcp", None) is not None:
+                        mcp_app = mcp_server.mcp.http_app()
+                        # FastMCP http_app needs its own lifespan (task group) -
+                        # mounting alone 500s with "Task group is not initialized".
+                        ctx = mcp_app.router.lifespan_context(mcp_app)
+                        await ctx.__aenter__()
+                        app.state.mcp_lifespan_ctx = ctx
+                        app.mount("/", mcp_app, name="mcp")
+                        logger.info("MCP HTTP mounted at /mcp (fleet probe endpoint)")
+                    else:
+                        logger.warning("MCP instance not available - /mcp mount skipped")
+                except BaseException as exc:
+                    logger.warning("MCP HTTP mount failed: %s", exc)
+
+            asyncio.create_task(_mount_mcp())
+
             yield
 
             # Background integration init (fire-and-forget, each with own timeout)
