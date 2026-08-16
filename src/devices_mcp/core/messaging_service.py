@@ -369,6 +369,22 @@ class MessagingService:
         logger.info(f"Acknowledged {count} messages")
         return count
 
+    def delete_message(self, message_id: str) -> bool:
+        """Permanently remove a message from the store (memory + SQLite)."""
+        removed = False
+        for msg in list(self.messages):
+            if msg.id == message_id:
+                self.messages.remove(msg)
+                removed = True
+                break
+        if removed and self._db is not None:
+            try:
+                self._db.execute("DELETE FROM messages WHERE id = ?", (message_id,))
+                self._db.commit()
+            except Exception:
+                logger.warning("Failed to delete message %s from store", message_id, exc_info=True)
+        return removed
+
     def get_metrics(self) -> dict[str, Any]:
         """Get messaging metrics for Prometheus."""
         now = datetime.now()

@@ -1,363 +1,193 @@
 """
-Messages Management Portmanteau Tool
-Consolidates messaging and communication operations into a single tool for
-system messages, user notifications, and communication management.
+Messages Portmanteau Tool - real operations on the device messaging store.
+
+Consolidates status, query, ack and clear for
+``devices_mcp.core.messaging_service`` - the same store the webapp and the
+fleet priority feed use. Replaces the previous mock implementation.
 """
 
-import asyncio
+from __future__ import annotations
+
 import logging
 from typing import Any
 
 from fastmcp import FastMCP
 
+from devices_mcp.core.messaging_service import (
+    MessageCategory,
+    MessageSeverity,
+    get_messaging_service,
+)
+
+logger = logging.getLogger(__name__)
+
 _READ_ONLY: dict[str, bool] = {"readonly": True}
 _MUTATING: dict[str, bool] = {}
 _DESTRUCTIVE: dict[str, bool] = {"destructive": True}
 
-logger = logging.getLogger(__name__)
 MESSAGES_ACTIONS = {
-    "list_messages": "List messages and notifications",
-    "send_message": "Send a message or notification",
-    "get_message_details": "Get detailed message information",
-    "mark_as_read": "Mark message as read",
-    "delete_message": "Delete a message",
-    "get_message_stats": "Get messaging statistics",
-    "configure_channels": "Configure message delivery channels",
-    "test_messaging": "Test messaging functionality",
+    "status": "Summary of the message store (counts per severity, unacked totals)",
+    "list": "Query messages with optional severity/category/source/acknowledged filters",
+    "ack": "Acknowledge a message by id, all of a severity, or everything (severity='all')",
+    "clear": "Delete messages by id, by severity, or everything (clear_all + confirm=True)",
 }
 
 
 def register_messages_management_tool(mcp: FastMCP) -> None:
-    """Register the messages management portmanteau tool."""
+    """Register the messages management portmanteau tool (real store)."""
 
-    @mcp.tool(annotations=_READ_ONLY)
+    @mcp.tool(annotations=_MUTATING)
     async def messages_management(
         action: str,
         message_id: str | None = None,
-        recipient: str | None = None,
-        subject: str | None = None,
-        body: str | None = None,
-        channel: str = "dashboard",
-        priority: str = "normal",
+        severity: str | None = None,
+        category: str | None = None,
+        source: str | None = None,
         limit: int = 50,
+        acknowledged: bool | None = None,
+        clear_all: bool = False,
+        confirm: bool = False,
     ) -> dict[str, Any]:
         """
-        Comprehensive messages and notifications management portmanteau tool.
-        PORTMANTEAU PATTERN RATIONALE:
-        Messages from various sources (system, user, alerts, notifications)
-        share common operational patterns. This tool consolidates them to
-        reduce complexity while maintaining channel-specific functionality.
+        [RATIONALE] Device messaging store operations consolidated into one
+        tool: the store (status/query/ack/clear) is small and always used
+        together; separate tools would bloat the registry for no gain.
+
+        Operations:
+        - status: counts per severity (info/warning/alarm), unacked total and
+          unacked alarms, oldest/newest timestamp.
+        - list: query messages; filters severity, category, source,
+          acknowledged (true/false), limit. Returns newest first.
+        - ack: mark as acknowledged. message_id for one, severity for all of
+          a severity, or severity='all' for everything.
+        - clear: DESTRUCTIVE. Delete by message_id, by severity, or all
+          (clear_all=True). Deleting everything requires confirm=True.
+
         Args:
-            action (str, required): The operation to perform. Must be one of:
-                - "list_messages": List messages (optional: limit)
-                - "send_message": Send message (requires: recipient, subject, body, optional: channel, priority)
-                - "get_message_details": Get message details (requires: message_id)
-                - "mark_as_read": Mark as read (requires: message_id)
-                - "delete_message": Delete message (requires: message_id)
-                - "get_message_stats": Get messaging statistics
-                - "configure_channels": Configure delivery channels
-                - "test_messaging": Test messaging system
-            message_id (str | None): Specific message identifier
-            recipient (str | None): Message recipient ("user", "admin", "all")
-            subject (str | None): Message subject/title
-            body (str | None): Message content/body
-            channel (str): Delivery channel ("dashboard", "email", "sms", "push")
-            priority (str): Message priority ("low", "normal", "high", "urgent")
-            limit (int): Maximum messages to return (default: 50)
-        Returns:
-            dict[str, Any]: Operation result with message data and status
+            action (str, required): "status", "list", "ack", "clear".
+            message_id (str | None): target message for ack/clear.
+            severity (str | None): filter ("info"/"warning"/"alarm") for
+              list/ack/clear; "all" for ack everything.
+            category (str | None): filter for list (e.g. "device_connection").
+            source (str | None): filter for list (device id).
+            limit (int): max messages for list (default 50, max 500).
+            acknowledged (bool | None): list filter; None = both.
+            clear_all (bool): clear everything (needs confirm=True).
+            confirm (bool): required for clear_all.
+
+        ## Return Format
+        {"success": bool, "message": str, "action": str,
+         "data": {...operation-specific}}
+
+        ## Examples
+        messages_management(action="status")
+        messages_management(action="list", severity="alarm", acknowledged=False, limit=20)
+        messages_management(action="ack", message_id="msg_1_1234")
+        messages_management(action="clear", clear_all=True, confirm=True)
         """
         try:
             if action not in MESSAGES_ACTIONS:
                 return {
                     "success": False,
-                    "message": f"Invalid action '{action}'. Available: {list(MESSAGES_ACTIONS.keys())}",
+                    "message": f"Invalid action '{action}'. Available: {list(MESSAGES_ACTIONS)}",
+                    "action": action,
                 }
-            logger.info(f"Executing messages management action: {action}")
-            # Mock implementations for messages system
-            # In a real implementation, these would connect to actual messaging services
-            if action == "list_messages":
-                messages = [
-                    {
-                        "id": "msg_system_001",
-                        "type": "system",
-                        "priority": "normal",
-                        "subject": "System Maintenance Completed",
-                        "body": "Scheduled system maintenance has been completed successfully. All services are now operational.",
-                        "sender": "System Administrator",
-                        "recipient": "admin",
-                        "channel": "dashboard",
-                        "timestamp": "2025-12-27T02:00:00Z",
-                        "read": False,
-                        "archived": False,
-                        "attachments": [],
-                        "actions_available": ["mark_read", "archive", "reply"],
-                    },
-                    {
-                        "id": "msg_alert_002",
-                        "type": "alert",
-                        "priority": "high",
-                        "subject": "Security Alert: Motion Detected",
-                        "body": "Motion detected in living room at 03:45 AM. Camera footage is available for review.",
-                        "sender": "Security System",
-                        "recipient": "admin",
-                        "channel": "dashboard",
-                        "timestamp": "2025-12-27T03:45:00Z",
-                        "read": False,
-                        "archived": False,
-                        "attachments": ["camera_footage_0345.mp4"],
-                        "actions_available": ["mark_read", "view_attachment", "escalate"],
-                    },
-                    {
-                        "id": "msg_user_003",
-                        "type": "user",
-                        "priority": "normal",
-                        "subject": "Weekly Report Available",
-                        "body": "Your weekly energy consumption and security report is now available in the dashboard.",
-                        "sender": "Reports System",
-                        "recipient": "user",
-                        "channel": "email",
-                        "timestamp": "2025-12-27T01:00:00Z",
-                        "read": True,
-                        "archived": False,
-                        "attachments": ["weekly_report_2025_w52.pdf"],
-                        "actions_available": ["view_attachment", "archive"],
-                    },
-                ]
+            messaging = get_messaging_service()
+
+            if action == "status":
+                msgs = list(messaging.messages)
+                sev_counts = {"info": 0, "warning": 0, "alarm": 0}
+                unacked_alarms = 0
+                unacked_total = 0
+                for m in msgs:
+                    sev_counts[m.severity.value] = sev_counts.get(m.severity.value, 0) + 1
+                    if not m.acknowledged:
+                        unacked_total += 1
+                        if m.severity == MessageSeverity.ALARM:
+                            unacked_alarms += 1
+                timestamps = [m.timestamp for m in msgs]
                 return {
                     "success": True,
+                    "message": f"Store: {len(msgs)} messages, {unacked_alarms} unacked alarms",
                     "action": action,
-                    "messages": messages[:limit],
-                    "count": len(messages),
-                    "total_available": len(messages),
-                    "unread_count": len([m for m in messages if not m.get("read")]),
+                    "data": {
+                        "total": len(msgs),
+                        "by_severity": sev_counts,
+                        "unacked_total": unacked_total,
+                        "unacked_alarms": unacked_alarms,
+                        "oldest": min(timestamps).isoformat() if timestamps else None,
+                        "newest": max(timestamps).isoformat() if timestamps else None,
+                    },
                 }
-            if action == "send_message":
-                if not recipient or not subject or not body:
+
+            if action == "list":
+                sev = MessageSeverity(severity) if severity else None
+                cat = MessageCategory(category) if category else None
+                msgs = messaging.get_messages(
+                    severity=sev,
+                    category=cat,
+                    source=source,
+                    limit=max(1, min(limit, 500)),
+                    acknowledged=acknowledged,
+                )
+                return {
+                    "success": True,
+                    "message": f"{len(msgs)} messages",
+                    "action": action,
+                    "data": {"count": len(msgs), "messages": [m.to_dict() for m in msgs]},
+                }
+
+            if action == "ack":
+                count = 0
+                if message_id:
+                    count = 1 if messaging.acknowledge_message(message_id) else 0
+                elif severity and severity == "all":
+                    count = messaging.acknowledge_all()
+                elif severity:
+                    count = messaging.acknowledge_all(severity=MessageSeverity(severity))
+                else:
                     return {
                         "success": False,
-                        "message": "recipient, subject, and body are required for send_message",
-                        "error": "recipient, subject, and body are required for send_message",
+                        "message": "ack requires message_id, severity, or severity='all'",
+                        "action": action,
                     }
-                # Mock message sending
-                sent_message = {
-                    "id": f"msg_sent_{asyncio.get_event_loop().time()}",
-                    "type": "outbound",
-                    "priority": priority,
-                    "subject": subject,
-                    "body": body,
-                    "sender": "admin",
-                    "recipient": recipient,
-                    "channel": channel,
-                    "timestamp": "2025-12-27T04:00:00Z",
-                    "status": "sent",
-                    "delivery_channels": [channel],
-                    "estimated_delivery_time": "immediate" if channel == "dashboard" else "2-5 minutes",
-                    "tracking_id": f"track_{asyncio.get_event_loop().time()}",
-                }
                 return {
                     "success": True,
+                    "message": f"Acknowledged {count} message(s)",
                     "action": action,
-                    "message": sent_message,
+                    "data": {"acknowledged_count": count},
                 }
-            if action == "get_message_details":
-                if not message_id:
+
+            if action == "clear":
+                if clear_all and not confirm:
                     return {
                         "success": False,
-                        "message": "message_id is required for get_message_details",
-                        "error": "message_id is required for get_message_details",
+                        "message": "clear_all requires confirm=True (destructive, not reversible)",
+                        "action": action,
                     }
-                # Mock detailed message info
-                message_details = {
-                    "id": message_id,
-                    "type": "alert",
-                    "priority": "high",
-                    "subject": "Security Alert: Motion Detected",
-                    "body": "Motion sensor triggered in kitchen area. Camera footage shows movement near refrigerator at 03:45 AM. Confidence level: 89%.",
-                    "sender": "Security System",
-                    "recipient": "admin",
-                    "channel": "dashboard",
-                    "timestamp": "2025-12-27T03:45:00Z",
-                    "read": False,
-                    "read_at": None,
-                    "archived": False,
-                    "attachments": [
-                        {
-                            "filename": "kitchen_motion_0345.mp4",
-                            "size_bytes": 2457600,
-                            "type": "video/mp4",
-                            "url": "/api/media/camera_footage/kitchen_motion_0345.mp4",
-                        }
-                    ],
-                    "metadata": {
-                        "camera_id": "tapo_kitchen",
-                        "sensor_id": "motion_kitchen_001",
-                        "confidence_score": 0.89,
-                        "detection_zone": "kitchen_main",
-                        "false_positive_probability": 0.05,
-                    },
-                    "actions_taken": ["notification_sent", "logged"],
-                    "escalation_level": 1,
-                    "response_required": True,
-                }
+                count = 0
+                for m in list(messaging.messages):
+                    if clear_all:
+                        drop = True
+                    elif message_id:
+                        drop = m.id == message_id
+                    elif severity:
+                        drop = m.severity.value == severity
+                    else:
+                        drop = False
+                    if drop:
+                        messaging.delete_message(m.id)
+                        count += 1
                 return {
                     "success": True,
+                    "message": f"Cleared {count} message(s)",
                     "action": action,
-                    "message": message_details,
+                    "data": {"cleared_count": count},
                 }
-            if action == "mark_as_read":
-                if not message_id:
-                    return {
-                        "success": False,
-                        "message": "message_id is required for mark_as_read",
-                        "error": "message_id is required for mark_as_read",
-                    }
-                # Mock mark as read
-                read_result = {
-                    "message_id": message_id,
-                    "action": "marked_read",
-                    "marked_at": "2025-12-27T04:00:00Z",
-                    "by_user": "admin",
-                    "notification_updated": True,
-                    "unread_count_updated": True,
-                }
-                return {
-                    "success": True,
-                    "action": action,
-                    "result": read_result,
-                }
-            if action == "delete_message":
-                if not message_id:
-                    return {
-                        "success": False,
-                        "message": "message_id is required for delete_message",
-                        "error": "message_id is required for delete_message",
-                    }
-                # Mock message deletion
-                delete_result = {
-                    "message_id": message_id,
-                    "action": "deleted",
-                    "deleted_at": "2025-12-27T04:00:00Z",
-                    "by_user": "admin",
-                    "permanent": False,  # Moved to trash, not permanently deleted
-                    "attachments_preserved": True,
-                    "recovery_possible": True,
-                    "recovery_window_days": 30,
-                }
-                return {
-                    "success": True,
-                    "action": action,
-                    "result": delete_result,
-                }
-            if action == "get_message_stats":
-                # Mock messaging statistics
-                stats = {
-                    "total_messages": 1247,
-                    "unread_messages": 23,
-                    "messages_today": 15,
-                    "messages_this_week": 89,
-                    "messages_this_month": 345,
-                    "by_type": {"system": 456, "alert": 234, "user": 312, "notification": 245},
-                    "by_priority": {"low": 678, "normal": 423, "high": 123, "urgent": 23},
-                    "by_channel": {"dashboard": 892, "email": 234, "sms": 89, "push": 32},
-                    "response_times": {
-                        "average_response_minutes": 45,
-                        "median_response_minutes": 23,
-                        "fastest_response_seconds": 12,
-                        "slowest_response_hours": 8,
-                    },
-                    "timestamp": "2025-12-27T04:00:00Z",
-                }
-                return {
-                    "success": True,
-                    "action": action,
-                    "stats": stats,
-                }
-            if action == "configure_channels":
-                # Mock channel configuration
-                channel_config = {
-                    "channels": {
-                        "dashboard": {
-                            "enabled": True,
-                            "priority_threshold": "low",
-                            "quiet_hours": {"start": "22:00", "end": "08:00"},
-                            "batch_notifications": True,
-                            "batch_interval_minutes": 15,
-                        },
-                        "email": {
-                            "enabled": True,
-                            "priority_threshold": "normal",
-                            "smtp_configured": True,
-                            "daily_limit": 50,
-                            "rate_limit_per_hour": 10,
-                        },
-                        "sms": {
-                            "enabled": True,
-                            "priority_threshold": "high",
-                            "provider_configured": True,
-                            "daily_limit": 20,
-                            "emergency_override": True,
-                        },
-                        "push": {
-                            "enabled": False,
-                            "reason": "Mobile app not configured",
-                            "setup_required": True,
-                        },
-                    },
-                    "global_settings": {
-                        "timezone": "Europe/Vienna",
-                        "language": "en",
-                        "quiet_hours_enabled": True,
-                        "auto_archive_after_days": 30,
-                    },
-                    "updated_at": "2025-12-27T04:00:00Z",
-                }
-                return {
-                    "success": True,
-                    "action": action,
-                    "configuration": channel_config,
-                }
-            if action == "test_messaging":
-                # Mock messaging system test
-                test_results = {
-                    "test_timestamp": "2025-12-27T04:00:00Z",
-                    "channels_tested": ["dashboard", "email"],
-                    "test_messages_sent": 2,
-                    "results": {
-                        "dashboard": {
-                            "status": "success",
-                            "message_id": "test_dashboard_001",
-                            "delivery_time_ms": 45,
-                            "visible_in_ui": True,
-                        },
-                        "email": {
-                            "status": "success",
-                            "message_id": "test_email_001",
-                            "delivery_time_ms": 1200,
-                            "smtp_response": "250 OK",
-                        },
-                    },
-                    "overall_status": "success",
-                    "test_cleanup_performed": True,
-                    "recommendations": [
-                        "Consider enabling SMS for urgent alerts",
-                        "Test push notifications when mobile app is available",
-                    ],
-                }
-                return {
-                    "success": True,
-                    "action": action,
-                    "test_results": test_results,
-                }
-            return {
-                "success": False,
-                "message": f"Action '{action}' not implemented",
-                "error": f"Action '{action}' not implemented",
-            }
-        except Exception as e:
-            logger.exception("Error in messages management action '{action}':")
-            return {
-                "success": False,
-                "message": f"Failed to execute action '{action}': {e!s}",
-                "error": f"Failed to execute action '{action}': {e!s}",
-            }
+
+            return {"success": False, "message": f"Unhandled action '{action}'", "action": action}
+        except ValueError as exc:
+            return {"success": False, "message": str(exc), "action": action}
+        except Exception as exc:
+            logger.exception("messages_management %s failed", action)
+            return {"success": False, "message": str(exc), "action": action}

@@ -115,6 +115,77 @@ async def acknowledge_messages(request: AcknowledgeRequest) -> dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+@router.get("/status")
+async def get_message_status() -> dict[str, Any]:
+    """Summary of the message store: counts per severity, unacked alarms,
+    oldest/newest timestamps."""
+    try:
+        messaging = get_messaging_service()
+        msgs = list(messaging.messages)
+        sev_counts: dict[str, int] = {"info": 0, "warning": 0, "alarm": 0}
+        unacked_alarms = 0
+        unacked_total = 0
+        for m in msgs:
+            sev_counts[m.severity.value] = sev_counts.get(m.severity.value, 0) + 1
+            if not m.acknowledged:
+                unacked_total += 1
+                if m.severity == MessageSeverity.ALARM:
+                    unacked_alarms += 1
+        timestamps = [m.timestamp for m in msgs]
+        return {
+            "success": True,
+            "total": len(msgs),
+            "by_severity": sev_counts,
+            "unacked_total": unacked_total,
+            "unacked_alarms": unacked_alarms,
+            "oldest": min(timestamps).isoformat() if timestamps else None,
+            "newest": max(timestamps).isoformat() if timestamps else None,
+        }
+    except Exception as e:
+        logger.exception("Error getting message status")
+        return {"success": False, "error": str(e)}
+
+
+class ClearRequest(BaseModel):
+    """Request to clear (delete) messages. All clears require confirm=True."""
+
+    message_ids: list[str] | None = None
+    severity: str | None = None
+    clear_all: bool = False
+    confirm: bool = False
+
+
+@router.post("/clear")
+async def clear_messages(request: ClearRequest) -> dict[str, Any]:
+    """Delete messages: by id list, by severity, or everything.
+
+    clear_all requires confirm=True (destructive). Deleting all messages is
+    not reversible - the SQLite store is the only history.
+    """
+    try:
+        if request.clear_all and not request.confirm:
+            return {"success": False, "error": "confirm=true required to clear all messages"}
+        messaging = get_messaging_service()
+        targets = request.message_ids or []
+        count = 0
+        for msg in list(messaging.messages):
+            if request.clear_all:
+                drop = True
+            elif request.severity:
+                drop = msg.severity.value == request.severity
+            elif targets:
+                drop = msg.id in targets
+            else:
+                drop = False
+            if drop:
+                messaging.delete_message(msg.id)
+                count += 1
+        return {"success": True, "cleared_count": count}
+    except Exception as e:
+        logger.exception("Error clearing messages")
+        return {"success": False, "error": str(e)}
+
+
 @router.get("/metrics")
 async def get_message_metrics() -> dict[str, Any]:
     """Get messaging metrics for monitoring."""
