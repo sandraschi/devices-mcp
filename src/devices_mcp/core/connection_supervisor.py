@@ -266,7 +266,7 @@ class ConnectionSupervisor:
                     try:
                         device = await asyncio.wait_for(
                             tapo.ApiClient(account_email, account_password).p115(host),
-                            timeout=5.0,  # 5 second timeout
+                            timeout=5.0,
                         )
                         info = await asyncio.wait_for(device.get_device_info(), timeout=3.0)
                         energy = await asyncio.wait_for(device.get_energy_usage(), timeout=3.0)
@@ -675,6 +675,14 @@ class ConnectionSupervisor:
     async def _check_shelly(self):
         """Check Shelly temperature sensors."""
         try:
+            from ..config import get_config
+
+            # No Shelly hardware configured - skip entirely (otherwise a phantom
+            # "Shelly Temperature offline" device appears in every health report).
+            shelly_cfg = get_config().get("shelly") or {}
+            if not shelly_cfg.get("enabled", False):
+                return
+
             from ..integrations.shelly_client import get_shelly_client
 
             client = get_shelly_client()
@@ -781,6 +789,20 @@ class ConnectionSupervisor:
             if connected:
                 # Device came back online
                 if not previous_state:
+                    # Clear stale unacknowledged DEVICE_CONNECTION messages for
+                    # this device - without this the offline WARNING/ALARM stays
+                    # in the feed forever and every priority aggregation
+                    # re-emits the outage (plug reconnected yesterday but the
+                    # hub still reported it offline for days).
+                    try:
+                        for msg in self.messaging.get_messages(acknowledged=False):
+                            if msg.category == self.MessageCategory.DEVICE_CONNECTION and (
+                                msg.source == device_id or msg.details.get("device_name") == name
+                            ):
+                                self.messaging.acknowledge_message(msg.id)
+                    except Exception:
+                        logger.warning("Failed to acknowledge stale messages for %s", name, exc_info=True)
+
                     self.messaging.info(
                         category=self.MessageCategory.DEVICE_CONNECTION,
                         source=device_id,
