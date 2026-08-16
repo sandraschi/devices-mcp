@@ -46,3 +46,5 @@ class PlaylistAnalytics(BaseModel):
     skip_rate: float = Field(description="Percentage of items skipped")
     recommendations: list[str] = Field(description="Suggested improvements")
     last_played: int | None = Field(description="Last play timestamp")
+    simulated: bool = Field(default=False, description="True when usage stats are NOT real (explicit honesty flag)")
+    note: str = Field(default="", description="Explanation when simulated=True")

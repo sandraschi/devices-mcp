@@ -39,3 +39,7 @@ class ServerMaintenanceResult(BaseModel):
     recommendations: list[str] = Field(description="Post-maintenance recommendations")
     next_recommended: str | None = Field(description="Next recommended maintenance")
     warnings: list[str] = Field(description="Warnings or issues encountered")
+    simulated: bool = Field(
+        default=False, description="True when the result contains NO real data (explicit honesty flag)"
+    )
+    note: str = Field(default="", description="Explanation when simulated=True")

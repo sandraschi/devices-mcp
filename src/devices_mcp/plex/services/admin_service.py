@@ -6,7 +6,6 @@ operations like user management and server maintenance.
 """
 
 import logging
-import random
 import time
 from typing import Any
 
@@ -16,6 +15,34 @@ from ..models import ServerMaintenanceResult, UserPermissions
 from .base import BaseService, ServiceError
 
 logger = logging.getLogger(__name__)
+
+
+def _system_resources() -> dict:
+    """Real host metrics via psutil; explicit None + simulated flag when
+    psutil is unavailable. Never random numbers dressed as real metrics."""
+    try:
+        import psutil
+
+        return {
+            "cpu_percent": psutil.cpu_percent(interval=0.1),
+            "memory_percent": psutil.virtual_memory().percent,
+            "disk_usage_percent": psutil.disk_usage("/").percent,
+            "network_usage": {
+                "bytes_sent": psutil.net_io_counters().bytes_sent,
+                "bytes_received": psutil.net_io_counters().bytes_recv,
+            },
+            "simulated": False,
+            "note": "",
+        }
+    except Exception:
+        return {
+            "cpu_percent": None,
+            "memory_percent": None,
+            "disk_usage_percent": None,
+            "network_usage": None,
+            "simulated": True,
+            "note": "psutil unavailable - host metrics not collected",
+        }
 
 
 class AdminService(BaseService):
@@ -152,57 +179,29 @@ class AdminService(BaseService):
             if options:
                 logger.info(f"Options: {options}")
 
-            # Simulate the maintenance operation
-            # In a real implementation, we would call the appropriate Plex API methods
-            time.sleep(2)  # Simulate work being done
-
-            # Generate some mock results
-            result_details = {
-                "operation": operation,
-                "options": options or {},
-                "completed_at": int(time.time()),
-                "status": "completed",
-            }
-
-            # Add operation-specific details
-            if operation == "optimize":
-                result_details.update(
-                    {
-                        "database_optimized": True,
-                        "fragmentation_reduced": random.randint(10, 50),
-                        "performance_improved": True,
-                    }
-                )
-            elif operation == "clean_bundles":
-                result_details.update(
-                    {
-                        "bundles_cleaned": random.randint(5, 20),
-                        "space_freed_mb": random.randint(50, 500),
-                    }
-                )
-            elif operation == "empty_trash":
-                result_details.update(
-                    {
-                        "items_removed": random.randint(0, 10),
-                        "space_freed_mb": random.randint(0, 100),
-                    }
-                )
-
+            # Honesty: maintenance against the real Plex API is NOT implemented.
+            # Previously this returned random 'success' results (fake green) - a user
+            # could believe the DB was optimized and space freed. Now explicit: no
+            # maintenance is performed and nothing is claimed.
             return ServerMaintenanceResult(
                 operation=operation,
-                status="success",
-                details=result_details,
-                space_freed_gb=random.uniform(0.1, 2.0),
-                items_processed=random.randint(1, 100),
-                duration_seconds=random.uniform(1.0, 10.0),
+                status="not_implemented",
+                details={
+                    "operation": operation,
+                    "options": options or {},
+                    "note": "Maintenance against the real Plex API is not implemented - no maintenance was performed.",
+                },
+                space_freed_gb=None,
+                items_processed=0,
+                duration_seconds=0.0,
                 recommendations=[
-                    "Run this operation weekly for optimal performance",
-                    "Consider running a full optimization next time",
+                    "Implement against the real Plex API before using this operation",
                 ],
-                next_recommended=int(time.time()) + (7 * 24 * 3600),  # 1 week from now
-                warnings=[],
+                next_recommended=None,
+                warnings=["No maintenance was performed - this operation is not implemented"],
+                simulated=True,
+                note="Maintenance operations previously returned simulated results; now explicit not-implemented.",
             )
-
         except Exception as e:
             error_msg = f"Failed to run maintenance operation {operation}: {e!s}"
             logger.exception(error_msg)
@@ -223,22 +222,16 @@ class AdminService(BaseService):
             # Get active sessions
             sessions = await self.plex_service.get_sessions()
 
-            # Get system resources (simulated)
-            resources = {
-                "cpu_percent": random.uniform(10.0, 80.0),
-                "memory_percent": random.uniform(20.0, 90.0),
-                "disk_usage_percent": random.uniform(10.0, 95.0),
-                "network_usage": {
-                    "bytes_sent": random.randint(1000000, 1000000000),
-                    "bytes_received": random.randint(1000000, 1000000000),
-                },
-            }
-
-            # Check for any active alerts
+            # Real system resources via psutil; explicit None + simulated flag
+            # when unavailable (never random numbers dressed as real metrics).
+            resources = _system_resources()
+            # Check for any active alerts (real values only)
             alerts = []
-            if resources["disk_usage_percent"] > 85:
+            disk = resources.get("disk_usage_percent")
+            mem = resources.get("memory_percent")
+            if disk is not None and disk > 85:
                 alerts.append("Disk usage is high - consider freeing up space")
-            if resources["memory_percent"] > 90:
+            if mem is not None and mem > 90:
                 alerts.append("Memory usage is high - consider upgrading your server")
 
             return {
@@ -252,10 +245,8 @@ class AdminService(BaseService):
                 },
                 "resources": resources,
                 "active_sessions": len(sessions),
-                "background_tasks": {
-                    "running": random.randint(0, 5),
-                    "pending": random.randint(0, 3),
-                },
+                "background_tasks": None,
+                "tasks_simulated_note": "background task counts not implemented",
                 "alerts": alerts,
             }
 
