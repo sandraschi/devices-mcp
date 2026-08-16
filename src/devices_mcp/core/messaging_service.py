@@ -15,10 +15,12 @@ Message Levels:
 
 import json
 import logging
+import sqlite3
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import StrEnum
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -130,6 +132,84 @@ class MessagingService:
         # Prometheus metrics (for future integration)
         self._prom_metrics = {}
 
+        # SQLite persistence: alarms and their ack state must survive restarts
+        # (in-memory only meant an unacknowledged alarm - e.g. a device outage -
+        # silently vanished on daemon restart, and acked state was lost too).
+        self._db_path = Path.home() / ".local/share/devices-mcp/messages.db"
+        self._db: sqlite3.Connection | None = None
+        self._init_db()
+
+    def _init_db(self) -> None:
+        try:
+            self._db_path.parent.mkdir(parents=True, exist_ok=True)
+            self._db = sqlite3.connect(str(self._db_path), check_same_thread=False)
+            self._db.execute("PRAGMA journal_mode=WAL")
+            self._db.execute(
+                "CREATE TABLE IF NOT EXISTS messages ("
+                "id TEXT PRIMARY KEY, timestamp TEXT, severity TEXT, category TEXT, "
+                "source TEXT, title TEXT, description TEXT, details TEXT, "
+                "acknowledged INTEGER DEFAULT 0, ack_timestamp TEXT)"
+            )
+            self._db.commit()
+            self._load_from_db()
+        except Exception:
+            logger.warning("Message persistence disabled (%s) - in-memory only", self._db_path, exc_info=True)
+            self._db = None
+
+    def _load_from_db(self) -> None:
+        if self._db is None:
+            return
+        try:
+            rows = self._db.execute(
+                "SELECT id, timestamp, severity, category, source, title, description, "
+                "details, acknowledged, ack_timestamp FROM messages ORDER BY timestamp"
+            ).fetchall()
+            for row in rows:
+                try:
+                    msg = Message(
+                        id=row[0],
+                        timestamp=datetime.fromisoformat(row[1]),
+                        severity=MessageSeverity(row[2]),
+                        category=MessageCategory(row[3]),
+                        source=row[4],
+                        title=row[5],
+                        description=row[6],
+                        details=json.loads(row[7]) if row[7] else {},
+                        acknowledged=bool(row[8]),
+                        ack_timestamp=datetime.fromisoformat(row[9]) if row[9] else None,
+                    )
+                    self.messages.append(msg)
+                    self._message_counter += 1
+                except Exception:
+                    continue
+            logger.info("Messaging store loaded %d persisted messages", len(rows))
+        except Exception:
+            logger.warning("Failed to load persisted messages", exc_info=True)
+
+    def _persist(self, message: Message) -> None:
+        if self._db is None:
+            return
+        try:
+            self._db.execute(
+                "INSERT OR REPLACE INTO messages (id, timestamp, severity, category, source, "
+                "title, description, details, acknowledged, ack_timestamp) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (
+                    message.id,
+                    message.timestamp.isoformat(),
+                    message.severity.value,
+                    message.category.value,
+                    message.source,
+                    message.title,
+                    message.description,
+                    json.dumps(message.details, ensure_ascii=False),
+                    1 if message.acknowledged else 0,
+                    message.ack_timestamp.isoformat() if message.ack_timestamp else None,
+                ),
+            )
+            self._db.commit()
+        except Exception:
+            logger.warning("Failed to persist message %s", message.id, exc_info=True)
+
     def add_message(
         self,
         severity: MessageSeverity,
@@ -168,6 +248,7 @@ class MessagingService:
         )
 
         self.messages.append(message)
+        self._persist(message)
 
         # Update metrics
         self._metrics["total_count"] += 1
@@ -258,6 +339,7 @@ class MessagingService:
             if msg.id == message_id:
                 msg.acknowledged = True
                 msg.ack_timestamp = datetime.now()
+                self._persist(msg)
                 logger.info(f"Message {message_id} acknowledged")
                 return True
         return False
@@ -269,6 +351,7 @@ class MessagingService:
             if not msg.acknowledged and (severity is None or msg.severity == severity):
                 msg.acknowledged = True
                 msg.ack_timestamp = datetime.now()
+                self._persist(msg)
                 count += 1
         logger.info(f"Acknowledged {count} messages")
         return count

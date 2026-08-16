@@ -835,8 +835,11 @@ class ConnectionSupervisor:
                 health.error_count += 1
                 health.last_error = error
 
-                # Escalate to ALARM after 3 consecutive failures (once only)
-                if health.error_count == 3 and not health.alarm_raised:
+                # Escalate to ALARM after 3 consecutive failures (once only).
+                # Devices that were never successfully connected (not yet
+                # onboarded) must NOT alarm - there is nothing to be offline
+                # from; last_success is None for them.
+                if health.error_count == 3 and not health.alarm_raised and health.last_success is not None:
                     self.messaging.alarm(
                         category=self.MessageCategory.DEVICE_CONNECTION,
                         source=device_id,
