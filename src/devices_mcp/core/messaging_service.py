@@ -25,6 +25,12 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# Persistence retention: weed the message store at startup. 30 days covers
+# the realistic alert horizon (device outages, ack tracking); anything older
+# is noise. A count backstop bounds growth even if timestamps misbehave.
+_RETENTION_DAYS = 30
+_MAX_ROWS = 5000
+
 
 class MessageSeverity(StrEnum):
     """Message severity levels."""
@@ -149,6 +155,13 @@ class MessagingService:
                 "id TEXT PRIMARY KEY, timestamp TEXT, severity TEXT, category TEXT, "
                 "source TEXT, title TEXT, description TEXT, details TEXT, "
                 "acknowledged INTEGER DEFAULT 0, ack_timestamp TEXT)"
+            )
+            self._db.execute(
+                f"DELETE FROM messages WHERE julianday(timestamp) < julianday('now', '-{_RETENTION_DAYS} days')"
+            )
+            self._db.execute(
+                "DELETE FROM messages WHERE id NOT IN (SELECT id FROM messages ORDER BY timestamp DESC LIMIT ?)",
+                (_MAX_ROWS,),
             )
             self._db.commit()
             self._load_from_db()
