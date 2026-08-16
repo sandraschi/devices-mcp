@@ -10,6 +10,7 @@ import { LLMStack } from '@/pages/LLMStack';
 import { Lighting } from '@/pages/Lighting';
 import { Logs } from '@/pages/Logs';
 import { McpCapabilities } from '@/pages/McpCapabilities';
+import { Messaging } from '@/pages/Messaging';
 import { Nest } from '@/pages/Nest';
 import { Onboarding } from '@/pages/Onboarding';
 import { Placeholder } from '@/pages/Placeholder';
@@ -40,6 +41,7 @@ function App() {
           <Route path='health' element={<Health />} />
           <Route path='human-health' element={<HumanHealth />} />
           <Route path='alarms' element={<Alarms />} />
+          <Route path='messaging' element={<Messaging />} />
           <Route path='onboarding' element={<Onboarding />} />
           <Route path='chat' element={<Chat />} />
           <Route path='llm' element={<LLMStack />} />
