@@ -4247,6 +4247,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pygrabber"
+version = "0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "comtypes" },
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d4/24/e7e5efa1d915853f3f34cedf751cbee9d88bee47a41122d495ee95452dad/pygrabber-0.2.tar.gz", hash = "sha256:e584b119d4c9b9a8f339eb34d1fe7fdd16214a2bf5a1876171145caebdb9e413", size = 18487, upload-time = "2023-10-20T07:17:14.97Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7a/51/0359e171686a7eeda5e975d7f9dfba6a67e04b33c7ddad1f7a343c171e55/pygrabber-0.2-py3-none-any.whl", hash = "sha256:5ac8bbe5f6a5dfb7c1c9c55d80ca9b9457743abd3ac8efa21cb9e302bdbf03ac", size = 24193, upload-time = "2023-10-20T07:17:13.1Z" },
+]
+
+[[package]]
 name = "pyinstaller"
 version = "6.21.0"
 source = { registry = "https://pypi.org/simple" }
@@ -8298,6 +8311,7 @@ dependencies = [
     { name = "psycopg2-binary" },
     { name = "pyatmo" },
     { name = "pydantic" },
+    { name = "pygrabber" },
     { name = "pyrtlsdr", extra = ["lib"] },
     { name = "pyserial" },
     { name = "pyserial-asyncio" },
@@ -8445,6 +8459,7 @@ requires-dist = [
     { name = "py-spy", marker = "extra == 'dev'", specifier = ">=0.3.0,<1.0.0" },
     { name = "pyatmo", specifier = ">=8.0.0,<9.0.0" },
     { name = "pydantic", specifier = ">=2.0.0,<3.0.0" },
+    { name = "pygrabber", specifier = ">=0.1.9,<1.0.0" },
     { name = "pyinstrument", marker = "extra == 'dev'", specifier = ">=4.0.0,<5.0.0" },
     { name = "pylint", marker = "extra == 'dev'", specifier = ">=2.12.0,<3.0.0" },
     { name = "pyrtlsdr", extras = ["lib"], specifier = ">=0.3.0,<1.0.0" },

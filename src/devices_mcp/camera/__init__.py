@@ -1,6 +1,7 @@
 """Camera module imports."""
 
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -10,19 +11,30 @@ from .petcube import PetcubeCamera
 from .public_webcam import PublicWebcam
 from .tapo import TapoCamera
 
-# Use Windows webcam proxy implementation for Docker containers
-# This allows USB cameras on Windows host to be accessed from Linux Docker containers
-try:
-    from .windows_webcam import (
-        WindowsMicroscopeCamera as MicroscopeCamera,
-    )
-    from .windows_webcam import (
-        WindowsWebCamera as WebCamera,
-    )
+# The Windows webcam proxy exists so Linux Docker containers can reach USB cameras on
+# the Windows host (it requires scripts/windows_camera_server.py on port 10715). On
+# native Windows without the helper running, proxy cameras would never connect - so
+# only use the proxy when the helper URL is explicitly configured.
+_USE_WINDOWS_CAMERA_PROXY = bool(os.environ.get("WINDOWS_CAMERA_SERVER_URL")) or os.environ.get(
+    "DEVICES_MCP_WINDOWS_CAMERA_PROXY", ""
+).lower() in ("1", "true", "yes")
 
-    logger.info("Using Windows webcam proxy implementation")
-except ImportError as e:
-    logger.warning(f"Failed to import Windows webcam proxy, falling back to standard: {e}")
+if _USE_WINDOWS_CAMERA_PROXY:
+    try:
+        from .windows_webcam import (
+            WindowsMicroscopeCamera as MicroscopeCamera,
+        )
+        from .windows_webcam import (
+            WindowsWebCamera as WebCamera,
+        )
+
+        logger.info("Using Windows webcam proxy implementation")
+    except ImportError as e:
+        logger.warning(f"Failed to import Windows webcam proxy, falling back to standard: {e}")
+        from .microscope import MicroscopeCamera
+        from .webcam import WebCamera
+else:
+    logger.info("Using direct OpenCV webcam implementation (no WINDOWS_CAMERA_SERVER_URL set)")
     from .microscope import MicroscopeCamera
     from .webcam import WebCamera
 

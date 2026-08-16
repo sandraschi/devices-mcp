@@ -442,10 +442,16 @@ class ONVIFBasedCamera(BaseCamera):
             loop = asyncio.get_event_loop()
             device_info = await loop.run_in_executor(None, self._camera.get_device_info)
 
-            # Check PTZ capability
+            # Check PTZ capability - bounded so a slow PTZ WSDL fetch cannot blow the
+            # caller's status budget. A failed probe must NOT reset the connection:
+            # otherwise every status call restarts the cold ONVIF handshake and the
+            # camera reports "Status check timed out" forever after each restart.
             ptz_capable = False
             try:
-                await loop.run_in_executor(None, self._camera.get_ptz_service)
+                await asyncio.wait_for(
+                    loop.run_in_executor(None, self._camera.get_ptz_service),
+                    timeout=2.0,
+                )
                 ptz_capable = True
             except Exception as e:
                 logger.debug(f"PTZ service not available for {self.config.name}: {e}")

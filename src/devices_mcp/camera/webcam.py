@@ -125,9 +125,9 @@ class WebCamera(BaseCamera):
 
             # Try to reconnect
             if not self._mock_webcam:
-                self._cap = cv2.VideoCapture(self._device_id)
+                self._cap = await self._open_camera_device()
 
-                if self._cap.isOpened():
+                if self._cap and self._cap.isOpened():
                     # Test if we can actually read frames
                     ret, test_frame = self._cap.read()
                     if ret and test_frame is not None:
@@ -286,6 +286,28 @@ class WebCamera(BaseCamera):
             self._is_connected = False
             raise RuntimeError(f"Failed to capture image: {e}") from e
 
+    async def _open_camera_device(self) -> cv2.VideoCapture | None:
+        """Open the camera device in an executor thread.
+
+        cv2.VideoCapture() can block for seconds-to-minutes while another application
+        holds the camera - never run it on the event loop. Uses DSHOW on Windows
+        (default MSMF backend takes ~10s+ to open while NVIDIA Broadcast is active).
+        """
+        loop = asyncio.get_running_loop()
+
+        def _open():
+            import platform
+
+            if platform.system() == "Windows":
+                return cv2.VideoCapture(self._device_id, cv2.CAP_DSHOW)
+            return cv2.VideoCapture(self._device_id, cv2.CAP_ANY)
+
+        try:
+            return await asyncio.wait_for(loop.run_in_executor(None, _open), timeout=8.0)
+        except Exception:
+            logger.debug(f"Timed out opening USB camera {self._device_id}")
+            return None
+
     async def _ensure_camera_open_legacy(self) -> bool:
         """Legacy camera opening for non-lazy loading mode."""
         try:
@@ -293,9 +315,9 @@ class WebCamera(BaseCamera):
                 self._cap = self._mock_webcam
                 await self._cap.connect()
             else:
-                self._cap = cv2.VideoCapture(self._device_id)
+                self._cap = await self._open_camera_device()
 
-                if not self._cap.isOpened():
+                if not self._cap or not self._cap.isOpened():
                     import platform
 
                     if platform.system() == "Windows":
@@ -421,31 +443,42 @@ class WebCamera(BaseCamera):
                 except Exception as exc:
                     logger.debug("Failed to get webcam resolution from existing cap: %s", exc)
 
-            # If no resolution from existing cap, try to open camera briefly
+            # If no resolution from existing cap, try to open camera briefly.
+            # CRITICAL: cv2.VideoCapture open (MSMF) can block the event loop for
+            # ~10s while another app holds the camera (e.g. NVIDIA Broadcast).
+            # Run the whole open+probe in an executor so other requests survive.
             if resolution == "Unknown":
-                temp_cap = None
                 try:
-                    temp_cap = cv2.VideoCapture(self._device_id)
-                    if temp_cap.isOpened():
-                        # Try to set configured resolution first
-                        config_res = self.config.get("params", {}).get("resolution", "640x480")
-                        try:
-                            conf_width, conf_height = map(int, config_res.split("x"))
-                            temp_cap.set(cv2.CAP_PROP_FRAME_WIDTH, conf_width)
-                            temp_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, conf_height)
-                        except Exception as e:
-                            logger.debug(f"Config resolution parsing failed: {e}")
+                    loop = asyncio.get_running_loop()
 
-                        # Get actual resolution
-                        width = int(temp_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                        height = int(temp_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        if width > 0 and height > 0:
-                            resolution = f"{width}x{height}"
+                    def _probe_resolution():
+                        import platform
+
+                        if platform.system() == "Windows":
+                            cap = cv2.VideoCapture(self._device_id, cv2.CAP_DSHOW)
+                        else:
+                            cap = cv2.VideoCapture(self._device_id, cv2.CAP_ANY)
+                        try:
+                            if not cap.isOpened():
+                                return "Unknown"
+                            config_res = self.config.get("params", {}).get("resolution", "640x480")
+                            try:
+                                conf_width, conf_height = map(int, config_res.split("x"))
+                                cap.set(cv2.CAP_PROP_FRAME_WIDTH, conf_width)
+                                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, conf_height)
+                            except Exception as e:
+                                logger.debug(f"Config resolution parsing failed: {e}")
+                            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                            if width > 0 and height > 0:
+                                return f"{width}x{height}"
+                            return "Unknown"
+                        finally:
+                            cap.release()
+
+                    resolution = await asyncio.wait_for(loop.run_in_executor(None, _probe_resolution), timeout=5.0)
                 except Exception as exc:
                     logger.debug("Failed to get webcam resolution: %s", exc)
-                finally:
-                    if temp_cap:
-                        temp_cap.release()
 
         status = {
             "connected": connected,
@@ -545,9 +578,9 @@ class WebCamera(BaseCamera):
                 self._cap = self._mock_webcam
                 await self._cap.connect()
             else:
-                self._cap = cv2.VideoCapture(self._device_id)
+                self._cap = await self._open_camera_device()
 
-                if not self._cap.isOpened():
+                if not self._cap or not self._cap.isOpened():
                     # Try to detect if camera is in use by another app
                     import platform
 

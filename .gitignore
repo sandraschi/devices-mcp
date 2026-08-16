@@ -265,3 +265,6 @@ reports/
 
 # MCPB pack staging mirror - never commit (wiped+recopied at pack time)
 mcpb/src/
+
+# Tauri build artifacts (backend/camera exes staged at build time)
+native/resources/

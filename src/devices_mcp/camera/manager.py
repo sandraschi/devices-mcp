@@ -9,6 +9,46 @@ from .groups import CameraGroupManager
 
 logger = logging.getLogger(__name__)
 
+# DirectShow friendly-name markers for virtual/synthetic cameras that enumerate as
+# fake capture devices (NVIDIA Broadcast, OBS, Immersed, NDI, ...). Auto-discovery
+# must skip them, otherwise the webapp shows phantom cameras that never deliver frames.
+_VIRTUAL_CAMERA_MARKERS = (
+    "virtual",
+    "broadcast",
+    "immersed",
+    "obs",
+    "spout",
+    "ndi",
+    "remote desktop",
+    "mirror",
+    "unitycapture",
+    "streamlabs",
+    "splitcam",
+    "manycam",
+    "ecamm",
+    "webcamoid",
+    "camtwist",
+    "epoccam",
+    "droidcam",
+    "vcam",
+)
+
+
+def _get_dshow_device_names() -> dict[int, str]:
+    """Map DirectShow index -> friendly name (best effort; {} when pygrabber is missing)."""
+    try:
+        from pygrabber.dshow_graph import FilterGraph
+
+        return {i: name for i, name in enumerate(FilterGraph().get_input_devices())}
+    except Exception:
+        return {}
+
+
+def _is_virtual_camera_device(device_index: int, device_names: dict[int, str]) -> bool:
+    """True if the DirectShow device at device_index looks like a virtual/synthetic camera."""
+    name = (device_names.get(device_index) or "").lower()
+    return any(marker in name for marker in _VIRTUAL_CAMERA_MARKERS)
+
 
 class CameraManager:
     """Manages multiple camera instances and groups."""
@@ -104,6 +144,10 @@ class CameraManager:
                 "Microscope Camera",
             ]
 
+            # Map DSHOW indices to friendly names once, so virtual cameras (NVIDIA
+            # Broadcast, OBS, Immersed, ...) can be skipped below.
+            device_names = _get_dshow_device_names()
+
             for i, camera_info in enumerate(discovered_cameras):
                 device_id = camera_info["device_id"]
 
@@ -117,6 +161,16 @@ class CameraManager:
                 # Skip if already configured by name
                 if camera_name in self.cameras:
                     logger.debug(f"USB camera {camera_name} already configured, skipping")
+                    continue
+
+                # Skip virtual cameras - they are not real hardware and only produce
+                # phantom entries that show connection errors in the webapp.
+                if _is_virtual_camera_device(device_id, device_names):
+                    logger.info(
+                        "Skipping virtual camera at device %s: %s",
+                        device_id,
+                        device_names.get(device_id, "?"),
+                    )
                     continue
 
                 # Classify device type based on resolution and capabilities
@@ -339,6 +393,15 @@ class CameraManager:
             except TimeoutError:
                 logger.warning(f"Camera {config.name} connection timed out (2s) - will retry on stream access")
                 connected = False
+                # Keep the (slow, e.g. ONVIF) connect running in the background. A
+                # cancelled wait_for kills the coroutine before it can set the
+                # connected state, and every later status check would restart the
+                # cold handshake and get cancelled again - camera stays offline
+                # forever. A detached connect task completes on its own.
+                try:
+                    asyncio.get_running_loop().create_task(camera.connect())
+                except Exception:
+                    logger.debug(f"Could not spawn background connect for {config.name}")
             except Exception as e:
                 logger.warning(f"Camera {config.name} connection failed: {e} - will retry on stream access")
                 connected = False
