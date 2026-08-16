@@ -262,3 +262,6 @@ _dashboard/
 
 # Audit reports (regenerable snapshots)
 reports/
+
+# MCPB pack staging mirror - never commit (wiped+recopied at pack time)
+mcpb/src/
