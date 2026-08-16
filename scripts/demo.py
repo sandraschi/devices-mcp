@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 """
 Demo script showcasing Devices MCP features.
 

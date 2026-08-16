@@ -71,6 +71,4 @@ if __name__ == "__main__":
     if success:
         logger.info("\n🎉 RTSP stream test PASSED")
     else:
-        logger.info(
-            "\n❌ RTSP stream test FAILED - Camera may not support RTSP or authentication issue"
-        )
+        logger.info("\n❌ RTSP stream test FAILED - Camera may not support RTSP or authentication issue")

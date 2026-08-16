@@ -147,9 +147,7 @@ class TestLMStudioProvider:
         mock_models_response.raise_for_status = MagicMock()
 
         mock_chat_response = MagicMock()
-        mock_chat_response.json.return_value = {
-            "choices": [{"message": {"content": "Response text"}}]
-        }
+        mock_chat_response.json.return_value = {"choices": [{"message": {"content": "Response text"}}]}
         mock_chat_response.raise_for_status = MagicMock()
 
         with patch.object(provider._client, "get", new_callable=AsyncMock) as mock_get:

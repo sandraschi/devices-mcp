@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 """
 Verification script for Devices MCP v1.10.0 features.
 

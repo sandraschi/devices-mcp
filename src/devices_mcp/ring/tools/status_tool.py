@@ -421,7 +421,7 @@ async def check_tool_component() -> dict[str, Any]:
 
 def determine_overall_status(auth_status: dict, device_status: dict, connectivity_status: dict) -> str:
     """Determine overall system status based on component statuses."""
-    if not auth_status.get("authenticated", False):
+    if not auth_status.get("authenticated"):
         return "authentication_failed"
 
     online_devices = device_status.get("online_devices", 0)

@@ -22,7 +22,6 @@ warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Configure enhanced logging with file rotation (to stderr - won't corrupt MCP stdout JSON-RPC)
-import logging.handlers
 
 _log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
 _log_numeric = getattr(logging, _log_level, logging.WARNING)

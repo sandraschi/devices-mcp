@@ -194,7 +194,7 @@ class DevicesMCPServer:
             if not hasattr(self, "mcp") or self.mcp is None:
                 self.mcp = FastMCP("devices-mcp")
                 # MCP Bridge: proxy upstream servers via MCP_BRIDGE_URLS
-                _bridge_proxies = []
+                bridge_proxies = []
                 bridge_urls = os.getenv("MCP_BRIDGE_URLS", "")
                 if bridge_urls:
                     for url in bridge_urls.split(","):
@@ -202,7 +202,7 @@ class DevicesMCPServer:
                         if url:
                             try:
                                 self.mcp.add_provider(create_proxy(url))
-                                _bridge_proxies.append(url)
+                                bridge_proxies.append(url)
                             except Exception:
                                 pass
                 _register_fastmcp_32_parity(self.mcp)

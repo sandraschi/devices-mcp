@@ -157,11 +157,11 @@ class DigicamCamera(Webcam):
 
         # Try specific brand match first
         if (brand, conn) in difficulty_map:
-            return difficulty_map[(brand, conn)]
+            return difficulty_map[brand, conn]
 
         # Try connection type fallback
         if ("any", conn) in difficulty_map:
-            return difficulty_map[("any", conn)]
+            return difficulty_map["any", conn]
 
         return "unknown"
 

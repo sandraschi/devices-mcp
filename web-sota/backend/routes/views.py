@@ -107,8 +107,8 @@ async def index_page(request: Request):
     try:
         import os
 
-        _root = os.path.abspath(os.sep) if os.name != "nt" else (os.environ.get("SystemDrive", "C:") + os.sep)
-        disk = psutil.disk_usage(_root)
+        root = os.path.abspath(os.sep) if os.name != "nt" else (os.environ.get("SystemDrive", "C:") + os.sep)
+        disk = psutil.disk_usage(root)
         storage_used = round(disk.percent, 1)
 
         system_status = {

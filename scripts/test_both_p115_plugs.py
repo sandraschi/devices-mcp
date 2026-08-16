@@ -76,9 +76,7 @@ async def main():
     logger.info(f"Living Room (192.168.0.17): {'[PASS]' if results[0] else '[FAIL]'}")
     logger.info(f"Kitchen (192.168.0.137): {'[PASS]' if results[1] else '[FAIL]'}")
     logger.info(f"Server (192.168.0.38): {'[PASS]' if results[2] else '[FAIL]'}")
-    logger.info(
-        f"\nOverall: {'[SUCCESS] All tests passed' if all(results) else '[FAILED] Some tests failed'}"
-    )
+    logger.info(f"\nOverall: {'[SUCCESS] All tests passed' if all(results) else '[FAILED] Some tests failed'}")
 
     return 0 if all(results) else 1
 

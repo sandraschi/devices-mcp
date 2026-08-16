@@ -398,9 +398,7 @@ async def hardware_initializer():
     from devices_mcp.core.hardware_init import HardwareInitializer
 
     camera_manager = CameraManager()
-    initializer = HardwareInitializer(camera_manager=camera_manager)
-
-    yield initializer
+    yield HardwareInitializer(camera_manager=camera_manager)
 
     cleanup = getattr(camera_manager, "cleanup", None)
     if cleanup:

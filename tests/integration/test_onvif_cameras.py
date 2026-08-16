@@ -127,7 +127,7 @@ async def test_onvif_camera_connection(onvif_cameras):
             logger.info(f"   Model: {status.get('model', 'Unknown')}")
             logger.info(f"   Resolution: {status.get('resolution', 'Unknown')}")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail(f"Connection to {camera_info['name']} timed out")
         except OSError as e:
             if "permission" in str(e).lower() or "10013" in str(e) or "10048" in str(e):
@@ -184,7 +184,7 @@ async def test_onvif_stream_url(onvif_cameras):
             stream_url2 = await asyncio.wait_for(camera.get_stream_url(), timeout=15.0)
             assert stream_url2 == stream_url, "Stream URL should be consistent"
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail(f"Stream URL retrieval for {camera_info['name']} timed out")
         except OSError as e:
             if "permission" in str(e).lower() or "10013" in str(e) or "10048" in str(e):
@@ -208,9 +208,7 @@ async def test_onvif_stream_endpoint(onvif_cameras):
             server = await asyncio.wait_for(TapoCameraServer.get_instance(), timeout=10.0)
 
             # Get camera from manager
-            camera = await asyncio.wait_for(
-                server.camera_manager.get_camera(camera_info["name"]), timeout=5.0
-            )
+            camera = await asyncio.wait_for(server.camera_manager.get_camera(camera_info["name"]), timeout=5.0)
 
             assert camera is not None, f"Camera {camera_info['name']} not found in manager"
 
@@ -221,7 +219,7 @@ async def test_onvif_stream_endpoint(onvif_cameras):
             logger.info(f"SUCCESS: {camera_info['name']}: Stream endpoint test passed")
             logger.info(f"   Stream URL available: {stream_url[:50]}...")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail(f"Stream endpoint test for {camera_info['name']} timed out")
         except OSError as e:
             if "permission" in str(e).lower() or "10013" in str(e) or "10048" in str(e):
@@ -277,7 +275,7 @@ async def test_onvif_snapshot(onvif_cameras):
             else:
                 logger.info(f"WARNING: {camera_info['name']}: Snapshot not supported (this is OK)")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail(f"Snapshot retrieval for {camera_info['name']} timed out")
         except OSError as e:
             if "permission" in str(e).lower() or "10013" in str(e) or "10048" in str(e):
@@ -301,9 +299,7 @@ async def test_onvif_mjpeg_stream_endpoint(onvif_cameras):
             server = await asyncio.wait_for(TapoCameraServer.get_instance(), timeout=35.0)
 
             # Get camera from manager
-            camera = await asyncio.wait_for(
-                server.camera_manager.get_camera(camera_info["name"]), timeout=5.0
-            )
+            camera = await asyncio.wait_for(server.camera_manager.get_camera(camera_info["name"]), timeout=5.0)
 
             assert camera is not None, f"Camera {camera_info['name']} not found in manager"
 
@@ -323,14 +319,12 @@ async def test_onvif_mjpeg_stream_endpoint(onvif_cameras):
             logger.info(f"   Stream URL: {stream_url[:60]}...")
             logger.info("   Multiple requests: OK (fresh connections)")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail(f"MJPEG stream endpoint test for {camera_info['name']} timed out")
         except OSError as e:
             if "permission" in str(e).lower() or "10013" in str(e) or "10048" in str(e):
                 pytest.skip(f"Socket permission error for {camera_info['name']}: {e}")
-            pytest.fail(
-                f"MJPEG stream endpoint test for {camera_info['name']} failed with OSError: {e}"
-            )
+            pytest.fail(f"MJPEG stream endpoint test for {camera_info['name']} failed with OSError: {e}")
         except Exception as e:
             error_msg = str(e)
             if "permission" in error_msg.lower() or "socket" in error_msg.lower():
@@ -372,7 +366,7 @@ async def test_onvif_fresh_connection_each_time(onvif_cameras):
 
             logger.info(f"SUCCESS: {camera_info['name']}: Fresh connections work correctly")
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             pytest.fail(f"Fresh connection test for {camera_info['name']} timed out")
         except OSError as e:
             if "permission" in str(e).lower() or "10013" in str(e) or "10048" in str(e):
@@ -416,9 +410,7 @@ async def test_onvif_camera_manager_integration(onvif_cameras, camera_manager):
 
         # Test getting each camera
         for camera_info in onvif_cameras:
-            camera = await asyncio.wait_for(
-                camera_manager.get_camera(camera_info["name"]), timeout=5.0
-            )
+            camera = await asyncio.wait_for(camera_manager.get_camera(camera_info["name"]), timeout=5.0)
             assert camera is not None, f"Camera {camera_info['name']} not found"
 
             # Test stream URL through manager
@@ -427,7 +419,7 @@ async def test_onvif_camera_manager_integration(onvif_cameras, camera_manager):
 
         logger.info(f"SUCCESS: Camera manager integration: {len(onvif_cameras)} cameras working")
 
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pytest.fail("Camera manager integration test timed out")
     except OSError as e:
         if "permission" in str(e).lower() or "10013" in str(e) or "10048" in str(e):

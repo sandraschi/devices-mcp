@@ -490,8 +490,6 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
                 robot.status = RobotStatus.DOCKED
             elif command_request.command == RobotCommand.DOCK:
                 robot.status = RobotStatus.CHARGING
-            else:
-                pass
 
             result = {"success": True, "message": f"Command {command_request.command} simulated"}
 

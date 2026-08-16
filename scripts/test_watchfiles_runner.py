@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 """
 Test script for Devices MCP WebApp Watchfiles Runner
 

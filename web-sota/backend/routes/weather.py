@@ -273,8 +273,8 @@ async def netatmo_oauth_callback(
         )
         return HTMLResponse(content=body, status_code=400)
 
-    _expiry, redirect_uri = pending
-    if time.time() > _expiry:
+    expiry, redirect_uri = pending
+    if time.time() > expiry:
         body = _netatmo_oauth_html_page(
             "Netatmo session expired",
             "<h1>Session expired</h1><p>Start again from the Weather page.</p>",

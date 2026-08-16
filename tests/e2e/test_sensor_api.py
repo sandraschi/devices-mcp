@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import pytest
+from backend.server import WebServer
 from fastapi.testclient import TestClient
 
 from devices_mcp.tools.energy.tapo_plug_tools import (
@@ -8,7 +9,6 @@ from devices_mcp.tools.energy.tapo_plug_tools import (
     TapoSmartPlug,
     tapo_plug_manager,
 )
-from backend.server import WebServer
 
 
 @pytest.fixture
@@ -59,9 +59,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
 
     monkeypatch.setattr(tapo_plug_manager, "get_all_devices", fake_get_all_devices)
     monkeypatch.setattr(tapo_plug_manager, "get_device_status", fake_get_device_status)
-    monkeypatch.setattr(
-        tapo_plug_manager, "get_energy_usage_history", fake_get_energy_usage_history
-    )
+    monkeypatch.setattr(tapo_plug_manager, "get_energy_usage_history", fake_get_energy_usage_history)
     tapo_plug_manager.get_device_host = lambda device_id: "192.168.1.120"
 
     return TestClient(app)
@@ -89,4 +87,3 @@ def test_get_tapo_p115_history(client: TestClient) -> None:
     datapoint = payload["data_points"][0]
     assert datapoint["power_consumption"] == 40.0
     assert datapoint["energy_consumption"] == 0.04
-

@@ -44,9 +44,7 @@ class TestLLMManager:
 
     def test_register_openai_without_key(self, manager):
         """Test that OpenAI provider requires API key."""
-        result = manager.register_provider(
-            ProviderType.OPENAI, "https://api.openai.com/v1", api_key=None
-        )
+        result = manager.register_provider(ProviderType.OPENAI, "https://api.openai.com/v1", api_key=None)
         assert result is False
 
     def test_register_invalid_provider(self, manager):
@@ -60,9 +58,7 @@ class TestLLMManager:
         manager.register_provider(ProviderType.OLLAMA, "http://localhost:11434")
         manager.register_provider(ProviderType.LM_STUDIO, "http://localhost:1234")
 
-        with patch.object(
-            manager.providers[ProviderType.OLLAMA], "list_models", new_callable=AsyncMock
-        ) as mock_list:
+        with patch.object(manager.providers[ProviderType.OLLAMA], "list_models", new_callable=AsyncMock) as mock_list:
             mock_list.return_value = []
             providers = await manager.list_providers()
 
@@ -80,9 +76,7 @@ class TestLLMManager:
             {"name": "mistral", "provider": "ollama"},
         ]
 
-        with patch.object(
-            manager.providers[ProviderType.OLLAMA], "list_models", new_callable=AsyncMock
-        ) as mock_list:
+        with patch.object(manager.providers[ProviderType.OLLAMA], "list_models", new_callable=AsyncMock) as mock_list:
             mock_list.return_value = mock_models
             models = await manager.list_models(ProviderType.OLLAMA)
 
@@ -94,9 +88,7 @@ class TestLLMManager:
         """Test loading a model."""
         manager.register_provider(ProviderType.OLLAMA, "http://localhost:11434")
 
-        with patch.object(
-            manager.providers[ProviderType.OLLAMA], "load_model", new_callable=AsyncMock
-        ) as mock_load:
+        with patch.object(manager.providers[ProviderType.OLLAMA], "load_model", new_callable=AsyncMock) as mock_load:
             mock_load.return_value = True
             result = await manager.load_model("llama2", ProviderType.OLLAMA)
 
@@ -129,13 +121,9 @@ class TestLLMManager:
         manager.current_model = "llama2"
         manager.current_provider = ProviderType.OLLAMA
 
-        with patch.object(
-            manager.providers[ProviderType.OLLAMA], "chat", new_callable=AsyncMock
-        ) as mock_chat:
+        with patch.object(manager.providers[ProviderType.OLLAMA], "chat", new_callable=AsyncMock) as mock_chat:
             mock_chat.return_value = "AI response"
-            response = await manager.chat(
-                [{"role": "user", "content": "Hello"}], ProviderType.OLLAMA, stream=False
-            )
+            response = await manager.chat([{"role": "user", "content": "Hello"}], ProviderType.OLLAMA, stream=False)
 
             assert response == "AI response"
 
@@ -150,9 +138,7 @@ class TestLLMManager:
         """Test closing all providers."""
         manager.register_provider(ProviderType.OLLAMA, "http://localhost:11434")
 
-        with patch.object(
-            manager.providers[ProviderType.OLLAMA], "close", new_callable=AsyncMock
-        ) as mock_close:
+        with patch.object(manager.providers[ProviderType.OLLAMA], "close", new_callable=AsyncMock) as mock_close:
             await manager.close()
 
             mock_close.assert_called_once()

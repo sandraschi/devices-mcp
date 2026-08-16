@@ -522,6 +522,7 @@ def nav_click_through(output_dir: str):
             clicked = False
             try:
                 import pywinauto
+
                 app = pywinauto.Application(backend="uia").connect(handle=win.get("handle", 0))
                 w = app.window(handle=win.get("handle", 0))
                 link = w.descendants(title=label)

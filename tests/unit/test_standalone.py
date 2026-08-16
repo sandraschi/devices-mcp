@@ -22,9 +22,7 @@ def print_error(message):
     """Print an error message."""
 
 
-@pytest.mark.skip(
-    reason="TODO: Fix test_server - mock object doesn't match actual server structure"
-)
+@pytest.mark.skip(reason="TODO: Fix test_server - mock object doesn't match actual server structure")
 async def test_server():
     """Test the TapoCameraServer class directly."""
 
@@ -69,10 +67,6 @@ async def test_server():
 
         def run(self, host=None, port=None, stdio=False):
             """Mock run method for the server."""
-            if stdio:
-                pass
-            if host and port:
-                pass
             return self
 
     # Patch the FastMCP import
@@ -171,13 +165,9 @@ async def test_server():
             # Verify the PTZ methods were called with the correct parameters
             if mock_camera.moveMotor.called:
                 mock_camera.moveMotor.call_args[0]
-            else:
-                pass
 
             if mock_camera.zoom.called:
                 mock_camera.zoom.call_args[0]
-            else:
-                pass
 
             # For now, just verify the response is successful
             # We'll fix the mock verification in the next step
@@ -195,9 +185,7 @@ async def test_server():
 
             # Verify the response and mock call
             assert result.content["status"] == "success", "Failed to enable motion detection"
-            assert result.content.get("motion_detection", {}).get("enabled") is True, (
-                "Motion detection not enabled"
-            )
+            assert result.content.get("motion_detection", {}).get("enabled") is True, "Motion detection not enabled"
             mock_camera.setMotionDetection.assert_awaited_once_with({"enabled": True})
             print_success("Successfully controlled motion detection")
 

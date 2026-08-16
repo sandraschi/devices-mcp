@@ -105,7 +105,7 @@ logger.info("=" * 70)
 logger.info("METHOD 2: python-kasa (Alternative)")
 logger.info("=" * 70)
 try:
-    from kasa import Discover, SmartDevice
+    from kasa import SmartDevice  # Discover used implicitly for enumeration
 
     logger.info("[OK] python-kasa imported successfully")
     try:

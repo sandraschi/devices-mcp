@@ -33,7 +33,7 @@ def _interpolate_env(value: Any) -> Any:
     caller sees a readable hint about what is missing.
     """
     if isinstance(value, str):
-        _pattern = re.compile(r"\$\{([^}]+)\}")
+        pattern = re.compile(r"\$\{([^}]+)\}")
 
         def _sub(m: re.Match) -> str:
             var = m.group(1)
@@ -43,7 +43,7 @@ def _interpolate_env(value: Any) -> Any:
                 return os.environ.get(var.strip(), default.strip())
             return os.environ.get(var, m.group(0))  # leave literal if missing
 
-        return _pattern.sub(_sub, value)
+        return pattern.sub(_sub, value)
     if isinstance(value, dict):
         return {k: _interpolate_env(v) for k, v in value.items()}
     if isinstance(value, list):

@@ -31,8 +31,6 @@ def test_dependency_installation():
             for line in lines:
                 if line.startswith("Version:"):
                     break
-        else:
-            pass
 
         # Test installation to temp directory
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -51,8 +49,6 @@ def test_dependency_installation():
             if result.returncode == 0:
                 pass
             else:
-                if result.stdout:
-                    pass
                 failed_deps.append(dep_spec)
 
     if failed_deps:

@@ -310,7 +310,7 @@ class TapoPlugManager:
 
     def _create_device_from_payload(self, payload: dict[str, Any]) -> TapoSmartPlug:
         """Create a TapoSmartPlug instance from ingestion payload."""
-        power_state = bool(payload.get("power_state", False))
+        power_state = bool(payload.get("power_state"))
         daily_energy = float(payload.get("daily_energy", 0.0))
         monthly_energy = float(payload.get("monthly_energy", daily_energy * 30))
         current_power = float(payload.get("current_power", 0.0))
@@ -337,10 +337,10 @@ class TapoPlugManager:
             daily_cost=round(daily_cost, 4),
             monthly_cost=round(monthly_cost, 4),
             last_seen=str(payload.get("last_seen", datetime.utcnow().isoformat() + "Z")),
-            automation_enabled=bool(payload.get("automation_enabled", False)),
+            automation_enabled=bool(payload.get("automation_enabled")),
             energy_monitoring=True,
             power_schedule=str(payload.get("power_schedule", "")),
-            energy_saving_mode=bool(payload.get("energy_saving_mode", False)),
+            energy_saving_mode=bool(payload.get("energy_saving_mode")),
         )
 
     async def _load_historical_data(self):

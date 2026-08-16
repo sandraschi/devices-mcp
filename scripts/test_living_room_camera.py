@@ -25,9 +25,7 @@ if __name__ == "__main__":
         try:
             with open(config_path, encoding="utf-8") as f:
                 config = yaml.safe_load(f)
-            living_room_cfg = (
-                config.get("cameras", {}).get("tapo_living_room", {}).get("params", {})
-            )
+            living_room_cfg = config.get("cameras", {}).get("tapo_living_room", {}).get("params", {})
             username = living_room_cfg.get("username", username)
             password = living_room_cfg.get("password", password)
         except Exception as e:

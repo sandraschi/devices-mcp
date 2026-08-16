@@ -63,15 +63,11 @@ def test_all_cameras():
 
         if not camera["username"] or not camera["password"]:
             logger.info(f"[SKIP] {camera['name']} - No credentials set in config.yaml")
-            logger.info(
-                "Set username/password in config.yaml -> cameras -> tapo_kitchen/tapo_living_room"
-            )
+            logger.info("Set username/password in config.yaml -> cameras -> tapo_kitchen/tapo_living_room")
             all_success = False
             continue
 
-        success = test_connection(
-            camera["ip"], camera["username"], camera["password"], max_attempts=1
-        )
+        success = test_connection(camera["ip"], camera["username"], camera["password"], max_attempts=1)
 
         if not success:
             all_success = False

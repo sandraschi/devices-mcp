@@ -47,9 +47,7 @@ async def run_tests():
         assert result.content["status"] == "connected", "Failed to connect to camera"
 
         # Verify the camera was initialized correctly
-        mock_tapo_class.assert_called_once_with(
-            test_host, test_username, test_password, cloud_password=test_password
-        )
+        mock_tapo_class.assert_called_once_with(test_host, test_username, test_password, cloud_password=test_password)
         mock_camera.login.assert_awaited_once()
 
     # Test 2: Get camera info

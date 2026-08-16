@@ -39,9 +39,7 @@ async def test_p115_tapo_api(ip, username, password):
         # Access attributes directly (object, not dict)
         device_name = getattr(device_info, "nickname", getattr(device_info, "name", "Unknown"))
         model = getattr(device_info, "model", "Unknown")
-        firmware = getattr(
-            device_info, "fw_ver", getattr(device_info, "firmware_version", "Unknown")
-        )
+        firmware = getattr(device_info, "fw_ver", getattr(device_info, "firmware_version", "Unknown"))
         mac = getattr(device_info, "mac", "Unknown")
         device_id = getattr(device_info, "device_id", "Unknown")
 
@@ -70,15 +68,9 @@ async def test_p115_tapo_api(ip, username, password):
             energy_usage = await plug.get_energy_usage()
             if energy_usage:
                 logger.info("\nEnergy Usage:")
-                current_power = getattr(
-                    energy_usage, "current_power", getattr(energy_usage, "power", 0)
-                )
-                today_energy = getattr(
-                    energy_usage, "today_energy", getattr(energy_usage, "today", 0)
-                )
-                month_energy = getattr(
-                    energy_usage, "month_energy", getattr(energy_usage, "month", 0)
-                )
+                current_power = getattr(energy_usage, "current_power", getattr(energy_usage, "power", 0))
+                today_energy = getattr(energy_usage, "today_energy", getattr(energy_usage, "today", 0))
+                month_energy = getattr(energy_usage, "month_energy", getattr(energy_usage, "month", 0))
                 logger.info(f"  Current Power: {current_power} W")
                 logger.info(f"  Today's Energy: {today_energy} kWh")
                 logger.info(f"  This Month: {month_energy} kWh")

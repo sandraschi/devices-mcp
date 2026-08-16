@@ -55,12 +55,8 @@ def test_connection(ip, username, password, max_attempts=1):
                 logger.info("  1. Wrong username/password (use LOCAL admin, not cloud account)")
                 logger.info("  2. Camera requires different credentials")
                 logger.info("  3. Camera security settings changed")
-                logger.info(
-                    "\nNote: Tapo cameras require LOCAL admin credentials set in the Tapo app."
-                )
-                logger.info(
-                    "Go to: Tapo app -> Camera -> Device Settings -> Advanced -> Local Device Settings"
-                )
+                logger.info("\nNote: Tapo cameras require LOCAL admin credentials set in the Tapo app.")
+                logger.info("Go to: Tapo app -> Camera -> Device Settings -> Advanced -> Local Device Settings")
                 return False
 
             # Other errors - might retry if allowed
