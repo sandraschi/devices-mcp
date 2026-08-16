@@ -11,9 +11,10 @@
         Kind = 'nssm'
     }
     Frontend = @{
-        Kind           = 'vite-npm'
-        PackageManager = 'npm'
-        PortEnvVar     = 'VITE_PORT'
-        ApiTargetEnv   = 'VITE_API_TARGET'
+        Kind             = 'vite-npm'
+        PackageManager   = 'npm'
+        PortEnvVar       = 'VITE_PORT'
+        ApiTargetEnv     = 'VITE_API_TARGET'
+        InstallOnStart   = $false   # node_modules current, lockfile committed - skip npm install per launch
     }
 }

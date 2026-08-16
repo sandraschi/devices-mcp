@@ -53,7 +53,12 @@ function Enter-FleetHeadlessConsole {
     if ($env:FLEET_PROBE_RUN -eq '1') { return }
     if (-not $Headless) { return }
 
-    if ($Host.UI.RawUI.WindowTitle -match 'Hidden') { return }
+    # Guard: env var, NOT the window title. A hidden console's
+    # RawUI.WindowTitle is empty/default (never 'Hidden'), so a title check
+    # re-spawns infinitely - a fork storm that floods session 0 (observed
+    # 2026-08-16 on devices-mcp: hundreds of orphaned cmd/pwsh chains).
+    if ($env:FLEET_HEADLESS_REENTERED -eq '1') { return }
+    $env:FLEET_HEADLESS_REENTERED = '1'
 
     $scriptPath = $StartScriptPath
     if (-not $scriptPath) {
