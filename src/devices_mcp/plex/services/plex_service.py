@@ -197,12 +197,17 @@ class PlexService:
             # For now, we'll return a summary of the library
             items = await self._run_in_executor(lambda: section.all())
 
+            # Honesty: library organization against the real Plex API is
+            # NOT implemented. Previously it claimed "Organization completed"
+            # without doing anything (fake green). Now it returns the library
+            # summary only and says so explicitly.
             return {
                 "library_id": library_id,
                 "library_name": section.title,
                 "item_count": len(items),
-                "changes": [] if dry_run else ["Organization completed"],
+                "changes": [],
                 "dry_run": dry_run,
+                "note": "Library organization is not implemented - summary only, nothing was reorganized.",
             }
         except Exception:
             logger.exception("Error organizing library {library_id}:")

@@ -23,6 +23,8 @@ from .async_utils import (
 from .config import get_config_value, load_config, save_config, set_config_value
 from .logging_utils import (
     get_logger,
+    log_exceptions,
+    log_execution_time,
     setup_logging,
 )
 from .network import (
@@ -52,23 +54,20 @@ from .validation import (
 __all__ = [
     "AsyncLock",
     "TaskPool",
-    # From validation
     "ValidationError",
-    # From async_utils
     "async_retry",
     "async_timeout",
     "cancel_all_tasks",
-    # From network
     "check_plex_server_connection",
     "create_task",
     "gather_with_concurrency",
     "get_config_value",
     "get_local_ip_address",
-    # From logging_utils
     "get_logger",
     "is_port_in_use",
-    # From config
     "load_config",
+    "log_exceptions",
+    "log_execution_time",
     "run_in_executor",
     "run_in_process",
     "run_until_complete_with_timeout",

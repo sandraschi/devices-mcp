@@ -6,7 +6,6 @@ operations for the Plex Media Server.
 """
 
 import logging
-import random
 
 from plexapi.exceptions import BadRequest, NotFound
 
@@ -208,20 +207,27 @@ class PlaylistService(BaseService):
 
             most_common_genre = max(genres.items(), key=lambda x: x[1])[0] if genres else None
 
+            # Honesty: play-history statistics (plays, users, completion,
+            # skip rate, last played) require Plex play-history integration
+            # which is NOT implemented. Previously they were random numbers
+            # (fake green). Real-derived fields stay; the rest are explicit 0
+            # with a simulated=True flag.
             return PlaylistAnalytics(
                 playlist_id=playlist_id,
                 name=playlist.title,
-                total_plays=random.randint(10, 1000),  # Mock data
-                unique_users=random.randint(1, 10),  # Mock data
-                avg_completion_rate=random.uniform(50, 100),  # Mock data
-                popular_items=[random.choice(items).title for _ in range(min(3, len(items)))] if items else [],
-                skip_rate=random.uniform(0, 30),  # Mock data
+                total_plays=0,
+                unique_users=0,
+                avg_completion_rate=0.0,
+                popular_items=[item.title for item in items[:3]],
+                skip_rate=0.0,
                 recommendations=recommendations,
-                last_played=random.randint(1600000000, 1700000000),  # Mock data
+                last_played=None,
                 genre_breakdown=genres,
                 most_common_genre=most_common_genre,
                 total_duration_seconds=total_duration,
                 avg_rating=avg_rating,
+                simulated=True,
+                note="Play-history stats not implemented - plays/users/completion/skip/last-played are 0/None, not measured values.",
             )
 
         except NotFound as e:

@@ -4,6 +4,7 @@ Provides standardized logging configuration and helper functions for
 consistent logging across all PlexMCP tools and services.
 """
 
+import functools
 import logging
 import sys
 from pathlib import Path
@@ -187,3 +188,49 @@ def log_warning(logger: logging.Logger, operation: str, message: str, **kwargs: 
 
 # Alias for backward compatibility
 setup_logging = configure_logging
+
+
+def log_exceptions(log_errors: bool = True):
+    """Decorator factory: log (with traceback) any exception from an async
+    method, then re-raise. Used by plex.services.base."""
+
+    def deco(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            try:
+                return await fn(*args, **kwargs)
+            except Exception:
+                if log_errors:
+                    logger = getattr(args[0], "logger", None) if args else None
+                    (logger or logging.getLogger(fn.__module__)).exception(
+                        "Error in %s", getattr(fn, "__qualname__", fn.__name__)
+                    )
+                raise
+
+        return wrapper
+
+    return deco
+
+
+def log_execution_time(logger=None):
+    """Decorator factory: time an async call and log it at debug level."""
+
+    def deco(fn):
+        @functools.wraps(fn)
+        async def wrapper(*args, **kwargs):
+            import time as _t
+
+            _logger = logger or logging.getLogger(fn.__module__)
+            _start = _t.perf_counter()
+            try:
+                return await fn(*args, **kwargs)
+            finally:
+                _logger.debug(
+                    "%s took %.2f ms",
+                    getattr(fn, "__qualname__", fn.__name__),
+                    (_t.perf_counter() - _start) * 1000,
+                )
+
+        return wrapper
+
+    return deco
