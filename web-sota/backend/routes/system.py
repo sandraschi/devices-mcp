@@ -5,6 +5,7 @@ import os
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import psutil
 from fastapi import APIRouter, Request
@@ -410,3 +411,62 @@ async def get_system_status():
         }
     except Exception as e:
         return {"status": "error", "error": str(e)}
+
+
+@router.post("/api/system/reconnect")
+async def reconnect_services() -> dict[str, Any]:
+    """Reconnect dashboard services (hue rescan, netatmo re-init) and report state.
+
+    Returns per-service status after the reconnect attempt so the dashboard
+    can refresh its cards in one round trip.
+    """
+    results: dict[str, Any] = {}
+    try:
+        from devices_mcp.tools.lighting.hue_tools import get_hue_manager
+
+        mgr = get_hue_manager()
+        if mgr._initialized and mgr._bridge is not None:
+            try:
+                await asyncio.wait_for(mgr.rescan(), timeout=20.0)
+                results["hue"] = {
+                    "ok": True,
+                    "connected": True,
+                    "lights_count": len(mgr.lights),
+                    "message": "Hue bridge rescan complete.",
+                }
+            except Exception as e:
+                results["hue"] = {
+                    "ok": False,
+                    "connected": False,
+                    "message": f"Hue rescan failed: {e!s}",
+                }
+        else:
+            results["hue"] = {"ok": False, "connected": False, "message": "Hue bridge not initialized."}
+    except Exception as e:
+        results["hue"] = {"ok": False, "message": f"Hue reconnect error: {e!s}"}
+
+    try:
+        from devices_mcp.integrations.netatmo_client import NetatmoService
+
+        await NetatmoService.reset_for_reconnect()
+        try:
+            inst = await asyncio.wait_for(NetatmoService.get_instance(), timeout=25.0)
+        except Exception:
+            inst = None
+        if inst is None:
+            results["netatmo"] = {"ok": False, "connected": False, "message": "Netatmo client not loaded."}
+        else:
+            ok = inst.is_api_ready()
+            results["netatmo"] = {
+                "ok": ok,
+                "connected": ok,
+                "message": "Netatmo weather station is connected."
+                if ok
+                else (inst.last_error or "Netatmo needs re-auth."),
+                "reconnect_url": "/api/netatmo/oauth/start",
+            }
+    except Exception as e:
+        results["netatmo"] = {"ok": False, "message": f"Netatmo reconnect error: {e!s}"}
+
+    results["status"] = "ok" if any(r.get("ok") for r in results.values()) else "degraded"
+    return results

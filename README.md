@@ -61,7 +61,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 
 **Windows desktop (leg 3):** [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases) → `Devices MCP_*_x64-setup.exe` (single NSIS installer — that's all you need).
 
-**MCP bundle (leg 1):** Releases → `devices-mcp-*.mcpb` → Claude Desktop. Latest: `dist/devices-mcp-2.4.0.mcpb` (2.5 MB).
+**MCP bundle (leg 1):** Releases → `devices-mcp-*.mcpb` → Claude Desktop. Latest `.mcpb` on the [Releases page](https://github.com/sandraschi/devices-mcp/releases).
 
 **Developers (leg 1+2):** see [INSTALL.md](INSTALL.md).
 

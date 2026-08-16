@@ -1,5 +1,6 @@
 """Lighting routes - Connects to real MCP lighting tools."""
 
+import asyncio
 import logging
 
 # Add src to Python path for MCP imports
@@ -73,11 +74,14 @@ async def get_philips_hue_status() -> dict[str, Any]:
         mgr = get_hue_manager()
         if not mgr._initialized and bridge_ip and username:
             await mgr.initialize()
-            if mgr._initialized and not mgr.lights:
-                try:
-                    await mgr.rescan()
-                except Exception:
-                    logger.debug("Hue rescan after init skipped", exc_info=True)
+        # Lazy-load the light cache once per process: the manager initializes
+        # with an empty cache and only rescans on first use, so a fresh boot
+        # reports lights_count=0 forever until someone visits /lighting.
+        if mgr._initialized and not getattr(mgr, "_cache_loaded", False) and not mgr.lights:
+            try:
+                await asyncio.wait_for(mgr.rescan(), timeout=20.0)
+            except Exception:
+                logger.debug("Hue lazy rescan from status skipped", exc_info=True)
 
         connected = bool(mgr._initialized and mgr._bridge is not None)
         err = mgr._connection_error

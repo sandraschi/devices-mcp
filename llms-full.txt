@@ -1,6 +1,6 @@
 # devices-mcp — full documentation corpus
 
-Generated: 2026-07-21 15:27 UTC · Version: 2.4.0 · Source: https://github.com/sandraschi/devices-mcp
+Generated: 2026-08-16 18:56 UTC · Version: 2.4.1 · Source: https://github.com/sandraschi/devices-mcp
 
 This file is auto-generated. Prefer linked markdown on `main` for edits.
 
@@ -66,7 +66,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 
 **Windows desktop (leg 3):** [GitHub Releases](https://github.com/sandraschi/devices-mcp/releases) → `Devices MCP_*_x64-setup.exe` (single NSIS installer — that's all you need).
 
-**MCP bundle (leg 1):** Releases → `devices-mcp.mcpb` → Claude Desktop.
+**MCP bundle (leg 1):** Releases → `devices-mcp-*.mcpb` → Claude Desktop. Latest `.mcpb` on the [Releases page](https://github.com/sandraschi/devices-mcp/releases).
 
 **Developers (leg 1+2):** see [INSTALL.md](INSTALL.md).
 
@@ -354,6 +354,16 @@ NSIS installer embeds all three. The standalone `tauri.exe` on Releases is **not
 
 - [DESKTOP.md](DESKTOP.md) — install UX
 - [DEVELOPMENT.md](DEVELOPMENT.md) — build pipeline
+
+## Service control (canonical)
+
+The always-on backend is the NSSM service devices-mcp (AUTO_START, LocalSystem, binary: nssm.exe, app: uv run python -m backend.server on 10717).
+
+- Control it ONLY via the service manager: sc.exe stop/start devices-mcp or 
+ssm restart devices-mcp.
+- NEVER taskkill the service's child process - NSSM respawns it instantly and the port races (2026-08-16 incident).
+- The Fleet-devices-mcp scheduled task (every 20 min) health-checks :10717/api/health and restarts via Restart-Service.
+- Dev mode: start.bat/start.ps1 (backend + Vite + browser). One backend on 10717 at a time.
 
 
 

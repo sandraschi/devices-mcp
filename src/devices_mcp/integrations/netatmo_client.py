@@ -8,6 +8,7 @@ Falls back to simulated data if not configured or on error.
 from __future__ import annotations
 
 import asyncio
+import os
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -255,24 +256,48 @@ class NetatmoService:
         root = Path(__file__).resolve().parents[3]
         return root / token_path.name
 
+    @staticmethod
+    def _valid_refresh_token(token: str) -> bool:
+        """A real Netatmo refresh token is printable ASCII, 32-400 chars.
+
+        Rejects junk the cache may hold after a failed/crashed write: NUL
+        bytes, non-printable control chars, or whitespace-only content
+        (str.strip() does NOT remove NULs - a 57-byte NUL file once
+        overrode the .env token and produced API 403s).
+        """
+        if not token or len(token) < 32 or len(token) > 400:
+            return False
+        return all(32 <= ord(c) <= 126 for c in token)
+
     def _load_token_cache(self) -> None:
         """Load refresh token from cache file if it exists (overrides config)."""
         if self.token_file.exists():
             try:
                 with open(self.token_file) as f:
                     cached_token = f.read().strip()
-                    if cached_token:
+                    if self._valid_refresh_token(cached_token):
                         logger.info(f"Loaded Netatmo refresh token from cache: {self.token_file}")
                         self.config.refresh_token = cached_token
+                    elif cached_token:
+                        logger.warning(
+                            f"Ignoring invalid Netatmo token cache at {self.token_file} "
+                            f"({len(cached_token)} chars, not printable ASCII) - using config/.env token instead"
+                        )
             except Exception as e:
                 logger.warning(f"Failed to load Netatmo token cache: {e}")
 
     def _save_token_cache(self, refresh_token: str) -> None:
-        """Save refresh token to cache file for persistence across restarts."""
+        """Save refresh token to cache file for persistence across restarts.
+
+        Atomic write (temp file + rename) so a crash mid-write can never
+        leave a truncated/NUL-padded file that overrides the .env token.
+        """
         try:
             self.token_file.parent.mkdir(parents=True, exist_ok=True)
-            with open(self.token_file, "w") as f:
+            tmp = self.token_file.with_suffix(".cache.tmp")
+            with open(tmp, "w") as f:
                 f.write(refresh_token)
+            os.replace(tmp, self.token_file)
             logger.info(f"Saved Netatmo refresh token to cache: {self.token_file}")
         except Exception:
             logger.exception("Failed to save Netatmo token cache:")

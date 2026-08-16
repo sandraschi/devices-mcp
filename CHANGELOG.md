@@ -1,5 +1,28 @@
 # Changelog
 
+## [2.4.1] - 2026-08-16
+
+### Fixed
+- Netatmo 403 regression: a 57-byte NUL-byte token cache file overrode the valid `.env` refresh token (str.strip() does not remove NULs). Cache loader now validates printable-ASCII 32-400 chars and falls back to the config/.env token; cache saves are atomic (temp + rename).
+- Dashboard showed `lights_count: 0` forever after boot: Hue manager initializes with an empty lazy cache. The status endpoint now triggers one bounded rescan per process.
+- TemplateResponse calls updated to the Starlette 1.3.1 signature `(request, name, context)` across 47 call sites (views/auth/pages) - HTML pages 500'd on the new Starlette.
+- `start.ps1 -Headless` infinite re-spawn: the window-title guard failed on hidden consoles (title is empty, not "Hidden"); replaced with an env-var guard.
+
+### Added
+- Dashboard rebuild: hero section, per-plug energy rows (power state, W, kWh), Weather and Lighting cards, backend status dot, "Reconnect services" button.
+- `POST /api/system/reconnect` - one round trip reconnects Hue (rescan) and Netatmo (re-init), returns per-service state.
+- Fleet-standard API aliases: `GET /health`, `GET /api/v1/models` (with `chat` key), `GET /api/v1/settings` (with `configured` key).
+- Weather status exposes `needs_reconnect` + `reconnect_url` (Netatmo OAuth) when the sync fails.
+
+### Changed
+- `start.ps1` rewritten as the fleet SOTA webapp launcher: backend 10717 + Vite 10716, readiness poll (240s boot budget), browser auto-open, netstat port clearing matched on LISTENING only (a bare `:port` pattern can kill the caller's own client connections).
+- CUA webapp test hardened: NSSM service lifecycle via `sc.exe` (never kill the child), `pwsh` host (PS 5.1 + Start-Job in a console-less context crashes the parent), LISTENING-only port kills, Chrome window detection without the slow descendants() scan.
+- Removed `scripts/manage-webapp.ps1` (dead module `devices_mcp.web.server`, port 7777, dangerous Stop-Process pattern against the NSSM service).
+
+### Ops
+- `just e2e` green (backend health, frontend loads, no console errors; /health + /api/v1 probes).
+- NSSM service `devices-mcp` remains the canonical always-on backend on 10717; control via `sc.exe stop/start devices-mcp`; `Fleet-devices-mcp` watchdog task (20 min) restarts it via the service manager.
+
 ## [2.4.0] - 2026-08-01
 
 ### Added

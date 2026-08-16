@@ -54,3 +54,13 @@ NSIS installer embeds all three. The standalone `tauri.exe` on Releases is **not
 
 - [DESKTOP.md](DESKTOP.md) — install UX
 - [DEVELOPMENT.md](DEVELOPMENT.md) — build pipeline
+
+## Service control (canonical)
+
+The always-on backend is the NSSM service devices-mcp (AUTO_START, LocalSystem, binary: nssm.exe, app: uv run python -m backend.server on 10717).
+
+- Control it ONLY via the service manager: sc.exe stop/start devices-mcp or 
+ssm restart devices-mcp.
+- NEVER taskkill the service's child process - NSSM respawns it instantly and the port races (2026-08-16 incident).
+- The Fleet-devices-mcp scheduled task (every 20 min) health-checks :10717/api/health and restarts via Restart-Service.
+- Dev mode: start.bat/start.ps1 (backend + Vite + browser). One backend on 10717 at a time.

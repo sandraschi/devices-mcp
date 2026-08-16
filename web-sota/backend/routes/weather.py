@@ -194,6 +194,8 @@ async def get_netatmo_status() -> dict[str, Any]:
         "message": inst.last_error or "Netatmo is not connected. Click Connect to retry (check token and network).",
         "last_error": inst.last_error,
         "needs_init": True,
+        "needs_reconnect": True,
+        "reconnect_url": "/api/netatmo/oauth/start",
     }
 
 

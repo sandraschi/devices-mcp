@@ -23,7 +23,7 @@ async def login_page(request: Request):
     # If auth disabled, redirect to dashboard
     if not is_auth_enabled():
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {"request": request})
 
 
 @router.get("/lighting", response_class=HTMLResponse, name="lighting")
@@ -32,6 +32,7 @@ async def lighting_page(request: Request):
     logger.info("Lighting page requested")
     try:
         return templates.TemplateResponse(
+            request,
             "lighting.html",
             {
                 "request": request,
@@ -49,6 +50,7 @@ async def log_management_page(request: Request):
     """Serve the log management dashboard page."""
     logger.info("Log management page requested")
     return templates.TemplateResponse(
+        request,
         "log_management.html",
         {
             "request": request,
@@ -62,6 +64,7 @@ async def log_management_page(request: Request):
 async def onboarding_page(request: Request):
     """Serve the onboarding dashboard page."""
     return templates.TemplateResponse(
+        request,
         "onboarding.html",
         {
             "request": request,
@@ -75,6 +78,7 @@ async def onboarding_page(request: Request):
 async def energy_page(request: Request):
     """Serve the energy management dashboard page."""
     return templates.TemplateResponse(
+        request,
         "energy.html",
         {
             "request": request,
@@ -88,6 +92,7 @@ async def energy_page(request: Request):
 async def alarms_page(request: Request):
     """Serve the alarms dashboard page."""
     return templates.TemplateResponse(
+        request,
         "alarms.html",
         {
             "request": request,
@@ -124,6 +129,7 @@ async def stream_viewer_page(request: Request, camera_id: str):
     display_name = custom_name or camera_id.replace("_", " ").title()
 
     return templates.TemplateResponse(
+        request,
         "stream_viewer.html",
         {
             "request": request,
@@ -140,6 +146,7 @@ async def stream_viewer_page(request: Request, camera_id: str):
 async def appliance_monitor_page(request: Request):
     """Serve the appliance monitoring dashboard page."""
     return templates.TemplateResponse(
+        request,
         "appliance_monitor.html",
         {
             "request": request,
@@ -154,6 +161,7 @@ async def appliance_monitor_page(request: Request):
 async def weather_page(request: Request):
     """Serve the weather monitoring dashboard page."""
     return templates.TemplateResponse(
+        request,
         "weather.html",
         {
             "request": request,
@@ -168,6 +176,7 @@ async def weather_page(request: Request):
 async def kitchen_page(request: Request):
     """Serve the kitchen appliances dashboard page."""
     return templates.TemplateResponse(
+        request,
         "kitchen.html",
         {
             "request": request,
@@ -181,6 +190,7 @@ async def kitchen_page(request: Request):
 async def vienna_webcams_page(request: Request):
     """Serve the Vienna public webcams dashboard page."""
     return templates.TemplateResponse(
+        request,
         "vienna_webcams.html",
         {
             "request": request,
@@ -194,6 +204,7 @@ async def vienna_webcams_page(request: Request):
 async def robots_page(request: Request):
     """Serve the robots dashboard page."""
     return templates.TemplateResponse(
+        request,
         "robots.html",
         {
             "request": request,
@@ -207,6 +218,7 @@ async def robots_page(request: Request):
 async def ring_page(request: Request):
     """Serve the Ring doorbell dashboard page."""
     return templates.TemplateResponse(
+        request,
         "ring.html",
         {
             "request": request,
@@ -221,6 +233,7 @@ async def ring_page(request: Request):
 async def nest_page(request: Request):
     """Serve the Nest Protect dashboard page."""
     return templates.TemplateResponse(
+        request,
         "nest.html",
         {
             "request": request,
@@ -309,6 +322,7 @@ async def index(request: Request):
         return str(obj)
 
     return templates.TemplateResponse(
+        request,
         "dashboard.html",
         {
             "request": request,
@@ -331,7 +345,7 @@ async def index(request: Request):
 @router.get("/list_cameras", response_class=HTMLResponse, name="list_cameras")
 async def list_cameras(request: Request):
     """Serve the cameras list page."""
-    return templates.TemplateResponse("dashboard.html", {"request": request, "active_page": "cameras"})
+    return templates.TemplateResponse(request, "dashboard.html", {"request": request, "active_page": "cameras"})
 
 
 @router.get("/recordings", response_class=HTMLResponse, name="recordings")
@@ -351,6 +365,7 @@ async def recordings(request: Request):
         storage_free = f"{max(0, 100 - total_gb):.2f}GB"
 
         return templates.TemplateResponse(
+            request,
             "recordings.html",
             {
                 "request": request,
@@ -365,6 +380,7 @@ async def recordings(request: Request):
     except Exception as e:
         logger.exception("Error loading recordings page")
         return templates.TemplateResponse(
+            request,
             "recordings.html",
             {
                 "request": request,
@@ -387,6 +403,7 @@ async def events(request: Request):
         recent_events = event_store.get_events(limit=50)
 
         return templates.TemplateResponse(
+            request,
             "events.html",
             {
                 "request": request,
@@ -398,6 +415,7 @@ async def events(request: Request):
     except Exception as e:
         logger.exception(f"Error serving events page: {e}")
         return templates.TemplateResponse(
+            request,
             "events.html",
             {
                 "request": request,

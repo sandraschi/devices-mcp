@@ -142,6 +142,7 @@ async def index_page(request: Request):
 
     try:
         return templates.TemplateResponse(
+            request,
             "simple_dashboard.html",
             {
                 "request": request,
@@ -193,6 +194,7 @@ async def cameras_page(request: Request):
         load_error = "Could not load camera list. Restart the dashboard and refresh; check server log for errors."
         logger.warning("Cameras page data: %s", e, exc_info=True)
     return templates.TemplateResponse(
+        request,
         "cameras.html",
         {
             "request": request,
@@ -210,6 +212,7 @@ async def settings_page(request: Request):
     """Serve the settings page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "settings.html",
         {
             "request": request,
@@ -223,6 +226,7 @@ async def health_page(request: Request):
     """Serve the health monitoring page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "health.html",
         {
             "request": request,
@@ -236,6 +240,7 @@ async def onboarding_page(request: Request):
     """Serve the onboarding page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "onboarding.html",
         {
             "request": request,
@@ -249,6 +254,7 @@ async def energy_page(request: Request):
     """Serve the energy management page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "energy.html",
         {
             "request": request,
@@ -262,6 +268,7 @@ async def events_page(request: Request):
     """Serve the events history page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "events.html",
         {
             "request": request,
@@ -275,6 +282,7 @@ async def recordings_page(request: Request):
     """Serve the recordings page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "recordings.html",
         {
             "request": request,
@@ -288,6 +296,7 @@ async def logs_page(request: Request):
     """Serve the logs viewer page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "log_management.html",
         {
             "request": request,
@@ -301,6 +310,7 @@ async def alarms_page(request: Request):
     """Serve the alarm management page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "alarms.html",
         {
             "request": request,
@@ -314,6 +324,7 @@ async def lighting_page(request: Request):
     """Serve the lighting control dashboard page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "lighting.html",
         {
             "request": request,
@@ -341,6 +352,7 @@ async def stream_viewer_page(request: Request, camera_id: str):
         pass
 
     return templates.TemplateResponse(
+        request,
         "stream_viewer.html",
         {
             "request": request,
@@ -356,6 +368,7 @@ async def plex_page(request: Request):
     """Serve the Plex Media page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "plex.html",
         {
             "request": request,
@@ -369,6 +382,7 @@ async def weather_page(request: Request):
     """Serve the weather page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "weather.html",
         {
             "request": request,
@@ -383,6 +397,7 @@ async def ring_page(request: Request):
     """Serve the Ring doorbell page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "ring.html",
         {
             "request": request,
@@ -397,6 +412,7 @@ async def nest_page(request: Request):
     """Serve the Nest thermostat page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "nest.html",
         {
             "request": request,
@@ -411,6 +427,7 @@ async def robots_page(request: Request):
     """Serve the Robots/Vacuum page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "robots.html",
         {
             "request": request,
@@ -425,6 +442,7 @@ async def dreame_d20_page(request: Request):
     """Serve the Dreame D20 Pro dashboard page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "dreame-d20.html",
         {
             "request": request,
@@ -439,6 +457,7 @@ async def yahboom_page(request: Request):
     """Serve the Yahboom ROS 2 dashboard page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "yahboom.html",
         {
             "request": request,
@@ -453,6 +472,7 @@ async def security_page(request: Request):
     """Serve the Security page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "security.html",
         {
             "request": request,
@@ -468,6 +488,7 @@ async def storage_page(request: Request):
     templates = request.app.state.templates
     # Using a generic dashboard for storage if specific one missing, or dashboard itself
     return templates.TemplateResponse(
+        request,
         "dashboard.html",
         {
             "request": request,
@@ -482,6 +503,7 @@ async def system_info_page(request: Request):
     """Serve the System Info page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "system_info.html",
         {
             "request": request,
@@ -496,6 +518,7 @@ async def help_page(request: Request):
     """Serve the Help page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "help.html",
         {
             "request": request,
@@ -510,6 +533,7 @@ async def vienna_webcams_page(request: Request):
     """Serve the Vienna Webcams page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "vienna_webcams.html",
         {
             "request": request,
@@ -524,6 +548,7 @@ async def kitchen_page(request: Request):
     """Serve the Kitchen devices page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "kitchen.html",
         {
             "request": request,
@@ -538,6 +563,7 @@ async def appliance_monitor_page(request: Request):
     """Serve the Appliance Monitor page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
+        request,
         "appliance_monitor.html",
         {
             "request": request,

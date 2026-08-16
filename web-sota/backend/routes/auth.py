@@ -28,7 +28,7 @@ async def login_page(request: Request):
     # If auth disabled, redirect to dashboard
     if not is_auth_enabled():
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {"request": request})
 
 
 @router.post("/api/auth/login")

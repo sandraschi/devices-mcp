@@ -1,6 +1,6 @@
 # devices-mcp
 > Beta home IoT: MCP tools (FastMCP 3.2) + FastAPI/React dashboard + optional Windows Tauri installer.
-> Version: 2.4.0 · Generated: 2026-07-21 15:27 UTC
+> Version: 2.4.1 · Generated: 2026-08-16 18:56 UTC
 > Repo: https://github.com/sandraschi/devices-mcp · Default branch: **main** (do not use legacy `master`)
 
 ## Status
