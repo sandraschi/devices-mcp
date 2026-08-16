@@ -1,9 +1,9 @@
 import logging
 
+from devices_mcp.auth import get_current_user, is_auth_enabled
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from devices_mcp.auth import get_current_user, is_auth_enabled
 from devices_mcp.mcp_client import call_mcp_tool
 from devices_mcp.utils.storage import EventStore, RecordingStore
 

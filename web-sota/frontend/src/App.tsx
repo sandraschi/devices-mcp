@@ -14,7 +14,6 @@ import { Messaging } from '@/pages/Messaging';
 import { Nest } from '@/pages/Nest';
 import { Onboarding } from '@/pages/Onboarding';
 import { Placeholder } from '@/pages/Placeholder';
-import { Plex } from '@/pages/Plex';
 import { Ring } from '@/pages/Ring';
 import { Robots } from '@/pages/Robots';
 import { SensorHealth } from '@/pages/SensorHealth';
@@ -29,8 +28,7 @@ function App() {
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path='cameras' element={<Cameras />} />
-          <Route path='plex' element={<Plex />} />
-          <Route path='energy' element={<Energy />} />
+                    <Route path='energy' element={<Energy />} />
           <Route path='weather' element={<Weather />} />
           <Route path='logs' element={<Logs />} />
           <Route path='lighting' element={<Lighting />} />

@@ -350,7 +350,6 @@ class WebServer:
                 motion,
                 nest,
                 otoscope,
-                plex,
                 ptz,
                 ptz_routes,
                 ring,
@@ -410,7 +409,6 @@ class WebServer:
             self.app.include_router(microscope.router, tags=["Microscope"])
             self.app.include_router(motion.router, tags=["Motion"])
             self.app.include_router(otoscope.router, tags=["Otoscope"])
-            self.app.include_router(plex.router, tags=["Plex"])
             self.app.include_router(ptz.router, tags=["PTZ"])
             self.app.include_router(ptz_routes.router, tags=["PTZ Routes"])
             self.app.include_router(scanner.router, tags=["Scanner"])
