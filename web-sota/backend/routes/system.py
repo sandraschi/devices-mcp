@@ -427,7 +427,10 @@ async def reconnect_services() -> dict[str, Any]:
         mgr = get_hue_manager()
         if mgr._initialized and mgr._bridge is not None:
             try:
-                await asyncio.wait_for(mgr.rescan(), timeout=20.0)
+                # phue discovery on a large bridge legitimately takes ~40s -
+                # budget accordingly (timeouts now actually fire: discovery
+                # is threaded).
+                await asyncio.wait_for(mgr.rescan(), timeout=90.0)
                 results["hue"] = {
                     "ok": True,
                     "connected": True,

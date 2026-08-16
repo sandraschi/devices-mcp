@@ -3,6 +3,7 @@ Philips Hue Lighting Control Tools for Devices MCP
 This module provides MCP tools for controlling Philips Hue lights, groups, and scenes.
 """
 
+import asyncio
 import json
 import logging
 import ssl
@@ -503,9 +504,18 @@ class HueManager:
         return conv, sec, merge_err
 
     async def _discover_devices(self):
-        """Discover all Hue lights, groups, and scenes."""
+        """Discover all Hue lights, groups, and scenes (threaded)."""
         if not self._bridge:
             return
+        # phue is SYNCHRONOUS: property access (lights list AND every
+        # per-light attribute) performs blocking HTTP requests. Running the
+        # whole discovery in a thread keeps the event loop free so wait_for
+        # timeouts actually fire (observed 2026-08-16: a 40s rescan that
+        # ignored every timeout because the loop was blocked).
+        await asyncio.to_thread(self._discover_devices_sync)
+
+    def _discover_devices_sync(self):
+        """Synchronous discovery body - runs inside a worker thread."""
         try:
             # Discover lights (handle individual light errors gracefully)
             # Limit processing to essential data for faster startup
@@ -1010,11 +1020,14 @@ class HueManager:
         if not self._bridge:
             error_msg = self._connection_error or "Hue Bridge not connected"
             raise RuntimeError(error_msg)
-        # Add timeout protection to prevent hanging
+        # Add timeout protection to prevent hanging. The discovery is now
+        # threaded, so this bound is real (previously phue's sync calls
+        # blocked the loop and ignored every timeout). 60s: per-attribute
+        # phue discovery on a large bridge legitimately takes 30-40s.
         try:
             import asyncio
 
-            await asyncio.wait_for(self._discover_devices(), timeout=15.0)  # 15 second timeout for rescans
+            await asyncio.wait_for(self._discover_devices(), timeout=60.0)  # 60 second timeout for rescans
         except TimeoutError:
             logger.warning("Hue bridge rescan timed out after 15 seconds")
             raise RuntimeError("Hue bridge rescan timed out - bridge may be unresponsive") from None

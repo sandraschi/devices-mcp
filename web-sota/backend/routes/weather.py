@@ -145,27 +145,17 @@ async def get_netatmo_status() -> dict[str, Any]:
     inst = NetatmoService.get_existing_instance()
     if inst is None:
         token_file = netatmo_cfg.get("token_file") or "netatmo_token.cache"
-        try:
-            inst = await asyncio.wait_for(NetatmoService.get_instance(token_file), timeout=20.0)
-        except TimeoutError:
-            return {
-                "enabled": True,
-                "connected": False,
-                "initialized": False,
-                "message": "Netatmo initialization timed out. Check network access to api.netatmo.com.",
-                "needs_init": True,
-                "last_error": "Initialization timed out",
-            }
-        except Exception as e:
-            logger.debug("Netatmo lazy init from status failed", exc_info=True)
-            return {
-                "enabled": True,
-                "connected": False,
-                "initialized": False,
-                "message": f"Netatmo init failed: {e!s}",
-                "needs_init": True,
-                "last_error": str(e),
-            }
+        if not _netatmo_init_started(token_file):
+            _netatmo_init_started_mark(token_file)
+            asyncio.create_task(_netatmo_lazy_init(token_file))
+        return {
+            "enabled": True,
+            "connected": False,
+            "initialized": False,
+            "message": "Netatmo client is initializing in the background.",
+            "needs_init": True,
+            "last_error": None,
+        }
 
     if inst is None:
         return {
@@ -197,6 +187,29 @@ async def get_netatmo_status() -> dict[str, Any]:
         "needs_reconnect": True,
         "reconnect_url": "/api/netatmo/oauth/start",
     }
+
+
+# Background netatmo init - never block a request handler on the 20-25s
+# API init/refresh (it stalls /api/health and makes the watchdog
+# false-restart the NSSM service, observed 2026-08-16).
+_NETATMO_INIT_STARTED: set[str] = set()
+
+
+def _netatmo_init_started(token_file: str) -> bool:
+    return token_file in _NETATMO_INIT_STARTED
+
+
+def _netatmo_init_started_mark(token_file: str) -> None:
+    _NETATMO_INIT_STARTED.add(token_file)
+
+
+async def _netatmo_lazy_init(token_file: str) -> None:
+    try:
+        from devices_mcp.integrations.netatmo_client import NetatmoService
+
+        await asyncio.wait_for(NetatmoService.get_instance(token_file), timeout=25.0)
+    except Exception:
+        logger.debug("Netatmo background init failed", exc_info=True)
 
 
 @router.get("/api/netatmo/oauth/start")

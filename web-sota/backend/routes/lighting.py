@@ -72,16 +72,14 @@ async def get_philips_hue_status() -> dict[str, Any]:
             }
 
         mgr = get_hue_manager()
-        if not mgr._initialized and bridge_ip and username:
-            await mgr.initialize()
-        # Lazy-load the light cache once per process: the manager initializes
-        # with an empty cache and only rescans on first use, so a fresh boot
-        # reports lights_count=0 forever until someone visits /lighting.
-        if mgr._initialized and not getattr(mgr, "_cache_loaded", False) and not mgr.lights:
-            try:
-                await asyncio.wait_for(mgr.rescan(), timeout=20.0)
-            except Exception:
-                logger.debug("Hue lazy rescan from status skipped", exc_info=True)
+        # Background init + lazy light-cache fill: bridge probe/validate and
+        # rescan can take 20-40s combined. Awaiting them here blocks the event
+        # loop, stalls /api/health, and makes the watchdog false-restart the
+        # NSSM service (observed 2026-08-16). First call after boot reports
+        # the pre-init state; subsequent calls show the real one.
+        if not mgr._initialized and bridge_ip and username and not getattr(mgr, "_rescan_started", False):
+            mgr._rescan_started = True
+            asyncio.create_task(_hue_lazy_init_and_rescan(mgr))
 
         connected = bool(mgr._initialized and mgr._bridge is not None)
         err = mgr._connection_error
@@ -116,6 +114,18 @@ async def get_philips_hue_status() -> dict[str, Any]:
     except Exception as e:
         logger.exception("Hue status failed")
         return {"enabled": True, "error": str(e), "phue_available": True}
+
+
+async def _hue_lazy_init_and_rescan(mgr) -> None:
+    """Background hue init + cache fill - never block a request handler on this."""
+    try:
+        if not mgr._initialized:
+            await asyncio.wait_for(mgr.initialize(), timeout=60.0)
+        if mgr._initialized and not getattr(mgr, "_cache_loaded", False) and not mgr.lights:
+            await asyncio.wait_for(mgr.rescan(), timeout=70.0)
+    except Exception:
+        logger.debug("Hue background init/rescan failed", exc_info=True)
+        mgr._rescan_started = False  # allow retry on the next status call
 
 
 @router.get("/api/lighting/hue/discover")
