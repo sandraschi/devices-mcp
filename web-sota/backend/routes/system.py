@@ -99,8 +99,6 @@ async def get_tools():
                 mcp_tools = await server.mcp.list_tools()
             else:
                 mcp_tools = server.mcp.list_tools()
-        if not mcp_tools and hasattr(server.mcp, "_tools"):
-            mcp_tools = list(server.mcp._tools.values())
 
         return {
             "success": True,
@@ -135,8 +133,7 @@ async def get_capabilities():
         raw_tools = []
         if hasattr(mcp, "list_tools") and callable(mcp.list_tools):
             raw_tools = await _maybe_await(mcp.list_tools())
-        elif hasattr(mcp, "_tools"):
-            raw_tools = list(mcp._tools.values())
+
         tool_names = sorted([getattr(t, "name", str(t)) for t in raw_tools])
 
         # Prompts/resources are optional across FastMCP versions and tool modes.

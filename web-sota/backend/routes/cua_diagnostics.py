@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api", tags=["cua"])
 SERVER_START = time.time()
 
 
-def _get_tool_count() -> int:
+async def _get_tool_count() -> int:
     """Query the FastMCP server for registered tool count."""
     try:
         from devices_mcp.tools import discover_tools
@@ -23,7 +23,8 @@ def _get_tool_count() -> int:
     try:
         from devices_mcp.server_v2 import mcp
 
-        return len(mcp._tool_manager._tools) if hasattr(mcp, "_tool_manager") else 0
+        tools = await mcp.list_tools()
+        return len(tools)
     except Exception:
         pass
     return 0
@@ -55,7 +56,7 @@ async def get_diagnostics():
         win = app.window(title_re="Devices MCP")
         win.wait("visible", timeout=2)
         window = True
-    tool_count = _get_tool_count()
+    tool_count = await _get_tool_count()
     return {
         "success": True,
         "data": {
