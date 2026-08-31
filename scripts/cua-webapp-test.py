@@ -27,7 +27,9 @@ import re
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
+from contextlib import suppress
 from pathlib import Path
 
 CUA_WEBAPP_TEST_VERSION = 1
@@ -71,8 +73,6 @@ WINDOW_TITLE_RE = cfg("window_title_re") or cfg("window_title", PRODUCT_NAME)
 CONNECTED_TEXT = cfg("connected_badge_text", "connected")
 CONNECTED_TIMEOUT = int(cfg("connected_timeout", 60))
 PROCESS_NAMES = cfg("backend_process_names", [])
-SERVICE_NAME = cfg("service_name", "")
-_SERVICE_WAS_RUNNING = False
 
 
 def log(msg):
@@ -84,82 +84,20 @@ def fatal(msg):
     sys.exit(1)
 
 
-def _service_state(name):
-    """Query service state via sc.exe (never kill NSSM children directly)."""
-    try:
-        out = subprocess.run(["sc.exe", "query", name], capture_output=True, text=True, timeout=10).stdout
-        if "RUNNING" in out:
-            return "running"
-        if "STOPPED" in out:
-            return "stopped"
-        if "STOP_PENDING" in out or "START_PENDING" in out:
-            return "pending"
-        return "unknown"
-    except Exception:
-        return "unknown"
-
-
-def _service_wait(name, target, timeout=60):
-    """Wait until the service reaches target state (running|stopped)."""
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        if _service_state(name) == target:
-            return True
-        time.sleep(2)
-    return False
-
-
-def _service_stop(name):
-    """Stop an NSSM service via the service manager (never taskkill)."""
-    if _service_state(name) != "running":
-        return True
-    log(f"Stopping service '{name}' (sc.exe stop — never kill the child)")
-    subprocess.run(["sc.exe", "stop", name], capture_output=True, timeout=30)
-    if not _service_wait(name, "stopped"):
-        log(f"WARNING: service '{name}' did not reach STOPPED in time")
-        return False
-    return True
-
-
-def _service_start(name):
-    """Restore an NSSM service via the service manager."""
-    if _service_state(name) == "running":
-        return True
-    log(f"Restoring service '{name}' (sc.exe start)")
-    subprocess.run(["sc.exe", "start", name], capture_output=True, timeout=30)
-    if not _service_wait(name, "running"):
-        log(f"WARNING: service '{name}' did not reach RUNNING in time")
-        return False
-    return True
-
-
 def kill_stale():
-    """Kill processes holding backend/frontend ports (via temp PS script).
-
-    NSSM rule: if the port is owned by an NSSM-managed service, stop the
-    service via sc.exe instead — killing the child makes NSSM respawn it
-    instantly and re-bind the port, racing the test stack.
-
-    Uses netstat -ano instead of Get-NetTCPConnection: the NetTCPIP module
-    takes ~30s to load on some Windows hosts (Windows PowerShell 5.1),
-    which blew the 15s timeout in CI and on this machine.
-    """
-    if SERVICE_NAME:
-        _service_stop(SERVICE_NAME)
+    """Kill processes holding backend/frontend ports (via temp PS script)."""
     ports = [str(p) for p in (BACKEND_PORT, FRONTEND_PORT) if p]
     if not ports:
         return
-    if os.environ.get("DEVICES_MCP_SKIP_PSKILL") == "1":
-        log("PS kill skipped (DEVICES_MCP_SKIP_PSKILL=1)")
-        time.sleep(2)
-        return True
-    port_re = "|".join(":" + p + r"\s.*LISTENING" for p in ports)
     ps = (
-        "$pids = netstat -ano | Select-String -Pattern '"
-        + port_re
-        + "' | ForEach-Object { $f = ($_ -split '\\s+'); $f[$f.Count - 1] } | Sort-Object -Unique\n"
-        "foreach ($p in $pids) { Stop-Process -Id $p -Force -ErrorAction SilentlyContinue }\n"
-        "exit 0\n"
+        "\n".join(
+            [
+                "Get-NetTCPConnection -LocalPort " + p + " -ErrorAction SilentlyContinue "
+                "| ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"
+                for p in ports
+            ]
+        )
+        + "\nexit 0\n"
     )
     import tempfile
 
@@ -167,55 +105,46 @@ def kill_stale():
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(ps)
-        subprocess.run(
-            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", path],
+        subprocess.run(  # noqa: S603 - fixed literal command array, local test script
+            ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", path],  # noqa: S607 - powershell on PATH by fleet standard
             capture_output=True,
             timeout=15,
         )
     finally:
-        try:
+        with suppress(OSError):
             os.remove(path)
-        except OSError:
-            pass
     log(f"Cleared ports {', '.join(ports)}")
     time.sleep(2)
     return True
-
-
-def _shell_host():
-    """Prefer pwsh 7: powershell.exe 5.1 + Start-Job in a no-console
-    (CREATE_NO_WINDOW) context crashes the host and takes the parent
-    process down (observed on this machine: test python killed with
-    exit -1 right after Popen)."""
-    for cand in (r"C:\Program Files\PowerShell\7\pwsh.exe", "pwsh.exe", "powershell.exe"):
-        try:
-            subprocess.run([cand, "-NoProfile", "-Command", "exit 0"], capture_output=True, timeout=10)
-            return cand
-        except Exception:
-            continue
-    return "powershell.exe"
 
 
 def start_stack():
     """Start backend + frontend via start.ps1 (prefer -Headless), else direct spawn."""
     repo_root = Path(__file__).resolve().parent.parent
     start_ps1 = repo_root / "start.ps1"
-    shell = _shell_host()
 
     # Try start.ps1 -Headless first (fleet standard has this switch)
     if start_ps1.exists():
         try:
             log("Starting stack via start.ps1 -Headless...")
-            # Pre-set the headless guard: the test already runs detached
-            # (CREATE_NO_WINDOW), so start.ps1 must NOT re-spawn itself into a
-            # hidden window - Start-Process -WindowStyle Hidden from a
-            # console-less host crashes the console group (observed: this
-            # python killed with exit -1 right after Popen).
+            # Fleet unified launcher requires probe mode env (same as fleet-webapp-start-probe.ps1)
             env = dict(os.environ)
-            env["DEVICES_MCP_HEADLESS_REENTERED"] = "1"
-            subprocess.Popen(
-                [shell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(start_ps1), "-Headless"],
+            for v in ("VIRTUAL_ENV", "PYTHONPATH", "UV_PROJECT_ENVIRONMENT"):
+                env.pop(v, None)
+            env["FLEET_PROBE_RUN"] = "1"
+            env["FLEET_PROBE_LOG_DIR"] = str(repo_root / "cua-reports" / "logs")
+            subprocess.Popen(  # noqa: S603 - fixed literal command array, local test script
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",  # noqa: S607 - powershell on PATH by fleet standard
+                    "-File",
+                    str(start_ps1),
+                    "-Headless",
+                ],
                 cwd=str(repo_root),
+                stdin=subprocess.DEVNULL,
                 creationflags=subprocess.CREATE_NO_WINDOW,
                 env=env,
             )
@@ -229,14 +158,15 @@ def start_stack():
         log("No backend_module in config — cannot direct-spawn backend")
         return False
     log(f"Direct spawn fallback: python -m {module}")
-    subprocess.Popen(
+    subprocess.Popen(  # noqa: S603 - fixed literal command array, local test script
         [
             "powershell.exe",
             "-NoProfile",
-            "-Command",
+            "-Command",  # noqa: S607 - powershell on PATH by fleet standard
             f"Set-Location '{repo_root}'; $env:BACKEND_PORT='{BACKEND_PORT}'; uv run python -m {module}",
         ],
         cwd=str(repo_root),
+        stdin=subprocess.DEVNULL,
         creationflags=subprocess.CREATE_NO_WINDOW,
     )
     return True
@@ -248,11 +178,11 @@ def wait_backend():
     deadline = time.time() + int(cfg("backend_timeout", 30))
     while time.time() < deadline:
         try:
-            r = urllib.request.urlopen(url, timeout=3)
+            r = urllib.request.urlopen(url, timeout=3)  # noqa: S310 - localhost health poll from config
             if r.status == 200:
                 log(f"Backend ready ({url})")
                 return True
-        except Exception:
+        except Exception:  # noqa: S110 - poll loop, backoff handled by time.sleep below
             pass
         time.sleep(2)
     log(f"Backend not reachable at {url}")
@@ -272,7 +202,7 @@ def wait_frontend():
             if r.status == 200:
                 log(f"Frontend ready ({url})")
                 return True
-        except Exception:
+        except Exception:  # noqa: S110 - poll loop, backoff handled by time.sleep below
             pass
         time.sleep(2)
     log(f"Frontend not reachable at {url}")
@@ -285,7 +215,7 @@ def open_browser():
         return True
     url = f"http://127.0.0.1:{FRONTEND_PORT}"
     try:
-        subprocess.Popen(["cmd", "/c", "start", "", url])
+        subprocess.Popen(["cmd", "/c", "start", "", url])  # noqa: S603, S607 - fixed literal, cmd.exe on PATH by design
         log(f"Opened browser: {url}")
         return True
     except Exception as e:
@@ -294,13 +224,7 @@ def open_browser():
 
 
 def find_webapp_window():
-    """Find the browser window showing the webapp (by title regex).
-
-    NOTE: no descendants() preference scan - Chrome exposes huge UIA trees
-    and descendants(control_type=...) can take minutes per window, blowing
-    the connected-badge deadline (observed on this machine). The title
-    match is sufficient: the tab title contains the app name.
-    """
+    """Find the browser window showing the webapp (by title regex, prefer one with links)."""
     try:
         from pywinauto import Desktop
 
@@ -312,6 +236,14 @@ def find_webapp_window():
                 candidates.append(w)
         if not candidates:
             return None
+        # Prefer the window whose UIA tree has hyperlinks (the browser page),
+        # not a bare titlebar stub.
+        for w in candidates:
+            try:
+                if w.descendants(control_type="Hyperlink"):
+                    return w
+            except Exception:  # noqa: S110 - try each candidate, fall through on failure
+                pass
         return candidates[0]
     except Exception:
         return None
@@ -347,7 +279,7 @@ def wait_connected_badge(timeout=None):
                 # If we see connecting text, keep waiting (not an error)
                 if any(k in text for k in CONNECTING_KEYWORDS):
                     log("  Still connecting...")
-            except Exception:
+            except Exception:  # noqa: S110 - OCR/window failures are retried by the poll loop
                 pass
         time.sleep(2)
     if win is None:
@@ -367,7 +299,7 @@ def nav_click_through(output_dir, win):
     try:
         win.maximize()
         time.sleep(1)
-    except Exception:
+    except Exception:  # noqa: S110 - maximize is best-effort
         pass
 
     nav_failures = []
@@ -401,7 +333,7 @@ def nav_click_through(output_dir, win):
 
 def check_diagnostics():
     try:
-        r = urllib.request.urlopen(f"{BACKEND_URL}/api/v1/diagnostics", timeout=5)
+        r = urllib.request.urlopen(f"{BACKEND_URL}/api/v1/diagnostics", timeout=5)  # noqa: S310 - localhost diagnostics check
         data = json.loads(r.read())
         log(f"Diagnostics: HTTP {r.status}, tools={len(data.get('tools', [])) if isinstance(data, dict) else '?'}")
         return True
@@ -412,8 +344,6 @@ def check_diagnostics():
 
 def cleanup():
     kill_stale()
-    if SERVICE_NAME:
-        _service_start(SERVICE_NAME)
     log("Cleanup done")
     return True
 
