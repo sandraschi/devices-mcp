@@ -11,10 +11,17 @@ import httpx
 from fastapi import APIRouter, HTTPException, WebSocket
 from pydantic import BaseModel, Field
 
-# MCP server URLs (from registry: yahboom-mcp=10892, dreame-mcp=10894)
+# MCP server URLs (from registry: yahboom-mcp=10892, dreame-mcp=10894, norirobotics-mcp=11970)
 YAHBOOM_MCP_URL = os.environ.get("YAHBOOM_MCP_URL", "http://127.0.0.1:10892")
 DREAME_MCP_URL = os.environ.get("DREAME_MCP_URL", "http://127.0.0.1:10894")
 
+from devices_mcp.integrations.nori_client import (
+    NoriMcpClient,
+    nori_mcp_url,
+)
+from devices_mcp.integrations.nori_client import (
+    mcp_call_succeeded as nori_call_succeeded,
+)
 from devices_mcp.integrations.yahboom_client import (
     YahboomMcpClient,
     mcp_call_succeeded,
@@ -46,6 +53,7 @@ class RobotType(StrEnum):
 
     DREAMBOT = "dreame"  # Dreame D20 Pro (via dreame-mcp)
     YAHBOOM = "yahboom"  # Yahboom ROS 2 Robot Car (via yahboom-mcp)
+    NORI = "nori"  # Nori A3 bimanual home robot (via norirobotics-mcp)
 
 
 class RobotStatus(StrEnum):
@@ -128,6 +136,10 @@ class RobotCommand(StrEnum):
     STOP = "stop"
     FIND_ROBOT = "find_robot"
     FLASH_LIGHTS = "flash_lights"
+    CONNECT = "connect"
+    ESTOP = "estop"
+    EPISODE_START = "episode_start"
+    EPISODE_STOP = "episode_stop"
 
 
 class RobotCommandRequest(BaseModel):
@@ -164,6 +176,16 @@ def get_default_capabilities(robot_type: RobotType) -> RobotCapabilities:
             battery_capacity=10000,
             max_runtime=120,
         ),
+        RobotType.NORI: RobotCapabilities(
+            has_camera=True,
+            has_lidar=True,
+            can_patrol=False,
+            can_navigate=True,
+            has_voice=True,
+            supports_autonomous=False,  # demonstration/teleop-first, not autonomous navigation
+            battery_capacity=None,  # spec gives 432Wh, not mAh (unknown voltage) - don't fabricate a conversion
+            max_runtime=420,  # 6-8h per spec, conservative midpoint in minutes
+        ),
     }
     return defaults.get(robot_type, RobotCapabilities())
 
@@ -178,6 +200,40 @@ def _yahboom_client_for_config() -> YahboomMcpClient:
     except Exception:
         url = YAHBOOM_MCP_URL
     return YahboomMcpClient(url)
+
+
+def _nori_client_for_config() -> NoriMcpClient:
+    try:
+        from devices_mcp.config import get_config
+
+        cfg = get_config() or {}
+        robotics = cfg.get("robotics_mcp") or {}
+        url = robotics.get("nori_mcp_url") or nori_mcp_url()
+    except Exception:
+        url = nori_mcp_url()
+    return NoriMcpClient(url)
+
+
+async def _refresh_nori_robot(robot: Robot) -> dict[str, Any]:
+    """Poll norirobotics-mcp session status and update in-memory robot state."""
+    client = _nori_client_for_config()
+    session = await client.session_status()
+    connection = client.connection_summary(session)
+
+    if not connection.get("mcp_reachable"):
+        robot.status = RobotStatus.OFFLINE
+    elif connection.get("connected"):
+        robot.status = RobotStatus.ONLINE
+    else:
+        robot.status = RobotStatus.IDLE
+
+    robot.last_seen = datetime.now()
+    return {
+        "nori_mcp_url": client.base_url,
+        "connection": connection,
+        "session_live": connection.get("connected"),
+        "mock": session.get("mock"),
+    }
 
 
 async def _refresh_yahboom_robot(robot: Robot) -> dict[str, Any]:
@@ -299,8 +355,11 @@ async def get_robots():
         robots_data = []
         for robot in _robots.values():
             yahboom_meta: dict[str, Any] | None = None
+            nori_meta: dict[str, Any] | None = None
             if robot.type == RobotType.YAHBOOM:
                 yahboom_meta = await _refresh_yahboom_robot(robot)
+            elif robot.type == RobotType.NORI:
+                nori_meta = await _refresh_nori_robot(robot)
 
             robot_dict = robot.dict()
             # Add computed fields
@@ -318,6 +377,11 @@ async def get_robots():
                 robot_dict["telemetry_live"] = yahboom_meta.get("telemetry_live")
                 if yahboom_meta.get("telemetry_message"):
                     robot_dict["telemetry_message"] = yahboom_meta["telemetry_message"]
+            if nori_meta:
+                robot_dict["nori_mcp_url"] = nori_meta.get("nori_mcp_url", nori_mcp_url())
+                robot_dict["connection"] = nori_meta.get("connection")
+                robot_dict["telemetry_live"] = nori_meta.get("session_live")
+                robot_dict["mock"] = nori_meta.get("mock")
             robots_data.append(robot_dict)
 
         return {
@@ -480,6 +544,27 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
             else:
                 result = {"success": False, "error": f"Unknown yahboom command: {cmd}"}
 
+        elif robot.type == RobotType.NORI:
+            client = _nori_client_for_config()
+            cmd = command_request.command
+            params = command_request.parameters or {}
+            if cmd == RobotCommand.CONNECT:
+                result = await client.session_connect()
+                if nori_call_succeeded(result):
+                    robot.status = RobotStatus.ONLINE
+            elif cmd == RobotCommand.ESTOP:
+                result = await client.estop()
+            elif cmd == RobotCommand.EPISODE_START:
+                result = await client.episode_start(task=params.get("task"))
+            elif cmd == RobotCommand.EPISODE_STOP:
+                result = await client.episode_stop()
+            elif cmd == RobotCommand.STOP:
+                result = await client.session_disconnect()
+                if nori_call_succeeded(result):
+                    robot.status = RobotStatus.IDLE
+            else:
+                result = {"success": False, "error": f"Unknown nori command: {cmd}"}
+
         else:
             # Simulate commands for other robot types
             if command_request.command == RobotCommand.START_PATROL:
@@ -495,14 +580,15 @@ async def execute_robot_command(robot_id: str, command_request: RobotCommandRequ
 
         robot.last_seen = datetime.now()
 
+        _bridged = robot.type in (RobotType.YAHBOOM, RobotType.NORI)
         return {
-            "success": mcp_call_succeeded(result) if robot.type == RobotType.YAHBOOM else result.get("success", True),
+            "success": mcp_call_succeeded(result) if _bridged else result.get("success", True),
             "message": result.get("message", f"Command {command_request.command} executed on {robot_id}"),
             "error": result.get("error"),
             "robot_id": robot_id,
             "command": command_request.command,
             "timestamp": robot.last_seen.isoformat(),
-            "mcp_result": result if robot.type == RobotType.YAHBOOM else None,
+            "mcp_result": result if _bridged else None,
         }
     except HTTPException:
         raise
@@ -586,6 +672,23 @@ async def get_robot_telemetry(robot_id: str):
                     last_update=datetime.now(),
                 )
                 robot.status = RobotStatus.OFFLINE
+
+        elif robot.type == RobotType.NORI:
+            client = _nori_client_for_config()
+            session = await client.session_status()
+            live = client.session_is_live(session)
+            # Honest fallback: norirobotics-mcp's mock session reports telemetry=None until a
+            # real robot is connected (see docs/ARCHITECTURE.md there) - don't fabricate numbers.
+            telemetry = RobotTelemetry(
+                battery_level=0.0,
+                battery_voltage=None,
+                temperature=None,
+                cpu_usage=None,
+                memory_usage=None,
+                wifi_signal=None,
+                last_update=datetime.now(),
+            )
+            robot.status = RobotStatus.ONLINE if live else RobotStatus.OFFLINE
 
         else:
             # Generate mock telemetry for other robots

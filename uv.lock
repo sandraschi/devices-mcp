@@ -8409,6 +8409,7 @@ voice = [
 [package.dev-dependencies]
 dev = [
     { name = "pyinstaller" },
+    { name = "pywin32" },
     { name = "ruff" },
 ]
 
@@ -8525,6 +8526,7 @@ provides-extras = ["dev", "docs", "voice"]
 [package.metadata.requires-dev]
 dev = [
     { name = "pyinstaller", specifier = ">=6.21.0" },
+    { name = "pywin32", specifier = ">=311" },
     { name = "ruff", specifier = ">=0.16.0,<0.17" },
 ]
 

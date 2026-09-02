@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased] - 2026-09-02
+
+### Added
+- Nori A3 as a third Robots-page robot type (`RobotType.NORI`), bridged directly to the
+  standalone `norirobotics-mcp` server (mirrors the existing Yahboom pattern, independent of
+  robotics-mcp): new `integrations/nori_client.py`; `RobotCommand.CONNECT`/`ESTOP`/
+  `EPISODE_START`/`EPISODE_STOP`; `nori` branches in `get_robots`, `execute_robot_command`,
+  `get_robot_telemetry`; `web-sota/frontend/src/pages/Robots.tsx` gets a Nori command palette
+  (Connect, E-Stop, episode task input + Start/Stop) alongside the Dreame/Yahboom ones.
+  Verified end-to-end against a live `norirobotics-mcp` instance (connect/estop/episode
+  start-stop all round-trip real mock-session data).
+
 ## [2.4.1] - 2026-08-16
 
 ### Fixed

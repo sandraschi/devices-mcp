@@ -6,10 +6,12 @@ import {
 	Home,
 	Lightbulb,
 	Loader2,
-	Play,
+	Octagon,
 	PlugZap,
+	Play,
 	RotateCw,
 	Square,
+	Video,
 	Volume2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -21,6 +23,9 @@ interface YahboomConnection {
 	cmd_vel_ready?: boolean;
 	robot_ip?: string;
 	hint?: string | null;
+	// Nori (norirobotics-mcp) connection_summary fields
+	connected?: boolean;
+	mock?: boolean;
 }
 
 interface RobotItem {
@@ -32,9 +37,11 @@ interface RobotItem {
 	battery_percentage?: number;
 	ip_address?: string;
 	yahboom_mcp_url?: string;
+	nori_mcp_url?: string;
 	connection?: YahboomConnection;
 	telemetry_live?: boolean;
 	telemetry_message?: string;
+	mock?: boolean;
 	error?: string;
 }
 
@@ -59,6 +66,11 @@ const YAHBOOM_COMMANDS = [
 	{ value: "return_home", label: "Move backward", icon: RotateCw },
 ] as const;
 
+const NORI_COMMANDS = [
+	{ value: "connect", label: "Connect", icon: PlugZap },
+	{ value: "estop", label: "E-Stop", icon: Octagon },
+] as const;
+
 function yahboomStatusLabel(robot: RobotItem): string {
 	const conn = robot.connection;
 	if (!conn?.mcp_reachable) return "yahboom-mcp unreachable";
@@ -69,11 +81,19 @@ function yahboomStatusLabel(robot: RobotItem): string {
 	return "MCP up, waiting for robot telemetry";
 }
 
+function noriStatusLabel(robot: RobotItem): string {
+	const conn = robot.connection;
+	if (!conn?.mcp_reachable) return "norirobotics-mcp unreachable";
+	if (!conn.connected) return conn.hint ?? "Not connected";
+	return conn.mock ? "Connected (mock session)" : "Connected (real robot)";
+}
+
 export function Robots() {
 	const [data, setData] = useState<RobotsResponse | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [sending, setSending] = useState<string | null>(null);
+	const [noriTasks, setNoriTasks] = useState<Record<string, string>>({});
 
 	const load = useCallback(async () => {
 		try {
@@ -147,6 +167,14 @@ export function Robots() {
 		b: number,
 	) => {
 		await sendCommand(robotId, "flash_lights", { r, g, b });
+	};
+
+	const sendNoriEpisodeStart = async (robotId: string) => {
+		await sendCommand(robotId, "episode_start", { task: noriTasks[robotId] ?? "" });
+	};
+
+	const sendNoriEpisodeStop = async (robotId: string) => {
+		await sendCommand(robotId, "episode_stop");
 	};
 
 	const reconnectYahboom = async () => {
@@ -399,11 +427,74 @@ export function Robots() {
 									</div>
 								)}
 
-								{robot.type !== "dreame" && robot.type !== "yahboom" && (
-									<p className="text-xs text-amber-600">
-										Unknown robot type: {robot.type}
-									</p>
+								{robot.type === "nori" && (
+									<div className="space-y-3">
+										<p className="text-xs text-slate-500">
+											{noriStatusLabel(robot)}
+										</p>
+										<div className="flex flex-wrap gap-1">
+											{NORI_COMMANDS.map(({ value, label, icon: Icon }) => (
+												<Button
+													key={value}
+													size="sm"
+													variant="outline"
+													className={
+														value === "estop"
+															? "border-red-800 text-red-400 hover:bg-red-950/30"
+															: undefined
+													}
+													disabled={sending !== null}
+													onClick={() => sendCommand(robot.id, value)}
+												>
+													<Icon className="mr-1 h-3 w-3" />
+													{sending === `${robot.id}:${value}` ? "…" : label}
+												</Button>
+											))}
+										</div>
+										<div>
+											<p className="mb-1 text-xs text-slate-500 flex items-center gap-1">
+												<Video className="h-3 w-3" /> Episode recording
+											</p>
+											<div className="flex gap-1">
+												<input
+													className="flex-1 rounded border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-300 placeholder:text-slate-500"
+													placeholder="task (e.g. pour water into cup)"
+													value={noriTasks[robot.id] ?? ""}
+													onChange={(e) =>
+														setNoriTasks((prev) => ({
+															...prev,
+															[robot.id]: e.target.value,
+														}))
+													}
+												/>
+												<Button
+													size="sm"
+													variant="outline"
+													disabled={sending !== null}
+													onClick={() => sendNoriEpisodeStart(robot.id)}
+												>
+													Start
+												</Button>
+												<Button
+													size="sm"
+													variant="outline"
+													disabled={sending !== null}
+													onClick={() => sendNoriEpisodeStop(robot.id)}
+												>
+													Stop
+												</Button>
+											</div>
+										</div>
+									</div>
 								)}
+
+								{robot.type !== "dreame" &&
+									robot.type !== "yahboom" &&
+									robot.type !== "nori" && (
+										<p className="text-xs text-amber-600">
+											Unknown robot type: {robot.type}
+										</p>
+									)}
 							</CardContent>
 						</Card>
 					))}

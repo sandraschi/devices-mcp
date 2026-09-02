@@ -176,6 +176,9 @@ def get_vienna_default_config() -> dict[str, Any]:
             "devices": {
                 "dreame_d20": {"host": "192.168.0.144", "enabled": False},
                 "yahboom_car": {"host": "192.168.0.100", "enabled": False},
+                # Nori A3 has no device IP - reached via norirobotics-mcp's REST API
+                # (NORI_MCP_URL env var, default http://127.0.0.1:11970).
+                "nori_a3": {"type": "nori", "enabled": False},
             },
         },
     }
