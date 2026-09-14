@@ -1,11 +1,14 @@
-﻿# Fleet unified launcher - do not edit logic here.
+# Fleet unified launcher - do not edit logic here.
 # Change fleet-start.config.ps1 at the repo root instead.
 param(
     [switch]$Headless,
     [switch]$BackendOnly,
     [switch]$FrontendOnly,
     [switch]$NoBrowser,
-    [switch]$ReuseIfRunning
+    [switch]$ReuseIfRunning,
+    # Pass -SkipRestart to reuse a healthy NSSM/service backend without bouncing it.
+    # Default (no flag): service backend always restarts so latest code takes effect.
+    [switch]$SkipRestart
 )
 
 $ErrorActionPreference = 'Stop'

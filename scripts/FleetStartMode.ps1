@@ -1,6 +1,3 @@
-﻿# FleetStartMode.ps1 - vendored per-repo copy (no mcp-central-docs required at runtime)
-# Canonical upstream: mcp-central-docs/scripts/FleetStartMode.ps1 (private fleet docs)
-
 # FleetStartMode.ps1 - shared launch modes for webapp/start.ps1 launchers
 # Canonical upstream: mcp-central-docs/scripts/FleetStartMode.ps1
 # Port clearing uses port-scoped netstat+findstr; Session 0 checks protect Windows services.
@@ -9,7 +6,7 @@ function Get-FleetStartModeBoundParameters {
     param([hashtable]$BoundParameters)
 
     $filtered = @{}
-    foreach ($key in @('Headless', 'BackendOnly', 'FrontendOnly', 'NoBrowser')) {
+    foreach ($key in @('Headless', 'BackendOnly', 'FrontendOnly', 'NoBrowser', 'SkipRestart')) {
         if ($BoundParameters.ContainsKey($key)) {
             $filtered[$key] = $BoundParameters[$key]
         }
