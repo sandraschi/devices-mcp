@@ -5,16 +5,17 @@
     BackendPort  = 10717
     FrontendPort = 10716
     HealthPath   = '/'
-    WebRoot      = 'web-sota/frontend'
-    NssmService  = 'devices-mcp'
+    WebRoot      = 'web-sota\frontend'
     Backend = @{
-        Kind = 'nssm'
+        Kind          = 'nssm'
+        UvicornTarget = 'devices_mcp.server:app'
+        SyncExtras    = @('dev')
+        Env           = @{ WEB_PORT = '10717' }
     }
     Frontend = @{
-        Kind             = 'vite-npm'
-        PackageManager   = 'npm'
-        PortEnvVar       = 'VITE_PORT'
-        ApiTargetEnv     = 'VITE_API_TARGET'
-        InstallOnStart   = $false   # node_modules current, lockfile committed - skip npm install per launch
+        Kind           = 'vite-npm'
+        PackageManager = 'npm'
+        PortEnvVar     = 'VITE_PORT'
+        ApiTargetEnv   = 'VITE_API_TARGET'
     }
 }
