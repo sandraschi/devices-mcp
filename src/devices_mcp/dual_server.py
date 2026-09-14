@@ -124,6 +124,7 @@ class TapoCameraDualServer:
 
         # Health check endpoint
         @app.get("/health")
+        @app.get("/api/health")
         async def health_check():
             """Health check endpoint"""
             return {
@@ -131,6 +132,27 @@ class TapoCameraDualServer:
                 "service": "devices-mcp",
                 "version": "1.0.0",
             }
+
+        # Orderly shutdown endpoint — used by fleet launcher before Restart-Service so
+        # in-flight DB writes and long-running flows can checkpoint cleanly.
+        @app.post("/api/shutdown")
+        async def api_shutdown():
+            """Graceful shutdown: flush state, release resources, then exit.
+
+            Returns 200 immediately; the process exits ~500 ms later so the
+            response has time to flush before os._exit(0) is called.
+            The NSSM service manager will then restart the process.
+            """
+            import os
+
+            logger.warning("Graceful shutdown requested via POST /api/shutdown")
+
+            async def _deferred_exit():
+                await asyncio.sleep(0.5)
+                os._exit(0)
+
+            asyncio.create_task(_deferred_exit())
+            return {"status": "shutting_down", "message": "Process will exit in ~500 ms"}
 
         # System status endpoint
         @app.get("/api/system/status", response_model=SystemStatus)
