@@ -120,20 +120,25 @@ def _generate_alarm_sound(alarm_type: str, repeat: int = 1) -> bytes:
     return combined.getvalue()
 
 
+def _play_file_blocking(path: str) -> None:
+    """Synchronous platform playback (seconds-long) — always run in a thread."""
+    if os.name == "nt":
+        import winsound
+
+        winsound.PlaySound(path, winsound.SND_FILENAME)
+    else:
+        os.system(f"aplay {path} 2>/dev/null || afplay {path} 2>/dev/null")
+
+
 async def _play_audio_bytes(audio_bytes: bytes) -> bool:
-    """Play audio bytes through speakers."""
+    """Play audio bytes through speakers (playback offloaded, never blocks the loop)."""
     global _stop_requested
     if not SOUNDDEVICE_AVAILABLE:
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
             f.write(audio_bytes)
             temp_path = f.name
         try:
-            if os.name == "nt":
-                import winsound
-
-                winsound.PlaySound(temp_path, winsound.SND_FILENAME)
-            else:
-                os.system(f"aplay {temp_path} 2>/dev/null || afplay {temp_path} 2>/dev/null")
+            await asyncio.to_thread(_play_file_blocking, temp_path)
             return True
         finally:
             os.unlink(temp_path)
@@ -142,7 +147,7 @@ async def _play_audio_bytes(audio_bytes: bytes) -> bool:
         audio_io = io.BytesIO(audio_bytes)
         data, samplerate = sf.read(audio_io)
         sd.play(data, samplerate)
-        sd.wait()
+        await asyncio.to_thread(sd.wait)
         return True
     except Exception:
         logger.exception("Audio playback failed")
@@ -158,6 +163,12 @@ async def _play_alarm_sound(alarm_type: str, repeat: int = 1) -> bool:
 # ============================================================================
 # TTS ENGINES
 # ============================================================================
+def _piper_synth_to(piper_voice, text: str, path: str) -> None:
+    """Synchronous Piper synthesis (CPU-bound) — always run in a thread."""
+    with wave.open(path, "wb") as wav_file:
+        piper_voice.synthesize(text, wav_file)
+
+
 async def _speak_with_piper(text: str, voice: str | None = None) -> dict[str, Any]:
     """TTS using Piper (best local quality)."""
     global _piper_voice
@@ -166,15 +177,14 @@ async def _speak_with_piper(text: str, voice: str | None = None) -> dict[str, An
     try:
         if _piper_voice is None:
             model_name = voice or "en_US-lessac-medium"
-            _piper_voice = piper.PiperVoice.load(model_name)
+            _piper_voice = await asyncio.to_thread(piper.PiperVoice.load, model_name)
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
             temp_path = f.name
-        with wave.open(temp_path, "wb") as wav_file:
-            _piper_voice.synthesize(text, wav_file)
+        await asyncio.to_thread(_piper_synth_to, _piper_voice, text, temp_path)
         if SOUNDDEVICE_AVAILABLE:
             data, samplerate = sf.read(temp_path)
             sd.play(data, samplerate)
-            sd.wait()
+            await asyncio.to_thread(sd.wait)
         os.unlink(temp_path)
         return {
             "success": True,
@@ -200,11 +210,11 @@ async def _speak_with_edge(text: str, voice: str | None = None) -> dict[str, Any
         if SOUNDDEVICE_AVAILABLE:
             data, samplerate = sf.read(temp_path)
             sd.play(data, samplerate)
-            sd.wait()
+            await asyncio.to_thread(sd.wait)
         elif os.name == "nt":
-            os.system(f'start /wait "" "{temp_path}"')
+            await asyncio.to_thread(os.system, f'start /wait "" "{temp_path}"')
         else:
-            os.system(f"mpg123 {temp_path} 2>/dev/null || afplay {temp_path}")
+            await asyncio.to_thread(os.system, f"mpg123 {temp_path} 2>/dev/null || afplay {temp_path}")
         os.unlink(temp_path)
         return {"success": True, "engine": "edge-tts", "voice": voice, "text": text}
     except Exception as e:
@@ -212,21 +222,26 @@ async def _speak_with_edge(text: str, voice: str | None = None) -> dict[str, Any
         return {"success": False, "message": str(e), "error": str(e)}
 
 
+def _pyttsx3_say_blocking(text: str, voice: str | None, rate: int) -> None:
+    """Synchronous pyttsx3 (init + runAndWait blocks for utterance) — thread only."""
+    engine = pyttsx3.init()
+    engine.setProperty("rate", rate)
+    if voice:
+        voices = engine.getProperty("voices")
+        for v in voices:
+            if voice.lower() in v.name.lower():
+                engine.setProperty("voice", v.id)
+                break
+    engine.say(text)
+    engine.runAndWait()
+
+
 async def _speak_with_pyttsx3(text: str, voice: str | None = None, rate: int = 150) -> dict[str, Any]:
     """TTS using pyttsx3 (offline, system voices)."""
     if not PYTTSX3_AVAILABLE:
         return {"success": False, "message": "pyttsx3 not available", "error": "pyttsx3 not available"}
     try:
-        engine = pyttsx3.init()
-        engine.setProperty("rate", rate)
-        if voice:
-            voices = engine.getProperty("voices")
-            for v in voices:
-                if voice.lower() in v.name.lower():
-                    engine.setProperty("voice", v.id)
-                    break
-        engine.say(text)
-        engine.runAndWait()
+        await asyncio.to_thread(_pyttsx3_say_blocking, text, voice, rate)
         return {"success": True, "engine": "pyttsx3", "text": text, "rate": rate}
     except Exception as e:
         logger.warning(f"pyttsx3 TTS failed: {e}")
