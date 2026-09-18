@@ -14,18 +14,15 @@ default:
 
 # Start web-sota dev server (frontend + backend)
 dev:
-    Set-Location "{{justfile_directory()}}\{{WEBROOT}}"
-    .\start.ps1
+    Set-Location "{{justfile_directory()}}\{{WEBROOT}}"; .\start.ps1
 
 # Run frontend TypeScript type-check
 typecheck:
-    Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"
-    npx tsc --noEmit
+    Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"; npx tsc --noEmit
 
 # Build frontend for production
 build:
-    Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"
-    npm run build
+    Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"; npm run build
 
 # --- Quality ---
 
