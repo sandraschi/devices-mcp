@@ -198,6 +198,7 @@ class NestClient:
         try:
             headers = {
                 "Authorization": f"Bearer {self._access_token}",
+                # Public Nest web-client key (same as badnest / Home Assistant), not a personal secret.
                 "x-goog-api-key": "AIzaSyAdkSIMNc51XGNEAYWasX9UOWkS5P6sZE4",
             }
 
