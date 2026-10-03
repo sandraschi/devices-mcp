@@ -243,8 +243,8 @@ class HealthCheckTool(BaseTool):
                         status = await camera.get_status()
                         if status.get("connected", False):
                             online_cameras += 1
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Camera status check failed during health aggregation: %s", e)
             else:
                 return {
                     "status": "no_cameras",

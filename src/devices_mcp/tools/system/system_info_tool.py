@@ -262,8 +262,8 @@ class SystemInfoTool(BaseTool):
                 candidate = os.path.join(project_root, "tapo_mcp.log")
                 if os.path.exists(candidate):
                     log_file = candidate
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Log file root probe failed: %s", e)
 
         if not log_file:
             return {
