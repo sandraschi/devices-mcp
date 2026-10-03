@@ -529,6 +529,12 @@ def create_app() -> FastAPI:
 
 if __name__ == "__main__":
     import argparse
+    import faulthandler
+
+    # Crash forensics: dump the Python traceback on segfault/abort so the NEXT
+    # native crash (e.g. heap corruption) leaves a Python-side trail in stderr.
+    # Heap corruption itself fires below Python, but this rules Python out.
+    faulthandler.enable()
 
     parser = argparse.ArgumentParser(description="Run Devices MCP Web Server")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")

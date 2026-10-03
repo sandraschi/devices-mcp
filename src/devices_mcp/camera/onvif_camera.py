@@ -1,7 +1,9 @@
 """ONVIF camera implementation for Tapo and other ONVIF-compatible cameras."""
 
 import asyncio
+import functools
 import logging
+import threading
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -10,6 +12,28 @@ from PIL import Image
 from .base import BaseCamera, CameraFactory, CameraType
 
 logger = logging.getLogger(__name__)
+
+# Process-wide re-entrant lock around ALL zeep/lxml traffic.
+#
+# zeep clients (and libxml2 global state underneath) are not thread-safe, yet
+# every status poll, PTZ move and snapshot runs in run_in_executor worker
+# threads. Concurrent SOAP from supervisor polls + web requests + PTZ moves
+# corrupted the native heap (0xc0000374 crash loop, NSSM restarts every few
+# minutes). Serializing here costs sub-second queueing in a home setup and
+# removes the concurrency entirely. RLock because wrapper methods call each
+# other (get_stream_uri -> get_media_profiles, relative_move -> goto_position).
+_onvif_soap_lock = threading.RLock()
+
+
+def _serialized_soap(fn):
+    """Run a wrapper method under the process-wide SOAP lock (see above)."""
+
+    @functools.wraps(fn)
+    def _inner(self, *args, **kwargs):
+        with _onvif_soap_lock:
+            return fn(self, *args, **kwargs)
+
+    return _inner
 
 
 class ONVIFCameraWrapper:
@@ -25,6 +49,7 @@ class ONVIFCameraWrapper:
         self._media = None
         self._profiles = None
 
+    @_serialized_soap
     def connect(self) -> bool:
         """Connect to ONVIF camera - clears cached connection state."""
         try:
@@ -49,6 +74,7 @@ class ONVIFCameraWrapper:
             # Don't raise exception - just return False for graceful failure
             return False
 
+    @_serialized_soap
     def get_device_info(self) -> dict:
         """Get device information."""
         if not self._camera:
@@ -62,6 +88,7 @@ class ONVIFCameraWrapper:
             "hardware_id": info.HardwareId,
         }
 
+    @_serialized_soap
     def get_media_profiles(self) -> list:
         """Get available media profiles."""
         if not self._camera:
@@ -72,6 +99,7 @@ class ONVIFCameraWrapper:
             self._profiles = self._media.GetProfiles()
         return self._profiles
 
+    @_serialized_soap
     def get_stream_uri(self, profile_token: str | None = None) -> str:
         """Get RTSP stream URI for a profile."""
         if not self._camera:
@@ -99,6 +127,7 @@ class ONVIFCameraWrapper:
         uri_response = self._media.GetStreamUri(req)
         return uri_response.Uri
 
+    @_serialized_soap
     def get_snapshot_uri(self, profile_token: str | None = None) -> str:
         """Get snapshot URI for a profile."""
         if not self._camera:
@@ -124,6 +153,7 @@ class ONVIFCameraWrapper:
         uri_response = self._media.GetSnapshotUri(req)
         return uri_response.Uri
 
+    @_serialized_soap
     def get_ptz_service(self):
         """Get PTZ service."""
         if not self._camera:
@@ -132,6 +162,7 @@ class ONVIFCameraWrapper:
             self._ptz = self._camera.create_ptz_service()
         return self._ptz
 
+    @_serialized_soap
     def continuous_move(self, pan: float = 0, tilt: float = 0, zoom: float = 0):
         """Start continuous PTZ movement."""
         ptz = self.get_ptz_service()
@@ -164,6 +195,7 @@ class ONVIFCameraWrapper:
         logger.debug(f"PTZ continuous move: pan={pan}, tilt={tilt}, zoom={zoom}")
         ptz.ContinuousMove(request)
 
+    @_serialized_soap
     def relative_move(self, pan_normalized: float = 0, tilt_normalized: float = 0, zoom: float = 0):
         """Move PTZ camera relatively using normalized ONVIF coordinates (-1.0 to 1.0)."""
         self.get_ptz_service()  # Ensure PTZ service is available
@@ -197,6 +229,7 @@ class ONVIFCameraWrapper:
         # Use goto_position for absolute movement
         self.goto_position(new_pan, new_tilt, new_zoom)
 
+    @_serialized_soap
     def stop_move(self):
         """Stop PTZ movement."""
         ptz = self.get_ptz_service()
@@ -210,6 +243,7 @@ class ONVIFCameraWrapper:
         request.Zoom = True
         ptz.Stop(request)
 
+    @_serialized_soap
     def go_to_preset(self, preset_token: str):
         """Go to a PTZ preset."""
         ptz = self.get_ptz_service()
@@ -222,6 +256,7 @@ class ONVIFCameraWrapper:
         request.PresetToken = preset_token
         ptz.GotoPreset(request)
 
+    @_serialized_soap
     def get_presets(self) -> list:
         """Get PTZ presets."""
         ptz = self.get_ptz_service()
@@ -232,6 +267,7 @@ class ONVIFCameraWrapper:
         presets = ptz.GetPresets(profiles[0].token)
         return [{"token": p.token, "name": p.Name} for p in presets]
 
+    @_serialized_soap
     def get_current_position(self) -> dict:
         """Get current PTZ position."""
         ptz = self.get_ptz_service()
@@ -255,6 +291,7 @@ class ONVIFCameraWrapper:
             logger.warning(f"Could not get PTZ position: {e}")
             return {}
 
+    @_serialized_soap
     def goto_position(self, pan: float, tilt: float, zoom: float = 0):
         """Go to absolute PTZ position."""
         ptz = self.get_ptz_service()

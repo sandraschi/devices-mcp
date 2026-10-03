@@ -25,11 +25,17 @@ async def generate_webcam_stream(camera) -> AsyncGenerator[bytes, None]:
     cap = None
     try:
         device_id = getattr(camera, "_device_id", 0)
+
+        def _open_webcam() -> Any:
+            # Same native-heap rationale as the RTSP path below: DirectShow
+            # and FFmpeg opens are serialized process-wide.
+            with _cv_open_lock:
+                if platform.system() == "Windows":
+                    return cv2.VideoCapture(device_id, cv2.CAP_DSHOW)
+                return cv2.VideoCapture(device_id, cv2.CAP_ANY)
+
         # Windows: default MSMF backend often fails on USB UVC devices; DirectShow is more reliable.
-        if platform.system() == "Windows":
-            cap = await asyncio.to_thread(cv2.VideoCapture, device_id, cv2.CAP_DSHOW)
-        else:
-            cap = await asyncio.to_thread(cv2.VideoCapture, device_id, cv2.CAP_ANY)
+        cap = await asyncio.to_thread(_open_webcam)
 
         if not cap.isOpened():
             logger.error(f"Could not open webcam device {device_id} for streaming")
