@@ -478,6 +478,184 @@ class HueManager:
         self._homeaware_enabled = True
         logger.info("Hue CLIP v2 OK (MotionAware API reachable)")
 
+    def _clip_v2_get_sync(self, resource_path: str) -> list[dict[str, Any]]:
+        """Synchronous CLIP v2 GET (for use inside the discovery worker thread)."""
+        import httpx
+
+        if not self._bridge_ip or not self._bridge_username:
+            return []
+        path = resource_path.strip().lstrip("/")
+        headers = {"hue-application-key": self._bridge_username, "Accept": "application/json"}
+        try:
+            with httpx.Client(verify=False, timeout=15.0) as client:
+                for scheme in ("https", "http"):
+                    try:
+                        resp = client.get(f"{scheme}://{self._bridge_ip}/clip/v2/resource/{path}", headers=headers)
+                    except Exception as e:
+                        logger.debug("Hue CLIP v2 sync GET %s via %s failed: %s", path, scheme, e)
+                        continue
+                    if resp.status_code == 200:
+                        try:
+                            return _clip_v2_data_rows(resp.json())
+                        except Exception:
+                            return []
+        except Exception:
+            logger.debug("Hue CLIP v2 sync GET %s failed", path, exc_info=True)
+        return []
+
+    def _discover_lights_clip_v2_sync(self) -> bool:
+        """Populate self.lights from CLIP v2. Returns True when >=1 light found.
+
+        Needed for Hue Bridge Pro (BSB003) and other HTTPS-only bridges where
+        the phue v1 API is dead (instant JSON errors / hangs) while CLIP v2
+        answers in milliseconds.
+        """
+        from datetime import datetime
+
+        light_rows = self._clip_v2_get_sync("light")
+        if not light_rows:
+            return False
+        device_rows = self._clip_v2_get_sync("device")
+        devices_by_id = {str(d.get("id")): d for d in device_rows if isinstance(d, dict)}
+        now_iso = datetime.now().isoformat()
+        found: dict[str, HueLight] = {}
+        for row in light_rows:
+            try:
+                lid = str(row.get("id", ""))
+                if not lid:
+                    continue
+                owner = row.get("owner") or {}
+                dev = devices_by_id.get(str(owner.get("rid", "")), {})
+                dev_meta = dev.get("metadata") or {}
+                product = dev.get("product_data") or {}
+                meta = row.get("metadata") or {}
+                name = str(meta.get("name") or dev_meta.get("name") or lid)
+                on_state = bool((row.get("on") or {}).get("on", False))
+                dim = (row.get("dimming") or {}).get("brightness")
+                pct = float(dim) if isinstance(dim, (int, float)) else (100.0 if on_state else 0.0)
+                brightness = max(0, min(254, round(pct / 100.0 * 254)))
+                ct = row.get("color_temperature") or {}
+                # CLIP v2 shape is {"mirek": <number>, "mirek_valid": ...};
+                # tolerate the {"mirek": {"value": n}} variant too.
+                mirek_raw = ct.get("mirek") if isinstance(ct, dict) else None
+                if isinstance(mirek_raw, dict):
+                    mirek_raw = mirek_raw.get("value")
+                mireds = int(mirek_raw) if isinstance(mirek_raw, (int, float)) and mirek_raw > 0 else 0
+                kelvin = round(1000000 / mireds) if mireds > 0 else 0
+                color = row.get("color") or {}
+                xy_raw = (color.get("xy") or {}) if isinstance(color, dict) else {}
+                xy = [float(xy_raw["x"]), float(xy_raw["y"])] if {"x", "y"} <= set(xy_raw) else []
+                rgb = self._xy_to_rgb(xy[0], xy[1], brightness) if len(xy) == 2 else []
+                color_mode = "xy" if xy else ("ct" if mireds else "none")
+                found[lid] = HueLight(
+                    light_id=lid,
+                    name=name,
+                    room="",
+                    model=str(product.get("model_id") or ""),
+                    manufacturer=str(product.get("manufacturer_name") or "Philips"),
+                    on=on_state,
+                    brightness=brightness,
+                    brightness_percent=max(0, min(100, round(pct))),
+                    color_mode=color_mode,
+                    color_temp=mireds,
+                    color_temp_kelvin=kelvin,
+                    hue=0,
+                    saturation=0,
+                    xy=xy,
+                    rgb=rgb,
+                    reachable=True,
+                    last_seen=now_iso,
+                    energy_usage=None,
+                )
+            except Exception as e:
+                logger.debug("Skipping unparsable CLIP v2 light row: %s", e)
+        if not found:
+            return False
+        self.lights.clear()
+        self.lights.update(found)
+        logger.info("Hue CLIP v2: discovered %d lights", len(found))
+        return True
+
+    def _discover_groups_scenes_clip_v2_sync(self) -> None:
+        """Best-effort rooms/zones/scenes via CLIP v2 (phue v1 is dead on BSB003)."""
+        from datetime import datetime
+
+        now_iso = datetime.now().isoformat()
+        light_ids = set(self.lights)
+        # Grouped-light state per room/zone service
+        gl_rows = self._clip_v2_get_sync("grouped_light")
+        gl_by_owner = {}
+        for gl in gl_rows:
+            owner = gl.get("owner") or {}
+            gl_by_owner[str(owner.get("rid", ""))] = gl
+        groups: dict[str, HueGroup] = {}
+        for resource in ("room", "zone"):
+            for row in self._clip_v2_get_sync(resource):
+                try:
+                    rid = str(row.get("id", ""))
+                    if not rid:
+                        continue
+                    name = str((row.get("metadata") or {}).get("name") or resource)
+                    child_ids = [
+                        str(c.get("rid", ""))
+                        for c in (row.get("children") or [])
+                        if isinstance(c, dict) and str(c.get("rid", "")) in light_ids
+                    ]
+                    on = False
+                    bri_sum = 0
+                    for lid in child_ids:
+                        light = self.lights.get(lid)
+                        if light is None:
+                            continue
+                        if light.on:
+                            on = True
+                        bri_sum += light.brightness
+                    avg_bri = int(bri_sum / len(child_ids)) if child_ids else 0
+                    for svc in row.get("services") or []:
+                        gl = gl_by_owner.get(str(svc.get("rid", ""))) if isinstance(svc, dict) else None
+                        if gl:
+                            on = bool((gl.get("on") or {}).get("on", on))
+                    groups[rid] = HueGroup(
+                        group_id=rid,
+                        name=name,
+                        type="Room" if resource == "room" else "Zone",
+                        lights=child_ids,
+                        on=on,
+                        brightness=avg_bri,
+                        reachable_lights=len(child_ids),
+                    )
+                    for lid in child_ids:
+                        if lid in self.lights and not self.lights[lid].room:
+                            self.lights[lid].room = name
+                except Exception as e:
+                    logger.debug("Skipping unparsable CLIP v2 %s row: %s", resource, e)
+        self.groups.clear()
+        self.groups.update(groups)
+        scenes: dict[str, HueScene] = {}
+        for row in self._clip_v2_get_sync("scene"):
+            try:
+                sid = str(row.get("id", ""))
+                if not sid:
+                    continue
+                grp = row.get("group") or {}
+                scenes[sid] = HueScene(
+                    scene_id=sid,
+                    name=str((row.get("metadata") or {}).get("name") or sid),
+                    group=str(grp.get("rid", "")) if isinstance(grp, dict) else "",
+                    lights=[],
+                    active=False,
+                )
+            except Exception as e:
+                logger.debug("Skipping unparsable CLIP v2 scene row: %s", e)
+        self.scenes.clear()
+        self.scenes.update(scenes)
+        logger.info(
+            "Hue CLIP v2: discovered %d groups, %d scenes (as of %s)",
+            len(groups),
+            len(scenes),
+            now_iso,
+        )
+
     async def _fetch_motionaware_area_lists(
         self,
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], str | None]:
@@ -517,6 +695,25 @@ class HueManager:
     def _discover_devices_sync(self):
         """Synchronous discovery body - runs inside a worker thread."""
         try:
+            # CLIP v2 fast path: on HTTPS-only bridges (BSB003 "Hue Bridge pro")
+            # the phue v1 API is dead, so enumerate lights/rooms/scenes via v2.
+            # Falls through to the phue legacy walk when v2 is unavailable.
+            if self._clip_v2_available:
+                try:
+                    if self._discover_lights_clip_v2_sync():
+                        self._discover_groups_scenes_clip_v2_sync()
+                        self._last_scan_time = datetime.now()
+                        self._cache_loaded = True
+                        logger.info(
+                            "Discovered %s lights, %s groups, %s scenes (CLIP v2)",
+                            len(self.lights),
+                            len(self.groups),
+                            len(self.scenes),
+                        )
+                        return
+                    logger.info("CLIP v2 returned no lights; falling back to phue v1 walk")
+                except Exception:
+                    logger.exception("CLIP v2 discovery failed; falling back to phue v1 walk")
             # Discover lights (handle individual light errors gracefully)
             # Limit processing to essential data for faster startup
             self.lights.clear()
@@ -606,32 +803,34 @@ class HueManager:
             logger.debug(f"Could not get hue for light {light.name}: {e}")
         try:
             saturation = light.saturation
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Could not get saturation for light {light.name}: {e}")
         # Get color mode safely - determines if bulb is color-capable
         # Possible values: 'xy', 'ct' (color temp), 'hs' (hue/sat), or None for white-only
         color_mode = "none"  # Default for white-only bulbs
         try:
             color_mode = light.colormode or "none"
-        except Exception:
-            pass  # White-only bulbs don't have colormode
+        except Exception as e:
+            logger.debug(
+                f"Could not get colormode for light {light.name}: {e}"
+            )  # White-only bulbs don't have colormode
         # Get model info safely
         model = "Unknown"
         manufacturer = "Philips"
         try:
             model = light.modelid or "Unknown"
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Could not get model for light {light.name}: {e}")
         try:
             manufacturer = light.manufacturername or "Philips"
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Could not get manufacturer for light {light.name}: {e}")
         # Get reachable status safely
         reachable = True
         try:
             reachable = light.reachable
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Could not get reachable status for light {light.name}: {e}")
         return HueLight(
             light_id=str(light.light_id),
             name=light.name,
@@ -662,8 +861,8 @@ class HueManager:
         light_ids = []
         try:
             light_ids = [str(lid) for lid in group.lights]
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Could not list lights for Hue group: %s", e)
         # Calculate group state from individual lights
         on = False
         total_brightness = 0
@@ -681,14 +880,14 @@ class HueManager:
         name = "Unknown"
         try:
             name = group.name or "Unknown"
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Could not get Hue group name: %s", e)
         # Get group type safely - phue raises exception if not available
         group_type = "Room"
         try:
             group_type = group.type or "Room"
-        except Exception:
-            pass  # Default to "Room" if type property not accessible
+        except Exception as e:
+            logger.debug("Could not get Hue group type; defaulting to Room: %s", e)
         return HueGroup(
             group_id=str(group.group_id),
             name=name,
@@ -924,8 +1123,55 @@ class HueManager:
         rgb: list[int] | None = None,
     ) -> bool:
         """Set light state."""
-        if not self._bridge:
+        if not self._bridge and not self._clip_v2_available:
             raise RuntimeError("Hue Bridge not connected")
+        # CLIP v2 fast path: phue v1 is dead on HTTPS-only bridges (BSB003),
+        # so drive on/off + brightness through the v2 light resource.
+        if self._clip_v2_available and light_id in self.lights:
+            try:
+                import httpx
+
+                payload: dict[str, Any] = {}
+                if on is not None:
+                    payload["on"] = {"on": bool(on)}
+                if brightness is not None:
+                    payload["dimming"] = {"brightness": max(0.0, min(100.0, brightness / 254.0 * 100.0))}
+                elif brightness_percent is not None:
+                    payload["dimming"] = {"brightness": max(0.0, min(100.0, float(brightness_percent)))}
+                if payload:
+                    headers = {
+                        "hue-application-key": self._bridge_username or "",
+                        "Accept": "application/json",
+                    }
+                    last_err: str | None = None
+                    for scheme in ("https", "http"):
+                        try:
+                            resp = await httpx.AsyncClient(verify=False, timeout=15.0).put(
+                                f"{scheme}://{self._bridge_ip}/clip/v2/resource/light/{light_id}",
+                                headers=headers,
+                                json=payload,
+                            )
+                            if resp.status_code == 200:
+                                last_err = None
+                                break
+                            last_err = f"HTTP {resp.status_code}: {(resp.text or '')[:200]}"
+                        except Exception as e:
+                            last_err = str(e)
+                    if last_err:
+                        raise RuntimeError(f"CLIP v2 light control failed: {last_err}")
+                cached = self.lights[light_id]
+                if on is not None:
+                    cached.on = on
+                if brightness is not None:
+                    cached.brightness = brightness
+                    cached.brightness_percent = int((brightness / 254) * 100)
+                elif brightness_percent is not None:
+                    cached.brightness = int((brightness_percent / 100) * 254)
+                    cached.brightness_percent = brightness_percent
+                return True
+            except Exception:
+                logger.exception("Failed to set light %s state via CLIP v2", light_id)
+                raise
         try:
             light = self._get_light_by_id(int(light_id))
             if not light:
@@ -956,8 +1202,8 @@ class HueManager:
                     # Also set colormode to 'xy' for color bulbs
                     try:
                         light.colormode = "xy"
-                    except Exception:
-                        pass  # Some lights may not support setting colormode
+                    except Exception as e:
+                        logger.debug("Light does not support setting colormode: %s", e)
             # Update local cache instead of re-querying entire bridge
             # The phue library sends the command directly, we just update our cache
             if light_id in self.lights:
@@ -1102,7 +1348,8 @@ class HueManager:
                         if grp.group_id != 0:  # Skip group 0 (all lights)
                             try:
                                 group_light_ids = set(str(lid) for lid in grp.lights)
-                            except Exception:
+                            except Exception as e:
+                                logger.debug("Could not list scene-group lights; skipping group: %s", e)
                                 continue
                             if scene_light_ids.intersection(group_light_ids):
                                 target_group_id = grp.group_id

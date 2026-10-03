@@ -26,6 +26,7 @@ ENERGY_ACTIONS = {
     "control": "Control smart plug (on/off)",
     "consumption": "Get energy consumption data",
     "cost": "Get energy cost analysis",
+    "discover": "Sweep LAN for Tapo plugs (static hosts + broadcast discovery)",
 }
 
 
@@ -34,7 +35,7 @@ def register_energy_management_tool(mcp: FastMCP) -> None:
 
     @mcp.tool(annotations=_MUTATING)
     async def energy_management(
-        action: Literal["status", "control", "consumption", "cost"],
+        action: Literal["status", "control", "consumption", "cost", "discover"],
         device_id: str | None = None,
         power_state: str | None = None,
         time_range: str = "24h",
@@ -49,11 +50,13 @@ def register_energy_management_tool(mcp: FastMCP) -> None:
 
         Args:
             action (Literal, required): The operation to perform. Must be one of: "status", "control",
-                "consumption", "cost".
+                "consumption", "cost", "discover".
                 - "status": Get smart plug status (optional: device_id for specific device)
                 - "control": Control smart plug power (requires: device_id, power_state)
                 - "consumption": Get energy consumption data (optional: device_id, time_range)
                 - "cost": Get energy cost analysis (optional: device_id, time_range)
+                - "discover": Sweep LAN for plugs - merges static config hosts with broadcast
+                    discovery so new plugs appear without editing config.yaml
 
             device_id (str | None): Smart plug device ID. Required for: control operation.
                 Optional for: status, consumption, cost operations (filters to specific device).
@@ -83,6 +86,9 @@ def register_energy_management_tool(mcp: FastMCP) -> None:
 
             # Get cost analysis
             result = await energy_management(action="cost", device_id="tapo_001", time_range="30d")
+
+            # Sweep for plugs (new devices appear without config edits)
+            result = await energy_management(action="discover")
         """
         try:
             if action not in ENERGY_ACTIONS:
@@ -169,6 +175,21 @@ def register_energy_management_tool(mcp: FastMCP) -> None:
                         "Implement energy-saving measures for high-cost devices",
                         "Set up automated controls to reduce costs",
                         "Monitor cost trends over time",
+                    ],
+                )
+
+            if action == "discover":
+                device_count = len(result.get("devices", [])) if isinstance(result, dict) else 0
+                return build_success_response(
+                    operation="energy_discover",
+                    summary=f"Discovery sweep complete: {device_count} plug(s) found",
+                    result=result,
+                    recommendations=[
+                        "New plugs appear here without config.yaml edits",
+                        "Unreachable plugs show power_state False - check DHCP/app",
+                    ],
+                    next_steps=[
+                        "Check status with 'status' action for live readings",
                     ],
                 )
 

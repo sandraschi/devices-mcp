@@ -195,7 +195,8 @@ class TapoP115IngestionService:
             async for maybe in discovery:
                 try:
                     result = maybe.get()
-                except Exception:
+                except Exception as e:
+                    logger.debug("Tapo discovery candidate unreadable, skipping: %s", e)
                     continue
                 if isinstance(result, DiscoveryResult.PlugEnergyMonitoring):
                     ip = getattr(result.device_info, "ip", None)
@@ -213,13 +214,18 @@ class TapoP115IngestionService:
         discovered_host_data: list[dict[str, object]] = []
         hosts = list(self._hosts)
 
-        if not hosts and self._discovery_enabled:
+        # Always merge LAN broadcast results with static hosts when discovery
+        # is enabled. Previously broadcast ran ONLY with zero static hosts, so
+        # any plug missing from config.yaml (e.g. a 4th plug added in the Tapo
+        # app) was invisible by design. DHCP also moves plugs between IPs, so
+        # a broadcast sweep keeps stale static entries honest.
+        if self._discovery_enabled:
             found = await self._discover_energy_plug_hosts_via_lan()
+            for host in found:
+                if host not in hosts:
+                    hosts.append(host)
             if found:
-                hosts = found
-                logger.info("Tapo P115 discovery will use LAN-found hosts: %s", hosts)
-            else:
-                logger.warning("LAN discovery found no plugs; set TAPO_P115_HOSTS or energy.tapo_p115.devices[].host")
+                logger.info("Tapo P115 discovery merged LAN-found hosts: %s", found)
 
         if not hosts:
             logger.warning("No P115 hosts available for discovery")
@@ -242,6 +248,7 @@ class TapoP115IngestionService:
                 device_id = device_cfg.get("device_id") or f"tapo_p115_{host.replace('.', '_')}"
                 device_entry = {
                     "device_id": device_id,
+                    "host": host,
                     "name": device_cfg.get("name", f"P115 {host}"),
                     "location": device_cfg.get("location", "Unknown"),
                     "type": "tapo_p115",
@@ -269,6 +276,7 @@ class TapoP115IngestionService:
                 device_id = device_cfg.get("device_id") or f"tapo_p115_{host.replace('.', '_')}"
                 device_entry = {
                     "device_id": device_id,
+                    "host": host,
                     "name": device_cfg.get("name", f"P115 {host}"),
                     "location": device_cfg.get("location", "Unknown"),
                     "type": "tapo_p115",
@@ -290,12 +298,22 @@ class TapoP115IngestionService:
         return discovered_host_data
 
     async def _fetch_device_snapshot(self, host: str) -> dict[str, object] | None:
+        """Collect realtime metrics for a single plug, trying P115 then P110."""
+        for ctor in ("p115", "p110"):
+            snapshot = await self._fetch_device_snapshot_with(host, ctor)
+            if snapshot:
+                return snapshot
+            logger.debug("Tapo %s snapshot failed for %s; trying next model", ctor.upper(), host)
+        logger.warning("Unable to query Tapo plug at %s (tried P115/P110)", host)
+        return None
+
+    async def _fetch_device_snapshot_with(self, host: str, ctor: str = "p115") -> dict[str, object] | None:
         """
         Collect realtime metrics for a single plug using tapo library.
         """
         try:
             client = await asyncio.wait_for(self._get_client(), timeout=5.0)
-            plug = await asyncio.wait_for(client.p115(host), timeout=5.0)
+            plug = await asyncio.wait_for(getattr(client, ctor)(host), timeout=5.0)
 
             # Get device info
             device_info = await asyncio.wait_for(plug.get_device_info(), timeout=3.0)
@@ -375,7 +393,7 @@ class TapoP115IngestionService:
 
             return snapshot_data
         except Exception as exc:
-            logger.warning(f"Unable to query Tapo P115 at {host}: {exc}")
+            logger.debug(f"Unable to query Tapo {ctor.upper()} at {host}: {exc}")
             return None
 
     async def control_device(self, host: str, *, turn_on: bool | None = None) -> None:

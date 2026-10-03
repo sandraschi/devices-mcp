@@ -27,7 +27,7 @@ class EnergyManagementTool(BaseTool):
     control operations, consumption tracking, and cost analysis.
 
     Parameters:
-        operation: Type of energy operation (status, control, consumption, cost).
+        operation: Type of energy operation (status, control, consumption, cost, discover).
         device_id: ID of the smart plug device (optional for status).
         action: Control action (on, off, toggle) for control operation.
         time_range: Time range for consumption/cost analysis (1h, 24h, 7d, 30d).
@@ -44,7 +44,9 @@ class EnergyManagementTool(BaseTool):
         category = ToolCategory.ENERGY
 
         class Parameters(BaseModel):
-            operation: str = Field(..., description="Energy operation: 'status', 'control', 'consumption', 'cost'")
+            operation: str = Field(
+                ..., description="Energy operation: 'status', 'control', 'consumption', 'cost', 'discover'"
+            )
             device_id: str | None = Field(None, description="Smart plug device ID")
             action: str | None = Field(None, description="Control action: 'on', 'off', 'toggle'")
             time_range: str | None = Field("24h", description="Time range for analysis: '1h', '24h', '7d', '30d'")
@@ -68,9 +70,11 @@ class EnergyManagementTool(BaseTool):
                 return await self._get_consumption(time_range)
             if operation == "cost":
                 return await self._get_cost_analysis(time_range)
+            if operation == "discover":
+                return await self._discover_devices()
             return {
                 "success": False,
-                "message": f"Invalid operation: {operation}. Must be 'status', 'control', 'consumption', or 'cost'",
+                "message": f"Invalid operation: {operation}. Must be 'status', 'control', 'consumption', 'cost', or 'discover'",
                 "timestamp": time.time(),
             }
 
@@ -83,6 +87,30 @@ class EnergyManagementTool(BaseTool):
                 "operation": operation,
                 "timestamp": time.time(),
             }
+
+    async def _discover_devices(self) -> dict[str, Any]:
+        """Sweep the LAN for Tapo plugs (static hosts + broadcast) and return the live list."""
+        from devices_mcp.tools.energy.tapo_plug_tools import tapo_plug_manager
+
+        await tapo_plug_manager.rediscover_devices()
+        devices = await tapo_plug_manager.get_all_devices()
+        found = [
+            {
+                "device_id": d.device_id,
+                "name": d.name,
+                "host": tapo_plug_manager.get_device_host(d.device_id),
+                "power_state": d.power_state,
+                "current_power": d.current_power,
+            }
+            for d in devices
+        ]
+        return {
+            "success": True,
+            "message": f"Discovery sweep complete: {len(found)} plug(s) found",
+            "devices": found,
+            "count": len(found),
+            "timestamp": time.time(),
+        }
 
     async def _get_status(self, device_id: str | None) -> dict[str, Any]:
         """Get smart plug status from real devices."""

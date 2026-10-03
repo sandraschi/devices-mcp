@@ -283,8 +283,8 @@ class ConnectionSupervisor:
 
                         power_data = await asyncio.wait_for(device.get_current_power(), timeout=3.0)
                         current_power, voltage, current_a = parse_tapo_power_reading(power_data)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Tapo live power read failed; using 0.0 W fallback: %s", e)
 
                     power_state = bool(getattr(info, "device_on", False))
                     today_kwh = float(getattr(energy, "today_energy", 0) or 0) / 1000.0
@@ -552,12 +552,14 @@ class ConnectionSupervisor:
                         details={},
                     )
             finally:
-                # Always close service if it was created
-                if service:
-                    try:
-                        await service.close()
-                    except Exception as e:
-                        logger.debug(f"Error closing service: {e}")
+                # Intentionally no service.close() here. get_instance() returns
+                # the process-shared NetatmoService singleton (same object the
+                # web API and hardware_init use). Closing it every poll used to
+                # destroy its aiohttp session + background task, forcing a full
+                # OAuth re-init on the next poll (the observed ~65s
+                # disconnect/reconnect dance). Singleton lifecycle belongs to
+                # the app, not this health check.
+                pass
 
         except Exception as e:
             # Catch all exceptions including network errors
