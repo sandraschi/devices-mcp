@@ -289,6 +289,6 @@ async def _primary_netatmo_station_id() -> str | None:
         if stations:
             sid = stations[0].get("station_id")
             return str(sid) if sid else None
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Netatmo primary station lookup failed: %s", e)
     return None

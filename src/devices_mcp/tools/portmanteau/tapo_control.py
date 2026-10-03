@@ -213,8 +213,8 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                                 "type": "hue",
                                 "light": _model_dump(light) if light else None,
                             }
-                    except Exception:
-                        pass  # Continue to try Tapo
+                    except Exception as e:
+                        logger.debug("Hue control failed for %s; trying Tapo: %s", light_id, e)
 
                 # Then try Tapo
                 if tapo_lighting_manager._initialized or await tapo_lighting_manager.initialize():
@@ -235,8 +235,8 @@ def register_device_control_tool(mcp: FastMCP) -> None:
                                 "type": "tapo",
                                 "light": _model_dump(light) if light else None,
                             }
-                    except Exception:
-                        pass  # Both failed
+                    except Exception as e:
+                        logger.debug("Tapo control also failed for %s: %s", light_id, e)
 
                 return {
                     "success": False,

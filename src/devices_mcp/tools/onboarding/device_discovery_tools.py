@@ -205,8 +205,8 @@ class DeviceDiscoveryManager:
                                 )
                                 logger.info(f"Found USB camera at device {device_id} (appears to be in use)")
                             temp_cap.release()
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            logger.debug("USB camera probe failed for device %s: %s", device_id, e)
 
                 except Exception as e:
                     logger.debug(f"Error checking camera device {device_id}: {e}")

@@ -154,8 +154,8 @@ class TapoLightingManager:
                         rgb_info.get("green", 255),
                         rgb_info.get("blue", 255),
                     ]
-            except Exception:
-                pass  # LED info not available for all device types
+            except Exception as e:
+                logger.debug("Tapo LED info not available for this device type: %s", e)
             return result
         except Exception:
             logger.exception("Failed to get device status for {host}:")

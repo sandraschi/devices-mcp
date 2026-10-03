@@ -308,8 +308,8 @@ def register_ring_management_tool(mcp: FastMCP) -> None:
                     snapshot_url = None
                     try:
                         snapshot_url = await client.get_snapshot(device_id)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("Ring snapshot unavailable; continuing without it: %s", e)
                     webrtc = {
                         "device_id": device_id,
                         "webrtc_url": "/api/ring/webrtc/offer",
