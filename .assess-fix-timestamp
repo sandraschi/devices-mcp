@@ -1,1 +1,1 @@
-{"timestamp":"2026-07-13","repos":["devices-mcp"],"fixes":["CLAUDE.md","CORS dual_server.py","CORS metrics_service.py","CORS web-sota backend"],"msg":"3 CORS wildcard fixes + CLAUDE.md created"}
+{"commit":"21c6fbc0dea815a8c244a6a4934bc51bce71709e","host":"Goliath","report":"docs/assess-reports/2026-10-03.md","score_after":30,"score_before":0,"timestamp":"2026-10-03T17:46:40+02:00"}
