@@ -270,7 +270,7 @@ class RingClient:
                 token_data = json.loads(self.token_file.read_text())
                 self._auth = Auth("TapoCameraMCP/1.0", token_data, self._token_updated)
                 self._ring = Ring(self._auth)
-                await asyncio.to_thread(self._ring.update_data)
+                await self._ring.async_update_data()
                 self._initialized = True
                 logger.info("Ring initialized from cached token")
 
@@ -298,7 +298,7 @@ class RingClient:
                 raise
 
             self._ring = Ring(self._auth)
-            await asyncio.to_thread(self._ring.update_data)
+            await self._ring.async_update_data()
             self._initialized = True
             logger.info("Ring initialized successfully")
 
@@ -334,7 +334,7 @@ class RingClient:
             from ring_doorbell import Ring
 
             self._ring = Ring(self._auth)
-            await asyncio.to_thread(self._ring.update_data)
+            await self._ring.async_update_data()
             self._initialized = True
             logger.info("Ring 2FA completed successfully")
 
@@ -375,7 +375,7 @@ class RingClient:
             return
 
         try:
-            await asyncio.to_thread(self._ring.update_data)
+            await self._ring.async_update_data()
             self._raw_devices_data = self._ring.devices_data.copy()
             await self._fetch_alarm_data()
             for key in ("doorbells", "alarm_devices", "alarm_status", "events", "alarm_events"):

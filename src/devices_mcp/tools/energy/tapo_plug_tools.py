@@ -109,9 +109,9 @@ class TapoPlugManager:
                     self._readonly_by_host[host] = readonly_flag
                 if device_id:
                     self._readonly_by_device_id[device_id] = readonly_flag
-        except Exception:
+        except Exception as e:
             # If config is not readable, default to no readonly
-            pass
+            logger.debug("Tapo P115 readonly config unreadable; defaulting to writable: %s", e)
 
         self._config_loaded = True
 

@@ -124,8 +124,15 @@ class OllamaProvider(LLMProvider):
 
     async def chat(self, messages: list[dict[str, str]], stream: bool = False, model_name: str | None = None) -> Any:
         """Send chat message to Ollama."""
-        # Use provided model or current model
-        use_model = model_name or self._current_model or "llama2"
+        # No phantom default: "llama2" is not installed here and Ollama 404s on
+        # it, which used to surface as an opaque backend 500. Fail fast with a
+        # message that tells the caller how to pick a real model.
+        use_model = model_name or self._current_model
+        if not use_model:
+            raise ValueError(
+                "No Ollama model selected. Load one first via POST /api/llm/models/load "
+                "(see GET /api/llm/models for installed names) or pass 'model' explicitly."
+            )
 
         # Convert messages to Ollama format
         prompt = ""

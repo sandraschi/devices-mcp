@@ -1,6 +1,7 @@
 """Camera manager for handling multiple camera types and groups."""
 
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -80,9 +81,33 @@ class CameraManager:
 
     async def _auto_discover_usb_cameras(self) -> None:
         """Automatically discover and add USB cameras."""
+        # Session-0 guard: the NSSM service runs as LocalSystem with no
+        # interactive desktop. Building DirectShow graphs there sees no real
+        # devices (and native graph code is implicated in the 0xc0000374 heap
+        # crashes). The user-session helper on :10715 owns USB capture; the
+        # configured usb_camera_* entries keep working through it. Skip the
+        # in-process scan unless explicitly forced.
+        try:
+            import ctypes
+
+            _kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            _session_id = ctypes.c_ulong(0)
+            if _kernel32.ProcessIdToSessionId(os.getpid(), ctypes.byref(_session_id)):
+                if _session_id.value == 0 and os.environ.get("DEVICES_MCP_FORCE_USB_SCAN", "").lower() not in (
+                    "1",
+                    "true",
+                    "yes",
+                ):
+                    logger.warning(
+                        "Skipping USB auto-discovery: running in session 0 (service context, "
+                        "no interactive desktop). Use the :10715 camera helper or set "
+                        "DEVICES_MCP_FORCE_USB_SCAN=1 to override."
+                    )
+                    return
+        except Exception as e:
+            logger.debug("Session check failed, continuing with USB discovery: %s", e)
         try:
             # Suppress OpenCV warnings
-            import os
             import platform
 
             import cv2

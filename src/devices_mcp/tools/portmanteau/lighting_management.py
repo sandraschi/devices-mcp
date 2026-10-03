@@ -389,10 +389,9 @@ async def _control_light(
                 tapo_light = await tapo_lighting_manager.get_light(device_id)
                 if tapo_light:
                     light_type = "tapo"
-        except Exception:
-            pass
-
-        if light_type != "tapo":
+        except Exception as e:
+            logger.debug("Tapo light lookup failed for %s; trying Hue: %s", device_id, e)
+        if light_type is None:
             try:
                 if not hue_manager._initialized:
                     await hue_manager.initialize()
@@ -402,10 +401,9 @@ async def _control_light(
                     hue_light = next((hl for hl in all_hue if hl.light_id == device_id), None)
                     if hue_light:
                         light_type = "hue"
-            except Exception:
-                pass
-
-        if not light_type:
+            except Exception as e:
+                logger.debug("Hue light lookup failed for %s: %s", device_id, e)
+        if light_type is None:
             return {
                 "success": False,
                 "message": f"Light '{device_id}' not found or not reachable."
