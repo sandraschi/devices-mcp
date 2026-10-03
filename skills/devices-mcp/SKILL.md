@@ -107,16 +107,17 @@ any disagreement.
   promise movement — offer to start the backing MCP service instead.
 - Drive (when online): `robotics_management`, Robots page, `GET /api/robots/`.
 
-## Local LLM (broken until Ollama is reinstalled)
+## Local LLM (works)
 
-- Ollama `:11434` (32 models listed) cannot run ANY model: `llama-server.exe` is
-  missing from its install dir (failed update). Fix: `winget reinstall Ollama.Ollama`.
-- LM Studio `:1234` is registered; chat against it works when a model is loaded there.
-- Backend notes: no phantom defaults (missing model → clear 400, not 500);
-  the selected model lives in backend memory, so every service restart resets it —
-  re-select in Settings after a restart. Chat streams via `stream: true`.
-- Drive: `GET /api/llm/providers|models|discover|onboarding`, `POST /api/llm/models/load`,
-  `POST /api/llm/chat`, Chat + Settings pages.
+- Ollama `:11434` (NSSM service `ollama-serve`, models on `N:\AI\ollama\models`).
+  FIXED 2026-10-03: every generate 500'd with "llama-server binary not found"
+  because `lib\ollama\` was empty. Root cause was reinstalling while the service
+  + tray app held the install dir locked, so no reinstall ever completed. Fix was
+  stop-everything-first (`sc stop ollama-serve`, kill tray/server), then run the
+  installer. Verified: `llama3.2:3b` generates, backend chat returns it.
+  If inference ever 500s again: check `lib\ollama\llama-server.exe` exists first.
+- LM Studio `:1234` registered and working (chat verified via `nemotron-3-nano`).
+  Chat UI persists provider+model, so a working choice survives reloads.
 
 ## Service control
 
