@@ -2,18 +2,14 @@ import asyncio
 import logging
 import os
 import platform
-import threading
 from collections.abc import AsyncGenerator
 from typing import Any
 
 import cv2
 
-logger = logging.getLogger(__name__)
+from devices_mcp.camera._native_locks import cv_open_lock
 
-# OpenCV/DirectShow/FFmpeg capture opens are not thread-safe (observed native
-# heap crashes, 0xc0000374, when several streams open concurrently). Serialize
-# all VideoCapture creations process-wide; reads stay concurrent.
-_cv_open_lock = threading.Lock()
+logger = logging.getLogger(__name__)
 
 
 async def generate_webcam_stream(camera) -> AsyncGenerator[bytes, None]:
@@ -27,9 +23,8 @@ async def generate_webcam_stream(camera) -> AsyncGenerator[bytes, None]:
         device_id = getattr(camera, "_device_id", 0)
 
         def _open_webcam() -> Any:
-            # Same native-heap rationale as the RTSP path below: DirectShow
-            # and FFmpeg opens are serialized process-wide.
-            with _cv_open_lock:
+            # Serialized process-wide (see devices_mcp.camera._native_locks).
+            with cv_open_lock:
                 if platform.system() == "Windows":
                     return cv2.VideoCapture(device_id, cv2.CAP_DSHOW)
                 return cv2.VideoCapture(device_id, cv2.CAP_ANY)
@@ -92,7 +87,7 @@ async def generate_rtsp_mjpeg_stream(rtsp_url: str) -> AsyncGenerator[bytes, Non
     )
 
     def _open() -> Any:
-        with _cv_open_lock:
+        with cv_open_lock:
             return cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
 
     cap = await asyncio.to_thread(_open)

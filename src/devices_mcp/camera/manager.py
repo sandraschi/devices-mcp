@@ -120,13 +120,18 @@ class CameraManager:
             discovered_cameras = []
             max_devices = 10
 
-            # Scan for available cameras (Windows: CAP_DSHOW matches streaming.py / most UVC drivers)
+            # Scan for available cameras (Windows: CAP_DSHOW matches streaming.py / most UVC drivers).
+            # Opens are serialized under cv_open_lock: concurrent DirectShow
+            # graph builds corrupted the native heap (0xc0000374).
+            from ._native_locks import cv_open_lock
+
             for device_id in range(max_devices):
                 try:
-                    if platform.system() == "Windows":
-                        cap = cv2.VideoCapture(device_id, cv2.CAP_DSHOW)
-                    else:
-                        cap = cv2.VideoCapture(device_id, cv2.CAP_ANY)
+                    with cv_open_lock:
+                        if platform.system() == "Windows":
+                            cap = cv2.VideoCapture(device_id, cv2.CAP_DSHOW)
+                        else:
+                            cap = cv2.VideoCapture(device_id, cv2.CAP_ANY)
                     if cap.isOpened():
                         ret, frame = cap.read()
                         if ret and frame is not None:

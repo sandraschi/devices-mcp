@@ -11,7 +11,31 @@ import cv2
 import numpy as np
 from PIL import Image
 
+from ._native_locks import cv_open_lock
 from .base import BaseCamera, CameraFactory, CameraType
+
+# Per-process cache of probed resolutions: probing opens a DirectShow capture,
+# so it happens at most once per device id (plus explicit rescans). Repeated
+# probing on every status call was the heap-corruption vector.
+_probe_resolution_cache: dict[int, str] = {}
+
+
+def _in_service_session() -> bool:
+    """True when running in Windows session 0 (service context, no desktop)."""
+    try:
+        import ctypes
+        import sys
+
+        if sys.platform != "win32":
+            return False
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        session_id = ctypes.c_ulong(0)
+        if kernel32.ProcessIdToSessionId(os.getpid(), ctypes.byref(session_id)):
+            return session_id.value == 0
+    except Exception as e:
+        logger.debug("Service-session check failed: %s", e)
+    return False
+
 
 # Suppress OpenCV warnings (MSMF grab frame errors)
 os.environ["OPENCV_LOG_LEVEL"] = "ERROR"
@@ -447,36 +471,56 @@ class WebCamera(BaseCamera):
             # CRITICAL: cv2.VideoCapture open (MSMF) can block the event loop for
             # ~10s while another app holds the camera (e.g. NVIDIA Broadcast).
             # Run the whole open+probe in an executor so other requests survive.
+            # Heap-safety: at most one probe per device per process (cache), never
+            # in session 0 (service context - DirectShow has no desktop there and
+            # concurrent graph builds corrupted the native heap, 0xc0000374),
+            # and serialized under cv_open_lock.
             if resolution == "Unknown":
                 try:
-                    loop = asyncio.get_running_loop()
+                    cached = _probe_resolution_cache.get(self._device_id)
+                    if cached:
+                        resolution = cached
+                    elif _in_service_session() and os.environ.get("DEVICES_MCP_FORCE_USB_SCAN", "").lower() not in (
+                        "1",
+                        "true",
+                        "yes",
+                    ):
+                        logger.debug(
+                            "Skipping USB resolution probe for device %s in session 0",
+                            self._device_id,
+                        )
+                    else:
+                        loop = asyncio.get_running_loop()
 
-                    def _probe_resolution():
-                        import platform
+                        def _probe_resolution():
+                            import platform
 
-                        if platform.system() == "Windows":
-                            cap = cv2.VideoCapture(self._device_id, cv2.CAP_DSHOW)
-                        else:
-                            cap = cv2.VideoCapture(self._device_id, cv2.CAP_ANY)
-                        try:
-                            if not cap.isOpened():
-                                return "Unknown"
-                            config_res = self.config.get("params", {}).get("resolution", "640x480")
-                            try:
-                                conf_width, conf_height = map(int, config_res.split("x"))
-                                cap.set(cv2.CAP_PROP_FRAME_WIDTH, conf_width)
-                                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, conf_height)
-                            except Exception as e:
-                                logger.debug(f"Config resolution parsing failed: {e}")
-                            width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                            height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                            if width > 0 and height > 0:
-                                return f"{width}x{height}"
-                            return "Unknown"
-                        finally:
-                            cap.release()
+                            with cv_open_lock:
+                                if platform.system() == "Windows":
+                                    cap = cv2.VideoCapture(self._device_id, cv2.CAP_DSHOW)
+                                else:
+                                    cap = cv2.VideoCapture(self._device_id, cv2.CAP_ANY)
+                                try:
+                                    if not cap.isOpened():
+                                        return "Unknown"
+                                    config_res = self.config.get("params", {}).get("resolution", "640x480")
+                                    try:
+                                        conf_width, conf_height = map(int, config_res.split("x"))
+                                        cap.set(cv2.CAP_PROP_FRAME_WIDTH, conf_width)
+                                        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, conf_height)
+                                    except Exception as e:
+                                        logger.debug(f"Config resolution parsing failed: {e}")
+                                    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                                    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                                    if width > 0 and height > 0:
+                                        return f"{width}x{height}"
+                                    return "Unknown"
+                                finally:
+                                    cap.release()
 
-                    resolution = await asyncio.wait_for(loop.run_in_executor(None, _probe_resolution), timeout=5.0)
+                        resolution = await asyncio.wait_for(loop.run_in_executor(None, _probe_resolution), timeout=5.0)
+                        if resolution != "Unknown":
+                            _probe_resolution_cache[self._device_id] = resolution
                 except Exception as exc:
                     logger.debug("Failed to get webcam resolution: %s", exc)
 
