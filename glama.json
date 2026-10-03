@@ -5,7 +5,8 @@
   "description": "Home security and IoT orchestration MCP server. Dual-architecture: individual device MCP servers + unified web-sota dashboard. Supports Tapo cameras, Ring doorbells, Nest Protect, Philips Hue lighting, Netatmo weather, Shelly devices, USB webcams.",
   "type": "mcp_server",
   "status": "beta",
-  "framework": "FastMCP 3.1+",
+  "version": "2.4.1",
+  "framework": "FastMCP 3.4+",
   "tools": 40,
   "transport": ["stdio", "http", "sse"],
   "keywords": [

@@ -16,6 +16,14 @@ default:
 dev:
     Set-Location "{{justfile_directory()}}\{{WEBROOT}}"; .\start.ps1
 
+# Start production backend (port 10717) via fleet launcher
+serve:
+    Set-Location "{{justfile_directory()}}"; .\start.ps1 -NoBrowser
+
+# Run test suite
+test:
+    Set-Location "{{justfile_directory()}}"; uv run pytest tests/ -q
+
 # Run frontend TypeScript type-check
 typecheck:
     Set-Location "{{justfile_directory()}}\{{WEBROOT}}\frontend"; npx tsc --noEmit
@@ -28,26 +36,21 @@ build:
 
 # Execute Ruff linting
 lint:
-    Set-Location "{{justfile_directory()}}"
-    uv run ruff check .
+    Set-Location "{{justfile_directory()}}"; uv run ruff check .
 
 # Execute Ruff fix and formatting
 fix:
-    Set-Location "{{justfile_directory()}}"
-    uv run ruff check . --fix --unsafe-fixes
-    uv run ruff format .
+    Set-Location "{{justfile_directory()}}"; uv run ruff check . --fix --unsafe-fixes; uv run ruff format .
 
 # --- Hardening ---
 
 # Execute Bandit security audit
 check-sec:
-    Set-Location "{{justfile_directory()}}"
-    uv run bandit -r src\
+    Set-Location "{{justfile_directory()}}"; uv run bandit -r src\
 
 # Execute safety audit of dependencies
 audit-deps:
-    Set-Location "{{justfile_directory()}}"
-    uv run safety check
+    Set-Location "{{justfile_directory()}}"; uv run safety check
 
 # --- Native Desktop ---
 

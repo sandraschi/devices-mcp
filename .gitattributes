@@ -1,0 +1,8 @@
+# Fleet LF normalization (mcp-central-docs/templates/fleet.gitattributes)
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.icns binary
+*.exe binary
+*.dll binary
+*.lib binary

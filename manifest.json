@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.2",
   "name": "devices-mcp",
-  "version": "1.23.0",
+  "version": "2.4.1",
   "description": "Home security and IoT orchestration MCP server. Supports Tapo cameras, Ring (WebRTC intercom), Nest Protect (via HA), Philips Hue, Netatmo, Shelly, USB webcams. 27 portmanteau tools with FastMCP 3.4 annotations.",
   "long_description": "Comprehensive home security and IoT orchestration platform. Dual-architecture: 27 FastMCP 3.4 portmanteau tools with annotations (READ_ONLY/MUTATING/DESTRUCTIVE) + unified web-sota SPA dashboard (Vite + React, ports 10716/10717). Supports TP-Link Tapo cameras (ONVIF), Ring doorbells (WebRTC live view + two-way intercom), Nest Protect (via Home Assistant or direct OAuth2), Philips Hue lighting (incl. HomeAware CLIP v2), Netatmo weather stations, Shelly sensors, USB webcams (auto-discovery with dedup). Includes PTZ control, motion detection, energy monitoring (Tapo P115), lighting scenes, log management, health supervision, SOTA chat with 5 personalities, and Ring alarm arming/disarming.",
   "author": {

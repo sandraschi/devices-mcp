@@ -274,7 +274,7 @@ line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "S", "UP", "RUF"]
+select = ["E", "F", "W", "I", "B", "S", "UP", "RUF", "T20"]
 ignore = [
     "S101",
     "B008",
@@ -284,8 +284,6 @@ ignore = [
     "S106",
     "S107",
     "S108",
-    "S110",
-    "S112",
     "S113",
     "S311",
     "S501",
@@ -304,8 +302,6 @@ ignore = [
     "S106",
     "S107",
     "S108",
-    "S110",
-    "S112",
     "S113",
     "S311",
     "S501",
@@ -338,7 +334,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"scripts/**" = ["S603", "S607", "S605", "S602", "S310", "S101",
+"src/devices_mcp/cli*.py" = ["T20"]
+"scripts/**" = ["S603", "S607", "S605", "S602", "S310", "S101", "T20",
     "B008",
     # Home automation / local network: bind-all, subprocess helpers, TLS to LAN bridges
     "S104",
@@ -346,8 +343,6 @@ ignore = [
     "S106",
     "S107",
     "S108",
-    "S110",
-    "S112",
     "S113",
     "S311",
     "S501",
@@ -368,7 +363,7 @@ ignore = [
     "RUF003",
     "RUF006",
     "B027", "S324"]
-"tests/**" = ["S101", "S311"]
+"tests/**" = ["S101", "S311", "T20"]
 
 [tool.ruff.format]
 quote-style = "double"
