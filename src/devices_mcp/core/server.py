@@ -203,8 +203,8 @@ class DevicesMCPServer:
                             try:
                                 self.mcp.add_provider(create_proxy(url))
                                 bridge_proxies.append(url)
-                            except Exception:
-                                pass
+                            except Exception as e:
+                                logger.debug("MCP bridge %s unavailable: %s", url, e)
                 _register_fastmcp_32_parity(self.mcp)
                 from devices_mcp.fleet_tool_metrics import register_mcp_tool_metrics
 

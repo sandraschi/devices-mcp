@@ -194,6 +194,7 @@ class MessagingService:
                     self.messages.append(msg)
                     self._message_counter += 1
                 except Exception:
+                    logger.warning("Skipping corrupt persisted message row", exc_info=True)
                     continue
             logger.info("Messaging store loaded %d persisted messages", len(rows))
         except Exception:

@@ -1015,8 +1015,8 @@ class WebCamera(BaseCamera):
                         # Logitech G SDK has different functions
                         logger.debug("Logitech G SDK detected, attempting LED control")
                         # Implementation would depend on Logitech G SDK
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Logitech G SDK LED control unavailable: {e}")
 
                 except (ImportError, AttributeError, OSError):
                     # Logitech LED SDK not available or failed
@@ -1130,8 +1130,8 @@ class WebCamera(BaseCamera):
                             # This would require Logitech Capture SDK
                             logger.debug("Attempting Logitech Capture SDK LED control")
                             return False  # Not implemented yet
-                        except:
-                            pass
+                        except Exception as e:
+                            logger.debug(f"Logitech Capture SDK LED control unavailable: {e}")
 
                     return False
 

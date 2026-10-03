@@ -45,8 +45,8 @@ def resolve_log_file_path(config: dict[str, Any] | None = None) -> Path:
         cfg_path = _get_config_manager().config_path
         if cfg_path.exists():
             search_dirs.append(cfg_path.parent)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug("Config-manager log dir probe failed: %s", e)
 
     search_dirs.extend(
         [

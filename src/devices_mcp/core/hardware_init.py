@@ -746,7 +746,8 @@ class HardwareInitializer:
                             reachable = True
                             error_msg = f"Port {port} reachable"
                             break
-                    except Exception:
+                    except Exception as e:
+                        logger.debug("Port probe failed for %s:%s: %s", resolved_ip, port, e)
                         continue
 
                 if reachable:
