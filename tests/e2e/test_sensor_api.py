@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
 import pytest
+from backend.routes import sensors as sensors_routes
 from backend.server import WebServer
 from fastapi.testclient import TestClient
 
 from devices_mcp.tools.energy.tapo_plug_tools import (
-    EnergyUsageData,
     TapoSmartPlug,
     tapo_plug_manager,
 )
@@ -36,30 +36,32 @@ def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
         energy_saving_mode=False,
     )
 
-    sample_history = [
-        EnergyUsageData(
-            timestamp=(datetime.utcnow() - timedelta(hours=1)).isoformat(),
-            device_id="tapo_p115_fixture",
-            power_consumption=40.0,
-            energy_consumption=0.04,
-            cost=0.0048,
-        )
-    ]
-
     async def fake_get_all_devices():
         return [sample_device]
 
     async def fake_get_device_status(device_id: str):
         return sample_device if device_id == "tapo_p115_fixture" else None
 
-    async def fake_get_energy_usage_history(device_id: str, hours: int = 24):
-        if device_id != "tapo_p115_fixture":
-            return []
-        return sample_history
+    # Declared double: the history endpoint reads the sensors DB seam
+    # (get_sensors_db), not the manager, so seed the DB seam deterministically.
+    fake_history_rows = [
+        {
+            "timestamp": (datetime.utcnow() - timedelta(hours=1)).isoformat(),
+            "power_w": 40.0,
+            "voltage_v": 120.0,
+            "current_a": 0.35,
+        }
+    ]
+
+    class FakeSensorsDB:
+        def get_energy_history(self, device_id: str, hours: int = 24):
+            if device_id != "tapo_p115_fixture":
+                return []
+            return fake_history_rows
 
     monkeypatch.setattr(tapo_plug_manager, "get_all_devices", fake_get_all_devices)
     monkeypatch.setattr(tapo_plug_manager, "get_device_status", fake_get_device_status)
-    monkeypatch.setattr(tapo_plug_manager, "get_energy_usage_history", fake_get_energy_usage_history)
+    monkeypatch.setattr(sensors_routes, "get_sensors_db", lambda: FakeSensorsDB())
     tapo_plug_manager.get_device_host = lambda device_id: "192.168.1.120"
 
     return TestClient(app)
@@ -85,5 +87,7 @@ def test_get_tapo_p115_history(client: TestClient) -> None:
     assert payload["device_id"] == "tapo_p115_fixture"
     assert payload["count"] == 1
     datapoint = payload["data_points"][0]
+    assert datapoint["power_w"] == 40.0
     assert datapoint["power_consumption"] == 40.0
-    assert datapoint["energy_consumption"] == 0.04
+    assert datapoint["voltage_v"] == 120.0
+    assert datapoint["current_a"] == 0.35
