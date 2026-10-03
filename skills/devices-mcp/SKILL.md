@@ -123,11 +123,15 @@ any disagreement.
 - Restart: `POST /api/shutdown` (exits ~500 ms later; NSSM auto-restarts) or
   `sc.exe stop/start devices-mcp`. Never kill the child PID.
 - Boot takes ~2 min (imports + hardware init). Health: `GET /api/health`.
-- KNOWN UNRESOLVED: the backend dies every ~10–30 min with native heap corruption
-  (`0xc0000374`, Event Viewer → Application Error, python.exe). Camera-native crash
-  surface was reduced (cv open lock, RTSP timeout, no session-0 USB scan) but the
-  root cause is unproven — zeep/ONVIF thread-safety is the next suspect. If the
-  dance of restarts continues, say so plainly instead of blaming devices.
+- KNOWN FIXED 2026-10-03: the backend died every few minutes with native heap
+  corruption (`0xc0000374`). faulthandler caught concurrent threads inside
+  `webcam._probe_resolution` — every USB status call opened a DirectShow capture,
+  and concurrent graph builds corrupted the heap (worse in session 0, where no
+  desktop exists). Fix: probes are skipped in session 0, cached per process, and
+  all cv2 opens serialized (`camera/_native_locks.py`); zeep/SOAP likewise
+  serialized (not thread-safe). 16+ min stable with zero crash events after the
+  fix (was: several per 10 min). If restarts ever return, check Event Viewer
+  Application Error 1000 first, then the faulthandler trace in service-stderr.log.
 
 ## Answer patterns
 
