@@ -7,6 +7,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const CHAT_KEY = 'devices-mcp-chat-history';
 const PERSONALITY_KEY = 'devices-mcp-chat-personality';
+const CHAT_PROVIDER_KEY = 'devices-mcp-chat-provider';
+const CHAT_MODEL_KEY = 'devices-mcp-chat-model';
 const MAX_MESSAGES = 100;
 
 const PERSONAS: { id: string; label: string; prompt: string }[] = [
@@ -83,8 +85,8 @@ export function Chat() {
   const [error, setError] = useState<string | null>(null);
   const [providers, setProviders] = useState<string[]>([]);
   const [models, setModels] = useState<LLMModelInfo[]>([]);
-  const [provider, setProvider] = useState('');
-  const [model, setModel] = useState('');
+  const [provider, setProvider] = useState(() => localStorage.getItem(CHAT_PROVIDER_KEY) || '');
+  const [model, setModel] = useState(() => localStorage.getItem(CHAT_MODEL_KEY) || '');
   const [skillContent, setSkillContent] = useState('');
   const [personaId, setPersonaId] = useState(
     () => localStorage.getItem(PERSONALITY_KEY) || 'operator',
@@ -99,10 +101,10 @@ export function Chat() {
     [],
   );
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages; scrollBottom is a stable callback
-	useEffect(() => {
-		scrollBottom();
-	}, [messages, streamingContent]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages; scrollBottom is a stable callback
+  useEffect(() => {
+    scrollBottom();
+  }, [messages, streamingContent]);
 
   // Persist messages on change
   useEffect(() => {
@@ -113,6 +115,14 @@ export function Chat() {
   useEffect(() => {
     localStorage.setItem(PERSONALITY_KEY, personaId);
   }, [personaId]);
+
+  // Persist provider/model selection (so a working LM Studio choice survives reloads)
+  useEffect(() => {
+    if (provider) localStorage.setItem(CHAT_PROVIDER_KEY, provider);
+  }, [provider]);
+  useEffect(() => {
+    if (model) localStorage.setItem(CHAT_MODEL_KEY, model);
+  }, [model]);
 
   const currentPersona = PERSONAS.find((p) => p.id === personaId) ?? PERSONAS[0];
 
@@ -134,7 +144,8 @@ export function Chat() {
         setProviders(names);
         const preferred =
           (data as { preferred_provider?: string }).preferred_provider ?? LOCAL_LLM_CATALOG[0].type;
-        setProvider((current) => current || preferred || names[0] || '');
+        const stored = localStorage.getItem(CHAT_PROVIDER_KEY);
+        setProvider(stored && names.includes(stored) ? stored : preferred || names[0] || '');
       } else {
         setProviders(mergeProviderTypes([]));
         setProvider(LOCAL_LLM_CATALOG[0].type);
@@ -156,7 +167,13 @@ export function Chat() {
       if (data.success && data.models?.length) {
         const normalized = normalizeModelList(data.models);
         setModels(normalized);
-        setModel((current) => current || normalized[0]?.name || '');
+        setModel((current) => {
+          const valid = new Set(normalized.map((m) => m.name));
+          // Keep the stored selection when it exists for this provider,
+          // otherwise fall back to the first model.
+          if (current && valid.has(current)) return current;
+          return normalized[0]?.name || '';
+        });
       } else {
         setModels([]);
       }
