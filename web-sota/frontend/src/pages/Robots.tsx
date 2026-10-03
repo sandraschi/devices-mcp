@@ -235,7 +235,12 @@ export function Robots() {
 						<Button
 							size="sm"
 							variant="outline"
-							disabled={sending !== null}
+							disabled={sending !== null || yahboomRobot?.is_online === false}
+							title={
+								yahboomRobot?.is_online === false
+									? "yahboom-mcp is offline - start it on port 10892 to enable commands"
+									: undefined
+							}
 							onClick={reconnectYahboom}
 						>
 							{sending === "yahboom:reconnect" ? (
@@ -287,12 +292,17 @@ export function Robots() {
 								/>
 							</CardHeader>
 							<CardContent className="space-y-3 text-sm">
-								<p className="text-slate-500">
-									{robot.type}
-									{robot.status && ` · ${robot.status}`}
-									{robot.battery_percentage != null &&
-										` · ${robot.battery_percentage}%`}
+							<p className="text-slate-500">
+								{robot.type}
+								{robot.status && ` · ${robot.status}`}
+								{robot.battery_percentage != null &&
+									` · ${robot.battery_percentage}%`}
+							</p>
+							{!robot.is_online && (
+								<p className="text-xs text-amber-300">
+									Offline — start the backing MCP service to enable commands.
 								</p>
+							)}
 
 								{robot.type === "yahboom" && (
 									<p className="text-xs text-slate-500">
@@ -307,7 +317,7 @@ export function Robots() {
 												key={value}
 												size="sm"
 												variant="outline"
-												disabled={sending !== null}
+												disabled={sending !== null || !robot.is_online}
 												onClick={() => sendCommand(robot.id, value)}
 											>
 												{sending === `${robot.id}:${value}` ? "…" : label}
@@ -324,7 +334,7 @@ export function Robots() {
 													key={value}
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendCommand(robot.id, value)}
 												>
 													{sending === `${robot.id}:${value}` ? "…" : label}
@@ -339,7 +349,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomMove(robot.id, 0.2, 0)}
 												>
 													↑
@@ -348,7 +358,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomMove(robot.id, 0, 0.3)}
 												>
 													←
@@ -356,7 +366,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomStop(robot.id)}
 												>
 													■
@@ -364,7 +374,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomMove(robot.id, 0, -0.3)}
 												>
 													→
@@ -373,7 +383,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomMove(robot.id, -0.2, 0)}
 												>
 													↓
@@ -388,7 +398,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomLight(robot.id, 255, 0, 0)}
 												>
 													<Lightbulb className="mr-1 h-3 w-3 text-red-500" />
@@ -397,7 +407,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomLight(robot.id, 0, 255, 0)}
 												>
 													<Lightbulb className="mr-1 h-3 w-3 text-green-500" />
@@ -406,7 +416,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendYahboomLight(robot.id, 0, 0, 255)}
 												>
 													<Lightbulb className="mr-1 h-3 w-3 text-blue-500" />
@@ -415,7 +425,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() =>
 														sendYahboomLight(robot.id, 255, 255, 255)
 													}
@@ -443,7 +453,7 @@ export function Robots() {
 															? "border-red-800 text-red-400 hover:bg-red-950/30"
 															: undefined
 													}
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendCommand(robot.id, value)}
 												>
 													<Icon className="mr-1 h-3 w-3" />
@@ -470,7 +480,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendNoriEpisodeStart(robot.id)}
 												>
 													Start
@@ -478,7 +488,7 @@ export function Robots() {
 												<Button
 													size="sm"
 													variant="outline"
-													disabled={sending !== null}
+													disabled={sending !== null || !robot.is_online}
 													onClick={() => sendNoriEpisodeStop(robot.id)}
 												>
 													Stop

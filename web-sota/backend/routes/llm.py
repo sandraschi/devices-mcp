@@ -142,6 +142,44 @@ async def unload_model(request: UnloadModelRequest) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(e)) from e
 
 
+@router.get("/discover", summary="Probe local LLM providers (Ollama, LM Studio)")
+async def discover_providers() -> dict[str, Any]:
+    """Auto-detect reachable local LLM providers for the Settings/Chat UI."""
+    import httpx
+
+    found: dict[str, Any] = {}
+    probes = {
+        "ollama": "http://127.0.0.1:11434/api/tags",
+        "lm_studio": "http://127.0.0.1:1234/v1/models",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            for name, url in probes.items():
+                try:
+                    resp = await client.get(url)
+                    found[name] = resp.status_code == 200
+                except Exception:
+                    found[name] = False
+    except Exception as e:
+        logger.exception("LLM provider discovery failed")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return {"success": True, "providers": found}
+
+
+@router.get("/onboarding", summary="Fresh-install LLM starter facts")
+async def llm_onboarding() -> dict[str, Any]:
+    """Starter facts + recommended path for the under-hero onboarding cue."""
+    return {
+        "success": True,
+        "facts": [
+            "Ollama (:11434) and LM Studio (:1234) are always in the provider catalog.",
+            "Chat POST /api/llm/chat accepts stream=true for SSE streaming.",
+            "Live home inventory for prompts: GET /api/llm/device-context.",
+        ],
+        "recommended_path": "Install Ollama, pull a small model, select it in Settings, then open Chat.",
+    }
+
+
 @router.get("/device-context", summary="Live device inventory for chat preprompt")
 async def get_device_context() -> dict[str, Any]:
     """Return the device snapshot injected into chat system messages."""
