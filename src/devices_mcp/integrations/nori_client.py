@@ -60,7 +60,7 @@ class NoriMcpClient:
                 payload = exc.response.json()
                 detail = payload.get("detail", detail)
             except Exception:
-                pass
+                logger.debug("norirobotics error body is not JSON; using text detail")
             return {
                 "success": False,
                 "message": str(detail),

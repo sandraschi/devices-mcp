@@ -181,8 +181,8 @@ class SDRWebSocketServer:
         for client in self.connected_clients.copy():
             try:
                 await client.close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("SDR client close failed (already closed?): %s", e)
 
         self.connected_clients.clear()
 

@@ -197,8 +197,8 @@ class TokenManager:
             if os.path.exists(temp_path):
                 try:
                     os.unlink(temp_path)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("Temp token file cleanup failed (already removed?): %s", e)
             return False
 
     async def get_token(self, username: str) -> dict[str, Any] | None:

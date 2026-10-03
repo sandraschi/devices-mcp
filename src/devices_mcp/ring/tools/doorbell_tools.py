@@ -303,8 +303,8 @@ def register_tools(app: FastMCP) -> None:
                     event_datetime = datetime.fromisoformat(event.get("timestamp", ""))
                     hour = event_datetime.hour
                     hourly_activity[hour] += 1
-                except:
-                    pass
+                except (ValueError, TypeError) as e:
+                    logger.debug("Skipping event with bad timestamp: %s", e)
             # Find peak activity hours
             peak_hours = []
             max_activity = max(hourly_activity) if hourly_activity else 0
@@ -321,8 +321,8 @@ def register_tools(app: FastMCP) -> None:
                         event_time = datetime.fromisoformat(event.get("timestamp", ""))
                         hour_minute = f"{event_time.hour:02d}:{event_time.minute // 15 * 15:02d}"
                         time_clusters[hour_minute] = time_clusters.get(hour_minute, 0) + 1
-                    except:
-                        pass
+                    except (ValueError, TypeError) as e:
+                        logger.debug("Skipping event with bad timestamp: %s", e)
                 # Find time slots with multiple visits (potential regular visitors)
                 for time_slot, count in time_clusters.items():
                     if count >= 3:
