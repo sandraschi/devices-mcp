@@ -1,10 +1,12 @@
 ---
 name: devices-mcp-home
 description: >-
-  Live inventory of the user's smart home on this devices-mcp installation —
+  Live inventory of the user's smart home on this devices-mcp installation -
   cameras, Hue lights, Tapo P115 plugs, Netatmo weather, Ring, Nest Protect,
   Shelly sensors, and robots. Use when the user asks what devices they have,
   what's online, or wants a status summary before controlling hardware.
+  For control requests (turn on, move, arm), load this skill too and point
+  to the right dashboard page or MCP tool instead of acting directly.
 ---
 
 # Devices MCP — Home Inventory Skill

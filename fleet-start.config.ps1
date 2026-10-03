@@ -10,6 +10,7 @@
         Kind          = 'nssm'
         UvicornTarget = 'devices_mcp.server:app'
         SyncExtras    = @('dev')
+        SyncOnStart  = $true
         Env           = @{ WEB_PORT = '10717' }
     }
     Frontend = @{
