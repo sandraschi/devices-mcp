@@ -270,7 +270,7 @@ async def get_lighting_status() -> dict[str, Any]:
         return {
             "devices": lights,
             "total_lights": len(lights),
-            "active_lights": len([light for light in lights if light.get("is_on", False)]),
+            "active_lights": len([light for light in lights if light.get("on", False)]),
             "success": True,
         }
 

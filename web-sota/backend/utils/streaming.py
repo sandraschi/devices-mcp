@@ -2,11 +2,18 @@ import asyncio
 import logging
 import os
 import platform
+import threading
 from collections.abc import AsyncGenerator
+from typing import Any
 
 import cv2
 
 logger = logging.getLogger(__name__)
+
+# OpenCV/DirectShow/FFmpeg capture opens are not thread-safe (observed native
+# heap crashes, 0xc0000374, when several streams open concurrently). Serialize
+# all VideoCapture creations process-wide; reads stay concurrent.
+_cv_open_lock = threading.Lock()
 
 
 async def generate_webcam_stream(camera) -> AsyncGenerator[bytes, None]:
@@ -74,9 +81,15 @@ async def generate_rtsp_mjpeg_stream(rtsp_url: str) -> AsyncGenerator[bytes, Non
     """Generate MJPEG stream from RTSP URL for browser viewing."""
     logger.info(f"Opening RTSP stream: {rtsp_url[:60]}...")
 
-    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp|analyzeduration;1000000|probesize;1000000"
+    os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = (
+        "rtsp_transport;tcp|analyzeduration;1000000|probesize;1000000|stimeout;8000000"
+    )
 
-    cap = await asyncio.to_thread(cv2.VideoCapture, rtsp_url, cv2.CAP_FFMPEG)
+    def _open() -> Any:
+        with _cv_open_lock:
+            return cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+
+    cap = await asyncio.to_thread(_open)
     try:
         if not cap.isOpened():
             logger.error(f"Failed to open RTSP stream: {rtsp_url[:60]}...")

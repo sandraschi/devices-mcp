@@ -4,6 +4,7 @@ Sensor API endpoints for real-world ingestion data.
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 from typing import Any
 
@@ -12,6 +13,8 @@ from pydantic import BaseModel, ConfigDict
 
 from devices_mcp.db import TimeSeriesDB
 from devices_mcp.tools.energy.tapo_plug_tools import tapo_plug_manager
+
+logger = logging.getLogger(__name__)
 
 
 class ToggleRequest(BaseModel):
@@ -82,6 +85,39 @@ async def refresh_tapo_p115_devices() -> dict[str, Any]:
         data["readonly"] = tapo_plug_manager.is_device_readonly(device.device_id)
         response.append(data)
     return {"devices": response, "count": len(response)}
+
+
+@router.post("/tapo-p115/breaker-reset", summary="Clear plug circuit breaker + rescan")
+async def reset_tapo_p115_breaker(device_id: str | None = None) -> dict[str, Any]:
+    """Clear the supervisor circuit breaker (5-failure/15-min backoff) for one
+    plug or all plugs, then force a discovery sweep so a power-cycled plug is
+    picked up immediately instead of after the backoff window."""
+    cleared: list[str] = []
+    try:
+        from devices_mcp.core.connection_supervisor import get_supervisor
+
+        sup = get_supervisor()
+        for did, h in list(sup.device_health.items()):
+            if device_id and did != device_id:
+                continue
+            h.error_count = 0
+            h.circuit_breaker_tripped = False
+            h.circuit_breaker_until = None
+            cleared.append(did)
+    except Exception as e:
+        logger.warning("Breaker reset skipped (supervisor unavailable): %s", e)
+    try:
+        await tapo_plug_manager.rediscover_devices()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Rescan failed: {e!s}") from e
+    devices = await tapo_plug_manager.get_all_devices()
+    noun = "entry" if len(cleared) == 1 else "entries"
+    return {
+        "success": True,
+        "message": f"Breaker cleared for {len(cleared)} {noun}; rescanned {len(devices)} plug(s)",
+        "cleared": cleared,
+        "count": len(devices),
+    }
 
 
 @router.get("/tapo-p115", summary="List Tapo P115 smart plugs")

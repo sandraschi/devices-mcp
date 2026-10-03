@@ -470,3 +470,26 @@ async def reconnect_services() -> dict[str, Any]:
 
     results["status"] = "ok" if any(r.get("ok") for r in results.values()) else "degraded"
     return results
+
+
+@router.post("/api/shutdown")
+async def api_shutdown() -> dict[str, Any]:
+    """Graceful shutdown for the NSSM service wrapper.
+
+    Returns 200 immediately; the process exits ~500 ms later so the response
+    flushes first. NSSM then restarts the service (Automatic), which is the
+    fleet's restart path - there is no separate restart endpoint by design.
+    Long-running flows (DB writers, pollers) should checkpoint on SIGTERM;
+    this endpoint is the orderly alternative to sc.exe stop.
+    """
+    import asyncio as _asyncio
+    import os as _os
+
+    logger.warning("Graceful shutdown requested via POST /api/shutdown")
+
+    async def _deferred_exit() -> None:
+        await _asyncio.sleep(0.5)
+        _os._exit(0)
+
+    _asyncio.create_task(_deferred_exit())
+    return {"status": "shutting_down", "message": "Process will exit in ~500 ms; NSSM restarts it"}
