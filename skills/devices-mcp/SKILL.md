@@ -41,20 +41,22 @@ any disagreement.
 - Drive: `lighting_management` action `control` (device_id = v2 UUID from status),
   Lighting page, `POST /api/lighting/control`, `GET /api/lighting/status|groups|scenes`.
 
-## Energy — Tapo plugs (2 live, 1 dead, 1 missing)
+## Energy — Tapo plugs (sweep works since 2026-10-04)
 
-- `tapo_p115_aircon` @ `.17` — live (~100 W when AC runs).
-- `tapo_p115_server` @ `.38` — live (~290 W).
-- `tapo_p115_kitchen` ("Kitchen Zojirushi") — OFFLINE. DHCP moved it `.137` → `.138`
-  and it answers neither P115 nor P110 handshake. Power-cycle it physically; then
-  `POST /api/sensors/tapo-p115/breaker-reset` (clears the 5-fail/15-min backoff +
-  rescans). Give it a DHCP reservation to stop the wandering.
-- A 4th plug visible in the Tapo app is NOT on the LAN as P110/P115 (sweep finds
-  only the 3 above) — check its model/WiFi in the app.
-- Sweeping: discovery always merges static config hosts + LAN broadcast
-  (`POST /api/sensors/tapo-p115/refresh`, MCP `energy_management` action `discover`).
-- Drive: `energy_management` actions `status|control|consumption|cost|discover`,
-  Energy page, `GET /api/sensors/tapo-p115`.
+- `tapo_p115_aircon` @ `.17` — live.
+- `tapo_p115_server` @ `.38` — live (~200+ W).
+- Kitchen Zojirushi — DHCP wanderer. Static config may point at a stale IP (was
+  `.138` dead while the plug itself answered as "Kitchen 1" @ `.137` @ 46W).
+  If a kitchen entry shows 0W while another "Kitchen 1" entry is live, the
+  static host is stale — update it or delete it and let the sweep own the plug.
+- `Tapo P115#4` @ `.66` — the 4th household plug, found by sweep (4W, on).
+- Sweeping ALWAYS merges static hosts + subnet broadcast now (defaults work with
+  zero discovery config; the old code needed exact config keys that no live
+  config set). `POST /api/sensors/tapo-p115/refresh`, MCP `discover` action.
+- DURABLE FIX for wandering plugs: DHCP reservations in the router, then static
+  config hosts match permanently.
+- Sweep only matches energy-monitoring plugs (P110/P115). A P100/P105 answers
+  broadcast but is filtered by design.
 
 ## Cameras (video works)
 
