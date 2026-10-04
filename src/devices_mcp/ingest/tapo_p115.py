@@ -119,9 +119,11 @@ class TapoP115IngestionService:
         )
         self._password = self._account.get("password") or os.getenv("TAPO_ACCOUNT_PASSWORD")
 
-        # LAN broadcast discovery (tapo.ApiClient.discover_devices) when no static hosts:
-        # default enabled if nothing to query; override with energy.tapo_p115.discovery.enabled
-        # or TAPO_P115_DISCOVERY_ENABLED=0|1.
+        # LAN broadcast discovery (tapo.ApiClient.discover_devices): default ON unless
+        # explicitly disabled via energy.tapo_p115.discovery.enabled=false or
+        # TAPO_P115_DISCOVERY_ENABLED=0. (An earlier default turned discovery OFF
+        # whenever static hosts existed, which silently pinned the install to a
+        # hardcoded set - new plugs like Tapo P115#4 never appeared.)
         env_disc = os.getenv("TAPO_P115_DISCOVERY_ENABLED", "").strip().lower()
         if env_disc in ("0", "false", "no", "off"):
             self._discovery_enabled = False
@@ -130,7 +132,7 @@ class TapoP115IngestionService:
         elif self._discovery_cfg.get("enabled") is not None:
             self._discovery_enabled = bool(self._discovery_cfg.get("enabled"))
         else:
-            self._discovery_enabled = not bool(self._hosts)
+            self._discovery_enabled = True
 
         self._discovery_timeout = int(self._discovery_cfg.get("timeout", 10))
         self._metadata_by_host = {device.get("host"): device for device in self._devices_cfg if device.get("host")}
@@ -174,6 +176,27 @@ class TapoP115IngestionService:
                     self._client = ApiClient(self._email, self._password)
         return self._client
 
+    @staticmethod
+    def _local_subnet_broadcast() -> str:
+        """Derive the local /24 broadcast (e.g. 192.168.0.255) from the default
+        route interface. No packets are sent (UDP connect only selects routing).
+        Home LANs are near-universally /24; an explicit broadcast setting still wins."""
+        try:
+            import socket
+
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                sock.connect(("8.8.8.8", 80))
+                local_ip = sock.getsockname()[0]
+            finally:
+                sock.close()
+            parts = local_ip.split(".")
+            if len(parts) == 4 and not local_ip.startswith("127."):
+                return ".".join([*parts[:3], "255"])
+        except Exception as e:
+            logger.debug("Local subnet broadcast derivation failed: %s", e)
+        return "255.255.255.255"
+
     async def _discover_energy_plug_hosts_via_lan(self) -> list[str]:
         """Use tapo broadcast discovery to find P110/P115-class plugs on the LAN."""
         try:
@@ -181,19 +204,21 @@ class TapoP115IngestionService:
         except ImportError:
             return []
 
-        energy_disc = self._config.get("energy", {}).get("tapo_p115", {}).get("discovery", {}) or {}
-        # Broadcast address resolution (most specific first). NOTE: the documented
-        # schema key is top-level `discovery.tapo_p115_broadcast` - an earlier
-        # revision only read `discovery.broadcast`, which no config ever sets, so
-        # every sweep silently fell back to global 255.255.255.255 (which this
-        # LAN drops) and new plugs were invisible. Fixed 2026-10-03 after the
-        # 4th household plug (Tapo P115#4 @ .66) never appeared in sweeps.
+        # Broadcast resolution (most specific first). self._config here is the
+        # energy.tapo_p115 SUBSECTION, so top-level discovery keys come via
+        # get_config(). Final fallback derives the local /24 broadcast so a sweep
+        # works with zero discovery config (global 255.255.255.255 is dropped on
+        # this LAN and must never be the silent default).
+        try:
+            _top_disc = (get_config() or {}).get("discovery", {}) or {}
+        except Exception:
+            _top_disc = {}
         broadcast = (
             os.getenv("TAPO_P115_BROADCAST")
-            or energy_disc.get("broadcast")
-            or self._discovery_cfg.get("tapo_p115_broadcast")
             or self._discovery_cfg.get("broadcast")
-            or "255.255.255.255"
+            or _top_disc.get("tapo_p115_broadcast")
+            or _top_disc.get("broadcast")
+            or self._local_subnet_broadcast()
         )
         timeout_s = min(60, max(1, self._discovery_timeout))
         hosts: list[str] = []
