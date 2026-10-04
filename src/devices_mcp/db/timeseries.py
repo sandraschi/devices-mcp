@@ -93,6 +93,28 @@ class TimeSeriesDB:
                 )
             """)
 
+            # Personal health metrics (weight, BP, glucose, workouts).
+            # metric: weight_kg | sys_mmhg | dia_mmhg | pulse_bpm | glucose_mgdl
+            #         | workout_min | workout_km | workout_kcal | workout_avgbpm
+            # source: manual | withings | ftms | other
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS health_metrics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    metric TEXT NOT NULL,
+                    timestamp INTEGER NOT NULL,
+                    value REAL NOT NULL,
+                    unit TEXT NOT NULL DEFAULT '',
+                    source TEXT NOT NULL DEFAULT 'manual',
+                    notes TEXT NOT NULL DEFAULT ''
+                )
+            """)
+
+            # Create index for fast queries
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_health_metric_timestamp
+                ON health_metrics(metric, timestamp)
+            """)
+
             conn.commit()
             logger.info(f"Time series database initialized at {self.db_path}")
 
@@ -336,3 +358,88 @@ class TimeSeriesDB:
                 }
                 for row in rows
             ]
+
+    def store_health_metric(
+        self,
+        metric: str,
+        value: float,
+        unit: str = "",
+        source: str = "manual",
+        notes: str = "",
+        timestamp: datetime | None = None,
+    ) -> int:
+        """Store one personal-health data point. Returns the row id."""
+        ts = int((timestamp or datetime.now(UTC)).timestamp())
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO health_metrics (metric, timestamp, value, unit, source, notes)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """,
+                (metric, ts, float(value), unit, source, notes),
+            )
+            conn.commit()
+            return int(cursor.lastrowid or 0)
+
+    def get_health_history(
+        self,
+        metric: str | None = None,
+        days: int = 90,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+    ) -> list[dict[str, Any]]:
+        """Get personal-health data points (newest last)."""
+        if end_time is None:
+            end_time = datetime.now(UTC)
+        if start_time is None:
+            start_time = end_time - timedelta(days=days)
+
+        start_ts = int(start_time.timestamp())
+        end_ts = int(end_time.timestamp())
+
+        with sqlite3.connect(self.db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            if metric:
+                cursor.execute(
+                    """
+                    SELECT * FROM health_metrics
+                    WHERE metric = ? AND timestamp >= ? AND timestamp <= ?
+                    ORDER BY timestamp ASC
+                """,
+                    (metric, start_ts, end_ts),
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT * FROM health_metrics
+                    WHERE timestamp >= ? AND timestamp <= ?
+                    ORDER BY timestamp ASC
+                """,
+                    (start_ts, end_ts),
+                )
+
+            rows = cursor.fetchall()
+
+            return [
+                {
+                    "id": row["id"],
+                    "metric": row["metric"],
+                    "timestamp": row["timestamp"],
+                    "value": row["value"],
+                    "unit": row["unit"],
+                    "source": row["source"],
+                    "notes": row["notes"],
+                }
+                for row in rows
+            ]
+
+    def delete_health_metric(self, row_id: int) -> bool:
+        """Delete one health data point by id (mistyped entries)."""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM health_metrics WHERE id = ?", (row_id,))
+            conn.commit()
+            return cursor.rowcount > 0

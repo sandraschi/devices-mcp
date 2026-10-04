@@ -365,6 +365,7 @@ class WebServer:
                 v1_aliases,
                 views,
                 weather,
+                wellness,
             )
 
             # Include route modules
@@ -387,6 +388,7 @@ class WebServer:
             # Specialized Device API Routes
             self.app.include_router(lighting.router, tags=["Lighting"])
             self.app.include_router(weather.router, tags=["Weather"])
+            self.app.include_router(wellness.router, tags=["Wellness"])
             self.app.include_router(ring.router, tags=["Ring"])
             self.app.include_router(nest.router, tags=["Nest"])
             self.app.include_router(robots.router, tags=["Robots"])

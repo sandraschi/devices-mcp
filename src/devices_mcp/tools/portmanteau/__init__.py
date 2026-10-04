@@ -22,6 +22,7 @@ from .camera_management import register_camera_management_tool
 from .configuration_management import register_configuration_management_tool
 from .energy_management import register_energy_management_tool
 from .grafana_management import register_grafana_management_tool
+from .health_management import register_health_management_tool
 from .home_assistant_management import register_home_assistant_management_tool
 from .kitchen_management import register_kitchen_management_tool
 from .lighting_management import register_lighting_management_tool
@@ -90,6 +91,7 @@ def register_all_portmanteau_tools(mcp: FastMCP) -> None:
     register_appliance_monitor_management_tool(mcp)
     register_alerts_management_tool(mcp)
     register_messages_management_tool(mcp)
+    register_health_management_tool(mcp)  # Personal health (weight/BP/glucose/workouts)
 
     # Register agentic tools (SEP-1577) if available
     if _agentic_security_available:
