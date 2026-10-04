@@ -5,8 +5,10 @@ This module provides MCP tools for monitoring and controlling Tapo smart plugs
 with energy consumption tracking, cost analysis, and smart automation.
 """
 
+import json
 import logging
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -16,6 +18,35 @@ from ...ingest import IngestionUnavailableError, TapoP115IngestionService
 from ...tools.base_tool import BaseTool, ToolCategory, tool
 
 logger = logging.getLogger(__name__)
+
+_ALIASES_PATH = Path("~/.config/devices-mcp/device_aliases.json").expanduser()
+
+
+def load_device_aliases() -> dict[str, str]:
+    """User-chosen display names keyed by device_id (empty name = no alias)."""
+    try:
+        if _ALIASES_PATH.exists():
+            data = json.loads(_ALIASES_PATH.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return {str(k): str(v) for k, v in data.items() if v}
+    except Exception as e:
+        logger.debug("Device aliases unreadable: %s", e)
+    return {}
+
+
+def save_device_alias(device_id: str, name: str) -> dict[str, str]:
+    """Set (or clear, when name is empty) a display-name alias. Returns all aliases."""
+    aliases = load_device_aliases()
+    if name.strip():
+        aliases[device_id] = name.strip()
+    else:
+        aliases.pop(device_id, None)
+    try:
+        _ALIASES_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _ALIASES_PATH.write_text(json.dumps(aliases, indent=2, sort_keys=True), encoding="utf-8")
+    except Exception as e:
+        logger.warning("Could not persist device alias: %s", e)
+    return aliases
 
 
 class TapoSmartPlug(BaseModel):
@@ -310,6 +341,9 @@ class TapoPlugManager:
 
     def _create_device_from_payload(self, payload: dict[str, Any]) -> TapoSmartPlug:
         """Create a TapoSmartPlug instance from ingestion payload."""
+        device_id = str(payload.get("device_id"))
+        # User aliases (Renamed in UI) win over config/device nicknames.
+        name = load_device_aliases().get(device_id) or str(payload.get("name", "Tapo P115"))
         power_state = bool(payload.get("power_state"))
         daily_energy = float(payload.get("daily_energy", 0.0))
         monthly_energy = float(payload.get("monthly_energy", daily_energy * 30))
@@ -324,8 +358,8 @@ class TapoPlugManager:
         monthly_cost = monthly_energy * self._electricity_rate if monthly_energy else daily_cost * 30
 
         return TapoSmartPlug(
-            device_id=str(payload.get("device_id")),
-            name=str(payload.get("name", "Tapo P115")),
+            device_id=device_id,
+            name=name,
             location=str(payload.get("location", "Unknown")),
             device_model=str(payload.get("device_model", "Tapo P115")),
             power_state=power_state,

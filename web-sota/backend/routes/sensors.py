@@ -120,6 +120,21 @@ async def reset_tapo_p115_breaker(device_id: str | None = None) -> dict[str, Any
     }
 
 
+@router.post("/tapo-p115/rename", summary="Rename a plug (UI display name)")
+async def rename_tapo_p115(device_id: str, name: str = "") -> dict[str, Any]:
+    """Set a persistent display-name alias for a plug (empty name clears it).
+    Aliases live in ~/.config/devices-mcp/device_aliases.json and survive
+    rescans, restarts and DHCP moves (keyed by stable device_id)."""
+    from devices_mcp.tools.energy.tapo_plug_tools import save_device_alias
+
+    aliases = save_device_alias(device_id, name)
+    try:
+        await tapo_plug_manager.rediscover_devices()
+    except Exception as e:
+        logger.warning("Rescan after rename failed: %s", e)
+    return {"success": True, "device_id": device_id, "name": name, "aliases": aliases}
+
+
 @router.get("/tapo-p115", summary="List Tapo P115 smart plugs")
 async def list_tapo_p115_devices() -> dict[str, Any]:
     """
