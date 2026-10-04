@@ -19,6 +19,7 @@ from .appliance_monitor_management import register_appliance_monitor_management_
 from .audio_management import register_audio_management_tool
 from .automation_management import register_automation_management_tool
 from .camera_management import register_camera_management_tool
+from .climate_management import register_climate_management_tool
 from .configuration_management import register_configuration_management_tool
 from .energy_management import register_energy_management_tool
 from .grafana_management import register_grafana_management_tool
@@ -92,6 +93,7 @@ def register_all_portmanteau_tools(mcp: FastMCP) -> None:
     register_alerts_management_tool(mcp)
     register_messages_management_tool(mcp)
     register_health_management_tool(mcp)  # Personal health (weight/BP/glucose/workouts)
+    register_climate_management_tool(mcp)  # Midea PortaSplit (mock until winter)
 
     # Register agentic tools (SEP-1577) if available
     if _agentic_security_available:

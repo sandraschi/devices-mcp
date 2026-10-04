@@ -330,6 +330,7 @@ class WebServer:
                 auth,
                 camera_names,
                 cameras,
+                climate,
                 config_editor,
                 cua_diagnostics,
                 custom_presets,
@@ -377,6 +378,7 @@ class WebServer:
             self.app.include_router(system.router, tags=["System"])
             self.app.include_router(v1_aliases.router, tags=["v1 aliases"])
             self.app.include_router(cameras.router, tags=["Cameras"])
+            self.app.include_router(climate.router, tags=["Climate"])
             self.app.include_router(dashboard_api.router, tags=["Dashboard API"])
             self.app.include_router(devices.router, tags=["Devices"])
             self.app.include_router(energy.router, tags=["Energy"])
