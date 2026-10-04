@@ -45,12 +45,15 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 ## Features
 
 - **Cameras:** Tapo/ONVIF, USB webcam/microscope (OpenCV), streaming hooks (quality varies by device/driver).
-- **Energy:** Tapo P115 plugs; LAN discovery optional when cloud creds are set.
+- **Energy:** Tapo P115 plugs (P110 fallback, LAN sweep + rename + breaker-reset); Wiener Netze smart meter planned (portal/API, T-1 15-min values).
 - **Lighting:** Philips Hue (incl. HomeAware on supported bridges, CLIP v2, group/scene management), Tapo lighting.
+- **Climate:** Midea PortaSplit family, mock-first until winter hardware (full UI/API against simulation).
+- **Health:** manual entry live (weight/BP/glucose/workouts + trends); Withings OAuth planned (scale + BPM Connect, one integration); FTMS BLE later.
+- **Safety:** Netatmo smoke + CO alarms planned (kitchen/living room/bedroom + flue CO) via raw API extension; Nest Protect standalone (no stable API exists).
 - **Security / sensors:** Ring (doorbell + alarm + WebRTC live view + two-way intercom), Nest Protect (via Home Assistant or direct OAuth2), Shelly, Netatmo, Open-Meteo (Vienna default).
 - **Chat:** SOTA chat with localStorage persistence, 5 personalities, skill preprompt, NDJSON streaming, export/clear — LLM provider/model selector in Settings.
 - **Dashboard:** Status table with device health, per-domain pages (cameras, energy, lighting, weather, robots …).
-- **MCP:** 27 portmanteau tools (camera, energy, lighting, ring, nest, weather, security, …) on FastMCP 3.4 with tool annotations.
+- **MCP:** 29 portmanteau tools (camera, energy, lighting, ring, nest, weather, security, health, climate, …) on FastMCP 3.4 with tool annotations.
 - **Fleet priority:** `GET /api/fleet/priority` — home-safety incidents for Fritz urgent dispatch (kitchen temp, CO, smoke, Ring).
 
 **Not included:** guaranteed uptime SLA, cloud hosting, plug-and-play without `config.yaml`, or a single 12 MB exe (full desktop bundle is ~247 MB with embedded Python sidecars).

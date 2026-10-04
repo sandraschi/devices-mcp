@@ -5,8 +5,10 @@ Portmanteau tools group related operations. Full signatures live in `src/devices
 | Tool family | Typical domains |
 |-------------|-----------------|
 | `camera_management` | Tapo/ONVIF/USB streams, PTZ, status |
-| `energy_management` | Tapo P115 plugs, power readouts |
+| `energy_management` | Tapo P115 plugs (P110 fallback), power readouts, `discover` sweep |
 | `lighting_management` | Hue, Tapo lights, scenes |
+| `climate_management` | Midea PortaSplit (mock until winter HW): status/control |
+| `health_management` | Weight/BP/glucose/workouts: log, trends, list, delete |
 | `ring_management` | Ring doorbells (when enabled) |
 | `home_assistant_management` / Nest routes | Nest Protect via HA |
 | `weather_management` | Netatmo, Open-Meteo |

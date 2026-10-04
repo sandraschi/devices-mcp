@@ -1,7 +1,17 @@
 # ⚡ Wien Energie Smart Meter Integration
 
 **Project**: Home Security MCP Platform
-**Status**: Implementation Phase
+**Status**: Planned (research done 2026-10-04, not yet built)
+
+> 2026-10-04 update - the IR-adapter plan below is obsolete, no hardware needed.
+> Meter data lives with Wiener Netze (grid operator), not Wien Energie (supplier).
+> Paths ranked: (1) Wiener Netze Smart-Meter-Webportal - free, registration plus
+> explicit Viertelstundenwerte opt-in; community scraping patterns exist to port.
+> (2) Official Wiener Stadtwerke API portal after profile linking. (3) Commercial
+> energiedaten.at REST (overkill for one household). Data is T-1. Plan: portal
+> credentials bite-sized poller into energy trends next to Tapo watts; CSV import
+> first so history is chartable day one. Needs: Zaehlpunktnummer (bill), portal
+> registration + 15-min opt-in.
 **Date**: November 21, 2025
 
 ---

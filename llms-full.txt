@@ -1,6 +1,6 @@
 # devices-mcp — full documentation corpus
 
-Generated: 2026-08-16 18:56 UTC · Version: 2.4.1 · Source: https://github.com/sandraschi/devices-mcp
+Generated: 2026-10-04 02:08 UTC · Version: 2.4.1 · Source: https://github.com/sandraschi/devices-mcp
 
 This file is auto-generated. Prefer linked markdown on `main` for edits.
 
@@ -50,12 +50,15 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Desktop: [docs/DESKTOP.
 ## Features
 
 - **Cameras:** Tapo/ONVIF, USB webcam/microscope (OpenCV), streaming hooks (quality varies by device/driver).
-- **Energy:** Tapo P115 plugs; LAN discovery optional when cloud creds are set.
+- **Energy:** Tapo P115 plugs (P110 fallback, LAN sweep + rename + breaker-reset); Wiener Netze smart meter planned (portal/API, T-1 15-min values).
 - **Lighting:** Philips Hue (incl. HomeAware on supported bridges, CLIP v2, group/scene management), Tapo lighting.
+- **Climate:** Midea PortaSplit family, mock-first until winter hardware (full UI/API against simulation).
+- **Health:** manual entry live (weight/BP/glucose/workouts + trends); Withings OAuth planned (scale + BPM Connect, one integration); FTMS BLE later.
+- **Safety:** Netatmo smoke + CO alarms planned (kitchen/living room/bedroom + flue CO) via raw API extension; Nest Protect standalone (no stable API exists).
 - **Security / sensors:** Ring (doorbell + alarm + WebRTC live view + two-way intercom), Nest Protect (via Home Assistant or direct OAuth2), Shelly, Netatmo, Open-Meteo (Vienna default).
 - **Chat:** SOTA chat with localStorage persistence, 5 personalities, skill preprompt, NDJSON streaming, export/clear — LLM provider/model selector in Settings.
 - **Dashboard:** Status table with device health, per-domain pages (cameras, energy, lighting, weather, robots …).
-- **MCP:** 27 portmanteau tools (camera, energy, lighting, ring, nest, weather, security, …) on FastMCP 3.4 with tool annotations.
+- **MCP:** 29 portmanteau tools (camera, energy, lighting, ring, nest, weather, security, health, climate, …) on FastMCP 3.4 with tool annotations.
 - **Fleet priority:** `GET /api/fleet/priority` — home-safety incidents for Fritz urgent dispatch (kitchen temp, CO, smoke, Ring).
 
 **Not included:** guaranteed uptime SLA, cloud hosting, plug-and-play without `config.yaml`, or a single 12 MB exe (full desktop bundle is ~247 MB with embedded Python sidecars).
@@ -503,8 +506,10 @@ Portmanteau tools group related operations. Full signatures live in `src/devices
 | Tool family | Typical domains |
 |-------------|-----------------|
 | `camera_management` | Tapo/ONVIF/USB streams, PTZ, status |
-| `energy_management` | Tapo P115 plugs, power readouts |
+| `energy_management` | Tapo P115 plugs (P110 fallback), power readouts, `discover` sweep |
 | `lighting_management` | Hue, Tapo lights, scenes |
+| `climate_management` | Midea PortaSplit (mock until winter HW): status/control |
+| `health_management` | Weight/BP/glucose/workouts: log, trends, list, delete |
 | `ring_management` | Ring doorbells (when enabled) |
 | `home_assistant_management` / Nest routes | Nest Protect via HA |
 | `weather_management` | Netatmo, Open-Meteo |
@@ -665,6 +670,51 @@ USB cams need OpenCV; Tapo needs credentials in config. Camera helper listens on
 ## Slow cold start
 
 Full sidecars are ~123 MB each; first launch unpacks PyInstaller temp — **1–3 minutes** is normal on HDD/slow AV scan.
+
+## Ollama: "llama-server binary not found" (generate 500s, reinstalls don't help)
+
+**Symptoms:** `GET /api/tags` and `POST /api/show` work, but every
+`POST /api/generate` returns 500 with
+`error starting llama-server: llama-server binary not found (checked: ...)`.
+Chat in the dashboard fails on the Ollama provider while LM Studio works.
+Reinstalling Ollama changes nothing.
+
+**Root cause (seen 2026-10-03):** the `ollama-serve` NSSM service plus the
+Ollama tray app run 24/7 **from inside the install directory**
+(`%LOCALAPPDATA%\Programs\Ollama`). Every reinstall tries to replace files
+that are locked by those running processes, so it aborts partway — leaving
+`lib\` (the whole runner directory) empty and `is-*.tmp` leftovers behind.
+Repeating the same locked install cannot fix it. (Also note: current Ollama
+ships `llama-server.exe` as a ~22 KB stub that loads
+`libllama-server-impl.dll` + CUDA/cuDNN backends — a small exe is normal,
+a missing `lib\` is not.)
+
+**Fix — stop everything first, then reinstall:**
+
+```powershell
+sc.exe stop ollama-serve
+Get-Process "ollama app" -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process ollama -ErrorAction SilentlyContinue | Stop-Process -Force
+# verify nothing holds the dir, then run the installer (models on OLLAMA_MODELS are untouched)
+Start-Process "C:\Users\sandr\Downloads\OllamaSetup(3).exe" -ArgumentList "/SILENT" -Wait
+# verify runners landed:
+Get-ChildItem "$env:LOCALAPPDATA\Programs\Ollama\lib\ollama\llama-server.exe"
+sc.exe start ollama-serve
+```
+
+**Verify:** generate directly, then through the backend:
+
+```powershell
+curl.exe -s --max-time 120 -X POST http://127.0.0.1:11434/api/generate `
+  -H "Content-Type: application/json" `
+  -d '{"model":"llama3.2:3b","prompt":"hi","stream":false}'
+curl.exe -s --max-time 120 -X POST http://127.0.0.1:10717/api/llm/chat `
+  -H "Content-Type: application/json" `
+  -d '{"messages":[{"role":"user","content":"hi"}],"provider":"ollama","model":"llama3.2:3b","stream":false}'
+```
+
+Both must return success. Models live under `OLLAMA_MODELS` (`N:\AI\ollama\models`
+here) and are never touched by a reinstall — no re-download needed.
 
 ## Get help
 
