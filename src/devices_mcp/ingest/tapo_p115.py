@@ -181,7 +181,20 @@ class TapoP115IngestionService:
         except ImportError:
             return []
 
-        broadcast = os.getenv("TAPO_P115_BROADCAST") or self._discovery_cfg.get("broadcast") or "255.255.255.255"
+        energy_disc = self._config.get("energy", {}).get("tapo_p115", {}).get("discovery", {}) or {}
+        # Broadcast address resolution (most specific first). NOTE: the documented
+        # schema key is top-level `discovery.tapo_p115_broadcast` - an earlier
+        # revision only read `discovery.broadcast`, which no config ever sets, so
+        # every sweep silently fell back to global 255.255.255.255 (which this
+        # LAN drops) and new plugs were invisible. Fixed 2026-10-03 after the
+        # 4th household plug (Tapo P115#4 @ .66) never appeared in sweeps.
+        broadcast = (
+            os.getenv("TAPO_P115_BROADCAST")
+            or energy_disc.get("broadcast")
+            or self._discovery_cfg.get("tapo_p115_broadcast")
+            or self._discovery_cfg.get("broadcast")
+            or "255.255.255.255"
+        )
         timeout_s = min(60, max(1, self._discovery_timeout))
         hosts: list[str] = []
         client = await self._get_client()
