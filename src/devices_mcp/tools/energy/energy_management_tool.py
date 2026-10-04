@@ -245,8 +245,28 @@ class EnergyManagementTool(BaseTool):
                     "timestamp": time.time(),
                 }
 
-            # Use the tapo_plug_manager to control the device
-            success = await tapo_plug_manager.control_device(device_id, new_state)
+            # Use the ingestion service to control the device (TapoPlugManager
+            # itself has no control_device method - resolved via device_hosts).
+            host = tapo_plug_manager.get_device_host(device_id)
+            if not host:
+                return {
+                    "success": False,
+                    "message": f"No host known for device {device_id} - rescan first",
+                    "device_id": device_id,
+                    "action": action,
+                    "timestamp": time.time(),
+                }
+            ingestion = tapo_plug_manager._ingestion
+            if ingestion is None:
+                return {
+                    "success": False,
+                    "message": "Tapo ingestion unavailable - cannot control device",
+                    "device_id": device_id,
+                    "action": action,
+                    "timestamp": time.time(),
+                }
+            await ingestion.control_device(host, turn_on=new_state)
+            success = True
 
             if success:
                 return {
