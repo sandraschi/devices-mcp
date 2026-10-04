@@ -219,8 +219,14 @@ class EnergyManagementTool(BaseTool):
         try:
             from devices_mcp.tools.energy.tapo_plug_tools import tapo_plug_manager
 
-            # Get device
+            # Get device (discover on demand - the manager starts empty after boot)
             devices = tapo_plug_manager.devices
+            if device_id not in devices:
+                try:
+                    await tapo_plug_manager.rediscover_devices()
+                except Exception as e:
+                    logger.debug("On-demand rediscover before control failed: %s", e)
+                devices = tapo_plug_manager.devices
             if device_id not in devices:
                 return {
                     "success": False,

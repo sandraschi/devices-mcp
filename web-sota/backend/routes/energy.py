@@ -69,8 +69,8 @@ async def get_prometheus_metrics() -> Response:
                     metrics_lines.append(
                         f'device_health_status{{device_id="{d_id}",type="{d_type}",name="{d_name}"}} {conn}'
                     )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Supervisor health unavailable for metrics: %s", e)
 
         metrics_text = "\n".join(metrics_lines) + "\n"
         return Response(content=metrics_text, media_type="text/plain; version=0.0.4")
@@ -122,7 +122,7 @@ async def control_energy_device(device_id: str, action: str):
         tool = EnergyManagementTool()
         result = await tool.execute(operation="control", device_id=device_id, action=action)
         if not result.get("success", False):
-            raise HTTPException(status_code=400, detail=result.get("error"))
+            raise HTTPException(status_code=400, detail=result.get("error") or result.get("message"))
         return result
     except Exception as e:
         logger.exception(f"Error controlling energy device {device_id}: {e}")
