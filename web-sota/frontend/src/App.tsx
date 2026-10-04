@@ -2,6 +2,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Alarms } from '@/pages/Alarms';
 import { Cameras } from '@/pages/Cameras';
 import { Chat } from '@/pages/Chat';
+import { Climate } from '@/pages/Climate';
 import { Dashboard } from '@/pages/Dashboard';
 import { Energy } from '@/pages/Energy';
 import { Health } from '@/pages/Health';
@@ -28,7 +29,8 @@ function App() {
         <Route element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path='cameras' element={<Cameras />} />
-                    <Route path='energy' element={<Energy />} />
+          <Route path='climate' element={<Climate />} />
+          <Route path='energy' element={<Energy />} />
           <Route path='weather' element={<Weather />} />
           <Route path='logs' element={<Logs />} />
           <Route path='lighting' element={<Lighting />} />

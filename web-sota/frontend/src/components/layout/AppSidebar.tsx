@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import {
   Activity,
+  AirVent,
   Bell,
   Bot,
   CloudRain,
@@ -11,7 +12,7 @@ import {
   LayoutDashboard,
   Lightbulb,
   MessageCircle,
-    Puzzle,
+  Puzzle,
   Rocket,
   Settings,
   Shield,
@@ -23,7 +24,8 @@ import { Link, useLocation } from 'react-router-dom';
 const nav = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/cameras', label: 'Cameras', icon: Video },
-    { to: '/energy', label: 'Energy', icon: Zap },
+  { to: '/energy', label: 'Energy', icon: Zap },
+  { to: '/climate', label: 'Climate', icon: AirVent },
   { to: '/weather', label: 'Weather', icon: CloudRain },
   { to: '/logs', label: 'Log Management', icon: FileText },
   { to: '/lighting', label: 'Lighting', icon: Lightbulb },

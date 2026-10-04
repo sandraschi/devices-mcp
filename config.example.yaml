@@ -35,6 +35,19 @@ discovery:
   nest_home_assistant: true
 
 # Vienna LAN examples (replace YOUR_* credentials; disable discovery to use only static hosts)
+# Midea PortaSplit (mock until winter hardware arrives - UI/API fully usable):
+# set mock: false + MSmartHome account for the one-time V3 token/key handshake.
+climate:
+  midea:
+    mock: true
+    account:
+      username: YOUR_MSMARTHOME_EMAIL
+      password: YOUR_MSMARTHOME_PASSWORD
+    devices:
+      - host: 192.168.0.0
+        device_id: midea_portasplit_demo
+        name: PortaSplit (demo)
+        mock: true
 energy:
   tapo_p115:
     account:
