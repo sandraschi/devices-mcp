@@ -1,12 +1,18 @@
-"""Dymo label printer API — TBD: hardware/SDK wiring and production validation not complete."""
+"""Dymo label printer API.
+
+Prints through the Windows spooler via ``DymoClient`` (see its docstring). Unverified against a
+physical DYMO printer; failures are real HTTP errors (503 no printer / printer fault, 422 bad job).
+"""
 
 import logging
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from devices_mcp.integrations.dymo_client import TAPE_SIZES_MM, DymoClient, DymoError
+
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/dymo", tags=["dymo", "TBD"])
+router = APIRouter(prefix="/api/dymo", tags=["dymo"])
 
 
 class DymoRequest(BaseModel):
@@ -68,45 +74,64 @@ class GenerateHumorousLabelsRequest(DymoRequest):
     tape_color: str = "black_on_white"
 
 
-# Mock Dymo printer implementation
-class MockDymoPrinter:
-    """Mock Dymo printer for development/testing."""
+_ERROR_STATUS = {
+    "device_not_found": 503,
+    "printer_fault": 503,
+    "dependency_missing": 503,
+    "unsupported_platform": 503,
+    "invalid_job": 422,
+}
+
+
+def _http_error(exc: DymoError) -> HTTPException:
+    return HTTPException(
+        status_code=_ERROR_STATUS.get(exc.error_type, 502),
+        detail={"error": str(exc), "error_type": exc.error_type, "suggestions": exc.suggestions},
+    )
+
+
+class DymoPrinter:
+    """Text-formatting helpers on top of the real DymoClient (Windows spooler).
+
+    Only ``tape_size`` is honoured: the cassette in the printer decides tape colour, and font
+    size/style/alignment are not implemented, so they are accepted by the API but ignored.
+    """
 
     def __init__(self):
-        self.connected = True
-        self.tape_sizes = ["6mm", "9mm", "12mm", "19mm", "24mm"]
-        self.tape_colors = ["black_on_white", "white_on_black", "red_on_white", "blue_on_white"]
+        self._client = DymoClient()
+        self.tape_sizes = list(TAPE_SIZES_MM)
 
     async def print_label(self, text: str, **kwargs) -> dict:
         """Print a single label."""
-        logger.info(f"Dymo: Printing label '{text}' with settings: {kwargs}")
-        # In real implementation, this would communicate with Dymo SDK
-        return {
-            "success": True,
-            "label_text": text,
-            "settings": kwargs,
-            "estimated_length": len(text) * 2,  # Rough estimate in mm
-        }
+        try:
+            return await self._client.print_label(text, tape_size=kwargs.get("tape_size", "12mm"))
+        except DymoError as exc:
+            raise _http_error(exc) from exc
 
     async def print_batch_labels(self, labels: list[str], **kwargs) -> dict:
-        """Print multiple labels."""
-        logger.info(f"Dymo: Printing batch of {len(labels)} labels with settings: {kwargs}")
-        results = []
-        for i, text in enumerate(labels):
-            result = await self.print_label(text, **kwargs)
-            results.append({**result, "batch_index": i})
-        return {"success": True, "total_labels": len(labels), "results": results}
+        """Print multiple labels; a partial failure is an error that says how many printed."""
+        try:
+            result = await self._client.print_batch(labels, tape_size=kwargs.get("tape_size", "12mm"))
+        except DymoError as exc:
+            raise _http_error(exc) from exc
+        if not result["success"]:
+            raise HTTPException(
+                status_code=_ERROR_STATUS.get(result["error_type"], 502),
+                detail={
+                    "error": result["error"],
+                    "error_type": result["error_type"],
+                    "printed": result["printed"],
+                    "total_labels": result["total_labels"],
+                },
+            )
+        return result
 
     async def get_status(self) -> dict:
-        """Get printer status."""
-        return {
-            "connected": self.connected,
-            "tape_size": "12mm",
-            "tape_color": "black_on_white",
-            "tape_remaining": 85,  # percentage
-            "printer_model": "LabelWriter 450",
-            "firmware_version": "1.2.3",
-        }
+        """Get printer status as reported by the Windows spooler."""
+        try:
+            return await self._client.get_status()
+        except DymoError as exc:
+            raise _http_error(exc) from exc
 
     async def create_shopping_labels(self, items: list[str], **kwargs) -> dict:
         """Create formatted shopping list labels."""
@@ -115,7 +140,7 @@ class MockDymoPrinter:
 
         formatted_labels = []
         for item in items:
-            checkbox = "☐ " if include_checkboxes else ""
+            checkbox = "[ ] " if include_checkboxes else ""
             formatted_labels.append(f"{checkbox}{item}")
 
         # Add category headers if provided
@@ -124,7 +149,7 @@ class MockDymoPrinter:
             for category, cat_items in categories.items():
                 categorized_labels.append(f"--- {category.upper()} ---")
                 for item in cat_items:
-                    checkbox = "☐ " if include_checkboxes else ""
+                    checkbox = "[ ] " if include_checkboxes else ""
                     categorized_labels.append(f"{checkbox}{item}")
                 categorized_labels.append("")  # Spacer
             formatted_labels = categorized_labels
@@ -496,7 +521,7 @@ class MockDymoPrinter:
 
 
 # Global printer instance
-_dymo_printer = MockDymoPrinter()
+_dymo_printer = DymoPrinter()
 
 
 @router.get("/status")
@@ -505,6 +530,8 @@ async def get_dymo_status():
     try:
         status = await _dymo_printer.get_status()
         return {"success": True, "status": status}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Failed to get Dymo status")
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -523,6 +550,8 @@ async def print_label(request: PrintLabelRequest):
             alignment=request.alignment,
         )
         return {"success": True, "message": "Label printed successfully", "result": result}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Failed to print label")
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -540,6 +569,8 @@ async def print_batch_labels(request: BatchLabelsRequest):
             "message": f"Batch of {len(request.labels)} labels printed",
             "result": result,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Failed to print batch labels")
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -556,6 +587,8 @@ async def create_shopping_labels(request: CreateShoppingLabelsRequest):
             tape_size=request.tape_size,
         )
         return {"success": True, "message": "Shopping labels created and printed", "result": result}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Failed to create shopping labels")
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -575,6 +608,8 @@ async def create_inventory_labels(request: CreateInventoryLabelsRequest):
             "message": "Inventory labels created and printed",
             "result": result,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Failed to create inventory labels")
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -592,6 +627,8 @@ async def create_custom_template(request: LabelTemplateRequest):
             "message": f"Custom template '{request.template_name}' labels printed",
             "result": result,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.exception("Failed to create custom template labels")
         raise HTTPException(status_code=500, detail=str(e)) from e
@@ -647,10 +684,11 @@ async def get_tape_sizes():
 
 @router.get("/tape_colors")
 async def get_tape_colors():
-    """Get available tape colors."""
+    """Get tape colour options (informational: the cassette in the printer decides the colour)."""
     return {
         "success": True,
-        "tape_colors": _dymo_printer.tape_colors,
+        "note": "Colour is set by the D1 cassette, not by software; tape_color in print requests is ignored.",
+        "tape_colors": ["black_on_white", "white_on_black", "red_on_white", "blue_on_white"],
         "descriptions": {
             "black_on_white": "Classic black text on white tape",
             "white_on_black": "White text on black tape",
