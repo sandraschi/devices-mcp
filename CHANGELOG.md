@@ -2,6 +2,19 @@
 
 ## [Unreleased] - 2026-09-02
 
+### Added (label printers, 2026-10-05)
+- `supvan_management` tool and `integrations/label_printers/`: Python port of the reverse-engineered
+  Supvan/Katasymbol protocol (heeen/supvan-cups, efcroasdell E11 fork) for E10, E11, E16 and T50M Pro,
+  with a protocol-decoding mock printer (`mock://<model>`). BLE (`bleak`) and USB-HID (`hidapi`)
+  transports are ported but UNVERIFIED on hardware; install with the `labels` extra. See
+  `docs/LABEL_PRINTERS.md`.
+- `dymo_management` is now registered (it never was) and backed by a real Windows-spooler client.
+
+### Fixed (label printers, 2026-10-05)
+- `DymoClient` and the `/api/dymo` routes returned success for every call, with hardcoded
+  "85% tape" and firmware values, and never touched a printer. They now print through the Windows
+  spooler and fail with 503/422/502 and `error_type`/`suggestions` when there is no printer.
+
 ### Added
 - Nori A3 as a third Robots-page robot type (`RobotType.NORI`), bridged directly to the
   standalone `norirobotics-mcp` server (mirrors the existing Yahboom pattern, independent of

@@ -74,6 +74,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Label printers: BLE (E10/E11/E16, T50M Pro) and USB-HID (T-series) transports for supvan_management.
+# Dymo needs only pywin32, which is already present on Windows installs.
+labels = [
+    "bleak>=0.22.0",
+    "hidapi>=0.14.0",
+]
 # Development dependencies
 dev = [
     # Testing
