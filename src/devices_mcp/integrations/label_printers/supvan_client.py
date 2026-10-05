@@ -324,7 +324,7 @@ def _render(
     text: str | None, image_path: str | None, model: sp.ModelInfo, label_width_mm: int | None, length_mm: int | None
 ):
     head = model.printhead_dots
-    across = min((label_width_mm or head // sp.DOTS_PER_MM) * sp.DOTS_PER_MM, head)
+    across = min((label_width_mm or model.default_label_width_mm) * sp.DOTS_PER_MM, head)
     try:
         if text is not None:
             return render_text_label(text, across, min_length_px=(length_mm or 0) * sp.DOTS_PER_MM)

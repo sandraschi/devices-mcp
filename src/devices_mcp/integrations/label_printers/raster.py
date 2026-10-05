@@ -59,10 +59,12 @@ def render_text_label(
     max_length_px: int = _MAX_LABEL_LENGTH_PX,
     padding_px: int = 4,
     font_size_px: int | None = None,
+    max_font_px: int = 96,
 ) -> Image.Image:
     """Render (multi-line) text to a mono bitmap in reading orientation.
 
-    The font is sized to fill ``height_px`` unless ``font_size_px`` is given. The
+    The font is sized to fill ``height_px`` (capped at ``max_font_px`` so a wide label does not
+    get a poster-sized single word) unless ``font_size_px`` is given. The
     result is ``height_px`` tall and as long as the text needs, clamped to
     ``[min_length_px, max_length_px]``. Text that does not fit raises rather than
     silently printing a cut-off label.
@@ -77,7 +79,7 @@ def render_text_label(
     lines = text.splitlines() or [text]
     usable_h = height_px - 2 * padding_px
     line_h = usable_h // len(lines)
-    size = font_size_px or max(line_h, 6)
+    size = font_size_px or min(max(line_h, 6), max_font_px)
 
     font = _load_font(size)
     probe = ImageDraw.Draw(Image.new("1", (1, 1), 255))

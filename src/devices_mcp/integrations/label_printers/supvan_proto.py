@@ -256,6 +256,7 @@ class ModelInfo:
     profile: PrintProfile
     printhead_dots: int
     dpi: int
+    default_label_width_mm: int
     transports: tuple[str, ...]
     verification: str
     bt_prefixes: tuple[str, ...]
@@ -270,6 +271,7 @@ MODELS: dict[str, ModelInfo] = {
         profile=PrintProfile.T_SERIES,
         printhead_dots=384,
         dpi=203,
+        default_label_width_mm=30,
         transports=("usb_hid", "ble"),
         verification="upstream-verified on hardware (USB + Bluetooth); BLE per a third-party web UI",
         bt_prefixes=(
@@ -296,6 +298,7 @@ MODELS: dict[str, ModelInfo] = {
         profile=PrintProfile.E_SERIES,
         printhead_dots=96,
         dpi=203,
+        default_label_width_mm=12,
         transports=("ble",),
         verification="single HCI capture of an E10pro; E10 itself unverified",
         bt_prefixes=("e10", "t10", "t0007", "t0010", "t0011", "t0012", "t0017", "t0025", "t0026", "t0027"),
@@ -306,6 +309,7 @@ MODELS: dict[str, ModelInfo] = {
         profile=PrintProfile.E_SERIES,
         printhead_dots=96,
         dpi=203,
+        default_label_width_mm=12,
         transports=("ble",),
         verification="verified on hardware by the E11 fork author (96-dot width is provisional)",
         bt_prefixes=("e11", "t0138", "t0139", "t0181", "t0182", "t0183", "t0184", "t0216", "t0217", "t0218", "t0219"),
@@ -316,6 +320,7 @@ MODELS: dict[str, ModelInfo] = {
         profile=PrintProfile.E_SERIES,
         printhead_dots=96,
         dpi=203,
+        default_label_width_mm=12,
         transports=("ble",),
         verification="UNVERIFIED: no capture or hardware test exists; assumed to share the E-series flow",
         bt_prefixes=("e16", "t16", "t0053", "t0054", "t0055", "t0105", "t0106", "t0107", "t0122", "t0123"),

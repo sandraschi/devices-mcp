@@ -171,3 +171,10 @@ async def test_ble_without_bleak_fails_with_connect_error_not_fake_success():
 async def test_text_too_tall_for_the_head_is_rejected():
     with pytest.raises(sp.ProtocolError):
         sp.image_to_columns(Image.new("1", (50, 200), 255), 96)
+
+
+async def test_short_text_on_a_wide_head_is_not_poster_sized(tmp_path, monkeypatch):
+    # Regression: text used to be sized to the whole 48 mm T50 head, giving a 200 mm label for "Hello 123".
+    monkeypatch.setenv("DEVICES_MCP_LABEL_DIR", str(tmp_path))
+    result = await sc.print_label("mock://t50m_pro", text="Hello 123", dry_run=True)
+    assert result["job"]["feed_length_mm"] < 60
