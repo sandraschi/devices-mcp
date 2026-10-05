@@ -34,8 +34,8 @@ Not in the manual: the command language, whether USB is printer-class or vendor-
 
 | Tool | Needed for | Installed here | Install (winget, verified to exist) |
 |---|---|---|---|
-| Wireshark (tshark) | decode captures, export payload bytes | no | `winget install WiresharkFoundation.Wireshark` |
-| USBPcap | live USB capture on Windows (filter driver; admin; may need a reboot) | no | `winget install desowin.USBPcap` |
+| Wireshark (tshark) | decode captures, export payload bytes | yes, 4.6.8 (installed 2026-10-05) | `winget install WiresharkFoundation.Wireshark` |
+| USBPcap | live USB capture on Windows (filter driver; admin; needs a reboot) | installed 1.5.4.0 on 2026-10-05; driver not loaded until the PC is rebooted | `winget install desowin.USBPcap` |
 | Android platform-tools (adb) | pull a phone's Bluetooth HCI snoop log | no | `winget install Google.PlatformTools` |
 | Npcap | network capture only; not needed for USB or Bluetooth | no | comes with Wireshark if wanted |
 
