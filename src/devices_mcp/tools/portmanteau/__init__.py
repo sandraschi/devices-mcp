@@ -21,6 +21,7 @@ from .automation_management import register_automation_management_tool
 from .camera_management import register_camera_management_tool
 from .climate_management import register_climate_management_tool
 from .configuration_management import register_configuration_management_tool
+from .dymo_management import register_dymo_management_tool
 from .energy_management import register_energy_management_tool
 from .grafana_management import register_grafana_management_tool
 from .health_management import register_health_management_tool
@@ -37,6 +38,7 @@ from .robotics_management import register_robotics_management_tool
 from .security_management import register_security_management_tool
 from .sensor_health import register_sensor_health_tool
 from .shelly_management import register_shelly_management_tool
+from .supvan_management import register_supvan_management_tool
 from .system_management import register_system_management_tool
 from .tapo_control import register_tapo_control_tool
 from .thermal_management import register_thermal_management_tool
@@ -94,6 +96,8 @@ def register_all_portmanteau_tools(mcp: FastMCP) -> None:
     register_messages_management_tool(mcp)
     register_health_management_tool(mcp)  # Personal health (weight/BP/glucose/workouts)
     register_climate_management_tool(mcp)  # Midea PortaSplit (mock until winter)
+    register_dymo_management_tool(mcp)  # Dymo label printers (Windows spooler)
+    register_supvan_management_tool(mcp)  # Supvan/Katasymbol label printers (BLE/USB)
 
     # Register agentic tools (SEP-1577) if available
     if _agentic_security_available:
