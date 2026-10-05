@@ -64,17 +64,27 @@ Installing a capture driver needs administrator rights (UAC) and is system-level
    | `07-width-12` and `08-width-19` | same artwork on 12 mm and 19 mm tape | tape-size fields |
 
    Write a one-line note per file (what was printed, tape, time). Captures are evidence; unlabeled ones are noise.
-4. Extract the host-to-device payload bytes. In tshark (field names can differ by version; check with
+4. Extract the host-to-device payload bytes with packetsniffer-mcp (pure Python; no tshark needed). It also reports
+   any device and interface descriptors the capture contains, which answers the printer-class question:
+
+   ```python
+   packetsniffer_ops(operation="usb_payloads", file_path="C:/captures/02-dot.pcap", export_path="C:/captures/02-dot.bin")
+   packetsniffer_ops(operation="usb_payloads", file_path="C:/captures/02-dot.pcap", direction="in")   # status replies
+   ```
+
+   The tshark equivalent, if you prefer it (field names can differ by version; check with
    `tshark -G fields | findstr usb`):
 
    ```powershell
    tshark -r 02-dot.pcapng -Y "usb.capdata && usb.endpoint_address.direction == 0" `
      -T fields -e frame.time_relative -e usb.endpoint_address -e usb.capdata
    ```
-
-   Do the same with `direction == 1` for the printer's replies (status).
 5. Diff experiments against each other: the bytes that change between `02-dot` and `04-bar` are the image data; the
-   bytes that change between 12 mm and 19 mm are the tape fields.
+   bytes that change between 12 mm and 19 mm are the tape fields:
+
+   ```python
+   packetsniffer_ops(operation="diff_captures", file_path="C:/captures/01-blank.pcap", file_path_b="C:/captures/02-dot.pcap")
+   ```
 
 ## Phase 2: Decode
 
@@ -113,15 +123,14 @@ Installing a capture driver needs administrator rights (UAC) and is system-level
 
 ## Should this be its own MCP server?
 
-No, not yet. The fleet already has **packetsniffer-mcp** (Scapy + tshark; `analyze_pcap`, `decode_pcap`, background
-capture). It covers network traffic only: it has no USBPcap or HCI support today. The capture step is a few minutes
-of a human operating a device and the printer's software, which an MCP cannot do for you. The hard part is reading
-hex and writing a decoder, which is ordinary code plus a notes file.
+No. The fleet already had **packetsniffer-mcp** (network capture and analysis only), so it was extended instead
+(2026-10-05): `usb_payloads`, `btsnoop_payloads`, `diff_captures`, `usb_list_hubs` and `usb_capture`, in a pure
+Python `capture` package that needs no tshark. The capture step itself is a few minutes of a human operating the
+device and its software, which an MCP cannot do for you; the hard part is reading hex and writing a decoder.
 
-If this becomes a pattern (Supvan, DYMO, the next printer), extend packetsniffer-mcp with: `usb_capture` (wraps
-USBPcapCMD), `usb_payloads` and `btsnoop_payloads` (tshark field export as above), and a `diff_captures` helper.
-That is a small addition to an existing server. A new repo would trigger the fleet's New Repo Gate and a full
-standards pass for very little extra capability.
+Status of that extension: the analysis operations are tested against synthetic captures only, and `usb_capture`
+(a wrapper around USBPcapCMD) only through a fake executable. Neither has seen a capture from real hardware yet; the
+first real capture is also the first real test of the tooling. Raw capture files stay out of git (see the safety rules).
 
 ## Open questions the first capture answers
 
