@@ -182,3 +182,88 @@ async def test_dymo_tool_status_against_the_real_spooler_never_fakes_a_printer()
         assert "dymo" in (data["data"]["printer"] + data["data"]["driver"]).lower()
     else:
         assert data["error_type"] == "device_not_found"
+
+
+# --- diagnostics --------------------------------------------------------------------------
+
+USB_DYMO = {
+    "Status": "OK",
+    "Class": "USB",
+    "FriendlyName": "DYMO MobileLabeler",
+    "InstanceId": "USB\\VID_0922&PID_1009\1234",
+}
+BT_DYMO_OFF = {
+    "Status": "Unknown",
+    "Class": "Bluetooth",
+    "FriendlyName": "DYMO MobileLabeler",
+    "InstanceId": "BTHENUM\\DEV_001122334455\7&1",
+}
+
+
+def test_parse_pnp_json_splits_usb_and_bluetooth_and_marks_presence():
+    import json
+
+    parsed = dc.parse_pnp_json(json.dumps([USB_DYMO, BT_DYMO_OFF]))
+    assert [d["present"] for d in parsed["usb"]] == [True]
+    assert [(d["name"], d["present"]) for d in parsed["bluetooth"]] == [("DYMO MobileLabeler", False)]
+
+
+def test_parse_pnp_json_handles_single_object_empty_and_unrelated_usb():
+    import json
+
+    assert (
+        len(dc.parse_pnp_json(json.dumps(USB_DYMO))["usb"]) == 1
+    )  # PowerShell emits an object, not a list, for one hit
+    assert dc.parse_pnp_json("") == {"usb": [], "bluetooth": []}
+    other = {**USB_DYMO, "InstanceId": "USB\\VID_046D&PID_C52B\1"}  # a Logitech receiver named like a match
+    assert dc.parse_pnp_json(json.dumps(other))["usb"] == []
+
+
+class HwSpooler(FakeSpooler):
+    def __init__(self, hardware, printers=None):
+        super().__init__(printers=printers)
+        self._hw = hardware
+
+    def hardware(self):
+        return self._hw
+
+
+def _hw(*, usb=(), bt=()):
+    import json
+
+    return dc.parse_pnp_json(json.dumps([*usb, *bt]))
+
+
+async def test_diagnose_nothing_detected():
+    d = await dc.DymoClient(backend=HwSpooler(_hw())).diagnose()
+    assert d["verdict"] == "nothing_detected" and "plug it in" in d["next_steps"][0]
+
+
+async def test_diagnose_usb_attached_but_no_driver():
+    d = await dc.DymoClient(backend=HwSpooler(_hw(usb=[USB_DYMO]))).diagnose()
+    assert d["verdict"] == "driver_missing"
+    assert "DYMO Connect" in " ".join(d["next_steps"]) and "MobileLabeler" in d["message"]
+
+
+async def test_diagnose_bluetooth_paired_but_off():
+    d = await dc.DymoClient(backend=HwSpooler(_hw(bt=[BT_DYMO_OFF]))).diagnose()
+    assert d["verdict"] == "device_off_or_out_of_range"
+
+
+async def test_diagnose_ready_when_a_dymo_queue_exists():
+    d = await dc.DymoClient(backend=HwSpooler(_hw(usb=[USB_DYMO]), printers=[_dymo()])).diagnose()
+    assert d["verdict"] == "ready" and d["printers"][0]["name"] == "DYMO MobileLabeler"
+
+
+async def test_not_found_error_carries_the_verdict_and_hardware():
+    client = dc.DymoClient(backend=HwSpooler(_hw(usb=[USB_DYMO])))
+    with pytest.raises(dc.DymoError) as exc:
+        await client.print_label("x")
+    assert exc.value.details["verdict"] == "driver_missing"
+    assert exc.value.details["hardware"]["usb"][0]["name"] == "DYMO MobileLabeler"
+
+
+async def test_diagnose_tool_via_mcp_never_fails_without_a_printer():
+    data = await _call("dymo_management", action="diagnose")
+    assert data["success"] is True
+    assert data["data"]["verdict"] in {"nothing_detected", "driver_missing", "device_off_or_out_of_range", "ready"}

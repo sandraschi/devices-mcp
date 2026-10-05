@@ -21,7 +21,9 @@ field exist. The earlier version of this module returned hardcoded success and a
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
+import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -67,14 +69,24 @@ _STATUS_BITS: tuple[tuple[int, str], ...] = (
 class DymoError(RuntimeError):
     """A Dymo operation failed. ``error_type`` is stable and machine-readable."""
 
-    def __init__(self, message: str, error_type: str = "device_error", suggestions: list[str] | None = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        error_type: str = "device_error",
+        suggestions: list[str] | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> None:
         super().__init__(message)
         self.error_type = error_type
         self.suggestions = suggestions or []
+        self.details = details or {}
 
 
 class SpoolerBackend(Protocol):
-    """The slice of the Windows spooler this client uses (also the seam for tests)."""
+    """The slice of the Windows spooler this client uses (also the seam for tests).
+
+    ``hardware()`` is optional: backends without it simply report no hardware diagnostics.
+    """
 
     def list_printers(self) -> list[dict[str, Any]]: ...
 
@@ -85,6 +97,43 @@ class SpoolerBackend(Protocol):
 
 def decode_status(bits: int) -> list[str]:
     return [label for mask, label in _STATUS_BITS if bits & mask]
+
+
+_DYMO_USB_VID = "VID_0922"
+_PNP_QUERY = (
+    "Get-PnpDevice -ErrorAction SilentlyContinue | "
+    "Where-Object { $_.InstanceId -match 'VID_0922' -or $_.FriendlyName -match 'dymo|mobile ?labeler' } | "
+    "Select-Object Status, Class, FriendlyName, InstanceId | ConvertTo-Json -Compress"
+)
+
+
+def parse_pnp_json(raw: str) -> dict[str, list[dict[str, str]]]:
+    """Split PowerShell ``Get-PnpDevice`` JSON into USB and Bluetooth DYMO devices.
+
+    ``present`` is true for Status ``OK`` (Windows currently sees the device); ``Unknown`` means Windows only
+    remembers it, e.g. a Bluetooth printer that is paired but switched off.
+    """
+    text = (raw or "").strip()
+    if not text:
+        return {"usb": [], "bluetooth": []}
+    data = json.loads(text)
+    rows = data if isinstance(data, list) else [data]
+    out: dict[str, list[dict[str, str]]] = {"usb": [], "bluetooth": []}
+    for row in rows:
+        instance = str(row.get("InstanceId") or "")
+        entry = {
+            "name": str(row.get("FriendlyName") or ""),
+            "class": str(row.get("Class") or ""),
+            "status": str(row.get("Status") or ""),
+            "present": str(row.get("Status") or "") == "OK",
+            "instance_id": instance,
+        }
+        upper = instance.upper()
+        if upper.startswith(("USB", "HID")) and _DYMO_USB_VID in upper:
+            out["usb"].append(entry)
+        elif upper.startswith("BTH"):
+            out["bluetooth"].append(entry)
+    return out
 
 
 class Win32Spooler:
@@ -124,6 +173,27 @@ class Win32Spooler:
                 }
             )
         return out
+
+    def hardware(self) -> dict[str, list[dict[str, str]]]:
+        """DYMO USB / Bluetooth devices Windows knows about, whether or not a driver or queue exists."""
+        try:
+            proc = subprocess.run(
+                ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", _PNP_QUERY],
+                capture_output=True,
+                text=True,
+                timeout=20,
+                check=False,
+            )
+            if proc.returncode != 0:
+                # An empty result must mean "looked, found nothing", never "the query failed".
+                raise DymoError(
+                    f"device query failed (exit {proc.returncode}): {proc.stderr.strip()[:200]}", "diagnostics_failed"
+                )
+            return parse_pnp_json(proc.stdout)
+        except DymoError:
+            raise
+        except (OSError, subprocess.SubprocessError, ValueError) as exc:
+            raise DymoError(f"could not query Windows devices: {exc}", "diagnostics_failed") from exc
 
     def paper_forms(self, name: str, port: str) -> list[str]:
         import win32con
@@ -176,6 +246,45 @@ class Win32Spooler:
             dc.DeleteDC()
 
 
+def _verdict(
+    hardware: dict[str, list[dict[str, str]]], printer_count: int, wanted: str | None
+) -> tuple[str, str, list[str]]:
+    """Classify a missing printer queue using what Windows can see of the hardware."""
+    if wanted:
+        return (
+            "printer_not_installed",
+            f"printer '{wanted}' is not installed in Windows",
+            ["Check the exact name with dymo_management action=list_printers"],
+        )
+    attached = [d for d in hardware["usb"] + hardware["bluetooth"] if d["present"]]
+    remembered = [d for d in hardware["usb"] + hardware["bluetooth"] if not d["present"]]
+    if attached:
+        names = ", ".join(sorted({d["name"] or d["instance_id"] for d in attached}))
+        return (
+            "driver_missing",
+            f"a DYMO device is connected to Windows ({names}) but there is no DYMO printer queue: the driver is not installed",
+            [
+                "Install DYMO Connect (or DYMO Label) from dymo.com; it adds the MobileLabeler driver",
+                "Re-run dymo_management action=diagnose afterwards",
+            ],
+        )
+    if remembered:
+        return (
+            "device_off_or_out_of_range",
+            "Windows remembers a DYMO device but it is not connected right now",
+            ["Switch the printer on, plug in the USB cable or bring it into Bluetooth range", "Then re-run diagnose"],
+        )
+    return (
+        "nothing_detected",
+        f"no DYMO device is attached or paired and no DYMO printer is installed (Windows has {printer_count} other printers)",
+        [
+            "Charge or power the MobileLabeler and plug it in by USB (or pair it over Bluetooth in Windows settings)",
+            "Run dymo_management action=diagnose again",
+            "Then install DYMO Connect (or DYMO Label) for the driver",
+        ],
+    )
+
+
 @dataclass
 class _Selected:
     name: str
@@ -204,19 +313,43 @@ class DymoClient:
         else:
             hits = [p for p in printers if "dymo" in p["name"].lower() or "dymo" in p["driver"].lower()]
         if not hits:
-            raise DymoError(
-                f"no DYMO printer is installed in Windows (looked at {len(printers)} printers)"
-                if not wanted
-                else f"printer '{self._printer_name}' is not installed",
-                "device_not_found",
-                [
-                    "Install DYMO Connect (or DYMO Label) so the driver is present",
-                    "Plug in the printer by USB, or pair it over Bluetooth, and turn it on",
-                    "If it is installed under another name, pass printer_name=",
-                ],
-            )
+            hardware = self._hardware()
+            verdict, message, steps = _verdict(hardware, len(printers), self._printer_name)
+            raise DymoError(message, "device_not_found", steps, {"verdict": verdict, "hardware": hardware})
         p = hits[0]
         return _Selected(p["name"], p["driver"], p["port"], p["status_bits"])
+
+    def _hardware(self) -> dict[str, list[dict[str, str]]]:
+        """Hardware diagnostics, or empty lists when the backend cannot provide them."""
+        probe = getattr(self._spooler(), "hardware", None)
+        if probe is None:
+            return {"usb": [], "bluetooth": []}
+        try:
+            return probe()
+        except DymoError:
+            logger.warning("DYMO hardware diagnostics failed", exc_info=True)
+            return {"usb": [], "bluetooth": []}
+
+    async def diagnose(self) -> dict[str, Any]:
+        """Where bring-up stands: printer queue, attached USB / paired Bluetooth hardware, and what to do next."""
+        printers = await asyncio.to_thread(self._spooler().list_printers)
+        hardware = await asyncio.to_thread(self._hardware)
+        dymo = [p for p in printers if "dymo" in (p["name"] + p["driver"]).lower()]
+        if dymo:
+            return {
+                "verdict": "ready" if "offline" not in decode_status(dymo[0]["status_bits"]) else "printer_offline",
+                "printers": [{**p, "status": decode_status(p["status_bits"])} for p in dymo],
+                "hardware": hardware,
+                "next_steps": ["dymo_management action=print_label with dry_run=true, then a real print"],
+            }
+        verdict, message, steps = _verdict(hardware, len(printers), None)
+        return {
+            "verdict": verdict,
+            "message": message,
+            "printers": [],
+            "hardware": hardware,
+            "next_steps": steps,
+        }
 
     # -- queries ---------------------------------------------------------------
 

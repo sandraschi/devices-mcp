@@ -47,7 +47,12 @@ Classic Bluetooth SPP (`bt://`) is not implemented and fails with `not_implement
 
 ## First print on real hardware: Dymo MobileLabeler
 
-1. Install DYMO Connect (or DYMO Label) so Windows has the driver; connect by USB or pair over Bluetooth.
+There is no open-source protocol for the MobileLabeler (USB `0922:1009`; the labelle project lists it as "no
+success yet"), so this goes through the DYMO driver and the Windows spooler.
+
+1. Power the printer and connect it by USB (or pair it over Bluetooth). Run `dymo_management(action="diagnose")`.
+   The verdict says where you are: `nothing_detected`, `device_off_or_out_of_range`, `driver_missing` (hardware
+   seen, no printer queue: install DYMO Connect or DYMO Label from dymo.com) or `ready`.
 2. `dymo_management(action="status")`. Note the `paper_forms` the driver reports: they decide the page geometry.
 3. `dymo_management(action="print_label", text="Test", dry_run=True)` to see the preview, then print for real.
 4. If the label comes out sideways or tiny, retry with `orientation="cw"`, `"ccw"` or `"none"`.

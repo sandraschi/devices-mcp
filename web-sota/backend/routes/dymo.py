@@ -86,7 +86,12 @@ _ERROR_STATUS = {
 def _http_error(exc: DymoError) -> HTTPException:
     return HTTPException(
         status_code=_ERROR_STATUS.get(exc.error_type, 502),
-        detail={"error": str(exc), "error_type": exc.error_type, "suggestions": exc.suggestions},
+        detail={
+            "error": str(exc),
+            "error_type": exc.error_type,
+            "suggestions": exc.suggestions,
+            "details": exc.details,
+        },
     )
 
 
@@ -535,6 +540,15 @@ async def get_dymo_status():
     except Exception as e:
         logger.exception("Failed to get Dymo status")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@router.get("/diagnose")
+async def diagnose_dymo():
+    """Bring-up check: attached USB / paired Bluetooth hardware, driver, printer queue, next steps."""
+    try:
+        return {"success": True, "diagnosis": await _dymo_printer._client.diagnose()}
+    except DymoError as exc:
+        raise _http_error(exc) from exc
 
 
 @router.post("/print")

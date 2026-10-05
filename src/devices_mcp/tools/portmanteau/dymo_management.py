@@ -14,6 +14,7 @@ _MUTATING: dict[str, bool] = {}
 
 logger = logging.getLogger(__name__)
 DYMO_ACTIONS = {
+    "diagnose": "Bring-up check: attached USB or paired Bluetooth hardware, driver, printer queue, next steps",
     "status": "Find the installed DYMO printer and report its spooler status",
     "list_printers": "List every printer Windows knows about, flagging DYMO ones",
     "print_label": "Print a single text label (or preview it with dry_run)",
@@ -31,6 +32,7 @@ def _failure(action: str, exc: DymoError) -> dict[str, Any]:
         "error": str(exc),
         "error_type": exc.error_type,
         "suggestions": exc.suggestions,
+        "details": exc.details,
     }
 
 
@@ -39,7 +41,9 @@ def register_dymo_management_tool(mcp: FastMCP) -> None:
 
     @mcp.tool(annotations=_MUTATING)
     async def dymo_management(
-        action: Literal["status", "list_printers", "print_label", "print_batch", "shopping_labels", "inventory_labels"],
+        action: Literal[
+            "diagnose", "status", "list_printers", "print_label", "print_batch", "shopping_labels", "inventory_labels"
+        ],
         text: str | None = None,
         labels: list[str] | None = None,
         items: list[Any] | None = None,
@@ -58,10 +62,12 @@ def register_dymo_management_tool(mcp: FastMCP) -> None:
         installed DYMO driver (USB or Bluetooth), so no vendor SDK is needed.
 
         Verification status: UNVERIFIED against a physical DYMO printer. Use dry_run=True to render a
-        PNG preview without printing, and "status" to see the driver's paper forms before the first print.
+        PNG preview without printing, "diagnose" to see whether the printer is attached and has a driver, and "status"
+        to see the driver's paper forms before the first print.
 
         Args:
             action (Literal, required): One of:
+                - "diagnose": Where bring-up stands (never fails): USB/Bluetooth hardware, driver, queue, next steps.
                 - "status": Locate the DYMO printer; returns driver, port, spooler flags, paper forms.
                 - "list_printers": All Windows printers, with is_dymo flags.
                 - "print_label": Print one label (requires: text).
@@ -102,6 +108,8 @@ def register_dymo_management_tool(mcp: FastMCP) -> None:
                 "orientation": orientation,
             }
 
+            if action == "diagnose":
+                return {"success": True, "action": action, "data": await client.diagnose()}
             if action == "status":
                 return {"success": True, "action": action, "data": await client.get_status()}
             if action == "list_printers":
