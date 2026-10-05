@@ -47,8 +47,5 @@ async def test_manager_seeds_demo():
     assert all(u.mock for u in units)
 
 
-@pytest.mark.asyncio()
-async def test_real_backend_refuses_cleanly():
-    real = MideaACUnit(device_id="x", name="X", host="192.168.0.99", mock=False)
-    with pytest.raises(NotImplementedError):
-        await real.connect()
+# The real-backend refusal test moved to test_midea_portasplit.py: a real unit now raises a typed
+# MideaError (dependency_missing / connect_failed) instead of NotImplementedError.
