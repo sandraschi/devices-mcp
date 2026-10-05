@@ -81,7 +81,7 @@ async def test_print_label_sends_rendered_bitmap_per_copy():
     assert result["sent"] is True and len(spool.printed) == 2
     name, image, _title, orientation = spool.printed[0]
     assert name == "DYMO MobileLabeler" and orientation == "auto"
-    assert image.mode == "1" and image.size[1] == round(12 / 25.4 * 180)
+    assert image.mode == "1" and image.size[1] == round(12 / 25.4 * 300)
     assert any(image.getpixel((x, y)) == 0 for x in range(image.size[0]) for y in range(image.size[1])), "no ink drawn"
 
 

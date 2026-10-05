@@ -48,7 +48,9 @@ Classic Bluetooth SPP (`bt://`) is not implemented and fails with `not_implement
 ## First print on real hardware: Dymo MobileLabeler
 
 There is no open-source protocol for the MobileLabeler (USB `0922:1009`; the labelle project lists it as "no
-success yet"), so this goes through the DYMO driver and the Windows spooler.
+success yet"), so this goes through the DYMO driver and the Windows spooler. From the user guide: Bluetooth
+Classic (BR/EDR 2.1+, pairs as `DYMO ML xxxx` with code `0000`), USB 2.0, 300 dpi, max print width 19 mm.
+A driverless path is planned in [LABEL_PRINTER_REVERSE_ENGINEERING.md](LABEL_PRINTER_REVERSE_ENGINEERING.md).
 
 1. Power the printer and connect it by USB (or pair it over Bluetooth). Run `dymo_management(action="diagnose")`.
    The verdict says where you are: `nothing_detected`, `device_off_or_out_of_range`, `driver_missing` (hardware

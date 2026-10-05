@@ -38,7 +38,7 @@ from .label_printers.supvan_client import label_dir
 logger = logging.getLogger(__name__)
 
 TAPE_SIZES_MM: dict[str, int] = {"6mm": 6, "9mm": 9, "12mm": 12, "19mm": 19, "24mm": 24}
-RENDER_DPI = 180  # DYMO D1 printers are 180 dpi
+RENDER_DPI = 300  # MobileLabeler prints at 300 dpi (user guide); the driver scales down for 180 dpi models
 MAX_COPIES = 10
 MAX_BATCH = 50
 
@@ -381,7 +381,9 @@ class DymoClient:
             raise DymoError(f"unknown tape size '{tape_size}'", "invalid_job", [f"Use one of {sorted(TAPE_SIZES_MM)}"])
         height_px = round(TAPE_SIZES_MM[tape_size] / 25.4 * RENDER_DPI)
         try:
-            return to_mono(render_text_label(text, height_px, padding_px=6))
+            # Cap the glyph height at 12 mm so text on 19/24 mm tape is not poster-sized.
+            cap_px = round(12 / 25.4 * RENDER_DPI)
+            return to_mono(render_text_label(text, height_px, padding_px=10, max_font_px=cap_px))
         except LabelRenderError as exc:
             raise DymoError(str(exc), "invalid_job") from exc
 
