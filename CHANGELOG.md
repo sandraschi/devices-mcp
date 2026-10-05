@@ -2,6 +2,19 @@
 
 ## [Unreleased] - 2026-09-02
 
+### Added (Midea PortaSplit, 2026-10-05)
+- Real LAN backend for `MideaACUnit` via `msmart-ng` (`climate` extra), UNVERIFIED on hardware; typed
+  `MideaError`s replace `NotImplementedError`. `climate_management` gains `discover` and `scenario`
+  actions and eco/turbo/sleep; REST gains `/api/climate/discover` and `/api/climate/{id}/mock`.
+- Mock scenarios (heatwave, cold snap, offline, fault, filter alert, reset) and richer mock state
+  (outdoor temperature, humidity, energy kWh, filter alert, error code); Climate page shows them.
+- See `docs/MIDEA_PORTASPLIT.md`.
+
+### Fixed (Midea PortaSplit, 2026-10-05)
+- Mock cooled a room that was already below the setpoint (20 C room, 22 C setpoint, cool mode went to 18 C).
+- Mock `status()` advanced a fixed second per poll instead of elapsed time, so the UI temperature barely moved.
+- Mock with `mock: false` and no devices silently served the demo unit; it now serves nothing and logs why.
+
 ### Added (label printers, 2026-10-05)
 - `supvan_management` tool and `integrations/label_printers/`: Python port of the reverse-engineered
   Supvan/Katasymbol protocol (heeen/supvan-cups, efcroasdell E11 fork) for E10, E11, E16 and T50M Pro,

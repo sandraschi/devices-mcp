@@ -80,6 +80,10 @@ labels = [
     "bleak>=0.22.0",
     "hidapi>=0.14.0",
 ]
+# Real Midea PortaSplit control over the LAN (climate_management with climate.midea.mock: false).
+climate = [
+    "msmart-ng>=2026.9.0",
+]
 # Development dependencies
 dev = [
     # Testing

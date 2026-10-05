@@ -35,11 +35,14 @@ discovery:
   nest_home_assistant: true
 
 # Vienna LAN examples (replace YOUR_* credentials; disable discovery to use only static hosts)
-# Midea PortaSplit (mock until winter hardware arrives - UI/API fully usable):
-# set mock: false + MSmartHome account for the one-time V3 token/key handshake.
+# Midea PortaSplit: a simulated demo unit is served while mock is true (UI/API fully usable).
+# Real unit: uv pip install -e ".[climate]", then set mock: false, list the unit under devices
+# (find host/device_id with climate_management action=discover), and give a SmartHome or NetHome
+# Plus account (region: DE/US/...) for the one-time V3 token/key fetch. UNVERIFIED on hardware.
 climate:
   midea:
     mock: true
+    region: DE
     account:
       username: YOUR_MSMARTHOME_EMAIL
       password: YOUR_MSMARTHOME_PASSWORD
