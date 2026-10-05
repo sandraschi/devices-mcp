@@ -61,10 +61,15 @@ async def get_system_config(_: None = Depends(verify_api_key)) -> dict[str, Any]
 
 
 @router.post("/restart")
-async def restart_system(_: None = Depends(verify_api_key)):
-    """Restart the system (requires authentication)."""
-    # This would trigger a system restart
-    return {"status": "success", "message": "System restart initiated"}
+async def restart_system() -> dict[str, Any]:
+    """Restart the backend: the same orderly exit as POST /api/shutdown; NSSM then respawns the process.
+
+    No authentication for now (the backend binds to 127.0.0.1 only). This used to return "System restart
+    initiated" without doing anything.
+    """
+    from ...routes.system import api_shutdown
+
+    return await api_shutdown()
 
 
 @router.get("/logs")
