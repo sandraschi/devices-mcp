@@ -1,5 +1,6 @@
 """CUA diagnostics endpoint — used by the CUA smoke test to verify app health."""
 
+import asyncio
 import logging
 import time
 from contextlib import suppress
@@ -39,11 +40,13 @@ async def get_diagnostics():
         import subprocess
 
         tesseract = (
-            subprocess.run(
-                [r"C:\Program Files\Tesseract-OCR\tesseract.exe", "--version"], capture_output=True, timeout=5
-            ).returncode
-            == 0
-        )
+            await asyncio.to_thread(
+                subprocess.run,
+                [r"C:\Program Files\Tesseract-OCR\tesseract.exe", "--version"],
+                capture_output=True,
+                timeout=5,
+            )
+        ).returncode == 0
     window = False
     with suppress(Exception):
         import pywinauto
