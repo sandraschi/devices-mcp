@@ -14,19 +14,15 @@ SERVER_START = time.time()
 
 async def _get_tool_count() -> int:
     """Query the FastMCP server for registered tool count."""
-    try:
+    with suppress(Exception):
         from devices_mcp.tools import discover_tools
 
         return len(discover_tools())
-    except Exception:
-        pass
-    try:
+    with suppress(Exception):
         from devices_mcp.server_v2 import mcp
 
         tools = await mcp.list_tools()
         return len(tools)
-    except Exception:
-        pass
     return 0
 
 
