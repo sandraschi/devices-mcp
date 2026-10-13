@@ -168,3 +168,59 @@ async def wellness_delete(row_id: int) -> dict[str, Any]:
     if not db.delete_health_metric(row_id):
         raise HTTPException(status_code=404, detail=f"No data point with id {row_id}")
     return {"success": True, "id": row_id}
+
+
+@router.get("/withings/status", summary="Withings OAuth + sync status")
+async def withings_status() -> dict[str, Any]:
+    """Configured? Connected? When was the last sync?"""
+    from devices_mcp.integrations.withings_client import get_withings_client
+
+    client = get_withings_client()
+    return {
+        "success": True,
+        "configured": client.is_configured(),
+        "connected": client.is_connected(),
+        "last_sync_ts": client.last_sync_ts(),
+    }
+
+
+@router.get("/withings/connect", summary="Withings authorize URL")
+async def withings_connect() -> dict[str, Any]:
+    """URL to open for OAuth approval (empty when health.withings is unconfigured)."""
+    from devices_mcp.integrations.withings_client import get_withings_client
+
+    url = get_withings_client().authorize_url()
+    if not url:
+        raise HTTPException(
+            status_code=400,
+            detail="Withings not configured - set health.withings client_id/secret (free dev app at developer.withings.com)",
+        )
+    return {"success": True, "authorize_url": url}
+
+
+@router.get("/withings/callback", summary="Withings OAuth callback")
+async def withings_callback(code: str = "", state: str = "") -> dict[str, Any]:
+    """Exchange the ?code=... Withings redirects back with. Then /sync."""
+    from devices_mcp.integrations.withings_client import get_withings_client
+
+    if not code:
+        raise HTTPException(status_code=400, detail="Missing ?code= (open /connect first)")
+    result = await get_withings_client().exchange_code(code)
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error"))
+    return result
+
+
+@router.post("/withings/sync", summary="Pull Withings measurements now")
+async def withings_sync() -> dict[str, Any]:
+    """Incremental sync of weight + BP into health_metrics (source='withings')."""
+    from devices_mcp.integrations.withings_client import get_withings_client
+
+    try:
+        result = await get_withings_client().sync_to_db(TimeSeriesDB())
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except Exception as e:
+        logger.exception("Withings sync failed:")
+        raise HTTPException(status_code=500, detail=str(e)) from e
+    return result

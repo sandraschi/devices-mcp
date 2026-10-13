@@ -454,17 +454,22 @@ class WebServer:
             logger.info("Minimal routes registered successfully")
 
     async def _fleet_monitor(self) -> None:
-        """Background task to monitor fleet health and trigger hourly syncs."""
+        """Background task: fleet health check every 5 min, doc sync at most daily."""
         import asyncio
         import subprocess
         from datetime import UTC, datetime, timedelta
 
         from devices_mcp.fleet.manager import FleetManager
 
+        HEALTH_CHECK_INTERVAL = 300  # 5 minutes: offline-marking only, no git traffic
+        SYNC_INTERVAL = 86400  # 24 hours: at most one doc-sync trigger per day
+
         logger.info("Fleet monitor background task started")
 
         # Initial wait to let server settle
         await asyncio.sleep(60)
+
+        last_sync_trigger = 0.0
 
         while True:
             try:
@@ -482,24 +487,29 @@ class WebServer:
                             node_id=node["node_id"], status="offline", details=node.get("details", {})
                         )
 
-                # 2. Trigger Hourly Sync Script
-                # We do this every hour (approx)
-                # For simplicity, we just trigger it and let it handle the 'last_run' logic
+                # 2. Trigger Daily Sync Script (gated: max once per 24 h).
+                # The script itself also skips the push unless fleet membership
+                # meaningfully changed, so idle days produce zero git traffic.
+                elapsed = now.timestamp() - last_sync_trigger
                 scripts_dir = Path(__file__).parent.parent.parent / "scripts"
                 sync_script = scripts_dir / "hourly_sync.py"
-                if sync_script.exists():
-                    logger.info("Triggering hourly fleet sync documentation push")
-                    subprocess.Popen(
-                        [sys.executable, str(sync_script)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                    )
+                if elapsed >= SYNC_INTERVAL:
+                    if sync_script.exists():
+                        logger.info("Triggering daily fleet sync documentation push")
+                        subprocess.Popen(
+                            [sys.executable, str(sync_script)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                        )
+                        last_sync_trigger = now.timestamp()
+                    else:
+                        logger.debug(f"Sync script not found at {sync_script}")
                 else:
-                    logger.debug(f"Sync script not found at {sync_script}")
+                    logger.debug(f"Daily fleet sync not due ({int(elapsed)}s since last trigger)")
 
             except Exception as e:
                 logger.error(f"Error in fleet monitor loop: {e}")
 
             # Sleep for 5 minutes (health check interval)
-            await asyncio.sleep(300)
+            await asyncio.sleep(HEALTH_CHECK_INTERVAL)
 
     def _redirect_to_app(self):
         """Redirect root to React SPA."""
