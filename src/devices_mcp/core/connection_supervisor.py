@@ -7,6 +7,7 @@ and provides comprehensive health monitoring for demo reliability.
 
 import asyncio
 import logging
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -112,6 +113,7 @@ class ConnectionSupervisor:
             self._check_hue_homeaware(),
             self._check_netatmo(),
             self._check_ring(),
+            self._check_withings(),
             self._check_shelly(),
             self._check_home_assistant(),
             return_exceptions=True,  # Don't let one failure crash others
@@ -629,6 +631,31 @@ class ConnectionSupervisor:
                 error=error_msg,
                 details={"error_type": error_type, "raw_error": str(e)},
             )
+
+    async def _check_withings(self):
+        """Pull Withings weight/BP into health_metrics (at most every 15 min).
+
+        Skipped silently when unconfigured/unconnected - no health entry, no
+        noise. Failures are logged, never raised (gather uses return_exceptions
+        anyway, but a sync must not flap device health).
+        """
+        try:
+            from ..integrations.withings_client import get_withings_client
+
+            client = get_withings_client()
+            if not client.is_configured() or not client.is_connected():
+                return
+            last = self._last_withings_sync if hasattr(self, "_last_withings_sync") else 0.0
+            if time.time() - last < 900:
+                return
+            from ..db.timeseries import TimeSeriesDB
+
+            result = await asyncio.wait_for(client.sync_to_db(TimeSeriesDB()), timeout=60.0)
+            self._last_withings_sync = time.time()
+            if result.get("stored"):
+                logger.info("Withings sync: %s new measurement(s)", result["stored"])
+        except Exception as e:
+            logger.warning("Withings sync failed (next retry in 15 min): %s", e)
 
     async def _check_ring(self):
         """Check Ring doorbell."""
