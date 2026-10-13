@@ -206,6 +206,10 @@ src/tapo_camera_mcp/web/static/
 # Specific to this project
 ring_token.cache
 tap_token.cache
+hue_bridge.cache
+netatmo_token.cache
+withings_token.json
+device_aliases.json
 *.token
 *.cache
 
