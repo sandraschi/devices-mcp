@@ -1,44 +1,56 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "lib": ["es5", "es6", "es2015.collection", "es2015.promise", "es2015.proxy", "es2015.iterable", "es2015.symbol", "es2015.symbol.wellknown", "es2015.reflect", "es2017.object", "dom"],
-    "module": "es2015",
-    "moduleResolution": "node",
-    "jsx": "react",
-    "sourceMap": true,
-    "strict": true,
-    "noImplicitAny": false,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "outDir": "dist",
-    "rootDir": "src",
-    "declaration": true,
-    "declarationMap": true,
-    "types": ["node"],
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules/@grafana",
-      "./src/@types"
-    ],
-    "paths": {
-      "@grafana/*": ["node_modules/@grafana/*"],
-      "@grafana/toolkit": ["node_modules/@grafana/toolkit"],
-      "@grafana/data": ["node_modules/@grafana/data"],
-      "@grafana/ui": ["node_modules/@grafana/ui"],
-      "@grafana/runtime": ["node_modules/@grafana/runtime"]
-    }
-  },
-  "include": ["src"],
-  "exclude": [
-    "node_modules",
-    "**/node_modules/*",
-    "**/dist/*",
-    "**/cypress/*",
-    "**/e2e/*",
-    "**/*.test.*",
-    "**/__mocks__/*"
-  ]
+	"compilerOptions": {
+		"target": "es5",
+		"lib": [
+			"es5",
+			"es6",
+			"es2015.collection",
+			"es2015.promise",
+			"es2015.proxy",
+			"es2015.iterable",
+			"es2015.symbol",
+			"es2015.symbol.wellknown",
+			"es2015.reflect",
+			"es2017.object",
+			"dom"
+		],
+		"module": "es2015",
+		"moduleResolution": "node",
+		"jsx": "react",
+		"sourceMap": true,
+		"strict": true,
+		"noImplicitAny": false,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"baseUrl": ".",
+		"outDir": "dist",
+		"rootDir": "src",
+		"declaration": true,
+		"declarationMap": true,
+		"types": ["node"],
+		"typeRoots": [
+			"./node_modules/@types",
+			"./node_modules/@grafana",
+			"./src/@types"
+		],
+		"paths": {
+			"@grafana/*": ["node_modules/@grafana/*"],
+			"@grafana/toolkit": ["node_modules/@grafana/toolkit"],
+			"@grafana/data": ["node_modules/@grafana/data"],
+			"@grafana/ui": ["node_modules/@grafana/ui"],
+			"@grafana/runtime": ["node_modules/@grafana/runtime"]
+		}
+	},
+	"include": ["src"],
+	"exclude": [
+		"node_modules",
+		"**/node_modules/*",
+		"**/dist/*",
+		"**/cypress/*",
+		"**/e2e/*",
+		"**/*.test.*",
+		"**/__mocks__/*"
+	]
 }

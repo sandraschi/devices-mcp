@@ -1,42 +1,42 @@
 {
-  "name": "tapo-camera-stream",
-  "version": "1.0.0",
-  "description": "Grafana panel plugin for Tapo camera streams with PTZ controls",
-  "main": "dist/module.js",
-  "scripts": {
-    "build": "grafana-toolkit plugin:build",
-    "test": "grafana-toolkit plugin:test",
-    "dev": "grafana-toolkit plugin:dev",
-    "watch": "grafana-toolkit plugin:dev --watch",
-    "sign": "grafana-toolkit plugin:sign",
-    "start": "grafana-toolkit plugin:start"
-  },
-  "repository": "github:devices-mcp",
-  "author": "Devices MCP Team",
-  "license": "MIT",
-  "dependencies": {
-    "@grafana/data": "^9.5.21",
-    "@grafana/runtime": "^9.5.21",
-    "@grafana/ui": "^9.5.21",
-    "@grafana/schema": "^9.5.21",
-    "hls.js": "^1.4.12",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
-  },
-  "devDependencies": {
-    "@grafana/toolkit": "^9.5.21",
-    "@grafana/e2e": "^9.5.21",
-    "@grafana/e2e-selectors": "^9.5.21",
-    "@types/node": "^16.0.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "typescript": "^4.9.5"
-  },
-  "resolutions": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
-  },
-  "engines": {
-    "node": ">=14"
-  }
+	"name": "tapo-camera-stream",
+	"version": "1.0.0",
+	"description": "Grafana panel plugin for Tapo camera streams with PTZ controls",
+	"main": "dist/module.js",
+	"scripts": {
+		"build": "grafana-toolkit plugin:build",
+		"test": "grafana-toolkit plugin:test",
+		"dev": "grafana-toolkit plugin:dev",
+		"watch": "grafana-toolkit plugin:dev --watch",
+		"sign": "grafana-toolkit plugin:sign",
+		"start": "grafana-toolkit plugin:start"
+	},
+	"repository": "github:devices-mcp",
+	"author": "Devices MCP Team",
+	"license": "MIT",
+	"dependencies": {
+		"@grafana/data": "^9.5.21",
+		"@grafana/runtime": "^9.5.21",
+		"@grafana/ui": "^9.5.21",
+		"@grafana/schema": "^9.5.21",
+		"hls.js": "^1.4.12",
+		"react": "^17.0.2",
+		"react-dom": "^17.0.2"
+	},
+	"devDependencies": {
+		"@grafana/toolkit": "^9.5.21",
+		"@grafana/e2e": "^9.5.21",
+		"@grafana/e2e-selectors": "^9.5.21",
+		"@types/node": "^16.0.0",
+		"@types/react": "^17.0.0",
+		"@types/react-dom": "^17.0.0",
+		"typescript": "^4.9.5"
+	},
+	"resolutions": {
+		"react": "^17.0.2",
+		"react-dom": "^17.0.2"
+	},
+	"engines": {
+		"node": ">=14"
+	}
 }
