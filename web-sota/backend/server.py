@@ -515,7 +515,7 @@ class WebServer:
         """Redirect root to React SPA."""
         return RedirectResponse(url="/app/", status_code=302)
 
-    def run(self, host: str = "0.0.0.0", port: int = 10716) -> None:
+    def run(self, host: str = "127.0.0.1", port: int = 10716) -> None:
         """Run web server."""
         import uvicorn
 
@@ -551,7 +551,7 @@ if __name__ == "__main__":
     faulthandler.enable()
 
     parser = argparse.ArgumentParser(description="Run Devices MCP Web Server")
-    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
+    parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
     parser.add_argument("--port", type=int, default=10716, help="Port to bind to")
 
     args = parser.parse_args()

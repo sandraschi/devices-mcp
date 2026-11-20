@@ -167,8 +167,8 @@ class CrashproofRunner:
                                 stderr_data = await self.process.stderr.read()
                                 if stderr_data:
                                     crash_info["stderr"] = stderr_data.decode("utf-8", errors="ignore").strip()
-                            except:
-                                pass
+                            except (OSError, asyncio.IncompleteReadError) as stderr_err:
+                                logger.debug(f"Could not read stderr after crash: {stderr_err}")
 
                         logger.warning(f"CRASH: Devices MCP WebApp crashed with exit code {self.process.returncode}")
                         logger.info(f"UPTIME: Uptime before crash: {self.uptime_total:.1f}s")
@@ -218,8 +218,8 @@ class CrashproofRunner:
                 logger.warning(f"Error cleaning up old process: {e}")
                 try:
                     self.process.kill()
-                except:
-                    pass
+                except OSError as kill_err:
+                    logger.debug(f"Process kill ignored: {kill_err}")
 
         await asyncio.sleep(delay)
 
@@ -278,7 +278,7 @@ class CrashproofRunner:
                 },
                 "app_info": {
                     "name": "Devices MCP WebApp",
-                    "default_host": "0.0.0.0",
+                    "default_host": "127.0.0.1",
                     "default_port": 7777,
                     "health_endpoint": self.health_check_url or "Not configured",
                 },
@@ -330,7 +330,7 @@ class CrashproofRunner:
                     logger.exception("Error terminating process:")
 
             # Save final crash report
-            asyncio.create_task(self.save_crash_report())
+            _report_task = asyncio.create_task(self.save_crash_report())
             sys.exit(0)
 
         # Register signal handlers
@@ -359,7 +359,7 @@ class CrashproofRunner:
 def load_config() -> dict[str, Any]:
     """Load configuration from environment variables."""
     return {
-        "host": os.getenv("TAPO_WEBAPP_HOST", "0.0.0.0"),
+        "host": os.getenv("TAPO_WEBAPP_HOST", "127.0.0.1"),
         "port": int(os.getenv("TAPO_WEBAPP_PORT", "7777")),
         "debug": os.getenv("TAPO_WEBAPP_DEBUG", "false").lower() == "true",
         "max_restarts": int(os.getenv("WATCHFILES_MAX_RESTARTS", "10")),

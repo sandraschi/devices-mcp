@@ -1,4 +1,4 @@
-# Start Devices MCP Dashboard (legacy: devices_mcp.web on port 7777)
+﻿# Start Devices MCP Dashboard (legacy: devices_mcp.web on port 7777)
 # For SOTA Vite + FastAPI + USB camera helper on 10715-10717, use .\start.ps1 from repo root.
 
 Write-Host "`n" -NoNewline
@@ -64,7 +64,7 @@ if ($portInUse) {
     Write-Host "      docker stop <container-id>" -ForegroundColor Gray
     Write-Host ""
     Write-Host "   3. Use a different port:" -ForegroundColor White
-    Write-Host "      python -m devices_mcp.web --host 0.0.0.0 --port 7778" -ForegroundColor Gray
+    Write-Host "      python -m devices_mcp.web --host 127.0.0.1 --port 7778" -ForegroundColor Gray
     Write-Host ""
     exit 1
 }
@@ -78,4 +78,4 @@ Write-Host "   Connection supervisor will monitor all devices" -ForegroundColor 
 Write-Host "   Health dashboard: http://localhost:7777/health-dashboard" -ForegroundColor Gray
 Write-Host "   Alerts dashboard: http://localhost:7777/alerts`n" -ForegroundColor Gray
 
-python -m devices_mcp.web --host 0.0.0.0 --port 7777
+python -m devices_mcp.web --host 127.0.0.1 --port 7777
