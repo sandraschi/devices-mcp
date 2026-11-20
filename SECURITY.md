@@ -1,126 +1,22 @@
 # Security Policy
 
-## Reporting Security Vulnerabilities
+## Reporting a vulnerability
 
-**DO NOT** report security vulnerabilities through public GitHub issues, discussions, or pull requests.
+Please report security problems **privately** through GitHub's private vulnerability reporting:
 
-Instead, please report security vulnerabilities by email to the maintainers at:
+1. Open the repository's **Security** tab.
+2. Click **Report a vulnerability**.
 
-**📧 Security Email:** security@devices-mcp.example.com
+Direct link: https://github.com/sandraschi/devices-mcp/security/advisories/new
 
-## Vulnerability Reporting Process
+Please do **not** open a public issue, discussion or pull request for a security problem, and do not include working exploits or real secrets in anything public.
 
-### What to Include in Your Report
+## What happens next
 
-When reporting a security vulnerability, please include:
+- You will get an acknowledgement in the private advisory thread.
+- Confirmed issues are fixed and published as a GitHub Security Advisory (with a CVE where appropriate), crediting you unless you prefer otherwise.
+- We follow coordinated disclosure and are happy to agree on a timeline with you.
 
-1. **Description**: Clear description of the vulnerability and its potential impact
-2. **Steps to Reproduce**: Detailed steps to reproduce the issue
-3. **Affected Versions**: Which versions of the software are affected
-4. **Environment Details**: Operating system, Python version, and other relevant environment details
-5. **Proof of Concept**: If applicable, include a minimal proof of concept
-6. **Suggested Fix**: If you have suggestions for fixing the vulnerability
+## Scope
 
-### Response Time
-
-- **Acknowledgment**: We will acknowledge receipt of your report within 24 hours
-- **Investigation**: We will investigate the report within 48 hours
-- **Resolution**: We aim to resolve critical vulnerabilities within 7 days
-- **Disclosure**: We will coordinate responsible disclosure with you
-
-## Security Standards
-
-### Code Security
-
-This project follows industry-standard security practices:
-
-- **Input Validation**: All user inputs are validated and sanitized
-- **Error Handling**: Secure error handling that doesn't leak sensitive information
-- **Dependency Management**: Regular security updates for all dependencies
-- **Authentication**: Secure authentication mechanisms for camera connections
-- **Authorization**: Proper access controls for camera operations
-
-### Dependency Security
-
-- **Automated Scanning**: Dependencies are automatically scanned for vulnerabilities
-- **Regular Updates**: Security updates are applied promptly
-- **Minimal Dependencies**: Only necessary dependencies are included
-- **Version Pinning**: Dependency versions are pinned to prevent unexpected updates
-
-### Network Security
-
-- **Encrypted Communication**: All camera communications use HTTPS/TLS
-- **Certificate Validation**: SSL certificates are properly validated
-- **Secure Defaults**: Secure connection defaults are enforced
-- **Timeout Handling**: Proper timeout handling to prevent resource exhaustion
-
-## Security Features
-
-### Camera Security
-
-- **Secure Authentication**: Strong authentication mechanisms for camera access
-- **Session Management**: Secure session handling with proper cleanup
-- **Privacy Controls**: Privacy mode and LED control features
-- **Access Logging**: Comprehensive logging of camera access and operations
-
-### Data Protection
-
-- **No Data Storage**: Camera data is streamed, not stored persistently
-- **Memory Safety**: Proper memory management to prevent data leaks
-- **Temporary Files**: Secure handling of temporary files and cleanup
-- **Configuration Security**: Secure storage of configuration data
-
-## Best Practices
-
-### For Users
-
-- **Keep Updated**: Always use the latest version of the software
-- **Secure Configuration**: Use strong passwords and secure connection settings
-- **Network Security**: Place cameras on secure, isolated networks when possible
-- **Regular Monitoring**: Monitor camera access and system logs
-
-### For Developers
-
-- **Security Reviews**: All code changes undergo security review
-- **Testing**: Security tests are included in the test suite
-- **Dependency Audits**: Regular audits of third-party dependencies
-- **Static Analysis**: Use of security-focused static analysis tools
-
-## Responsible Disclosure
-
-We believe in responsible disclosure of security vulnerabilities. If you discover a security issue:
-
-1. **Report Privately**: Use the security email address above
-2. **Allow Time**: Give us reasonable time to investigate and fix the issue
-3. **Credit**: We will credit you in the security advisory if desired
-4. **Coordination**: We will coordinate the disclosure timeline with you
-
-## Security Updates
-
-When security updates are released:
-
-- **Clear Communication**: Security advisories will clearly describe the issue and fix
-- **Immediate Action**: Users should update as soon as possible
-- **Backwards Compatibility**: We strive to maintain backwards compatibility in security updates
-- **Documentation**: Security fixes will be documented in the changelog
-
-## Contact Information
-
-### Primary Contact
-**Security Team:** security@devices-mcp.example.com
-
-### Alternative Contact
-For non-security sensitive questions, use:
-- **GitHub Issues:** https://github.com/yourusername/devices-mcp/issues
-- **Discussions:** https://github.com/yourusername/devices-mcp/discussions
-
-## Legal
-
-This security policy is subject to change. The most current version can be found in the repository.
-
----
-
-**Document Version**: 1.0
-**Last Updated**: October 1, 2025
-**Repository**: devices-mcp
-**Status**: Gold Tier Security Standards
+These projects are mostly MCP servers and tools that run locally with the privileges of the user who starts them. Issues that let a client, an agent or prompt-injected content reach beyond a tool's intended scope (for example file access outside a configured directory, command execution, or credential exposure) are in scope.
