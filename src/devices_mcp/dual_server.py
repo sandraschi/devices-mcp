@@ -339,7 +339,7 @@ class TapoCameraDualServer:
             logger.exception("Failed to start MCP server")
             raise
 
-    async def start_rest_server(self, host: str = "0.0.0.0", port: int = 8123):  # nosec B104
+    async def start_rest_server(self, host: str = "127.0.0.1", port: int = 8123):
         """Start the REST API server"""
         try:
             logger.info(f"Starting REST API server on {host}:{port}")
@@ -354,11 +354,11 @@ class TapoCameraDualServer:
 
     async def start_dual_server(
         self,
-        rest_host: str = "0.0.0.0",
+        rest_host: str = "127.0.0.1",
         rest_port: int = 8123,
         mcp_host: str = "127.0.0.1",
         mcp_port: int = 8000,
-    ):  # nosec B104
+    ):
         """Start both MCP and REST servers concurrently"""
         logger.info("Starting dual interface server (MCP + REST API)")
 
@@ -439,7 +439,7 @@ async def start_dual_server():
     await dual_server.start_dual_server()
 
 
-async def start_rest_only_server(host: str = "0.0.0.0", port: int = 8123):  # nosec B104
+async def start_rest_only_server(host: str = "127.0.0.1", port: int = 8123):
     """Convenience function to start REST API only"""
     await dual_server.start_rest_server(host, port)
 

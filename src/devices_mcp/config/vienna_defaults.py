@@ -18,7 +18,7 @@ def get_vienna_default_config() -> dict[str, Any]:
     """Return a full config skeleton for the Vienna rig (no real secrets)."""
     return {
         "server": {
-            "host": "0.0.0.0",  # nosec B104
+            "host": "127.0.0.1",
             "port": 10717,
             "debug": False,
             "log_level": "INFO",
@@ -164,7 +164,7 @@ def get_vienna_default_config() -> dict[str, Any]:
         },
         "web": {
             "enabled": True,
-            "host": "0.0.0.0",  # nosec B104
+            "host": "127.0.0.1",
             "port": 10717,
             "theme": "dark",
         },

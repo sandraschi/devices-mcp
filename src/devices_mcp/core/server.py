@@ -610,7 +610,7 @@ class DevicesMCPServer:
 
     async def run(
         self,
-        host: str = "0.0.0.0",  # nosec B104
+        host: str = "127.0.0.1",
         port: int = 8000,
         stdio: bool = False,
         direct: bool = False,
