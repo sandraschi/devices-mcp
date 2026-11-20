@@ -1,11 +1,11 @@
-# Run Devices MCP WebApp with Watchfiles Crashproofing
+﻿# Run Devices MCP WebApp with Watchfiles Crashproofing
 # This script starts the Devices MCP WebApp with automatic crash recovery
 
 param(
     [int]$MaxRestarts = 10,
     [float]$RestartDelay = 1.0,
     [int]$HealthCheckInterval = 30,
-    [string]$Host = "0.0.0.0",
+    [string]$ServerHost = "127.0.0.1",
     [int]$Port = 7777,
     [switch]$Debug,
     [switch]$Test
@@ -15,7 +15,7 @@ Write-Host "STARTING Devices MCP WebApp with Watchfiles Crashproofing" -Foregrou
 Write-Host "=================================================================" -ForegroundColor Cyan
 
 # Set environment variables
-$env:TAPO_WEBAPP_HOST = $Host
+$env:TAPO_WEBAPP_HOST = $ServerHost
 $env:TAPO_WEBAPP_PORT = $Port
 $env:TAPO_WEBAPP_DEBUG = $Debug.ToString().ToLower()
 $env:WATCHFILES_MAX_RESTARTS = $MaxRestarts.ToString()
@@ -23,7 +23,7 @@ $env:WATCHFILES_RESTART_DELAY = $RestartDelay.ToString()
 $env:WATCHFILES_HEALTH_CHECK_INTERVAL = $HealthCheckInterval.ToString()
 
 Write-Host "Configuration:" -ForegroundColor Yellow
-Write-Host "  Host: $Host" -ForegroundColor White
+Write-Host "  Host: $ServerHost" -ForegroundColor White
 Write-Host "  Port: $Port" -ForegroundColor White
 Write-Host "  Debug: $($Debug.ToString().ToLower())" -ForegroundColor White
 Write-Host "  Max Restarts: $MaxRestarts" -ForegroundColor White

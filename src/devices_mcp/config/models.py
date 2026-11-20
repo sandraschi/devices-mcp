@@ -13,14 +13,25 @@ class WebUISettings(BaseModel):
     """Web UI specific settings (reservoir port 10716 per WEBAPP_PORTS.md)."""
 
     enabled: bool = True
-    host: str = "0.0.0.0"  # nosec B104
+    host: str = "127.0.0.1"
     port: int = 10716
     title: str = "Devices MCP"
     theme: Literal["light", "dark", "system"] = "dark"
     enable_swagger: bool = True
     enable_redoc: bool = False
     enable_cors: bool = True
-    cors_origins: list[str] = Field(default_factory=lambda: ["*"], description="List of allowed CORS origins")
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:10716",
+            "http://127.0.0.1:10716",
+            "http://localhost:10717",
+            "http://127.0.0.1:10717",
+            "tauri://localhost",
+            "http://tauri.localhost",
+            "https://tauri.localhost",
+        ],
+        description="List of allowed CORS origins",
+    )
     session_secret: str = "change-this-in-production"  # nosec B105
     session_lifetime: int = 86400  # 24 hours in seconds
 
@@ -161,7 +172,7 @@ class ServerConfig:
     """Server configuration class."""
 
     # Server settings
-    host: str = "0.0.0.0"  # nosec B104
+    host: str = "127.0.0.1"
     port: int = 8080
     debug: bool = False
 

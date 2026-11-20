@@ -278,7 +278,7 @@ class CrashproofRunner:
                 },
                 "app_info": {
                     "name": "Devices MCP WebApp",
-                    "default_host": "0.0.0.0",
+                    "default_host": "127.0.0.1",
                     "default_port": 7777,
                     "health_endpoint": self.health_check_url or "Not configured",
                 },
@@ -330,7 +330,7 @@ class CrashproofRunner:
                     logger.exception("Error terminating process:")
 
             # Save final crash report
-            asyncio.create_task(self.save_crash_report())
+            _report_task = asyncio.create_task(self.save_crash_report())  # noqa: RUF006
             sys.exit(0)
 
         # Register signal handlers
@@ -359,7 +359,7 @@ class CrashproofRunner:
 def load_config() -> dict[str, Any]:
     """Load configuration from environment variables."""
     return {
-        "host": os.getenv("TAPO_WEBAPP_HOST", "0.0.0.0"),
+        "host": os.getenv("TAPO_WEBAPP_HOST", "127.0.0.1"),
         "port": int(os.getenv("TAPO_WEBAPP_PORT", "7777")),
         "debug": os.getenv("TAPO_WEBAPP_DEBUG", "false").lower() == "true",
         "max_restarts": int(os.getenv("WATCHFILES_MAX_RESTARTS", "10")),

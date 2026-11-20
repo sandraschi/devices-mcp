@@ -64,7 +64,7 @@ class TapoCameraCLI:
 
         # Server commands
         server_parser = subparsers.add_parser("serve", help="Start the MCP server")
-        server_parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")  # nosec B104
+        server_parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
         server_parser.add_argument("--port", type=int, default=8000, help="Port to listen on")
         server_parser.add_argument(
             "--no-stdio",

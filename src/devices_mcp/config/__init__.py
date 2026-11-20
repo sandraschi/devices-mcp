@@ -191,7 +191,7 @@ class ConfigManager:
         if not self.config_path.exists():
             # Create a minimal in-memory config
             return {
-                "host": "0.0.0.0",  # nosec B104
+                "host": "127.0.0.1",
                 "port": 8080,
                 "debug": False,
                 "cameras": [],
@@ -220,7 +220,7 @@ class ConfigManager:
         except Exception:
             # Return minimal config on error
             return {
-                "host": "0.0.0.0",  # nosec B104
+                "host": "127.0.0.1",
                 "port": 8080,
                 "debug": False,
                 "cameras": [],
@@ -277,7 +277,7 @@ class ConfigManager:
             storage_config = config.get("storage", {})
 
             return ServerConfig(
-                host=config.get("host", "0.0.0.0"),
+                host=config.get("host", "127.0.0.1"),
                 port=config.get("port", 8080),
                 debug=config.get("debug", False),
                 web=WebUISettings(**web_config) if web_config else WebUISettings(),
@@ -289,7 +289,18 @@ class ConfigManager:
                 request_timeout=config.get("request_timeout", 30),
                 log_level=config.get("log_level", "INFO"),
                 default_camera=config.get("default_camera"),
-                cors_origins=config.get("cors_origins", ["*"]),
+                cors_origins=config.get(
+                    "cors_origins",
+                    [
+                        "http://localhost:10716",
+                        "http://127.0.0.1:10716",
+                        "http://localhost:10717",
+                        "http://127.0.0.1:10717",
+                        "tauri://localhost",
+                        "http://tauri.localhost",
+                        "https://tauri.localhost",
+                    ],
+                ),
                 data_dir=Path(config.get("data_dir", "data")),
                 cache_dir=Path(config.get("cache_dir", "cache")),
                 api_key=config.get("api_key"),

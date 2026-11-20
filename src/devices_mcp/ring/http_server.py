@@ -354,7 +354,7 @@ def main():
     )
 
     # Get server configuration
-    host = os.getenv("HOST", "0.0.0.0")
+    host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", "8123"))
 
     logger.info(f"Starting Ring MCP HTTP server on http://{host}:{port}")
