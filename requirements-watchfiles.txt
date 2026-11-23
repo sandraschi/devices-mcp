@@ -3,4 +3,4 @@
 
 watchfiles>=0.21.0
 aiohttp>=3.9.0  # For health checks
-structlog>=23.0.0  # For structured logging
+structlog>=26.1.0  # For structured logging
